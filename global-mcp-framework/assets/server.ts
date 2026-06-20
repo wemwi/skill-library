@@ -1,0 +1,54 @@
+// server.ts — Spiegel von server-template/src/server.ts der Foundation.
+//
+// PRIMÄRQUELLE ist das server-template/. Diese Datei zeigt die Tool-Registrierung:
+// buildServer (pro Request frisch), TOOL_ALLOWLIST, createAllowlistedRegistrar.
+
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
+import type { BuildServer } from "mcp-foundation/core";
+import { createAllowlistedRegistrar } from "mcp-foundation/tooling";
+
+/**
+ * Allowlist: die einzige Wahrheit darüber, welche Tools live gehen.
+ * Jedes Tool muss hier stehen, sonst wirft die Registrierung beim Bauen.
+ */
+const TOOL_ALLOWLIST = ["example_ping"] as const;
+
+/**
+ * buildServer wird PRO REQUEST aufgerufen → immer eine frische Instanz.
+ * Niemals einen McpServer im Modul-Scope cachen (CVE-Guard ab SDK 1.26).
+ */
+export const buildServer: BuildServer = ({ env, auth }) => {
+  const server = new McpServer({ name: "<service>-mcp", version: "1.0.0" });
+  const register = createAllowlistedRegistrar(server, TOOL_ALLOWLIST);
+
+  // Outbound-Secrets kommen NUR aus env (wrangler secret), nie aus dem Code.
+  // Name = <AUSSTELLER>_<TYP> (siehe secrets.md). Fehlt ein Pflicht-Secret, hier hart
+  // werfen — der Fehler erscheint dann nach dem Consent, vor den Tools
+  // ("Authorization failed", siehe secrets.md):
+  //   const apiKey = env.GOOGLE_API_KEY;
+  //   if (typeof apiKey !== "string" || !apiKey) throw new Error("GOOGLE_API_KEY not configured");
+
+  register(
+    "example_ping",
+    {
+      title: "Ping",
+      description: "Antwortet mit pong und der Auth-Methode.",
+      inputSchema: { message: z.string().optional() },
+    },
+    async ({ message }) => {
+      const method =
+        typeof auth?.authMethod === "string" ? auth.authMethod : "none";
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `pong (${method})${message ? `: ${message}` : ""}`,
+          },
+        ],
+      };
+    },
+  );
+
+  return server;
+};

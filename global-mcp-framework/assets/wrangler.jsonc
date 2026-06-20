@@ -1,0 +1,33 @@
+{
+  // wrangler.jsonc — Skelett für einen <service>-mcp Worker.
+  // Nur die im Foundation-Standard geforderten Felder. Platzhalter ersetzen.
+
+  "$schema": "node_modules/wrangler/config-schema.json",
+
+  // Worker-Name = Cloudflare-Service-Name = Repo-Name.
+  "name": "<service>-mcp",
+
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-01",
+
+  // nodejs_compat ist Pflicht.
+  "compatibility_flags": ["nodejs_compat"],
+
+  // ai-Alias auf den leeren Stub (src/empty-ai.js, Spiegel: assets/empty-ai.js).
+  "alias": {
+    "ai": "./src/empty-ai.js"
+  },
+
+  // Binding MUSS exakt OAUTH_KV heißen (vom Provider hardcodiert).
+  // id zeigt auf den Namespace; dessen Dashboard-Name ist frei (Konvention MCP_OAUTH_<SERVICE>).
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      "id": "<kv-namespace-id-aus-dem-dashboard>"
+    }
+  ]
+
+  // BEWUSST NICHT enthalten (stateless, kein DO):
+  //   "durable_objects": ...
+  //   "migrations": ...
+}

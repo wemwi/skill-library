@@ -1,0 +1,19 @@
+{
+  "name": "<service>-mcp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "mcp-foundation": "github:<org>/<foundation-repo>#<git-tag>",
+    "@modelcontextprotocol/sdk": "<version>",
+    "zod": "<version>"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "<version>",
+    "typescript": "<version>",
+    "wrangler": "<version>"
+  }
+}
