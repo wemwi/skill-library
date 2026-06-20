@@ -1,33 +1,29 @@
 {
-  // wrangler.jsonc — Skelett für einen <service>-mcp Worker.
-  // Nur die im Foundation-Standard geforderten Felder. Platzhalter ersetzen.
-
+  // Beim Aufsetzen anpassen: name, compatibility_date (= heutiges Datum).
   "$schema": "node_modules/wrangler/config-schema.json",
-
-  // Worker-Name = Cloudflare-Service-Name = Repo-Name.
+  // Worker-Name = Cloudflare-Service-Name = Repo-Name = name in package.json.
   "name": "<service>-mcp",
-
   "main": "src/index.ts",
-  "compatibility_date": "2025-01-01",
-
-  // nodejs_compat ist Pflicht.
+  "compatibility_date": "2026-06-18",
+  // Pflicht für das MCP-SDK auf Workers:
   "compatibility_flags": ["nodejs_compat"],
-
-  // ai-Alias auf den leeren Stub (src/empty-ai.js, Spiegel: assets/empty-ai.js).
+  // Pflicht: "agents" macht intern ein dynamisches import("ai") (optionaler Peer,
+  // nicht installiert). Ohne diesen Alias bricht das Bundling beim Deploy mit
+  // „Could not resolve 'ai'" ab. Wir leiten "ai" auf einen leeren Stub um.
   "alias": {
     "ai": "./src/empty-ai.js"
   },
-
-  // Binding MUSS exakt OAUTH_KV heißen (vom Provider hardcodiert).
-  // id zeigt auf den Namespace; dessen Dashboard-Name ist frei (Konvention MCP_OAUTH_<SERVICE>).
+  "observability": {
+    "enabled": true
+  },
+  // OAuth-State (Login-State, Clients, Grants, Tokens). Der Binding-Name MUSS
+  // exakt "OAUTH_KV" heißen — im OAuthProvider hardcodiert, nicht frei wählbar.
+  // Namespace im Dashboard anlegen (Storage & Databases → KV) und ID eintragen.
+  // Dashboard-Name frei (Konvention MCP_OAUTH_<SERVICE>). Pro Repo ein eigener Namespace.
   "kv_namespaces": [
-    {
-      "binding": "OAUTH_KV",
-      "id": "<kv-namespace-id-aus-dem-dashboard>"
-    }
+    { "binding": "OAUTH_KV", "id": "<kv-namespace-id-aus-dem-dashboard>" }
   ]
-
-  // BEWUSST NICHT enthalten (stateless, kein DO):
-  //   "durable_objects": ...
-  //   "migrations": ...
+  // STATELESS: keine durable_objects / migrations.
+  // Session-State/Elicitation nötig? → McpAgent + Durable Object + SQLite-Migration
+  //   ergänzen und jurisdiction "eu" setzen (Datenresidenz).
 }

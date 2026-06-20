@@ -1,9 +1,13 @@
-// empty-ai.js — leerer Stub für den `ai`-Alias aus wrangler.jsonc.
+// Stub für das optionale "ai"-Paket (Vercel AI SDK).
 //
-// Eine Dependency im Baum (über die Foundation) referenziert das `ai`-Modul, das
-// dieser Worker nicht nutzt. Der Alias `"ai": "./src/empty-ai.js"` in der
-// wrangler.jsonc biegt diesen Import auf diesen leeren Default-Export um, damit das
-// Bundling nicht an einem fehlenden Modul scheitert.
+// Das Paket `agents` (von `createMcpHandler` / `createOAuthWorker` eingebunden)
+// macht intern ein dynamisches `import("ai")`, um `jsonSchema` zu laden. `ai` ist
+// dort nur ein optionaler Peer und wird NICHT mitinstalliert. Ohne diesen Stub
+// bricht das esbuild-Bundling beim Deploy mit „Could not resolve 'ai'" ab.
 //
-// Ablage im Repo: src/empty-ai.js (nicht in assets/ — das hier ist nur der Spiegel).
+// Per `alias` in wrangler.jsonc wird "ai" auf diese Datei umgeleitet. In einem
+// stateless MCP-Server wird der Codepfad nicht benötigt; `jsonSchema` ist als
+// Passthrough implementiert, damit es auch dann nicht crasht, falls er doch
+// einmal erreicht wird.
+export const jsonSchema = (schema) => schema;
 export default {};

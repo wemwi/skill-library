@@ -1,6 +1,4 @@
 {
-  "//": "Gehört ins server-template als .claude/settings.json — jeder neue Server erbt es.",
-  "//2": "PreToolUse-Hook faengt `git push` ab und blockiert (Exit 2), bis das Gate gruen ist.",
   "hooks": {
     "PreToolUse": [
       {

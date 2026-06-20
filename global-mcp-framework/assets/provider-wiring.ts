@@ -29,6 +29,8 @@ const logger = createLogger({
  * /register und /.well-known-Discovery macht der Provider selbst. Die Foundation
  * baut nur die /authorize-Login-Seite (Passwort gegen MCP_AUTH_PASSWORD_HASH).
  * Stateless: KV statt Durable Object.
+ *
+ * Erst-Connect: claude.ai-Connector → Login-Seite → Passwort → „Erlauben".
  */
 export default createOAuthWorker({
   buildServer,

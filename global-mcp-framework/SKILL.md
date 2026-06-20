@@ -13,7 +13,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH, scheduled purgeExpiredData,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # global-mcp-framework

@@ -1,5 +1,3 @@
-<!-- README.template.md — pro Repo ausfüllen, Platzhalter ersetzen. -->
-
 ![<Service> Logo](<offizielle-logo-asset-url-des-dienstes>)
 
 # <service>-mcp

@@ -1,19 +1,26 @@
 {
   "name": "<service>-mcp",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "mcp-foundation": "github:<org>/<foundation-repo>#<git-tag>",
-    "@modelcontextprotocol/sdk": "<version>",
-    "zod": "<version>"
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "<version>",
-    "typescript": "<version>",
-    "wrangler": "<version>"
+    "@cloudflare/workers-types": "^4.20260601.0",
+    "typescript": "^5.5.0",
+    "wrangler": "^4.0.0"
+  },
+  "overrides": {
+    "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk"
   }
 }

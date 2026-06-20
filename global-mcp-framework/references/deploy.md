@@ -51,6 +51,23 @@ Vorlage: `assets/wrangler.jsonc`. Pflichtbestandteile:
 - `kv_namespaces` mit `"binding": "OAUTH_KV"` (siehe `storage.md`).
 - `nodejs_compat`.
 
+## SDK-Dedup per `overrides` (Pflicht in jedem Consumer)
+
+`agents` (liefert `createMcpHandler`) pinnt das MCP-SDK **exakt** auf eine ältere
+Version als die, die der Consumer direkt nutzt. Ohne Gegenmaßnahme liegen zwei
+SDK-Kopien im Baum → Typkonflikt (`McpServer` nominal inkompatibel) und möglicher
+Runtime-Versions-Skew.
+
+Jede Consumer-`package.json` braucht daher:
+
+```jsonc
+"overrides": { "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk" }
+```
+
+Das zwingt den ganzen Baum (inkl. `agents`) auf die eine Version aus den eigenen
+`dependencies`. Im `server-template` (Spiegel: `assets/package.json.template`) ist
+das bereits gesetzt — beim Kopieren nicht entfernen.
+
 ## Foundation-Versionierung
 
 Die Foundation ist eine **versionierte Git-Dependency (Tag)**. Es gibt **keinen

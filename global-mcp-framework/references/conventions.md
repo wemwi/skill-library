@@ -102,7 +102,8 @@ Die `package.json` bindet die Foundation als **Git-Tag-Dependency** ein
 und braucht das `typecheck`-Script (der Gate-Hook ruft `npm run typecheck`). Direkte
 Dependencies sind nur, was der Code wirklich importiert (`mcp-foundation`,
 `@modelcontextprotocol/sdk`, `zod`) — der OAuth-Provider kommt transitiv über die
-Foundation. Versionen pro Repo gegen die Foundation pinnen.
+Foundation. Pflicht ist außerdem der `overrides`-Eintrag für die SDK-Dedup (siehe
+`deploy.md`). Versionen pro Repo gegen die Foundation pinnen.
 
 ## Connector-URL
 
