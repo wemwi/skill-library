@@ -36,7 +36,8 @@ nicht aus dem README abschreiben — siehe Badge):
 }
 ```
 
-> ⚠️ Breaking Changes MÜSSEN als `feat!:` / `BREAKING CHANGE:` markiert werden —
+> [!WARNING]
+> Breaking Changes MÜSSEN als `feat!:` / `BREAKING CHANGE:` markiert werden —
 > Consumer ziehen sonst unbemerkt eine inkompatible Version.
 
 ## Gotchas

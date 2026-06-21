@@ -50,3 +50,14 @@ Die `## Gotchas`-Sektion ist das wertvollste Feld fürs zukünftige Ich. Regeln:
 - Jeder Eintrag ist ein konkreter, vergangener Schmerz — keine theoretischen Warnungen.
 - Format: *Symptom → Ursache → Fix* in einem Stichpunkt.
 - Beispiel: „`invalid_grant` nach Deploy → `GOOGLE_PRIVATE_KEY` mit literalen `\n` statt echten Zeilenumbrüchen → Secret neu setzen, Zeilenumbrüche als echte `\n` escapen."
+
+## GitHub-Rendering-Features nutzen
+
+GitHub rendert einige Markdown-Erweiterungen, die die README praktischer machen. Bewusst einsetzen:
+
+- **Kopierbare Werte → Fenced Code Block.** GitHub zeigt bei ```-Blöcken automatisch einen Copy-Button; bei Inline-Code (einzelne Backticks) und in Tabellen-Zellen nicht. Werte, die man oft kopiert (Live-URL für die Connector-Config), kommen darum in einen eigenen Fenced Block, nicht inline. Kurze Werte wie Secret-*Namen* bleiben in der Tabelle — die Übersicht wiegt schwerer als der Copy-Button.
+- **Warnungen/Hinweise → Alerts** statt Emoji: `> [!NOTE]`, `> [!TIP]`, `> [!IMPORTANT]`, `> [!WARNING]`, `> [!CAUTION]`. GitHub rendert sie als farbige Box mit Icon — besser scannbar und konsistent. Kein ⚠️/❗ im Fließtext.
+- **Code-Blöcke immer mit Sprach-Tag** (```bash, ```jsonc, ```ts) für Syntax-Highlighting.
+- **Lange Listen optional in `<details>`** klappen, wenn sie das Bildschirm-Limit sprengen (z.B. sehr viele Tools). Nur bei Bedarf — Pflicht-Info bleibt sichtbar, nur Tiefe wird weggeklappt.
+
+Nicht nutzen: eigene Copy-Buttons via HTML/JS (GitHub bereinigt das, kein `<script>`/`onclick`), Inhaltsverzeichnisse/Anchors (widerspricht dem Bildschirm-Limit), dekorative Emoji in Überschriften.
