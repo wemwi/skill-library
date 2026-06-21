@@ -57,8 +57,17 @@ Dependency Dashboard (ein Issue pro Repo) zeigt den Gesamt-Rückstand zentral.
    autorisieren. Sie legt einen Onboarding-PR mit `renovate.json` an.
 2. Die `renovate.json` aus `assets/automation/renovate.json` übernehmen (statt der
    generierten Default-Config). `config:recommended` liefert sinnvolle Defaults; **kein**
-   Auto-Merge aktivieren.
+   Auto-Merge aktivieren. `"mode": "full"` ist Pflicht (siehe Silent-Falle unten).
 3. Onboarding-PR mergen. Ab dann öffnet Renovate Bump-PRs nach Zeitplan.
+
+> [!WARNING]
+> **Silent-Falle.** Wird Renovate mit „All repositories" installiert, defaulten alle
+> Repos in den **Silent-Modus** (`dryRun=lookup`): Renovate scannt, öffnet aber keine
+> PRs/Issues — Ergebnisse nur im Mend Developer Portal. Symptom: Repos zeigen „onboarded",
+> aber es kommen keine PRs. Fix: `"mode": "full"` in der `renovate.json` (überschreibt den
+> Default pro Repo, versioniert) oder im Portal die Engine-Setting von „Silent" auf
+> „Interactive" stellen. Bei „Selected repositories"-Installation tritt das nicht auf —
+> die gewählten Repos starten direkt interaktiv.
 
 ### Foundation-Pin (`*-mcp`)
 
