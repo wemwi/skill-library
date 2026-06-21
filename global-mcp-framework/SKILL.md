@@ -13,7 +13,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH, scheduled purgeExpiredData,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # global-mcp-framework
@@ -98,17 +98,24 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
 - **Namen nie erfinden.** Vor dem Setzen von `name` `workers_list` (Cloudflare-MCP)
   fahren und den echten Service-Namen übernehmen. `name` muss in `wrangler.jsonc`,
   `package.json`, Repo und Cloudflare-Service identisch sein.
-- **Tool-Namen ohne Punkt.** Jeder Tool-Name und jeder `TOOL_ALLOWLIST`-Eintrag muss
-  `^[a-zA-Z0-9_-]{1,64}$` erfüllen — kein Punkt, kein Leerzeichen. Konvention
-  `<prefix>_<verb>_<objekt>`, snake_case (z.B. `sheets_append_row`). Ein Punkt baut
-  serverseitig durch, wird aber an der Frontend-Grenze abgewiesen
-  (`FrontendRemoteMcpToolDefinition.name`) — fällt also erst beim Verbinden auf. Der
-  Pre-Push-Gate-Hook erzwingt die Regel.
+- **Tool-`name` ohne Punkt, ohne Prefix.** Jeder Tool-`name` und jeder
+  `TOOL_ALLOWLIST`-Eintrag muss `^[a-zA-Z0-9_-]{1,64}$` erfüllen — kein Punkt, kein
+  Leerzeichen, kein camelCase. Konvention `<verb>_<objekt>`, snake_case, **kein
+  Service-Prefix** (z.B. `create_invoice`, `list_files`). Objekt nie weglassen
+  (`list_files`, nicht `list`). Ein Punkt baut serverseitig durch, wird aber an der
+  Frontend-Grenze abgewiesen (`FrontendRemoteMcpToolDefinition.name`) — fällt also erst
+  beim Verbinden auf. Der Pre-Push-Gate-Hook erzwingt die Regel.
+- **`name` ≠ `title`.** Der `name` ist die maschinenlesbare Aufruf-ID (snake_case,
+  regex-streng). Der `title` ist der menschenlesbare Anzeigename im Connector
+  (Title Case, Leerzeichen erlaubt: „Create Invoice", „Inspect URL"). Lesbarkeit lebt
+  im `title`, deshalb braucht der `name` kein Prefix. Der `title` unterliegt der Regex
+  NICHT und steht nie in der `TOOL_ALLOWLIST`.
 - **Infra-Namen tragen den Anbieter, Tool-Namen nicht.** Worker, KV-Namespace und
   Secrets sind infra-lesbar → Anbieter/Aussteller im Namen (`google-sheets-mcp`,
-  `MCP_OAUTH_GOOGLE_SHEETS`, `GOOGLE_SERVICE_ACCOUNT_JSON`). Tool-Namen sind
-  modell-lesbar → kurzer, aus dem Worker-Namen abgeleiteter Prefix ohne Anbieter
-  (`sheets_append_row`). Secret = `<AUSSTELLER>_<TYP>`, nicht nach Worker benannt
+  `MCP_OAUTH_GOOGLE_SHEETS`, `GOOGLE_SERVICE_ACCOUNT_JSON`). Tool-`name`s sind
+  modell-lesbar → kurzes `<verb>_<objekt>` ohne Anbieter und ohne Service-Prefix
+  (`append_row`, nicht `sheets_append_row`); die Server-Zuordnung macht der
+  Connector-Namespace. Secret = `<AUSSTELLER>_<TYP>`, nicht nach Worker benannt
   (`GOOGLE_…`, nicht `GSC_…`). Details: `references/conventions.md`, `references/secrets.md`.
 - **Build nie ungeprüft pushen.** `npm run typecheck` + `npx wrangler deploy --dry-run`
   müssen grün sein, bevor gepusht wird — der Cloudflare-Build wirft sonst dieselben

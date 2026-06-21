@@ -36,48 +36,57 @@ User der Installation.
 
 ## Tool-Naming
 
-Tool-Namen müssen dem Muster `^[a-zA-Z0-9_-]{1,64}$` folgen: Buchstaben, Ziffern,
-`_`, `-` — **kein Punkt, kein Leerzeichen, kein Doppelpunkt**. Format
-`<prefix>_<verb>_<objekt>`, durchgehend **snake_case** (kein camelCase).
+Jedes Tool trägt **zwei** Bezeichner, die nie vermischt werden: `name` (Aufruf-ID,
+strikt) und `title` (Anzeige, frei).
 
-**1. Prefix ist Pflicht — und aus dem Worker-Namen abgeleitet.**
-Worker-Namen nehmen, `provider-` vorne und `-mcp` hinten streichen, snake_case → das
-ist der Prefix. So ist die Zuordnung Tool → Worker mechanisch erkennbar. Gilt für
-**jeden** Server, auch Single-Provider — kein nacktes `post_message`, kein `createInvoice`.
+| Feld | Form | Zweck | Restriktion |
+|---|---|---|---|
+| `name` | `<verb>_<objekt>` · snake_case | Aufruf-ID (Agent/Client) | **`^[a-zA-Z0-9_-]{1,64}$`** — kein Punkt, kein Leerzeichen, kein camelCase |
+| `title` | `<Verb> <Objekt>` · Title Case | Anzeige im Connector-UI | keine (Leerzeichen/Großschreibung erlaubt) |
 
-| Worker | Prefix | Beispiel-Tool |
+Beispiel: `register("create_invoice", { title: "Create Invoice", … }, handler)`.
+
+**1. Kein Service-Prefix.** Die Zuordnung Tool → Server übernimmt der Connector-
+Namespace, den der Client anzeigt (`Lexware: Create Invoice`). Ein Prefix wie
+`lexware_` würde nur wiederholen, was der Server-Name schon sagt. Vorbild ist Shopify
+(`create-product`) / PubMed (`search_articles`), nicht Cloudflare — dessen `d1_`/`kv_`/
+`r2_` trennt Sub-Produkte *innerhalb eines* Servers, was hier (ein Worker = ein Service)
+nicht zutrifft.
+
+| Worker | Beispiel-Tool (`name`) | `title` |
 |---|---|---|
-| `google-sheets-mcp` | `sheets_` | `sheets_append_row` |
-| `google-drive-mcp` | `drive_` | `drive_list_files` |
-| `google-pagespeed-mcp` | `pagespeed_` | `pagespeed_get_full_audit` |
-| `google-search-console-mcp` | `search_console_` (Ausnahme `gsc_`, siehe 4) | `search_console_inspect_url` |
-| `lexware-mcp` | `lexware_` | `lexware_create_invoice` |
-| `telegram-mcp` | `telegram_` | `telegram_post_message` |
+| `google-sheets-mcp` | `append_row` | Append Row |
+| `google-drive-mcp` | `list_files` | List Files |
+| `google-pagespeed-mcp` | `get_full_audit` | Get Full Audit |
+| `google-search-console-mcp` | `inspect_url` | Inspect URL |
+| `lexware-mcp` | `create_invoice` | Create Invoice |
+| `telegram-mcp` | `post_message` | Post Message |
 
-**2. Der Prefix ist NICHT der Worker-Name.** Worker-Name = infra-/menschen-lesbar,
-lang ok, Anbieter drin (`google-sheets-mcp`). Tool-Name = modell-lesbar in einer
-flachen, server-übergreifenden Liste → **kurzer** Token ohne Anbieter (`sheets_`, nicht
-`google_sheets_`). Anbieter rein in Infra-Namen, raus aus Tool-Namen.
+**2. Lesbarkeit lebt im `title`, nicht im `name`.** Da der `title` die menschen-
+lesbare Anzeige übernimmt (Title Case, Akronyme groß: „Inspect URL", „Render Invoice
+PDF"), muss der `name` nichts Kosmetisches mehr leisten — er bleibt kurz und
+maschinenlesbar.
 
-**3. Verb-first mit festem Verb-Set.** `<prefix>_<verb>_<objekt>`, Verb zuerst.
+**3. Verb-first mit festem Verb-Set.** `<verb>_<objekt>`, Verb zuerst.
 Kanonische Verben: `list`, `get`, `read`, `create`, `update`, `delete`, `append`, `move`,
-`rename`, `search`. Objekt nicht weglassen, wenn es sonst unklar ist
-(`drive_list_files`, nicht `drive_list`).
+`rename`, `search`, `analyze`. **Objekt nie weglassen** — ohne Prefix wäre `list` zu
+nackt, also `list_files`. Generische Einzelwörter (`list`, `read`, `move`) sind verboten.
 
-**4. Abkürzungen nur als dokumentierte Ausnahme.** Default ist die volle Ableitung
-(`search_console_`). Eine Abkürzung ist nur zulässig, wenn sie ein etablierter
-Branchenbegriff ist UND hier in der Ausnahmeliste steht.
-**Ausnahmeliste:** `gsc_` = Google Search Console.
+**4. Eindeutigkeit ohne Prefix.** Innerhalb eines Servers sind Namen ohnehin eindeutig.
+Über mehrere Server hinweg garantiert sie der Connector-Namespace. Nur falls ein
+Managed Agent mehrere Server in *eine flache* Tool-Liste zieht, vor dem Anbinden auf
+namensgleiche Tools prüfen.
 
-**5. Identisch in `register(...)` und `TOOL_ALLOWLIST`.** Beide Stellen tragen exakt
-denselben Namen.
+**5. Identisch in `register(...)` und `TOOL_ALLOWLIST`.** Der `name` (nicht der `title`)
+steht an beiden Stellen exakt gleich. Der `title` steht nur im `register`-Config-Objekt.
 
-**Warum die Punkt-Falle:** Ein Punkt (`sheets.append_row`) wird vom Server-SDK
-akzeptiert, aber vom Konsumenten/Frontend abgewiesen — Fehler
+**Warum die Punkt-Falle:** Ein Punkt (`append.row`) wird vom Server-SDK akzeptiert,
+aber vom Konsumenten/Frontend abgewiesen — Fehler
 `tools.N.FrontendRemoteMcpToolDefinition.name: String should match pattern '^[a-zA-Z0-9_-]{1,64}$'`.
 Fällt erst beim Verbinden auf, nicht beim Build. Der Pre-Push-Gate-Hook prüft die
-`TOOL_ALLOWLIST` gegen die Regex und blockiert den Push bei Verstoß
-(siehe `deploy.md` / `assets/hooks/`).
+`TOOL_ALLOWLIST` (= `name`-Werte) gegen die Regex und blockiert den Push bei Verstoß
+(siehe `deploy.md` / `assets/hooks/`). Der `title` unterliegt der Regex NICHT und darf
+Leerzeichen/Großschreibung tragen — er taucht nie in der Allowlist auf.
 
 ## Struktur
 
