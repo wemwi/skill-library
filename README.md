@@ -1,50 +1,51 @@
 # skill-library
 
-Versionierte Heimat meiner Agent Skills für Claude (claude.ai, Claude Code, API).
-Dieses Repo ist die **einzige Quelle der Wahrheit** — installierte `.skill`-Pakete sind
-nur Build-Artefakte daraus.
+![Version](https://img.shields.io/github/v/release/wemwi/skill-library)
 
-## Aufbau
+> Versionierte Heimat meiner Agent Skills für Claude (claude.ai, Claude Code, API).
 
-Ein Ordner pro Skill, Ordnername == `name` im Frontmatter:
+## Zweck
 
-```
-<skill-name>/
-├── SKILL.md        # Frontmatter (name, description, metadata.version) + Anleitung
-├── references/     # vertiefende Docs, on-demand geladen
-└── assets/         # Vorlagen, Skelette, Icons
-```
+Dieses Repo ist die **einzige Quelle der Wahrheit** für meine Agent Skills.
+Ein Ordner pro Skill (Ordnername == `name` im Frontmatter); installierte
+`.skill`-Pakete sind nur Build-Artefakte daraus. So bleiben Skills versioniert,
+reproduzierbar und an einem Tag pinbar statt an `main`.
 
-## Namens-Familien
+## Bereitstellung
 
-- `global-*` — projektübergreifend (z.B. `global-mcp-framework`, `global-prompt-quality`).
-- `liftr-*` — das LIFTR Shopify-Theme-System (Komponenten, CSS, Sections, Blocks).
-- `selectedleafs-*` — markenspezifisch (Brand-Kit, Telegram, City-Content).
-- `figma-*` — Print-/Figma-Workflows.
+Enthaltenes Inventar:
 
-## Versionierung
+| Skill | Version | Zweck |
+|-------|---------|-------|
+| `global-git-conventions` | `–` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
+| `global-mcp-framework` | `1.2.0` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
+| `selectedleafs-brand` | `–` | Style-Kit der selectedleafs-Marke (Farben, Typo, Mockups, Icons). |
+| `selectedleafs-city-content` | `–` | Content-Strategie für lokale City Landing Pages. |
+| `selectedleafs-telegram` | `–` | Posting-Playbook für lokale Telegram City-Channels. |
+| `tailwind-4-docs` | `–` | Tailwind CSS v4 Doku-Snapshot + Migrations-Workflow. |
 
-Der Agent-Skills-Standard hat kein eingebautes Versionsfeld — Git ist der Mechanismus.
+Namens-Familien: `global-*` (projektübergreifend), `selectedleafs-*`
+(markenspezifisch), `liftr-*` (LIFTR-Theme), `figma-*` (Print/Figma).
 
-- Versionsnummer in `SKILL.md` unter `metadata.version` (z.B. `"1.0.0"`).
-- Diese Nummer wird **synchron zum Git-Tag** gehalten (`<skill>-vX.Y.Z` oder Repo-Tag).
-- Das installierte `.skill` ist ein Artefakt eines Tags; bei einem Bump neu installieren.
-- Claude Code liest Skills aus diesem Repo, idealerweise **an einem Tag gepinnt**
-  (reproduzierbar, statt `main`).
+## Setup
 
-## Packen & Installieren
-
-Packen über das `skill-creator`-Skill (Ordner als ZIP-Root, `.skill`-Endung):
+Skill-Ordner als `.skill` packen (via `skill-creator`, Ordner als ZIP-Root):
 
 ```bash
 python -m scripts.package_skill <skill-ordner> <output-verzeichnis>
 ```
 
-- **claude.ai:** das `.skill` in den Einstellungen installieren. Gleicher Name
-  überschreibt die installierte Version.
+- **claude.ai:** das `.skill` in den Einstellungen installieren (gleicher Name überschreibt).
 - **Claude Code:** dieses Repo in den Kontext geben und den Skill-Ordner direkt lesen.
 
-## Konvention beim Update
+Bei einer Änderung: `metadata.version` im SKILL.md erhöhen, committen — den Tag
+setzt release-please, danach neu packen und in claude.ai neu installieren.
 
-Bei einer Skill-Änderung: `metadata.version` erhöhen → committen → Tag setzen → neu packen →
-in claude.ai neu installieren. So bleibt die Version an allen Stellen konsistent.
+## Gotchas
+
+- _(noch keine — Symptom → Ursache → Fix)_
+
+## Versionierung
+
+Versionen und Änderungen: siehe [`CHANGELOG.md`](./CHANGELOG.md). Versionierung
+läuft automatisch über Conventional Commits + release-please — Tags nicht von Hand setzen.
