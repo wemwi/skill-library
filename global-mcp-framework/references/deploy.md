@@ -5,6 +5,13 @@
 Claude Code → PR gegen `main` → **manueller Merge im GitHub-Web** → Cloudflare baut
 automatisch von `main`. Kein Terminal, kein `wrangler deploy` von Hand.
 
+Dieser Cloudflare-Build ist **unabhängig** von der Release-Automation: Tags,
+CHANGELOG und GitHub-Release erzeugt release-please (Standard in
+`global-git-conventions`), und zwar auf einem Branch-Push. Cloudflare baut ebenfalls
+auf Branch-Push (`main`), nicht auf Tag-Push — der Merge des release-please-Release-PR
+ist so ein `main`-Push und löst genau einen Deploy aus. Kein Doppel-Deploy, keine
+Verzahnung nötig.
+
 ## Repo-Layout & Workers-Builds (häufigste Build-Fehler)
 
 Die `wrangler.jsonc` muss im **Build-Root** liegen — dem Verzeichnis, das Workers
@@ -76,8 +83,13 @@ Auto-Push**: Eine neue Foundation-Version schlägt erst durch, wenn der Konsumen
 Kontrolle und gestaffelter Rollout.
 
 Ablauf einer Framework-Änderung:
-1. Foundation-PR → Merge → neuer Tag (z.B. `v2.0.3`).
-2. Jeder Konsument bumpt `package.json` auf den Tag → Merge → Build.
+1. Foundation-PR → Merge. Der **Tag entsteht über release-please**, nicht von Hand —
+   SemVer-Regel und Tag-Konvention stehen in `global-git-conventions`
+   (`versioning.md`); bei Breaking Changes ist `feat!:` / `BREAKING CHANGE:` Pflicht,
+   sonst ziehen Consumer unbemerkt inkompatibel nach.
+2. Jeder Konsument bumpt `package.json` auf den neuen Tag → Merge → Cloudflare-Build.
+   Den Wert in der `AUTO:foundation`-Zone des READMEs mitziehen (siehe
+   `conventions.md`).
 3. Konsumenten nacheinander nachziehen — kein Zwang, alle gleichzeitig zu heben.
 
 ## Build-Cache-Falle

@@ -1,5 +1,9 @@
-# Repo-Standard / Konvention
+# MCP-Naming & Struktur
 
+Diese Datei regelt die **MCP-spezifische** Mechanik: Naming (Worker/Tool/Secret),
+Folder-Struktur der Repo-Typen und Connector-Wiring. Der **typ-übergreifende**
+Repo-Standard (README-Pflichtsektionen, Versionierung, CHANGELOG, Release-Automation,
+About-Block) lebt in `global-git-conventions` und wird hier nur referenziert.
 Ziel: alle MCP-Repos einheitlich.
 
 ## Naming
@@ -90,20 +94,30 @@ Leerzeichen/Großschreibung tragen — er taucht nie in der Allowlist auf.
 
 ## Struktur
 
+Zwei Repo-Typen, beide hier dokumentiert, weil die Folder-Struktur typ-spezifisch
+ist (anders als der Doku-/Release-Standard, der in `global-git-conventions` wohnt).
+
+### `*-mcp` — der MCP-Server (Cloudflare Worker)
+
 Diese Dateien liegen direkt im **Build-Root** (Repo-Root oder das in Workers Builds
 gesetzte Root directory) — **nicht** in einem zusätzlichen Wrapper-Ordner. Liegt die
 `wrangler.jsonc` nicht im Build-Root, schlägt der Cloudflare-Build fehl (siehe
 `deploy.md`).
 
 ```
-<service>-mcp/              # = Build-Root
-├── src/index.ts        # Provider-Wiring + login-Config (siehe auth.md, assets/provider-wiring.ts)
-├── src/server.ts       # Tools + TOOL_ALLOWLIST (siehe assets/server.ts)
-├── src/empty-ai.js     # leerer Stub für den ai-Alias (siehe assets/empty-ai.js)
-├── wrangler.jsonc      # MUSS im Build-Root liegen (siehe deploy.md, assets/wrangler.jsonc)
-├── package.json        # Foundation-Dependency auf einen Git-Tag, name == Worker-Name (siehe assets/package.json.template)
-├── tsconfig.json       # siehe assets/tsconfig.json.template
-└── .claude/            # Gate-Hooks (settings.json + hooks/), siehe assets/hooks/
+<service>-mcp/                  # = Build-Root
+├── src/
+│   ├── index.ts            # Provider-Wiring + login-Config (siehe auth.md, assets/provider-wiring.ts)
+│   ├── server.ts           # Tools + TOOL_ALLOWLIST (siehe assets/server.ts)
+│   └── empty-ai.js         # leerer Stub für den ai-Alias (siehe assets/empty-ai.js)
+├── .claude/                # Gate-Hooks (settings.json + hooks/), siehe assets/hooks/
+├── docs/                   # optional — nur bei repo-spezifischer Tiefe, die das README sprengt
+├── wrangler.jsonc          # MUSS im Build-Root liegen (siehe deploy.md, assets/wrangler.jsonc)
+├── package.json            # Foundation-Dependency auf einen Git-Tag, name == Worker-Name (siehe assets/package.json.template)
+├── tsconfig.json           # siehe assets/tsconfig.json.template
+├── README.md               # Template + Pflichtsektionen: global-git-conventions (assets/readme/mcp.md)
+├── CHANGELOG.md            # von release-please gepflegt — global-git-conventions
+└── .github/ + release-please-*.json   # Release-Automation — global-git-conventions
 ```
 
 Die `package.json` bindet die Foundation als **Git-Tag-Dependency** ein
@@ -113,6 +127,50 @@ Dependencies sind nur, was der Code wirklich importiert (`mcp-foundation`,
 `@modelcontextprotocol/sdk`, `zod`) — der OAuth-Provider kommt transitiv über die
 Foundation. Pflicht ist außerdem der `overrides`-Eintrag für die SDK-Dedup (siehe
 `deploy.md`). Versionen pro Repo gegen die Foundation pinnen.
+
+> `README.md`, `CHANGELOG.md` und die `.github/`-/`release-please-*`-Dateien folgen
+> dem typ-übergreifenden Standard und den Templates aus `global-git-conventions` —
+> hier nicht erneut beschrieben.
+
+### `*-foundation` — die gemeinsame Basis
+
+Die Foundation ist **kein deploybarer Worker**, sondern eine Bibliothek, die per
+Git-Tag von den `*-mcp`-Repos konsumiert wird — daher kein Build-Root-Zwang und keine
+`wrangler.jsonc` auf Repo-Ebene. Zwei Aufgaben: (1) die geteilte Laufzeit-Oberfläche
+exportieren, (2) das `server-template/` bereitstellen, das beim Anlegen eines neuen
+`*-mcp` 1:1 kopiert wird.
+
+```
+mcp-foundation/
+├── src/                    # exportierte Oberfläche (Aufteilung als Vorschlag, Exports sind verbindlich)
+│   └── index.ts            # exportiert: createOAuthWorker, createLoginUiHandler, buildServer, purgeExpiredData
+├── server-template/        # wird beim Anlegen eines *-mcp kopiert (= Primärquelle, assets/ sind nur Spiegel)
+│   ├── src/{index.ts, server.ts, empty-ai.js}
+│   ├── .claude/{settings.json, hooks/pre-push-gate.sh}
+│   ├── wrangler.jsonc
+│   ├── package.json
+│   └── tsconfig.json
+├── docs/                   # optional
+├── package.json            # name == foundation-repo, type module, exports-Feld, typecheck-Script
+├── tsconfig.json
+├── README.md               # Template: global-git-conventions (assets/readme/foundation.md)
+├── CHANGELOG.md            # von release-please gepflegt — global-git-conventions
+└── .github/ + release-please-*.json   # Release-Automation — global-git-conventions
+```
+
+**Verbindlich** (in Servern belegt) ist die exportierte Oberfläche — die vier
+Funktionen `createOAuthWorker` (Provider-Wiring, `auth.md`),
+`createLoginUiHandler` (`/authorize`-Login, `auth.md`), `buildServer`
+(Server-Aufbau, liest das Outbound-Secret, `secrets.md`) und `purgeExpiredData`
+(KV-Cron-Hygiene, `storage.md`) — sowie das `server-template/` als Primärquelle.
+Die interne Datei-Aufteilung unter `src/` (z.B. ob `oauth.ts`/`auth-ui.ts` getrennt
+liegen) ist ein **Vorschlag** und beim Bauen frei wählbar, solange `src/index.ts`
+die vier Exports stabil nach außen gibt.
+
+> [!IMPORTANT]
+> Der `refreshTokenTTL`-Default in `createOAuthWorker` darf **nicht** `?? 0` sein —
+> `0` heißt „kein Refresh-Token" und erzwingt stündliches Re-Login. `undefined`
+> durchreichen (= nie ablaufen). Belegt in `auth.md`.
 
 ## Connector-URL
 
@@ -125,13 +183,28 @@ streamable-http, OAuth. **Kein Token-Feld** im Connector.
 login: { userId: "<user-id>", title: "<Service> MCP — Login" }
 ```
 
-## README
+## README & Release
 
-Template: `assets/README.template.md`. Struktur:
-- Service-Logo oben (offizielle Logo-Asset-URL des jeweiligen Dienstes als
-  Markdown-Image — konkrete URL pro Repo eintragen).
-- Titel + Einzeiler (was der Server tut).
-- Endpoint-URL + Transport (streamable-http, OAuth).
-- Tool-Liste (Kurzbeschreibung je Tool).
-- Eingebundene Foundation-Version.
-- Deploy-Hinweis (PR → Merge → Cloudflare baut; KV + Secrets im Dashboard).
+Aufbau, Pflichtsektionen und das Template stehen in `global-git-conventions`
+(`assets/readme/mcp.md`) — hier nicht duplizieren. Ein `*-mcp`-README füllt nur die
+typ-spezifischen Felder: Live-URL (Connector-Config), Tool-Liste und die
+Secrets/Bindings-Tabelle (nur Namen + Pflicht-Flag; Mechanik bleibt hier im Skill).
+CHANGELOG, Tags und der About-Block laufen ebenfalls über `global-git-conventions`.
+
+### `AUTO:foundation`-Zone (MCP-spezifisch)
+
+`global-git-conventions` definiert das Marker-Auto-Zonen-Prinzip, delegiert den
+konkreten Generator aber hierher: Jede `*-mcp`-README trägt den gepinnten
+Foundation-Tag in einer maschinell aktualisierbaren Zone, damit ein Rückstand zur
+neuesten Foundation sichtbar ist.
+
+```markdown
+<!-- AUTO:foundation -->
+Foundation: `vX.Y.Z`
+<!-- /AUTO -->
+```
+
+Quelle der Wahrheit ist der in `package.json` gepinnte Tag
+(`"mcp-foundation": "github:<org>/<foundation-repo>#<git-tag>"`). Beim Foundation-Bump
+(siehe `deploy.md`) wird der Wert in der Zone aus genau diesem Pin nachgezogen — nie
+von Hand an anderer Stelle im Fließtext, sonst driftet er.

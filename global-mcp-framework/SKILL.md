@@ -13,7 +13,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH, scheduled purgeExpiredData,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # global-mcp-framework
@@ -28,6 +28,17 @@ noch service-spezifisch verdrahtet: Tools + Login-Titel + Outbound-Secret.
 (KV/Secrets/Logs). Bei jeder Anweisung gilt deshalb: keine `wrangler tail`-/SSH-
 Schritte vorschlagen, sondern die Dashboard-Entsprechung.
 
+## Abgrenzung zu `global-git-conventions`
+
+Dieser Skill regelt nur die **MCP-Mechanik** (OAuth, Transport, KV, Secrets,
+Naming, Folder-Struktur, Cloudflare-Build). Alles **typ-übergreifende** —
+README-Pflichtsektionen, SemVer/Tags, CHANGELOG, Release-Automation
+(release-please) und der GitHub-About-Block — lebt in `global-git-conventions`
+und wird von hier nur referenziert, nie dupliziert (Single Source of Truth).
+Konkret heißt das: das *-mcp-README-Template steht dort (`assets/readme/mcp.md`),
+Tags entstehen ausschließlich über release-please, und der hier beschriebene
+Cloudflare-Build ist davon unabhängig (siehe `references/deploy.md`).
+
 ## So findest du das richtige Detail
 
 Diese SKILL.md ist der Einstieg. Die Tiefe liegt in `references/` — pro Sorge eine
@@ -40,12 +51,13 @@ Datei, damit ein Debug-Fall genau eine Datei lädt statt aller. Lies gezielt:
 | KV-Binding/Namespace anlegen, KV-Hygiene, `purgeExpiredData`-Cron | `references/storage.md` |
 | Inbound-Hash vs. Outbound-Key setzen, "Authorization failed" nach Consent | `references/secrets.md` |
 | Repo-Layout, Workers-Builds Root directory, Deploy command, PR/Merge/Build, Foundation-Tag bumpen, Build-Cache-Falle | `references/deploy.md` |
-| Repo-/Naming-Standard, Connector-URL, `login`-Config, README | `references/conventions.md` |
+| Repo-/Naming-Standard (Worker/Tool/Secret), Folder-Struktur, Connector-URL, `login`-Config | `references/conventions.md` |
 | Irgendein Fehlersymptom, Discovery-Check, Live-Logs, verifizierte CF-Fakten | `references/diagnostics.md` |
 
 Vorlagen zum Kopieren liegen in `assets/`: `provider-wiring.ts`, `server.ts`,
 `wrangler.jsonc`, `package.json.template`, `tsconfig.json.template`, `empty-ai.js`,
-`README.template.md`, `hooks/`.
+`hooks/`. Das README-Template liegt nicht hier, sondern in `global-git-conventions`
+(`assets/readme/mcp.md`).
 
 ## Workflow: Neuen Custom-MCP-Server anlegen
 
