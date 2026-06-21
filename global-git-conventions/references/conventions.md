@@ -22,23 +22,11 @@ Das README passt auf **einen Bildschirm ohne Scrollen** (~50–70 Zeilen Richtwe
 - typ-spezifische Tiefe → in den Fach-Skill (z.B. `global-mcp-framework`)
 - repo-spezifische Tiefe → eigene Datei, aus dem README verlinkt
 
-## Marker-Auto-Zonen
-
-Felder, die aus einer anderen Quelle der Wahrheit stammen, werden zwischen Marker-Kommentaren gehalten, damit sie maschinell aktualisierbar sind, ohne den handgeschriebenen Text zu berühren:
-
-```markdown
-<!-- AUTO:foundation -->
-Foundation: `v2.0.4`
-<!-- /AUTO -->
-```
-
-Aktuell genutzt: `AUTO:foundation` in `*-mcp`-READMEs (zeigt den gepinnten Foundation-Tag). Der Generator dafür ist MCP-spezifisch und lebt in `global-mcp-framework`, nicht hier — hier wohnt nur das Zonen-Prinzip.
-
 ## Keine statischen Versionswerte im Fließtext
 
 Erfahrung aus der Praxis: eine handgeschriebene Versionsnummer im README (z.B. „Aktueller Tag: v2.0.7" oder ein `#v2.0.7` in einem Beispiel) driftet beim nächsten Release sofort, weil release-please den Tag bumpt, aber den Fließtext nicht anfasst.
 
-Regel: Die aktuelle Version wird **nur** über das dynamische Version-Badge und den GitHub-„Releases"-Bereich angezeigt — nie als fester Wert in den Text geschrieben. Wo ein Versions-Pin als Beispiel nötig ist (z.B. Consumer-Dependency), kommt ein Platzhalter `#<neuester-tag>` plus der Hinweis, den aktuellen Tag einzusetzen. Maschinell aktualisierbare Werte (wie der Foundation-Pin in Consumern) gehören in eine `AUTO:`-Zone.
+Regel: Die aktuelle Version wird **nur** über das dynamische Version-Badge und den GitHub-„Releases"-Bereich angezeigt — nie als fester Wert in den Text geschrieben. Wo ein Versions-Pin als Beispiel nötig ist (z.B. Consumer-Dependency), kommt ein Platzhalter `#<neuester-tag>` plus der Hinweis, den aktuellen Tag einzusetzen. Der reale Foundation-Pin steht ausschließlich in der `package.json` des Consumers und wird von Renovate gepflegt (siehe `automation.md`) — nicht im README-Fließtext.
 
 ## Sprache
 

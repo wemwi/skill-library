@@ -10,7 +10,7 @@ Der Repo-Name-Suffix steuert Template und Config. Drei Typen.
 - **Besonderheiten:**
   - `## Bereitstellung` enthält die **Live-URL** (`https://<repo>.wemwi.workers.dev/mcp`) und die bereitgestellten Tools.
   - `## Setup` enthält die Secrets/Bindings als Tabelle. Die *Mechanik* (OAuth, KV, wrangler) ist in `global-mcp-framework` dokumentiert — die README listet nur Namen, Pflicht-Flag und repo-spezifische Hinweise.
-  - `AUTO:foundation`-Zone zeigt den gepinnten Foundation-Tag.
+  - Der Foundation-Pin steht in der `package.json` und wird von Renovate gepflegt (siehe `automation.md`) — keine README-Zone.
 
 ## `*-foundation` — gemeinsame Basis
 

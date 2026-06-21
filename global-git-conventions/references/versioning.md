@@ -24,7 +24,7 @@ Format `MAJOR.MINOR.PATCH`. Entscheidung, welche Stelle springt:
 
 Die Foundation ist eine **Git-Tag-Dependency**: Die `*-mcp`-Repos pinnen einen Foundation-Tag. Konsequenzen:
 - Foundation-Tags müssen besonders diszipliniert sein — ein Breaking Change MUSS `feat!:` / `BREAKING CHANGE:` sein, sonst ziehen Consumer unbemerkt eine inkompatible Version.
-- Bumpt die Foundation, ziehen die Consumer **nicht automatisch** nach. Der gepinnte Tag steht in jeder `*-mcp`-README in der `AUTO:foundation`-Zone, damit der Rückstand sichtbar ist. Das automatische Nachziehen (Renovate/Dependabot) ist bewusst nicht Teil dieses Skills.
+- Bumpt die Foundation, ziehen die Consumer **nicht automatisch durch** — es gibt kein Auto-Merge. Renovate öffnet pro `*-mcp` automatisch einen Bump-PR auf den neuen Foundation-Tag; der Merge bleibt eine bewusste Entscheidung. Den Rückstand zur neuesten Foundation zeigt Renovates Dependency Dashboard zentral (siehe `automation.md`). Der gepinnte Tag lebt allein in der `package.json` des Consumers — keine zusätzliche README-Zone.
 
 ## Erstinitialisierung bei bereits existierender Version
 

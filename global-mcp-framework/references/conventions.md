@@ -191,20 +191,10 @@ typ-spezifischen Felder: Live-URL (Connector-Config), Tool-Liste und die
 Secrets/Bindings-Tabelle (nur Namen + Pflicht-Flag; Mechanik bleibt hier im Skill).
 CHANGELOG, Tags und der About-Block laufen ebenfalls über `global-git-conventions`.
 
-### `AUTO:foundation`-Zone (MCP-spezifisch)
+### Foundation-Aktualität (kein README-Eintrag)
 
-`global-git-conventions` definiert das Marker-Auto-Zonen-Prinzip, delegiert den
-konkreten Generator aber hierher: Jede `*-mcp`-README trägt den gepinnten
-Foundation-Tag in einer maschinell aktualisierbaren Zone, damit ein Rückstand zur
-neuesten Foundation sichtbar ist.
-
-```markdown
-<!-- AUTO:foundation -->
-Foundation: `vX.Y.Z`
-<!-- /AUTO -->
-```
-
-Quelle der Wahrheit ist der in `package.json` gepinnte Tag
-(`"mcp-foundation": "github:<org>/<foundation-repo>#<git-tag>"`). Beim Foundation-Bump
-(siehe `deploy.md`) wird der Wert in der Zone aus genau diesem Pin nachgezogen — nie
-von Hand an anderer Stelle im Fließtext, sonst driftet er.
+Der gepinnte Foundation-Tag lebt ausschließlich in der `package.json`
+(`"mcp-foundation": "github:<org>/<foundation-repo>#<git-tag>"`). Er wird **nicht** ins
+README gespiegelt — den Rückstand zur neuesten Foundation und die Bump-PRs übernimmt
+Renovate (Dependency Dashboard). Setup und die Foundation-spezifische Renovate-Regel
+stehen in `deploy.md` bzw. `global-git-conventions` (`references/automation.md`).

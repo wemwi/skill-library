@@ -21,7 +21,7 @@ Verbindlicher Standard für Doku und Versionierung aller eigenen GitHub-Repos. D
 
 1. **Single Source of Truth pro Regel.** Jede Vorgabe lebt an genau einer Stelle. Dieser Skill = Standard. Fach-Skills (`global-mcp-framework` etc.) = Erweiterung. README-Templates sind nur die *Materialisierung* der Regel aus `references/conventions.md` — bei Konflikt gewinnt die Referenz.
 2. **README passt auf einen Bildschirm.** Kein Handbuch. Was länger wird, kommt in eine separate Datei oder den passenden Fach-Skill.
-3. **Automation ist Pflicht, nicht optional.** Jedes Repo bekommt release-please. Versionierung und CHANGELOG werden nicht von Hand gepflegt, sondern aus Conventional Commits generiert.
+3. **Automation ist Pflicht, nicht optional.** Jedes Repo bekommt release-please (Releases) und Renovate (Dependency-Bumps). Versionierung und CHANGELOG werden nicht von Hand gepflegt, sondern aus Conventional Commits generiert; Dependency-Updates kommen als Renovate-PRs, nicht von Hand.
 4. **Web-only-tauglich.** Alle Schritte funktionieren über GitHub Web + Cloudflare-Git-Build. Keine Annahme über lokales git/Terminal.
 5. **READMEs auf Deutsch.**
 
@@ -48,10 +48,10 @@ Details je Typ: siehe `references/types.md`.
 
 ## Referenzen — bei Bedarf lesen
 
-- `references/conventions.md` — README-Pflichtsektionen, Längenlimit, Marker-Auto-Zonen, SSoT-Regel
+- `references/conventions.md` — README-Pflichtsektionen, Längenlimit, SSoT-Regel
 - `references/versioning.md` — SemVer-Policy (wann major/minor/patch), Tag-Konvention
 - `references/changelog.md` — CHANGELOG × release-please, Conventional-Commit-Mapping
-- `references/automation.md` — release-please einrichten, Cloudflare-Interaktion, Token/Settings
+- `references/automation.md` — release-please + Renovate einrichten, Cloudflare-Interaktion, Token/Settings
 - `references/about.md` — GitHub About-Block: Description, Website, Topic-Schema je Typ
 - `references/types.md` — die drei Repo-Typen im Detail
 
@@ -62,3 +62,4 @@ Details je Typ: siehe `references/types.md`.
 - `assets/automation/release-please.yml` — Workflow → `.github/workflows/`
 - `assets/automation/config-{node,simple}.json` — → `release-please-config.json`
 - `assets/automation/manifest.json` — → `.release-please-manifest.json`
+- `assets/automation/renovate.json` — Renovate-Config (Mend-App), → Repo-Wurzel

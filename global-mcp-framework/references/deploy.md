@@ -77,20 +77,46 @@ das bereits gesetzt — beim Kopieren nicht entfernen.
 
 ## Foundation-Versionierung
 
-Die Foundation ist eine **versionierte Git-Dependency (Tag)**. Es gibt **keinen
-Auto-Push**: Eine neue Foundation-Version schlägt erst durch, wenn der Konsument seine
-`package.json` bewusst auf den neuen Tag bumpt und neu baut. Das ist gewollt —
-Kontrolle und gestaffelter Rollout.
+Die Foundation ist eine **versionierte Git-Dependency (Tag)**. Es gibt **kein
+Auto-Merge**: Eine neue Foundation-Version schlägt erst durch, wenn der Bump-PR bewusst
+gemergt und neu gebaut wird. Den PR öffnet **Renovate** automatisch — der manuelle
+Sechs-Repo-Nachzug entfällt, die Merge-Entscheidung bleibt bei dir.
 
 Ablauf einer Framework-Änderung:
 1. Foundation-PR → Merge. Der **Tag entsteht über release-please**, nicht von Hand —
    SemVer-Regel und Tag-Konvention stehen in `global-git-conventions`
    (`versioning.md`); bei Breaking Changes ist `feat!:` / `BREAKING CHANGE:` Pflicht,
    sonst ziehen Consumer unbemerkt inkompatibel nach.
-2. Jeder Konsument bumpt `package.json` auf den neuen Tag → Merge → Cloudflare-Build.
-   Den Wert in der `AUTO:foundation`-Zone des READMEs mitziehen (siehe
-   `conventions.md`).
-3. Konsumenten nacheinander nachziehen — kein Zwang, alle gleichzeitig zu heben.
+2. Renovate erkennt den neuen Tag und öffnet pro `*-mcp` einen Bump-PR auf
+   `package.json`. Mergen → Cloudflare-Build. Den Rückstand über alle Server zeigt das
+   Renovate Dependency Dashboard zentral — keine README-Zone mehr.
+3. Konsumenten nacheinander mergen — kein Zwang, alle gleichzeitig zu heben. Bei einem
+   Breaking-/Major-Bump zuerst ein Repo als Kanarienvogel durchziehen.
+
+### Renovate erkennt den Foundation-Pin
+
+Renovates npm-Manager verfolgt GitHub-Tags meist out-of-the-box. Falls die
+`github:<org>/mcp-foundation#<tag>`-Form beim Onboarding **nicht** als Dependency im
+Dependency Dashboard auftaucht, einen `customManager` in der `renovate.json` ergänzen
+(`<org>` aus dem bestehenden Pin übernehmen):
+
+```json
+{
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^package\\.json$"],
+      "matchStrings": ["\"mcp-foundation\":\\s*\"github:<org>/mcp-foundation#(?<currentValue>v[0-9.]+)\""],
+      "depNameTemplate": "mcp-foundation",
+      "packageNameTemplate": "<org>/mcp-foundation",
+      "datasourceTemplate": "github-tags"
+    }
+  ]
+}
+```
+
+Die Renovate-Basis-Config und das Setup stehen in `global-git-conventions`
+(`assets/automation/renovate.json`, `references/automation.md`).
 
 ## Build-Cache-Falle
 

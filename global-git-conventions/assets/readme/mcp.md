@@ -24,10 +24,6 @@ Bereitgestellte Tools:
 | `<tool_name>` | <einzeilige Beschreibung> |
 | `<tool_name>` | <einzeilige Beschreibung> |
 
-<!-- AUTO:foundation -->
-Foundation: `<vX.Y.Z>`
-<!-- /AUTO -->
-
 ## Setup
 
 Secrets & Bindings (Mechanik siehe `global-mcp-framework`):

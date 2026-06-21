@@ -1,6 +1,12 @@
-# automation.md — Release-Automation mit release-please
+# automation.md — Release-Automation (release-please) + Dependency-Automation (Renovate)
 
-Automation ist Pflicht. Jedes Repo bekommt release-please (`googleapis/release-please-action@v4`, Manifest-Modus).
+Zwei Automationen, beide Pflicht: **release-please** schneidet Releases (Tag, Changelog,
+Release-PR), **Renovate** hält Dependencies aktuell (Bump-PRs). Beide öffnen nur PRs —
+der Merge bleibt immer eine bewusste Entscheidung.
+
+## Release-Automation: release-please
+
+Jedes Repo bekommt release-please (`googleapis/release-please-action@v4`, Manifest-Modus).
 
 ## Drei Dateien pro Repo
 
@@ -38,3 +44,35 @@ Hat ein gemergter PR eine releasbare Änderung, aber es erscheint kein Release-P
 ## Verifikation vor Übernahme
 
 Die Configs in `assets/automation/` sind nach dem Stand der release-please-v4-Doku gebaut. Bei größeren Versionssprüngen der Action vor dem Ausrollen die aktuelle Doku gegenprüfen: https://github.com/googleapis/release-please-action
+
+## Dependency-Automation: Renovate
+
+Renovate läuft als **Mend-GitHub-App** (web-only, kein lokales Setup) und öffnet
+Bump-PRs für veraltete Dependencies. Kein Auto-Merge: PRs werden bewusst gemergt; das
+Dependency Dashboard (ein Issue pro Repo) zeigt den Gesamt-Rückstand zentral.
+
+### Setup (web-only)
+
+1. Renovate-App aus dem Mend Developer Portal installieren und für die Repos
+   autorisieren. Sie legt einen Onboarding-PR mit `renovate.json` an.
+2. Die `renovate.json` aus `assets/automation/renovate.json` übernehmen (statt der
+   generierten Default-Config). `config:recommended` liefert sinnvolle Defaults; **kein**
+   Auto-Merge aktivieren.
+3. Onboarding-PR mergen. Ab dann öffnet Renovate Bump-PRs nach Zeitplan.
+
+### Foundation-Pin (`*-mcp`)
+
+Der wichtigste Anwendungsfall: die `*-mcp` pinnen `mcp-foundation` als Git-Tag-Dependency
+(`"mcp-foundation": "github:<org>/mcp-foundation#<tag>"`). Renovate verfolgt neue
+Foundation-Tags und öffnet den Bump-PR automatisch — der manuelle Sechs-Repo-Nachzug
+entfällt. Die MCP-spezifische Regel dazu (und ein `customManager`-Fallback, falls die
+`github:#tag`-Form nicht out-of-the-box erkannt wird) steht in `global-mcp-framework`.
+
+> [!NOTE]
+> Beim Onboarding am Dependency Dashboard prüfen, ob `mcp-foundation` als Dependency
+> erkannt wird. Falls nicht, greift der `customManager`-Regex aus `global-mcp-framework`.
+
+### Verifikation vor Übernahme
+
+`assets/automation/renovate.json` ist nach dem Stand der Renovate-Doku gebaut. Vor dem
+Ausrollen gegen die aktuelle Doku prüfen: https://docs.renovatebot.com
