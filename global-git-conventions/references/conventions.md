@@ -34,6 +34,12 @@ Foundation: `v2.0.4`
 
 Aktuell genutzt: `AUTO:foundation` in `*-mcp`-READMEs (zeigt den gepinnten Foundation-Tag). Der Generator dafür ist MCP-spezifisch und lebt in `global-mcp-framework`, nicht hier — hier wohnt nur das Zonen-Prinzip.
 
+## Keine statischen Versionswerte im Fließtext
+
+Erfahrung aus der Praxis: eine handgeschriebene Versionsnummer im README (z.B. „Aktueller Tag: v2.0.7" oder ein `#v2.0.7` in einem Beispiel) driftet beim nächsten Release sofort, weil release-please den Tag bumpt, aber den Fließtext nicht anfasst.
+
+Regel: Die aktuelle Version wird **nur** über das dynamische Version-Badge und den GitHub-„Releases"-Bereich angezeigt — nie als fester Wert in den Text geschrieben. Wo ein Versions-Pin als Beispiel nötig ist (z.B. Consumer-Dependency), kommt ein Platzhalter `#<neuester-tag>` plus der Hinweis, den aktuellen Tag einzusetzen. Maschinell aktualisierbare Werte (wie der Foundation-Pin in Consumern) gehören in eine `AUTO:`-Zone.
+
 ## Sprache
 
 READMEs auf Deutsch. Fachbegriffe/Anglizismen (Container Query, Custom Property, Secret, Binding) sind als deutsche Fachsprache erlaubt.

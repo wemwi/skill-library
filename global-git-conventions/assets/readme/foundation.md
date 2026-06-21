@@ -20,12 +20,21 @@ Exportierte Oberfläche:
 | `<export>` | <was Consumer damit tun> |
 | `<export>` | <was Consumer damit tun> |
 
-**Aktueller Tag:** `<vX.Y.Z>` — Consumer-Repos pinnen diesen Tag in ihrer Dependency.
+Consumer pinnen den **jeweils neuesten Release-Tag** — die aktuelle Version steht
+im Badge oben und unter „Releases". KEINE feste Versionsnummer in diesen Fließtext
+schreiben, sie driftet beim nächsten Release.
 
 ## Setup
 
-<Wie wird die Foundation eingebunden? z.B. Tag-Pin in der Dependency-Deklaration
-des Consumers. Welche Mindestversion ist nötig?>
+Im Consumer-Repo als Git-Dependency mit festem Tag einbinden (neuesten Tag einsetzen,
+nicht aus dem README abschreiben — siehe Badge):
+
+```jsonc
+// package.json des Consumers
+"dependencies": {
+  "<repo-name>": "github:<OWNER>/<repo-name>#<neuester-tag>"
+}
+```
 
 > ⚠️ Breaking Changes MÜSSEN als `feat!:` / `BREAKING CHANGE:` markiert werden —
 > Consumer ziehen sonst unbemerkt eine inkompatible Version.

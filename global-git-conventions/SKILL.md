@@ -44,6 +44,7 @@ Details je Typ: siehe `references/types.md`.
 3. **CHANGELOG** anlegen: `assets/CHANGELOG.template.md` kopieren (minimaler Header, den release-please füllt). NICHT von Hand mit `[Unreleased]` pflegen — Begründung in `references/changelog.md`.
 4. **Automation** einrichten: Workflow + Config + Manifest aus `assets/automation/` kopieren, `release-type` nach Typ wählen. Setup-Schritte und die zwei Stolperfallen (Repo-Setting, Token) in `references/automation.md`.
 5. **Commit-Konvention** einhalten: Conventional Commits, auch im PR-Titel bei Squash-Merge. Mapping in `references/changelog.md`.
+6. **About-Block** setzen: Description (= README-Einzeiler), Website (Live-URL bei `*-mcp`) und Topics je Typ. Kein Datei-Artefakt — per `gh repo edit` mitsetzen. Schema in `references/about.md`.
 
 ## Referenzen — bei Bedarf lesen
 
@@ -51,6 +52,7 @@ Details je Typ: siehe `references/types.md`.
 - `references/versioning.md` — SemVer-Policy (wann major/minor/patch), Tag-Konvention
 - `references/changelog.md` — CHANGELOG × release-please, Conventional-Commit-Mapping
 - `references/automation.md` — release-please einrichten, Cloudflare-Interaktion, Token/Settings
+- `references/about.md` — GitHub About-Block: Description, Website, Topic-Schema je Typ
 - `references/types.md` — die drei Repo-Typen im Detail
 
 ## Assets — ins Ziel-Repo kopieren
