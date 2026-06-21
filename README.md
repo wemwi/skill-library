@@ -18,7 +18,7 @@ Enthaltenes Inventar:
 | Skill | Version | Zweck |
 |-------|---------|-------|
 | `global-git-conventions` | `–` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
-| `global-mcp-framework` | `1.2.0` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
+| `global-mcp-framework` | `1.3.0` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
 | `selectedleafs-brand` | `–` | Style-Kit der selectedleafs-Marke (Farben, Typo, Mockups, Icons). |
 | `selectedleafs-city-content` | `–` | Content-Strategie für lokale City Landing Pages. |
 | `selectedleafs-telegram` | `–` | Posting-Playbook für lokale Telegram City-Channels. |
