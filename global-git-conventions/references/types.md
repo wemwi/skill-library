@@ -30,6 +30,7 @@ Der Repo-Name-Suffix steuert Template und Config. Drei Typen.
 - **Besonderheiten:**
   - `## Bereitstellung` listet das **Inventar** (welche Skills/Inhalte enthalten sind, jeweils mit eigener Version, falls relevant).
   - `## Setup` beschreibt, wie Inhalte genutzt/installiert werden (z.B. `.skill`-Pakete).
+  - **Zwei Versionsebenen:** release-please versioniert das Repo als Einheit; die `metadata.version` im einzelnen `SKILL.md` wird von Hand gepflegt und ist davon entkoppelt. Details: `versioning.md`.
 
 ## Neuen Typ ergänzen
 
