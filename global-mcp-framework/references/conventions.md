@@ -122,11 +122,16 @@ gesetzte Root directory) — **nicht** in einem zusätzlichen Wrapper-Ordner. Li
 
 Die `package.json` bindet die Foundation als **Git-Tag-Dependency** ein
 (`"mcp-foundation": "github:<org>/<foundation-repo>#<git-tag>"`), `name` == Worker-Name,
-und braucht das `typecheck`-Script (der Gate-Hook ruft `npm run typecheck`). Direkte
-Dependencies sind nur, was der Code wirklich importiert (`mcp-foundation`,
-`@modelcontextprotocol/sdk`, `zod`) — der OAuth-Provider kommt transitiv über die
-Foundation. Pflicht ist außerdem der `overrides`-Eintrag für die SDK-Dedup (siehe
-`deploy.md`). Versionen pro Repo gegen die Foundation pinnen.
+und braucht das `typecheck`-Script (der Gate-Hook ruft `npm run typecheck`). Die
+**einzige Laufzeit-Dependency ist `mcp-foundation`** (plus repo-eigene Libs, die nur
+dieses Repo importiert, z.B. `unpdf`). `zod` und `@modelcontextprotocol/sdk` stehen
+**NICHT** mehr in den Consumer-`dependencies`: Fremdimporte laufen ausschließlich über
+die Fassade — `z` aus `mcp-foundation/schema`, `McpServer` aus `mcp-foundation/sdk`.
+Die Foundation (ab v2.4.0) führt SDK, zod, `agents` und den OAuth-Provider als eigene
+`dependencies` und re-exportiert sie über diese Subpaths. Pflicht bleibt der
+`overrides`-Eintrag (`"@modelcontextprotocol/sdk": "1.29.0"`, explizite Version) für die
+SDK-Dedup gegen den `agents`-Pin (siehe `deploy.md`). Versionen pro Repo gegen die
+Foundation pinnen.
 
 > `README.md`, `CHANGELOG.md` und die `.github/`-/`release-please-*`-Dateien folgen
 > dem typ-übergreifenden Standard und den Templates aus `global-git-conventions` —

@@ -60,20 +60,25 @@ Vorlage: `assets/wrangler.jsonc`. Pflichtbestandteile:
 
 ## SDK-Dedup per `overrides` (Pflicht in jedem Consumer)
 
-`agents` (liefert `createMcpHandler`) pinnt das MCP-SDK **exakt** auf eine ältere
-Version als die, die der Consumer direkt nutzt. Ohne Gegenmaßnahme liegen zwei
-SDK-Kopien im Baum → Typkonflikt (`McpServer` nominal inkompatibel) und möglicher
-Runtime-Versions-Skew.
+`agents` (liefert `createMcpHandler`) pinnt das MCP-SDK **exakt** auf eine bestimmte
+Version. Ohne Gegenmaßnahme liegen zwei SDK-Kopien im Baum → Typkonflikt (`McpServer`
+nominal inkompatibel) und möglicher Runtime-Versions-Skew. Das gilt auch jetzt noch,
+wo der Consumer das SDK nicht mehr direkt in seinen `dependencies` führt: `agents` zieht
+seine eigene SDK-Kopie transitiv mit, die gegen die der Foundation deduppt werden muss.
 
 Jede Consumer-`package.json` braucht daher:
 
 ```jsonc
-"overrides": { "@modelcontextprotocol/sdk": "$@modelcontextprotocol/sdk" }
+"overrides": { "@modelcontextprotocol/sdk": "1.29.0" }
 ```
 
-Das zwingt den ganzen Baum (inkl. `agents`) auf die eine Version aus den eigenen
-`dependencies`. Im `server-template` (Spiegel: `assets/package.json.template`) ist
-das bereits gesetzt — beim Kopieren nicht entfernen.
+`npm`-overrides wirken **nur vom Consumer-Root** — deshalb steht der override im
+Consumer, nicht in der Foundation. Anders als früher steht hier eine **explizite
+Version** statt der Self-Reference `"$@modelcontextprotocol/sdk"`: Das SDK ist nicht
+mehr in den Consumer-`dependencies` (es kommt über die Fassade `mcp-foundation/sdk`),
+also gibt es keinen eigenen `dependencies`-Eintrag mehr, auf den `$…` zeigen könnte.
+Die Version muss exakt die sein, die `agents` erwartet. Im `server-template` (Spiegel:
+`assets/package.json.template`) ist das bereits gesetzt — beim Kopieren nicht entfernen.
 
 ## Foundation-Versionierung
 

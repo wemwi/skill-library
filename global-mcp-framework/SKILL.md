@@ -13,7 +13,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH, scheduled purgeExpiredData,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
 ---
 
 # global-mcp-framework
@@ -129,6 +129,14 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
   (`append_row`, nicht `sheets_append_row`); die Server-Zuordnung macht der
   Connector-Namespace. Secret = `<AUSSTELLER>_<TYP>`, nicht nach Worker benannt
   (`GOOGLE_…`, nicht `GSC_…`). Details: `references/conventions.md`, `references/secrets.md`.
+- **Fremdimporte laufen über die Fassade, nie direkt.** Consumer importieren `z` aus
+  `mcp-foundation/schema` und `McpServer` aus `mcp-foundation/sdk` — **nie** direkt aus
+  `zod` oder `@modelcontextprotocol/sdk`. Die einzige Laufzeit-Dependency im Consumer ist
+  `mcp-foundation` (plus repo-eigene Libs); SDK und zod stehen nicht mehr in den
+  Consumer-`dependencies`. Die Foundation führt sie als eigene Deps und re-exportiert
+  über die beiden Subpaths. Der `overrides`-Pin (`"@modelcontextprotocol/sdk": "1.29.0"`,
+  explizite Version) bleibt Pflicht — er deduppt gegen den `agents`-SDK-Pin und wirkt nur
+  vom Consumer-Root. Details: `references/conventions.md`, `references/deploy.md`.
 - **Build nie ungeprüft pushen.** `npm run typecheck` + `npx wrangler deploy --dry-run`
   müssen grün sein, bevor gepusht wird — der Cloudflare-Build wirft sonst dieselben
   Fehler erst nach dem Merge. Die Gate-Hooks (`assets/hooks/`) machen das verbindlich.

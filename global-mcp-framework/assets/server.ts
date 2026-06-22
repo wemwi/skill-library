@@ -2,9 +2,13 @@
 //
 // PRIMÄRQUELLE ist das server-template/. Diese Datei zeigt die Tool-Registrierung:
 // buildServer (pro Request frisch), TOOL_ALLOWLIST, createAllowlistedRegistrar.
+//
+// FASSADE: McpServer und z kommen NUR über mcp-foundation/* (Subpaths /sdk und
+// /schema), nie direkt aus @modelcontextprotocol/sdk oder zod. So liegt im ganzen
+// Baum genau eine SDK-/zod-Kopie (siehe deploy.md, conventions.md).
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "mcp-foundation/sdk";
+import { z } from "mcp-foundation/schema";
 import type { BuildServer } from "mcp-foundation/core";
 import { createAllowlistedRegistrar } from "mcp-foundation/tooling";
 
