@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/wemwi/skill-library/compare/v1.0.0...v1.1.0) (2026-06-23)
+
+
+### Features
+
+* **global-agent-framework:** Skill für Claude Managed Agents hinzugefügt ([733f1d1](https://github.com/wemwi/skill-library/commit/733f1d1255caca1aee3df0f7df48099ce37d9f8e))
+* **global-git-conventions:** proaktiven Commit-Vorschlag + Skill-Versionssemantik ergänzen ([31214aa](https://github.com/wemwi/skill-library/commit/31214aa08e9db123db5780e15b2638b943036056))
+
 ## 1.0.0 (2026-06-22)
 
 
