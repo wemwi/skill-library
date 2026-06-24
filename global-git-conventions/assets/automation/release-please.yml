@@ -24,6 +24,10 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
+      # Checkout noetig, weil gh pr merge lokal ins Git-Repo schaut.
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.pr }}
+
       # Release-PR sofort mergen, sobald release-please einen geoeffnet hat.
       # KEIN --auto: natives Auto-Merge gibt es nur bei Repos mit Required Checks
       # (und in privaten Repos erst ab GitHub Pro). Ohne Required Checks ist der PR

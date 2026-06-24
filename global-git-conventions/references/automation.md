@@ -42,12 +42,17 @@ Der Workflow (`assets/automation/release-please.yml`) hat nach der release-pleas
 einen zweiten Step, der den gerade geöffneten Release-PR sofort mergt:
 
 ```yaml
+- uses: actions/checkout@v4
+  if: ${{ steps.release.outputs.pr }}
+
 - name: Release-PR automatisch mergen
   if: ${{ steps.release.outputs.pr }}
   env:
     GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
   run: gh pr merge --squash "${{ fromJson(steps.release.outputs.pr).number }}"
 ```
+
+Der `actions/checkout` davor ist Pflicht: `gh pr merge` schaut lokal ins Git-Repo, das ohne Checkout im Runner nicht existiert (`fatal: not a git repository`).
 
 **Bewusst kein `--auto`.** GitHubs natives Auto-Merge wartet auf Required Checks — die gibt es hier nicht (Cloudflare baut separat, nicht als PR-Check), und in privaten Repos ist das Feature erst ab GitHub Pro verfügbar. Bei einem sofort mergebaren PR wird `--auto` abgelehnt. Der direkte Merge funktioniert plan- und setting-unabhängig.
 
