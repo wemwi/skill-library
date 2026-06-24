@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/wemwi/skill-library/compare/v1.4.1...v1.5.0) (2026-06-24)
+
+
+### Features
+
+* **global-git-conventions:** Release-PRs automatisch mergen ([6dc2e9b](https://github.com/wemwi/skill-library/commit/6dc2e9b546c70dbf0550263412036e2fabf448f2))
+
+
+### Bug Fixes
+
+* MCP-Worker-Naming-Doku zurück auf &lt;service&gt;-mcp ([#17](https://github.com/wemwi/skill-library/issues/17)) ([701c7ec](https://github.com/wemwi/skill-library/commit/701c7eca2981914539a05e22c87a2f71a780da3a))
+
 ## [1.4.1](https://github.com/wemwi/skill-library/compare/v1.4.0...v1.4.1) (2026-06-24)
 
 
