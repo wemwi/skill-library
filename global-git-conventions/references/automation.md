@@ -14,7 +14,7 @@ Release-PR), **Renovate** hält Dependencies aktuell (Bump-PRs).
 
 ## Release-Automation: release-please
 
-Jedes Repo bekommt release-please (`googleapis/release-please-action@v4`, Manifest-Modus).
+Jedes Repo bekommt release-please (`googleapis/release-please-action@v5`, Manifest-Modus).
 
 ## Drei Dateien pro Repo
 
