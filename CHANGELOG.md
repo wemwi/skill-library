@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/wemwi/skill-library/compare/v1.2.0...v1.3.0) (2026-06-24)
+
+
+### Features
+
+* **global-mcp-framework:** Multi-Worker-aus-einem-Repo via Environments dokumentieren ([81ce7a8](https://github.com/wemwi/skill-library/commit/81ce7a82b2c47a5073ab2893185e10d1ebdc5240))
+* **selectedleafs-pos-documentation:** Übergabeprotokoll-Auswertung für pos-restock-Agent ergänzen ([6c6e462](https://github.com/wemwi/skill-library/commit/6c6e46287aaeae895a155ffe9c10fb42387b33b7))
+
 ## [1.2.0](https://github.com/wemwi/skill-library/compare/v1.1.0...v1.2.0) (2026-06-24)
 
 
