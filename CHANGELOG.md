@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.3](https://github.com/wemwi/skill-library/compare/v1.5.2...v1.5.3) (2026-06-24)
+
+
+### Bug Fixes
+
+* **global-git-conventions:** checkout vor Release-PR-Merge ([68eb7f3](https://github.com/wemwi/skill-library/commit/68eb7f372181b7e0a140ef545aa9c1e5a00b5928))
+
 ## [1.5.2](https://github.com/wemwi/skill-library/compare/v1.5.1...v1.5.2) (2026-06-24)
 
 
