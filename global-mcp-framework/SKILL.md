@@ -89,7 +89,7 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
    Cloudflare-Build-Fehler ("entry not found" / "static files") lokal. Die Gate-Hooks
    im `server-template` (`assets/hooks/`) erzwingen das. Details: `references/deploy.md`.
 5. **Connector** — In claude.ai den Connector auf
-   `https://mcp-<service>.<account>.workers.dev/mcp` zeigen lassen,
+   `https://<service>-mcp.<account>.workers.dev/mcp` zeigen lassen,
    Transport streamable-http, **kein Token-Feld** (OAuth). Vor dem Connect den
    Discovery-Check fahren (`references/diagnostics.md`).
 6. **Test im frischen Chat** — Funktionstest NIE im Debug-Thread, immer in einem

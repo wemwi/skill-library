@@ -8,7 +8,7 @@ Die Description ist **derselbe Satz** wie der `>`-Einzeiler im README. Eine Auss
 
 ## Website-Feld
 
-- `*-mcp`: die **Worker-Live-URL** eintragen (`https://mcp-<service>.wemwi.workers.dev/mcp` — Worker-Name mit `mcp-`-Präfix, nicht der Repo-Name). So ist der Endpoint direkt aus der Repo-Übersicht erreichbar.
+- `*-mcp`: die **Worker-Live-URL** eintragen (`https://<repo>.wemwi.workers.dev/mcp`). So ist der Endpoint direkt aus der Repo-Übersicht erreichbar.
 - `*-foundation`, `*-library`: leer lassen (oder Doku-Link, falls vorhanden).
 
 ## Topic-Schema je Typ
@@ -32,7 +32,7 @@ Da die Standardisierung über Claude Code läuft, kann der About-Block per `gh` 
 ```bash
 gh repo edit <OWNER>/<repo-name> \
   --description "<README-Einzeiler>" \
-  --homepage "https://mcp-<service>.wemwi.workers.dev/mcp" \
+  --homepage "https://<repo-name>.wemwi.workers.dev/mcp" \
   --add-topic mcp --add-topic model-context-protocol --add-topic cloudflare-workers
 ```
 
