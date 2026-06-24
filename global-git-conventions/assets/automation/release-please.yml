@@ -14,10 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: googleapis/release-please-action@v4
+        id: release
         with:
-          # Standard: eingebautes GITHUB_TOKEN.
-          # Nur ersetzen, wenn auf den Release-PRs zusätzlich GitHub-Actions-CI
-          # laufen soll (dann PAT als Secret hinterlegen und hier referenzieren).
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # PAT ist Pflicht (NICHT GITHUB_TOKEN): nur ein PAT-Push triggert den
+          # zweiten release-please-Run, der nach dem Auto-Merge Tag + Release setzt.
+          # Mit GITHUB_TOKEN bliebe der Release ungetaggt (autorelease: pending).
+          # Secret: contents:write + pull-requests:write. Siehe references/automation.md.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+      # Release-PR sofort automatisch mergen, sobald release-please einen geoeffnet hat.
+      # Merge auf main -> Cloudflare deployt. Laeuft NICHT im zweiten Run (kein offener
+      # Release-PR -> kein pr-Output -> kein Loop).
+      - name: Release-PR automatisch mergen
+        if: ${{ steps.release.outputs.pr }}
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: gh pr merge --squash --auto "${{ fromJson(steps.release.outputs.pr).number }}"

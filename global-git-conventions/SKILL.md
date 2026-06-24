@@ -13,7 +13,7 @@ description: >-
   einen Commit-Title oder eine Commit-Message formulieren, Upload/Commit vorbereiten.
   Gilt für alle eigenen Repos der Typen *-library, *-mcp und *-foundation.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
 ---
 
 # global-git-conventions
@@ -24,7 +24,7 @@ Verbindlicher Standard für Doku und Versionierung aller eigenen GitHub-Repos. D
 
 1. **Single Source of Truth pro Regel.** Jede Vorgabe lebt an genau einer Stelle. Dieser Skill = Standard. Fach-Skills (`global-mcp-framework` etc.) = Erweiterung. README-Templates sind nur die *Materialisierung* der Regel aus `references/conventions.md` — bei Konflikt gewinnt die Referenz.
 2. **README passt auf einen Bildschirm.** Kein Handbuch. Was länger wird, kommt in eine separate Datei oder den passenden Fach-Skill.
-3. **Automation ist Pflicht, nicht optional.** Jedes Repo bekommt release-please (Releases) und Renovate (Dependency-Bumps). Versionierung und CHANGELOG werden nicht von Hand gepflegt, sondern aus Conventional Commits generiert; Dependency-Updates kommen als Renovate-PRs, nicht von Hand.
+3. **Automation ist Pflicht, nicht optional.** Jedes Repo bekommt release-please (Releases) und Renovate (Dependency-Bumps). Versionierung und CHANGELOG werden nicht von Hand gepflegt, sondern aus Conventional Commits generiert; Dependency-Updates kommen als Renovate-PRs, nicht von Hand. **Release-PRs werden automatisch gemergt** — releasbarer Merge auf `main` → Release + Deploy ohne Handgriff (Mechanik + PAT-Pflicht in `references/automation.md`). Renovate-Bump-PRs bleiben bewusst manuell.
 4. **Web-only-tauglich.** Alle Schritte funktionieren über GitHub Web + Cloudflare-Git-Build. Keine Annahme über lokales git/Terminal.
 5. **READMEs auf Deutsch.**
 6. **Jede Repo-Änderung endet mit einem fertigen Commit-Vorschlag.** Web-only heißt: du committest von Hand über GitHub-Web. Deshalb liefere ich den Commit-Block proaktiv mit — nie erst auf Nachfrage. Format und Regeln: Abschnitt unten + `references/changelog.md`.

@@ -1,8 +1,16 @@
 # automation.md — Release-Automation (release-please) + Dependency-Automation (Renovate)
 
 Zwei Automationen, beide Pflicht: **release-please** schneidet Releases (Tag, Changelog,
-Release-PR), **Renovate** hält Dependencies aktuell (Bump-PRs). Beide öffnen nur PRs —
-der Merge bleibt immer eine bewusste Entscheidung.
+Release-PR), **Renovate** hält Dependencies aktuell (Bump-PRs).
+
+- **Release-PRs werden automatisch gemergt** (alle Repo-Typen). Jeder releasbare Merge auf
+  `main` → release-please öffnet den Release-PR → der Workflow mergt ihn sofort → Tag,
+  GitHub-Release und (bei `*-mcp`/`*-foundation`) Cloudflare-Deploy laufen ohne Handgriff.
+  Der Merge ist kein Gate mehr. Mechanik und die dafür nötige PAT-Pflicht: Abschnitt
+  „Auto-Merge" unten.
+- **Renovate-Bump-PRs bleiben manuell.** Bewusst nicht auto-gemergt — ein Major-Bump auf
+  einem Produktions-Worker soll eine Entscheidung bleiben. Das Dependency Dashboard zeigt
+  den Rückstand zentral.
 
 ## Release-Automation: release-please
 
@@ -23,17 +31,43 @@ Jedes Repo bekommt release-please (`googleapis/release-please-action@v4`, Manife
 1. Die drei Dateien ins Repo committen (Config mit passendem `release-type`).
 2. Im Manifest die aktuelle Version eintragen, falls das Repo schon released wurde (z.B. `{ ".": "2.0.4" }`), sonst `{ ".": "0.0.0" }`.
 3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests" anhaken. Ohne das kann release-please keinen Release-PR öffnen.
-4. Fertig. Ab dem nächsten Merge auf `main` läuft die Action und öffnet bei releasbaren Commits einen Release-PR.
+4. **Repo-Setting aktivieren:** *Settings → General →* „Allow auto-merge" anhaken. Ohne das schlägt der `gh pr merge --auto`-Schritt fehl.
+5. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained reicht) als Repo-Secret `RELEASE_PLEASE_TOKEN` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". Ein org-weites Secret deckt alle Repos auf einmal ab.
+6. **Branch-Protection:** `main` darf keine Pflicht-Reviews verlangen, sonst kann der Workflow den Release-PR nicht selbst mergen (Solo-Repo: kein Problem).
+7. Fertig. Ab dem nächsten releasbaren Merge auf `main` öffnet release-please den Release-PR und mergt ihn automatisch.
 
-## Stolperfalle 1 — Token
+## Auto-Merge — wie der Release-PR ohne Handgriff durchläuft
 
-Standardmäßig nutzt release-please das eingebaute `GITHUB_TOKEN`. Bekannte Eigenheit: Tag und Release-PR, die mit diesem Token erstellt werden, triggern **keine weiteren GitHub-Action-Workflows**.
+Der Workflow (`assets/automation/release-please.yml`) hat nach der release-please-Action
+einen zweiten Step, der den gerade geöffneten Release-PR sofort mergt:
 
-Für dieses Setup ist das **unkritisch**, weil der Deploy über die Cloudflare-Git-Build-Pipeline läuft (reagiert auf Branch-Push, nicht auf GitHub Actions). Ein PAT ist nur nötig, wenn auf den Release-PRs zusätzlich GitHub-Actions-CI laufen soll — das ist hier nicht der Fall.
+```yaml
+- name: Release-PR automatisch mergen
+  if: ${{ steps.release.outputs.pr }}
+  env:
+    GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+  run: gh pr merge --squash --auto "${{ fromJson(steps.release.outputs.pr).number }}"
+```
+
+Ablauf: feat/fix landet auf `main` → **Run 1** öffnet den Release-PR und mergt ihn →
+der Merge ist ein PAT-Push auf `main` → **Run 2** sieht den gemergten Release-PR und setzt
+Tag + GitHub-Release → Cloudflare deployt (reagiert ohnehin auf den Branch-Push).
+
+**Kein Loop:** Der Merge-Commit ist ein `chore(main): release …` (kein releasbarer Unit),
+also öffnet Run 2 keinen neuen Release-PR — der `pr`-Output ist leer, der Merge-Step wird
+übersprungen.
+
+## Stolperfalle 1 — Token (PAT ist Pflicht)
+
+Standardmäßig nutzt release-please das eingebaute `GITHUB_TOKEN`. Bekannte Eigenheit: Events, die mit diesem Token erzeugt werden, triggern **keine weiteren GitHub-Action-Workflows** (Schutz gegen Endlosschleifen).
+
+Beim Auto-Merge ist das **fatal**: release-please braucht nach dem Merge des Release-PR einen **zweiten Run**, um Tag + GitHub-Release zu erstellen. Mergt der Workflow den PR mit `GITHUB_TOKEN`, bleibt dieser zweite Run aus → Version wird gebumpt, aber **kein Tag, kein Release** (Label hängt auf `autorelease: pending`). Das Cloudflare-Deploy liefe trotzdem (Branch-Push), aber ohne Tag/Changelog-Abschluss — also ein halbfertiger Release.
+
+Deshalb: **PAT als `RELEASE_PLEASE_TOKEN` ist Pflicht, sobald Auto-Merge aktiv ist** (war früher nur für CI auf PRs nötig). Der PAT-Push triggert den zweiten Run, der Release sauber abschließt.
 
 ## Stolperfalle 2 — Cloudflare-Deploy-Interaktion
 
-- release-please arbeitet über PRs, nicht über direkte Pushes. Der **Merge des Release-PR** ist ein normaler Push auf `main` → Cloudflare deployt die neue Version. Gewünschtes Verhalten: Deploy genau dann, wenn eine Version getaggt wird.
+- release-please arbeitet über PRs, nicht über direkte Pushes. Der **Auto-Merge des Release-PR** ist ein normaler Push auf `main` → Cloudflare deployt die neue Version. Mit Auto-Merge heißt das: jeder releasbare Merge auf `main` führt automatisch zu einem Deploy — der Merge ist kein bewusstes Gate mehr. Wenn mehrere Änderungen als ein Release rausgehen sollen, müssen sie **vor** dem Merge auf `main` gebündelt werden (z.B. über einen Feature-Branch/Sammel-PR), nicht erst auf `main`.
 - Die von release-please erstellten **Tags** triggern keinen zusätzlichen Cloudflare-Build, da Cloudflare auf Branch-Push baut, nicht auf Tag-Push. Kein doppelter Deploy.
 - release-please ändert deinen Deploy-Trigger nicht — es legt nur Tag + Changelog + GitHub-Release obendrauf.
 
