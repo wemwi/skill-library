@@ -2,6 +2,7 @@
 # Agent-Config — Skeleton (kanonischer Startpunkt)
 # Begleitend zu global-agent-framework. Abschnittsverweise zeigen auf die SKILL.md.
 # Console/Platform-API akzeptiert YAML. Secrets gehören NICHT hierher (Abschnitt 6).
+# Beta managed-agents-2026-04-01 — Feldnamen gegen die Console-Doku prüfen.
 # =============================================================================
 
 # Aufruf-/Tracking-ID. kebab-case, Suffix -agent, benennt den wiederkehrenden JOB,
@@ -23,15 +24,44 @@ system: >-
   Du bist ein Allzweck-Agent, der recherchieren, Code schreiben, Befehle ausführen
   und verbundene Tools nutzen kann, um die Aufgabe des Nutzers Ende-zu-Ende zu erledigen.
 
-# Least-Privilege: NUR die Server, die DIESER Agent wirklich braucht. Teil der
-# Least-Privilege-Grenze zusammen mit vault_ids und Permission-Policy. (Abschnitt 5)
-# Netzwerk muss in der Environment-Config AN sein (Default: aus).
-# Nicht jeder Job braucht MCP — einfache Datei-Arbeit läuft direkt in der Sandbox.
+# Least-Privilege: NUR die Server, die DIESER Agent wirklich braucht. Je Eintrag ein
+# URL-Objekt {type, name, url}. Der name wird unten von mcp_toolset.mcp_server_name
+# referenziert. Auth kommt NICHT hierher — vault_ids werden pro Session gesetzt
+# (Abschnitt 6). Teil der Least-Privilege-Grenze mit Vaults + Policy. (Abschnitt 5)
 mcp_servers: []
+# Beispiel — auskommentiert, bis ein Server gebraucht wird:
+# mcp_servers:
+#   - type: url
+#     name: lexware-mcp                       # Referenzname für mcp_toolset unten
+#     url: https://lexware-mcp.example.workers.dev/mcp
 
-# Eingebautes Toolset (Bash, File-Ops, Web Search/Fetch, MCP). (Abschnitt 2)
+# Toolset-Einträge. agent_toolset = eingebaute Tools (Bash, File-Ops, Web). (Abschnitt 2)
+# JEDER Server aus mcp_servers braucht hier zusätzlich seinen eigenen mcp_toolset-Eintrag,
+# sonst erscheinen seine Tools nicht. Netzwerk muss in der Environment-Config AN sein
+# (Default: aus). Nicht jeder Job braucht MCP — einfache Datei-Arbeit läuft in der Sandbox.
 tools:
+  # Eingebautes Toolset. Default-Policy: always_allow (Bash/Write laufen ungefragt). (Abschnitt 7)
   - type: agent_toolset_20260401
+    # Optional härten — Allowlist (alles aus, nur Benötigtes an) und/oder Gate:
+    # default_config:
+    #   permission_policy:
+    #     type: always_ask
+    # configs:
+    #   - name: bash
+    #     enabled: false              # Fähigkeit ENTFERNEN (harte Wand, Abschnitt 5)
+
+  # Pro MCP-Server ein Eintrag. Default-Policy für mcp_toolset: always_ask. (Abschnitt 7)
+  # - type: mcp_toolset
+  #   mcp_server_name: lexware-mcp     # == name oben in mcp_servers
+  #   default_config:
+  #     enabled: false                 # Allowlist-Default: erst mal alles aus (Abschnitt 5)
+  #   configs:
+  #     - name: list_contacts
+  #       enabled: true                # nur Benötigtes freischalten
+  #     - name: create_invoice
+  #       enabled: true
+  #       permission_policy:
+  #         type: always_ask           # Schreib-Tool GATEN statt entfernen (Abschnitt 7)
 
 # EBENE 2 — Wiederverwendbares Domänenwissen, on-demand geladen (Progressive Disclosure).
 # Gilt für eine Aufgabenklasse, aber nicht jeden Lauf. (Abschnitt 3)
