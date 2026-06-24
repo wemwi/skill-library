@@ -11,10 +11,10 @@
 
 ## Bereitstellung
 
-**Live-URL** (für die Connector-Config):
+**Live-URL** (für die Connector-Config; Worker-Name mit `mcp-`-Präfix, nicht der Repo-Name):
 
 ```
-https://<repo-name>.wemwi.workers.dev/mcp
+https://mcp-<service>.wemwi.workers.dev/mcp
 ```
 
 Bereitgestellte Tools:
