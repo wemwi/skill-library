@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/wemwi/skill-library/compare/v1.5.0...v1.5.1) (2026-06-24)
+
+
+### Bug Fixes
+
+* **global-git-conventions:** PAT als Repo-Secret statt org-weit ([4c882cc](https://github.com/wemwi/skill-library/commit/4c882cc4eff7b70a2e490f9ca3940fc34fa58bc2))
+
 ## [1.5.0](https://github.com/wemwi/skill-library/compare/v1.4.1...v1.5.0) (2026-06-24)
 
 
