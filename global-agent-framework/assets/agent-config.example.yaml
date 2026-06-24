@@ -1,0 +1,43 @@
+# =============================================================================
+# Agent-Config — Beispiel: rechnungs-agent
+# Lebendes Vorbild zum Abgucken, KEINE garantiert deploybare Config.
+# Managed Agents ist Beta (managed-agents-2026-04-01) — Feldnamen, Toolset-Typ und
+# erlaubte Modelle können sich ändern. Bei Abweichung gewinnt die Console-Doku.
+# Zeigt: Drei-Ebenen-system, Least-Privilege-mcp_servers, gefülltes metadata.
+# =============================================================================
+
+name: rechnungs-agent
+description: Erstellt Rechnungsentwürfe in Lexware aus Auftragsdaten und legt sie zur Freigabe vor.
+
+# Schreib-/geldrelevanter Agent → eher stärkeres Tier, weil bei always_allow kein
+# Mensch gegenliest (Achse Autonomie/Risiko, Abschnitt 10). Selten getriggert →
+# Kosten×Frequenz unkritisch. Konkrete ID gegen Console-Doku prüfen.
+model: claude-sonnet-4-6
+
+# EBENE 1 — Persona + Leitplanke. "Erst Entwurf, dann Schreiben" hier verankert,
+# zusätzlich zur Permission-Policy (Abschnitt 7).
+system: >-
+  Du bist ein sorgfältiger Buchhaltungs-Agent. Du schreibst NIE ohne ausdrückliche
+  Bestätigung in Lexware; du legst zuerst einen vollständigen Entwurf vor und wartest
+  auf Freigabe. Vor jeder Schreibaktion prüfst du anhand der Auftrags-ID, ob diese
+  Rechnung bereits angelegt wurde, und brichst bei Dublette ab (Idempotenz, Abschnitt 9).
+
+# Least-Privilege: nur lexware-mcp. NICHT telegram-mcp, NICHT shopify-mcp. (Abschnitt 5)
+# Die passenden vault_ids werden pro Session gesetzt (Abschnitt 6), nicht hier.
+mcp_servers:
+  - lexware-mcp
+
+tools:
+  - type: agent_toolset_20260401
+
+# EBENE 2 — Domänenwissen: Pflichtfelder, USt-Logik, Nummernkreise. Gilt für JEDE
+# Rechnung, aber nicht jeden Lauf — zu groß für den System-Prompt. (Abschnitt 3)
+skills:
+  - lexware-invoicing
+
+metadata:
+  version: 1.0.0
+  owner: Joscha
+  repo: wemwi/rechnungs-agent
+  domain: buchhaltung
+  runbook: README.md#betrieb

@@ -1,0 +1,47 @@
+# =============================================================================
+# Agent-Config — Skeleton (kanonischer Startpunkt)
+# Begleitend zu global-agent-framework. Abschnittsverweise zeigen auf die SKILL.md.
+# Console/Platform-API akzeptiert YAML. Secrets gehören NICHT hierher (Abschnitt 6).
+# =============================================================================
+
+# Aufruf-/Tracking-ID. kebab-case, Suffix -agent, benennt den wiederkehrenden JOB,
+# nicht den einzelnen Lauf. Stabil über Versionen — Version NIE im Namen. (Abschnitt 4)
+name: untitled-agent
+
+# Kurzbeschreibung des wiederkehrenden Jobs (optional).
+description: Ein leerer Startpunkt mit dem Kern-Toolset.
+
+# Claude 4.5 oder neuer. Tier nach den vier Achsen wählen — relativ, nicht absolut:
+# Komplexität, Kosten×Frequenz, Autonomie/Risiko, Latenz. (Abschnitt 10)
+# Konkrete Modell-IDs der Beta gegen die Console-Doku prüfen, nicht aus Erinnerung setzen.
+model: claude-sonnet-4-6
+
+# EBENE 1 — Persona/Dauerverhalten, gilt in JEDEM Lauf. Leitplanken, Tonfall.
+# KEIN konkreter Lauf-Auftrag (der gehört in user.message). (Abschnitt 3)
+# Für schreibende/geldrelevante Agents hier "erst Entwurf, dann Schreiben" verankern. (Abschnitt 7)
+system: >-
+  Du bist ein Allzweck-Agent, der recherchieren, Code schreiben, Befehle ausführen
+  und verbundene Tools nutzen kann, um die Aufgabe des Nutzers Ende-zu-Ende zu erledigen.
+
+# Least-Privilege: NUR die Server, die DIESER Agent wirklich braucht. Teil der
+# Least-Privilege-Grenze zusammen mit vault_ids und Permission-Policy. (Abschnitt 5)
+# Netzwerk muss in der Environment-Config AN sein (Default: aus).
+# Nicht jeder Job braucht MCP — einfache Datei-Arbeit läuft direkt in der Sandbox.
+mcp_servers: []
+
+# Eingebautes Toolset (Bash, File-Ops, Web Search/Fetch, MCP). (Abschnitt 2)
+tools:
+  - type: agent_toolset_20260401
+
+# EBENE 2 — Wiederverwendbares Domänenwissen, on-demand geladen (Progressive Disclosure).
+# Gilt für eine Aufgabenklasse, aber nicht jeden Lauf. (Abschnitt 3)
+skills: []
+
+# Reines Tracking — keine Secrets, keine Logik. SemVer spiegelt den Config-Stand;
+# der Anbieter erzeugt zusätzlich automatisch je Update eine eigene Agent-Version. (Abschnitt 4)
+metadata:
+  version: 0.1.0
+  owner: ""        # z.B. Joscha
+  repo: ""         # Quelle der Config (Git-Repo), falls als Code gepflegt
+  domain: ""       # purpose / Domäne in einem Wort
+  # runbook: ""    # optional: Link/Verweis auf Betriebsanleitung

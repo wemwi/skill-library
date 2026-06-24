@@ -12,7 +12,7 @@ description: >-
   debuggen, neuen Agent ins Portfolio aufnehmen. Gilt für jeden Managed Agent in
   diesem Stack.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # global-agent-framework
@@ -69,6 +69,16 @@ Skills des Agenten plus die User-Message, nicht dieser Skill.
 
 Dazu optional `description`, `metadata` (Abschnitt 4) und `callable_agents`
 (Research Preview).
+
+**Template (kanonischer Startpunkt).** Die Config wird als YAML geschrieben; die
+Console/Platform-API akzeptiert YAML. Zwei Vorlagen liegen unter `assets/`:
+
+- `assets/agent-config.blank.yaml` — kommentiertes Skeleton zum Kopieren. Jedes Feld
+  trägt einen Verweis auf den zuständigen Abschnitt dieses Skills.
+- `assets/agent-config.example.yaml` — ausgefüllter `rechnungs-agent` als lebendes
+  Vorbild (Drei-Ebenen-`system`, Least-Privilege-`mcp_servers`, gefülltes `metadata`).
+  Referenz zum Abgucken, **nicht** garantiert deploybar — die Beta kann Feldnamen und
+  erlaubte Modelle verschieben.
 
 ## 3. Drei-Ebenen-Regel (Herzstück)
 
@@ -196,8 +206,37 @@ Ohne Schutz heißt das doppelte Rechnung, doppelter Post, doppelte Bestellung.
 - **Mit Abschnitt 7 kombinieren:** Der Entwurf ist idempotent unkritisch — der Commit
   braucht den Schlüssel.
 
+## 10. Modellwahl
+
+`model` wird bei **jedem** Agent gesetzt — entscheide es bewusst, nicht per Default.
+Die Wahl läuft über **vier Achsen**, die sich nicht ändern, wenn Anthropic neue Modelle
+bringt:
+
+| Achse | Frage | Richtung |
+|---|---|---|
+| **Komplexität** | Mehrstufiges Reasoning, Tool-Orchestrierung, Code? | komplex → stärker; schematische Transformation → kleiner reicht |
+| **Kosten × Frequenz** | Wie oft feuert der Agent (Abschnitt 8)? | hochfrequent + einfach → klein; selten + komplex → groß vertretbar |
+| **Autonomie/Risiko** | Headless `always_allow` mit Schreibrechten (Abschnitt 7)? | kein Mensch liest gegen → eher stärker, trotz Kosten |
+| **Latenz** | Wartet ein Auslöser auf Antwort? | Webhook/interaktiv → schnell; Cron nachts → egal |
+
+**Relative Tier-Logik statt absoluter Liste.** Anthropic staffelt Modelle von
+„klein/schnell/günstig" bis „groß/fähig/teuer". Mappe die Achsen auf **relative** Tiers,
+nicht auf eine festgenagelte Spitze:
+
+- Hochfrequente Cron-Transformation (PDF umbenennen, Zeile ins Sheet) → **kleinstes
+  tragfähiges** Tier.
+- Standard-Agent mit Tool-Arbeit und Urteilsbedarf → **mittleres** Tier.
+- Headless Schreib-/Geld-Agent ohne menschliches Gate → **stärkstes in der Beta
+  verfügbares** Tier.
+
+**Keine harten Modell-IDs hier.** Die Tier-Landschaft verschiebt sich aktiv (oberhalb der
+bisherigen Spitze sind weitere Ebenen entstanden, Zugang teils eingeschränkt), und
+Managed Agents ist Beta — die erlaubte Modell-Teilmenge kann von der normalen API
+abweichen. Welche konkrete ID welchem Tier entspricht und welche die Beta zulässt:
+**zum Bauzeitpunkt gegen die Console-Doku prüfen,** nicht aus diesem Skill ableiten.
+
 ---
 
-**Geplant für v1.1** (hier bewusst noch nicht ausgeführt): Environment-Strategie im
-Detail, Datenresidenz/ZDR, Observability-Tiefe, Kostenmodell, Lifecycle-Details,
-Anti-Pattern-Katalog.
+**Geplant für v1.2** (hier bewusst noch nicht ausgeführt): Environment-Strategie im
+Detail, Datenresidenz/ZDR, Observability-Tiefe, restliches Kostenmodell (Token-Budgets,
+Caching), Lifecycle-Details, Anti-Pattern-Katalog.
