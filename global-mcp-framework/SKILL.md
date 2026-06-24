@@ -13,7 +13,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH, scheduled purgeExpiredData,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
 ---
 
 # global-mcp-framework
@@ -109,7 +109,9 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
   `/authorize`-Login-Seite.
 - **Namen nie erfinden.** Vor dem Setzen von `name` `workers_list` (Cloudflare-MCP)
   fahren und den echten Service-Namen übernehmen. `name` muss in `wrangler.jsonc`,
-  `package.json`, Repo und Cloudflare-Service identisch sein.
+  `package.json`, Repo und Cloudflare-Service identisch sein. Ausnahme (mehrere Worker
+  aus einem Repo via Environments): `name` und KV divergieren pro `env`-Block, der
+  Repo-`name` bleibt die gemeinsame Basis — siehe `references/deploy.md`.
 - **Tool-`name` ohne Punkt, ohne Prefix.** Jeder Tool-`name` und jeder
   `TOOL_ALLOWLIST`-Eintrag muss `^[a-zA-Z0-9_-]{1,64}$` erfüllen — kein Punkt, kein
   Leerzeichen, kein camelCase. Konvention `<verb>_<objekt>`, snake_case, **kein

@@ -58,6 +58,57 @@ Vorlage: `assets/wrangler.jsonc`. Pflichtbestandteile:
 - `kv_namespaces` mit `"binding": "OAUTH_KV"` (siehe `storage.md`).
 - `nodejs_compat`.
 
+## Ausnahme: Mehrere Worker aus einem Repo (Environments)
+
+Standard ist ein Repo = ein Worker = eine `wrangler.jsonc` mit festem `name` und einer
+KV-ID. Ausnahme: Wenn mehrere Services fast den gesamten Code teilen und sich nur in der
+Verdrahtung unterscheiden (z.B. `telegram-mcp` → `mcp-telegram-operations` +
+`mcp-telegram-broadcast`), werden sie über **Wrangler Environments** aus einem Repo
+gespeist — nicht über zwei `wrangler.jsonc` und nicht über das CI-Name-Override.
+
+Warum nicht das CI-Override: Workers Builds überschreibt nur den Worker-**Namen**, nicht
+die Bindings. Zwei Builds auf dieselbe top-level `wrangler.jsonc` zielen damit auf
+**dieselbe** KV — das verletzt „pro Server ein eigener Namespace" (`storage.md`) und
+failt, sobald die eine ID nicht (mehr) existiert.
+
+Mechanik:
+- Top-level trägt nur die **inheritable** Keys (`main`, `compatibility_date`,
+  `compatibility_flags`/`nodejs_compat`, `ai`-Alias). Der top-level `name` bleibt der
+  Repo-Name und wird real nie deployt.
+- Pro Service ein `env.<name>`-Block mit eigenem `name` (= existierender Cloudflare-
+  Service) und eigener `OAUTH_KV`-Binding (eigene KV-ID). So bleibt „pro Server ein
+  eigener Namespace" erfüllt — die Isolation wandert in den env-Block.
+- **Bindings und `vars` sind non-inheritable** und müssen in **jeden** env-Block
+  gespiegelt werden. Was nur top-level steht, fehlt im deployten Worker (baut durch,
+  fällt zur Laufzeit aus).
+- Deploy command je Workers-Builds-Connection: `npx wrangler versions upload --env <name>`.
+  **Nie ohne `--env` deployen** — das legt einen verwaisten top-level-Service an.
+
+```jsonc
+{
+  "name": "telegram-mcp",            // Basis; real deployt wird nur per --env
+  "main": "src/index.ts",
+  "compatibility_date": "…",
+  "compatibility_flags": ["nodejs_compat"],
+  "env": {
+    "operations": {
+      "name": "mcp-telegram-operations",
+      "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "<operations-kv-id>" }]
+      // + jede top-level vars/Binding hier spiegeln
+    },
+    "broadcast": {
+      "name": "mcp-telegram-broadcast",
+      "kv_namespaces": [{ "binding": "OAUTH_KV", "id": "<broadcast-kv-id>" }]
+      // + jede top-level vars/Binding hier spiegeln
+    }
+  }
+}
+```
+
+`name` und KV divergieren hier bewusst (vgl. `conventions.md`, „vier Stellen identisch") —
+die Identitäts-Regel gilt für den Standardfall, der env-Block ist die benannte Ausnahme.
+Verifikation vor dem Push dann pro Environment: `npx wrangler deploy --dry-run --env <name>`.
+
 ## SDK-Dedup per `overrides` (Pflicht in jedem Consumer)
 
 `agents` (liefert `createMcpHandler`) pinnt das MCP-SDK **exakt** auf eine bestimmte

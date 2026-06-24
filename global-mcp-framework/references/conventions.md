@@ -29,6 +29,11 @@ Org-/Projekt-Suffix.** Der Name muss an vier Stellen identisch sein: `name` in
 Service-Name. Ein Mismatch deployt entweder einen falsch benannten Zweit-Worker
 oder lässt den Build den falschen Service treffen.
 
+> **Ausnahme Multi-Worker:** Speist ein Repo mehrere Services über Wrangler Environments
+> (z.B. `telegram-mcp` → `mcp-telegram-operations` + `…-broadcast`), divergieren `name`
+> und KV bewusst pro `env`-Block; der Repo-/Paket-`name` bleibt der gemeinsame Basisname.
+> Mechanik in `deploy.md`.
+
 **Vor dem Setzen des Namens verifizieren, nicht raten:** über den Cloudflare-MCP
 `workers_list` die existierenden Worker abrufen. Existiert der Ziel-Worker bereits,
 exakt dessen Namen übernehmen.
