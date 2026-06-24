@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/wemwi/skill-library/compare/v1.4.0...v1.4.1) (2026-06-24)
+
+
+### Reverts
+
+* MCP-Worker-Naming zurück auf &lt;service&gt;-mcp ([#15](https://github.com/wemwi/skill-library/issues/15)) ([ab81337](https://github.com/wemwi/skill-library/commit/ab813372228045256616a6bb238f10b9bd3b86f5))
+
 ## [1.4.0](https://github.com/wemwi/skill-library/compare/v1.3.0...v1.4.0) (2026-06-24)
 
 
