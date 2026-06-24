@@ -33,7 +33,7 @@ mcp_servers: []
 # mcp_servers:
 #   - type: url
 #     name: lexware-mcp                       # Referenzname für mcp_toolset unten
-#     url: https://lexware-mcp.example.workers.dev/mcp
+#     url: https://mcp-lexware.example.workers.dev/mcp   # Worker-Name mit mcp-Präfix
 
 # Toolset-Einträge. agent_toolset = eingebaute Tools (Bash, File-Ops, Web). (Abschnitt 2)
 # JEDER Server aus mcp_servers braucht hier zusätzlich seinen eigenen mcp_toolset-Eintrag,

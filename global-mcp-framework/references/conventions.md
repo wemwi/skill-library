@@ -8,30 +8,37 @@ Ziel: alle MCP-Repos einheitlich.
 
 ## Naming
 
-### Worker-Name: `<service>-mcp`
+### Repo-Name: `<service>-mcp` · Worker-Name: `mcp-<service>`
 
 `<service>` wird aus dem **vollen Produktnamen inklusive Anbieter** abgeleitet:
 lowercase, mit Bindestrich getrennt, **keine Abkürzung**. Lange Produktnamen
 pragmatisch kürzen, aber den Anbieter behalten.
 
-| Dienst | Worker-Name |
-|---|---|
-| Google Sheets | `google-sheets-mcp` |
-| Google Drive | `google-drive-mcp` |
-| Google Search Console | `google-search-console-mcp` |
-| Google PageSpeed Insights | `google-pagespeed-mcp` (gekürzt, nicht `…-insights-mcp`) |
-| Lexware Office | `lexware-mcp` |
-| Telegram | `telegram-mcp` |
+Zwei Identitäten, die **bewusst divergieren**:
 
-`<service>-mcp` ist Repo = Worker = Cloudflare-Service-Name — **kein zusätzliches
-Org-/Projekt-Suffix.** Der Name muss an vier Stellen identisch sein: `name` in
-`wrangler.jsonc`, `name` in `package.json`, der Repo-Name und der Cloudflare-
-Service-Name. Ein Mismatch deployt entweder einen falsch benannten Zweit-Worker
-oder lässt den Build den falschen Service treffen.
+- **Repo-/Paket-Name:** `<service>-mcp` (GitHub-Repo + `name` in `package.json`).
+- **Worker-/Cloudflare-Service-Name:** `mcp-<service>` (`name` in `wrangler.jsonc`,
+  bestimmt die workers.dev-Subdomain). Das `mcp-`-**Präfix** gruppiert alle
+  MCP-Worker im Cloudflare-Dashboard.
+
+| Dienst | Repo-/Paket-Name | Worker-Name (= Subdomain) |
+|---|---|---|
+| Google Sheets | `google-sheets-mcp` | `mcp-google-sheets` |
+| Google Drive | `google-drive-mcp` | `mcp-google-drive` |
+| Google Search Console | `google-search-console-mcp` | `mcp-google-search-console` |
+| Google PageSpeed Insights | `google-pagespeed-mcp` (gekürzt, nicht `…-insights-mcp`) | `mcp-google-pagespeed` |
+| Lexware Office | `lexware-mcp` | `mcp-lexware` |
+| Telegram | `telegram-mcp` | `mcp-telegram-operations` + `mcp-telegram-broadcast` |
+
+Der Worker-Name muss an zwei Stellen identisch sein: `name` in `wrangler.jsonc`
+und der Cloudflare-Service-Name. Ein Mismatch deployt einen falsch benannten
+Zweit-Worker oder lässt den Build den falschen Service treffen. Repo- und
+Paket-`name` bleiben davon unberührt auf `<service>-mcp`.
 
 > **Ausnahme Multi-Worker:** Speist ein Repo mehrere Services über Wrangler Environments
-> (z.B. `telegram-mcp` → `mcp-telegram-operations` + `…-broadcast`), divergieren `name`
-> und KV bewusst pro `env`-Block; der Repo-/Paket-`name` bleibt der gemeinsame Basisname.
+> (z.B. `telegram-mcp` → `mcp-telegram-operations` + `…-broadcast`), trägt jeder
+> `env`-Block seinen eigenen `mcp-<service>-<rolle>`-Namen und sein eigenes KV;
+> der Repo-/Paket-`name` bleibt der gemeinsame `<service>-mcp`-Basisname.
 > Mechanik in `deploy.md`.
 
 **Vor dem Setzen des Namens verifizieren, nicht raten:** über den Cloudflare-MCP
@@ -184,7 +191,7 @@ die vier Exports stabil nach außen gibt.
 
 ## Connector-URL
 
-`https://<service>-mcp.<account>.workers.dev/mcp` — Transport
+`https://mcp-<service>.<account>.workers.dev/mcp` — Transport
 streamable-http, OAuth. **Kein Token-Feld** im Connector.
 
 ## `login`-Config je Server
