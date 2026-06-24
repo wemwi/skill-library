@@ -24,11 +24,13 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-      # Release-PR sofort automatisch mergen, sobald release-please einen geoeffnet hat.
-      # Merge auf main -> Cloudflare deployt. Laeuft NICHT im zweiten Run (kein offener
-      # Release-PR -> kein pr-Output -> kein Loop).
+      # Release-PR sofort mergen, sobald release-please einen geoeffnet hat.
+      # KEIN --auto: natives Auto-Merge gibt es nur bei Repos mit Required Checks
+      # (und in privaten Repos erst ab GitHub Pro). Ohne Required Checks ist der PR
+      # sofort mergebar -> direkter Merge. Merge auf main -> Cloudflare deployt.
+      # Laeuft NICHT im zweiten Run (kein offener Release-PR -> kein pr-Output).
       - name: Release-PR automatisch mergen
         if: ${{ steps.release.outputs.pr }}
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-        run: gh pr merge --squash --auto "${{ fromJson(steps.release.outputs.pr).number }}"
+        run: gh pr merge --squash "${{ fromJson(steps.release.outputs.pr).number }}"

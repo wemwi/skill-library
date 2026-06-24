@@ -28,13 +28,13 @@ Jedes Repo bekommt release-please (`googleapis/release-please-action@v4`, Manife
 
 ## Setup-Schritte (web-only, über GitHub Web)
 
-1. Die drei Dateien ins Repo committen (Config mit passendem `release-type`).
-2. Im Manifest die aktuelle Version eintragen, falls das Repo schon released wurde (z.B. `{ ".": "2.0.4" }`), sonst `{ ".": "0.0.0" }`.
 3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests" anhaken. Ohne das kann release-please keinen Release-PR öffnen.
-4. **Repo-Setting aktivieren:** *Settings → General →* „Allow auto-merge" anhaken. Ohne das schlägt der `gh pr merge --auto`-Schritt fehl.
-5. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained reicht) als Repo-Secret `RELEASE_PLEASE_TOKEN` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". Ein org-weites Secret deckt alle Repos auf einmal ab.
-6. **Branch-Protection:** `main` darf keine Pflicht-Reviews verlangen, sonst kann der Workflow den Release-PR nicht selbst mergen (Solo-Repo: kein Problem).
-7. Fertig. Ab dem nächsten releasbaren Merge auf `main` öffnet release-please den Release-PR und mergt ihn automatisch.
+4. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained — Repo-Zugriff auf alle betroffenen Repos) als Secret `RELEASE_PLEASE_TOKEN` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". **Persönliche Accounts haben keine org-weiten Actions-Secrets**: den Token nur einmal erstellen, den Wert aber als **Repository-Secret in jedem Repo** hinterlegen (*Repo → Settings → Secrets and variables → Actions*). Ein fine-grained PAT deckt mit einem Token mehrere Repos ab; nur der Secret-Eintrag muss je Repo gesetzt werden.
+5. **Branch-Protection:** `main` darf keine Pflicht-Reviews verlangen, sonst kann der Workflow den Release-PR nicht selbst mergen (Solo-Repo: kein Problem).
+6. Fertig. Ab dem nächsten releasbaren Merge auf `main` öffnet release-please den Release-PR und mergt ihn automatisch.
+
+> [!NOTE]
+> **Kein „Allow auto-merge"-Setting nötig.** Der Workflow mergt direkt (`gh pr merge --squash`), nicht über GitHubs natives Auto-Merge. Das native Feature gibt es nur bei Repos mit Required Checks und in privaten Repos erst ab GitHub Pro — der direkte Merge funktioniert plan- und setting-unabhängig in jedem Repo.
 
 ## Auto-Merge — wie der Release-PR ohne Handgriff durchläuft
 
@@ -46,8 +46,10 @@ einen zweiten Step, der den gerade geöffneten Release-PR sofort mergt:
   if: ${{ steps.release.outputs.pr }}
   env:
     GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-  run: gh pr merge --squash --auto "${{ fromJson(steps.release.outputs.pr).number }}"
+  run: gh pr merge --squash "${{ fromJson(steps.release.outputs.pr).number }}"
 ```
+
+**Bewusst kein `--auto`.** GitHubs natives Auto-Merge wartet auf Required Checks — die gibt es hier nicht (Cloudflare baut separat, nicht als PR-Check), und in privaten Repos ist das Feature erst ab GitHub Pro verfügbar. Bei einem sofort mergebaren PR wird `--auto` abgelehnt. Der direkte Merge funktioniert plan- und setting-unabhängig.
 
 Ablauf: feat/fix landet auf `main` → **Run 1** öffnet den Release-PR und mergt ihn →
 der Merge ist ein PAT-Push auf `main` → **Run 2** sieht den gemergten Release-PR und setzt
