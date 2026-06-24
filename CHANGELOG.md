@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/wemwi/skill-library/compare/v1.3.0...v1.4.0) (2026-06-24)
+
+
+### Features
+
+* **global-agent-framework:** Least-Privilege-Muster und vollständige MCP-Config-Templates ([5363a5d](https://github.com/wemwi/skill-library/commit/5363a5d69bfd718a144a8173cd4fb7d15788d317))
+
 ## [1.3.0](https://github.com/wemwi/skill-library/compare/v1.2.0...v1.3.0) (2026-06-24)
 
 
