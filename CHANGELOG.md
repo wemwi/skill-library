@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/wemwi/skill-library/compare/v1.1.0...v1.2.0) (2026-06-24)
+
+
+### Features
+
+* **agent-framework:** add YAML config templates and model selection section ([afcb04a](https://github.com/wemwi/skill-library/commit/afcb04a49ac2ec202ac46910312fda06eeae5a42))
+
 ## [1.1.0](https://github.com/wemwi/skill-library/compare/v1.0.0...v1.1.0) (2026-06-23)
 
 
