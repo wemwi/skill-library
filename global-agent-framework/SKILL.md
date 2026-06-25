@@ -13,7 +13,7 @@ description: >-
   Version bumpen, Agent debuggen, neuen Agent ins Portfolio aufnehmen. Gilt für jeden
   Managed Agent in diesem Stack.
 metadata:
-  version: "1.4.0"
+  version: "1.4.1"
 ---
 
 # global-agent-framework
@@ -393,8 +393,42 @@ ohne ihn schlägt der Build fehl. Wer Pakete deklariert, **muss** den Paketmanag
 anlassen. Du sparst also keine Sicherheit, indem du ihn abschaltest; der Hebel ist eine
 **minimale, gepinnte** Paketliste, nicht „aus".
 
-**Environment-Metadaten** (optional, wie Abschnitt 4 für den Agenten): `owner`, `purpose`,
-ggf. ein Versions-/Repo-Spiegel — reines Tracking, keine Logik, keine Secrets.
+**Environment-Naming.** §4 regelt nur Agent-Namen — Umgebungen brauchen ihr eigenes Muster,
+weil sie nach Profil **geteilt** werden (oben): Der Name benennt das **Profil**, nie den
+Agenten (sonst lügt er, sobald ein zweiter Agent dasselbe Profil mitbenutzt). Muster,
+kebab-case, lowercase, keine Version im Namen (Umgebungen sind per ID versioniert):
+
+```
+<capability>[-<variante>][-<netz-ausnahme>]
+```
+
+- **capability** (Pflicht): der **Zweck** des Paket-/Tool-Profils, nie die Paketliste —
+  z.B. `ocr-pdf`, `node-build`, `headless-chrome`; `plain`, wenn keine Sonderpakete.
+- **variante** (optional): nur wenn ein Sub-Detail den **Paketsatz selbst** ändert (Locale,
+  Runtime-Version, Toolchain-Variante) — z.B. `ocr-pdf-de` vs. `ocr-pdf-en`.
+- **netz-ausnahme** (nur die riskante Abweichung): `-open` (Full/Unrestricted), `-offline`
+  (kein Netz). **Limited = sicherer Default = stilles Weglassen.** Das Sichere schweigt, das
+  Gefährliche wird zum Token.
+
+Was **nicht** in den Namen kommt: Config-Werte und harmlose Toggles. Maßgeblich die
+**Egress-Regel** — eine Egress-Achse bekommt nur dann ein Token, wenn ihr „An" die
+**Exfil-/Angriffsfläche spürbar weitet**: freies Web ja (`-open`); **MCP-Egress nein**
+(harmlose Obermenge — erreicht nur die ohnehin selektiv genutzten MCP-Endpoints, macht einen
+Nicht-MCP-Agenten nicht unsicherer); **Paketmanager-Egress nein** (durch „hat Pakete"
+impliziert). Auch der Compute-Typ (in der Beta nur Cloud) ist kein Differenzierer. Käme
+später eine echte Share-Achse dazu (GPU, Region), wäre *die* ein neuer optionaler Slot — das
+Muster bleibt.
+
+Beispiele: `plain` · `plain-offline` · `node-build` · `headless-chrome-open` ·
+`ocr-pdf-de` / `ocr-pdf-en` · `data-science`.
+
+**Environment-Metadaten.** Sparsam. **Native Config-Felder nicht spiegeln** (Netz-Typ und
+Pakete stehen schon sichtbar in der Console). Bei kleinem Portfolio meist leer lassen. Der
+einzige Eintrag mit eigenständigem Wert wäre ein **Reverse-Index** `consumers` (welche
+Agenten die Umgebung nutzen — für „wer bricht, wenn ich sie ändere/lösche"); er ist aber
+**manuell gepflegt und driftet** — ein veralteter Eintrag führt in die Irre, also nur mit
+Pflege-Disziplin, sonst leer lassen und auf die Agent-Seite verlassen (jeder Agent nennt
+seine Env-ID). Keine Logik, keine Secrets.
 
 ---
 
