@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.0](https://github.com/wemwi/skill-library/compare/v2.6.0...v2.7.0) (2026-06-25)
+
+
+### Features
+
+* **global-workflow:** Phasengrenzen-Self-Check + Kontextwechsel-Marker ([#43](https://github.com/wemwi/skill-library/issues/43)) ([ea89f91](https://github.com/wemwi/skill-library/commit/ea89f9149ac604825612b42ec3ba443844aa6b57))
+
 ## [2.6.0](https://github.com/wemwi/skill-library/compare/v2.5.0...v2.6.0) (2026-06-25)
 
 
