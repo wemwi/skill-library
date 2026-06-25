@@ -1,11 +1,13 @@
 ---
 name: global-workflow
-description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. Wird automatisch bei jeder neuen Aufgabe geladen. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring, Frage. Kein Task ohne diesen Skill.
+description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
+metadata:
+  version: "1.0.0"
 ---
 
 # Workflow — Universelles Arbeitsprotokoll
 
-Dieses Skill steuert wie du (Claude) jede Aufgabe bearbeitest. Es ist kein technisches Nachschlagewerk, sondern dein Arbeitsprotokoll. Lies es bei jeder neuen Aufgabe.
+Dieses Skill steuert wie du (Claude) jede Aufgabe bearbeitest. Es ist kein technisches Nachschlagewerk, sondern dein Arbeitsprotokoll. Lies es als ERSTEN Schritt bei JEDER eingehenden Nachricht — auch bei reinen Fragen, kurzen Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zählt als Task; ein genannter Skill ersetzt das Lesen dieses Skills nicht. Es gibt keinen Auto-Load — du musst es selbst öffnen.
 
 ---
 
