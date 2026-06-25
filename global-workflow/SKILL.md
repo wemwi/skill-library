@@ -2,7 +2,7 @@
 name: global-workflow
 description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # Workflow — Universelles Arbeitsprotokoll
@@ -76,9 +76,13 @@ Auch im Direkt-Modus: Skill lesen, Datei lesen, dann erst Code.
 
 ---
 
-## 3. Modell-Routing
+## 3. Routing — zwei Fragen vor jedem Task
 
-Bei der Task-Analyse den Task-Charakter bestimmen und das Modell danach wählen. Anker ist der Charakter, nicht das Modell — die Zuordnung nennt die aktuellen Tiers (ohne Versionsnummer, die driftet).
+Zwei unabhängige Achsen. **Charakter** (wie schwer ist das Denken) steuert das Modell. **Aufwand/Volumen** (wie viel Arbeit) steuert das Werkzeug. Aufwand steuert NICHT das Modell — er steuert Werkzeug + Scope + Hygiene.
+
+### Frage 1 — welcher Kopf? (Charakter → Modell-Tier)
+
+Anker ist der Charakter, nicht das Modell — die Zuordnung nennt die aktuellen Tiers (ohne Versionsnummer, die driftet).
 
 | Task-Charakter | Tier |
 |----------------|------|
@@ -88,19 +92,36 @@ Bei der Task-Analyse den Task-Charakter bestimmen und das Modell danach wählen.
 
 Das Mapping Charakter→Tier ist der einzige Teil, der altern kann. Ändert sich die Tier-Landschaft, hier eine Zeile anpassen — die Logik bleibt.
 
-### Self-Check (nach der Charakter-Bestimmung)
-Vergleiche das aktive Modell mit dem nötigen Tier. NUR bei echtem Mismatch handeln, sonst still bleiben:
-- Aktives Tier zu HOCH für den Task (z.B. Opus für Mechanisches) → kurzer Hinweis, dann normal weitermachen. Token-Sparen, kein Qualitätsrisiko.
-- Aktives Tier zu NIEDRIG für den Task (z.B. Sonnet für harte Architektur) → Wechsel-Vorschlag VOR der inhaltlichen Antwort, damit Joscha wechselt und neu fragt. Achtung: diese Richtung ist unzuverlässiger — ein schwächeres Modell erkennt eigene Überforderung evtl. nicht. Im Zweifel lieber einmal mehr flaggen.
+**Self-Check** (nach der Charakter-Bestimmung): aktives Modell mit nötigem Tier vergleichen. NUR bei echtem Mismatch handeln, sonst still bleiben:
+- Aktives Tier zu HOCH (z.B. Opus für Mechanisches) → kurzer Hinweis, dann normal weiter. Token-Sparen, kein Qualitätsrisiko.
+- Aktives Tier zu NIEDRIG (z.B. Sonnet für harte Architektur) → Wechsel-Vorschlag VOR der inhaltlichen Antwort, damit Joscha wechselt und neu fragt. Achtung: diese Richtung ist unzuverlässiger — ein schwächeres Modell erkennt eigene Überforderung evtl. nicht. Im Zweifel lieber einmal mehr flaggen.
+
+### Frage 2 — welches Werkzeug? (Aufwand/Medium-Fit → Chat ↔ Claude Code)
+
+| Signal | Werkzeug |
+|--------|----------|
+| Wenige Dateien, Denken/Design/Content, plan→approve-Rhythmus | Chat (hier) |
+| Arbeitsform riecht nach Ausführungsschleife — viele Dateien gleichzeitig, Code wirklich ausführen/testen, lange agentische Schleife | Claude Code |
+
+Der Wechsel läuft über einen **Migration-Prompt** (→ `references/handover.md`), nicht über einen rohen Kontextbruch — der Prompt IST der Kontexttransfer. Dadurch darf die Schwelle niedriger liegen als bei einem echten Bruch: nicht „lohnt der Aufwand?", sondern „passt die Arbeitsform?". Ehrlich bleibt: billiger als ein Bruch, aber nicht gratis — diese Session endet, Weiter-Iterieren im selben Thread geht nicht.
+
+In Claude Code löst sich Frage 1 teilweise auf — Code wählt das Modell intern.
 
 ### Handover-Marker
-Wenn ein Wechsel sinnvoll ist, IMMER am ENDE der Antwort als Blockquote, immer gleiche Form:
 
-> **⇄ Modellwechsel** — jetzt auf das mittlere Tier (Sonnet) für den Commit-Zyklus.
+Wenn ein Wechsel sinnvoll ist, IMMER am ENDE der Antwort als Blockquote, immer gleiche Form. Zwei Typen, je eigenes Glyph:
 
-WICHTIG: Claude kann das Modell NICHT selbst umschalten — der Marker ist ein Hinweis an Joscha, der manuell über das Dropdown wechselt.
+> **🧠 Modellwechsel** — jetzt auf das mittlere Tier (Sonnet) für den Commit-Zyklus.
 
-Lohnt sich nur bei langen gemischten Sessions (erst viel denken, dann viel ausführen). Bei kurzen Tasks: ein Modell nehmen und durchziehen — das Hin und Her hat selbst Reibungskosten.
+> **🧰 Werkzeugwechsel** — dieser Task will Claude Code: Repo-weiter Refactor mit Testlauf. Migration-Prompt unten.
+
+Beim 🧰-Marker direkt den fertigen Migration-Prompt nach `references/handover.md` mitliefern, zum Rüberkopieren — nicht nur flaggen.
+
+WICHTIG: Claude kann weder Modell noch Werkzeug selbst umschalten — beide Marker sind Hinweise an Joscha, der manuell wechselt (Modell per Dropdown, Werkzeug per neuer Code-Session).
+
+Lohnt sich nur bei längeren/gemischten Sessions. Bei kurzen Tasks: ein Setup nehmen und durchziehen — das Hin und Her hat selbst Reibungskosten.
+
+**Drift:** Die Capability-Grenze zwischen Chat-mit-MCP und Claude Code altert (beide werden mächtiger) — genau wie die Tier-Nummern. Deshalb hier nur das Entscheidungs-PRINZIP pflegen (Ausführungsschleife/viele Dateien → Code), KEINE eingefrorene Feature-Liste von Claude Code. Die wäre in Wochen falsch.
 
 ---
 
@@ -153,7 +174,7 @@ Lange Konversationen sind teuer und ein stiller Qualitätskiller. Regeln:
 - **Ein Task, ein Chat — aus Token-Gründen.** Jeder Turn zahlt den kompletten Verlauf mit; ein langer Thread wird pro Message teurer. Kontext geht durch einen neuen Chat NICHT verloren (Memory + "Search past chats" tragen das Nötige), also kostet der Schnitt nichts.
 - **Dateien teilen, nicht beschreiben.** "Der Block hat einen Bug" → schlecht. Datei dranhängen oder per MCP holen → gut. Kontext > Beschreibung.
 - **Korrekturen erklären.** "Falsch" ist okay, "Falsch weil X, die richtige Regel ist Y" ist besser — hilft im selben Chat und zeigt ob ein Skill-Update nötig ist.
-- **Wenn der Chat lang wird:** Zusammenfassen was bisher passiert ist, oder neuen Chat starten mit klarem Auftrag.
+- **Wenn der Chat lang wird:** Zusammenfassen was bisher passiert ist, oder neuen Chat starten mit klarem Auftrag. Der „klare Auftrag" ist dasselbe Artefakt wie der Migration-Prompt — gleiches Skelett, nur Ziel `frischer Chat` statt `Claude Code` (→ `references/handover.md`).
 
 **Claude:** Wenn du merkst dass eine Konversation thematisch abdriftet oder sehr lang wird, weise Joscha freundlich darauf hin dass ein neuer Chat sinnvoll wäre.
 
@@ -197,6 +218,18 @@ Project = (falls projektgebunden gearbeitet wird) Project-Knowledge, permanent
 | Stabile Architektur-Fakten, Identität | Memory |
 | Prozedurales "Wie baue ich X", API-Docs | Skill |
 | Projektweite Referenz, in jedem Chat des Projekts gebraucht | Project-Knowledge |
+
+### Inline (SKILL.md) vs. references/
+
+Diese Datei wird bei JEDER Nachricht komplett gelesen — jede Zeile ist Always-on-Kost. Detaillierte Vorlagen, die nur selten gebraucht werden, gehören deshalb nach `references/` (on-demand geladen), nicht inline.
+
+| Inhalt | Gehört |
+|--------|--------|
+| Häufig gebraucht ODER sehr kurz (Spec-Format §2, Postmortem §7) | inline in SKILL.md |
+| Selten gebraucht UND detailliert (Migration/Handover-Template) | `references/` |
+
+Vorhandene References:
+- `references/handover.md` — Session-Handover-Template. Deckt beide Ziele ab: Chat→Claude Code (Werkzeugwechsel, §3) und Chat→frischer Chat (Hygiene, §8). Öffnen, wenn ein 🧰-Wechsel feuert oder ein neuer Chat gebrieft wird.
 
 ### Anti-Patterns
 
