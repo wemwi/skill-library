@@ -13,7 +13,7 @@ description: >-
   einen Commit-Title oder eine Commit-Message formulieren, Upload/Commit vorbereiten.
   Gilt für alle eigenen Repos der Typen *-library, *-mcp und *-foundation.
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
 ---
 
 # global-git-conventions
@@ -78,6 +78,7 @@ GitHub-Web, also muss der fertige Text bereitliegen.
 - `references/versioning.md` — SemVer-Policy (wann major/minor/patch), Tag-Konvention
 - `references/changelog.md` — CHANGELOG × release-please, Conventional-Commit-Mapping
 - `references/automation.md` — release-please + Renovate einrichten, Cloudflare-Interaktion, Token/Settings
+- `references/protection.md` — Repo-Härtung: Branch-Protection, Secret Scanning, Dependabot, 2FA (GitHub Free, public vs. private)
 - `references/about.md` — GitHub About-Block: Description, Website, Topic-Schema je Typ
 - `references/types.md` — die drei Repo-Typen im Detail
 
