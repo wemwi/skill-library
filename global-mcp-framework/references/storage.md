@@ -26,6 +26,16 @@ Bei Single-User läuft KV praktisch nicht voll — TTLs räumen automatisch: Acc
 Agents verbunden bleiben) laufen Grants nicht von selbst ab, und jeder Reconnect
 hinterlässt einen toten DCR-Client + Grant.
 
-Saubere Lösung: `purgeExpiredData()` aus einem **Cron Trigger** (scheduled handler)
-periodisch aufrufen — räumt abgelaufene und verwaiste Records. In der Foundation
-kapseln, damit alle Server ihn erben.
+`purgeExpiredData()` würde abgelaufene und verwaiste Records räumen und liegt als
+`scheduled`-Handler in der Foundation bereit (von `createOAuthWorker` geliefert, in der
+Foundation gekapselt, damit alle Server ihn erben). Der **wird stack-weit aber nicht
+getriggert**: Der Cloudflare Free Plan limitiert Cron Triggers, deshalb setzen wir gar
+keine Cron Jobs — kein `triggers`/`crons`-Block in der `wrangler.jsonc` (siehe
+`deploy.md`). Der Handler bleibt im Code erhalten und ist bei Bedarf reaktivierbar, läuft
+aber nie automatisch.
+
+**Bewusst akzeptierte Folge:** Ohne periodischen Purge und mit `refreshTokenTTL:
+undefined` verfallen Grants und verwaiste DCR-Clients nicht von selbst. Bei Single-User
+ist das unkritisch, weil KV praktisch nicht voll läuft; bei Bedarf den betroffenen
+Namespace manuell im Dashboard räumen (Storage & Databases → KV). Das ist eine bewusste
+Entscheidung, kein Versehen.

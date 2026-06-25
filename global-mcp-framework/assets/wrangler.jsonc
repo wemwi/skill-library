@@ -16,6 +16,10 @@
   "observability": {
     "enabled": true
   },
+  // KEIN Cron Trigger: Der Cloudflare Free Plan limitiert Cron Triggers, daher
+  // stack-weit keine Cron Jobs. Der scheduled-Handler (purgeExpiredData) der
+  // Foundation bleibt dadurch ungenutzt — bei Single-User unkritisch, da KV
+  // praktisch nicht voll läuft. Verwaiste DCR-Clients/Grants ggf. manuell räumen.
   // OAuth-State (Login-State, Clients, Grants, Tokens). Der Binding-Name MUSS
   // exakt "OAUTH_KV" heißen — im OAuthProvider hardcodiert, nicht frei wählbar.
   // Namespace im Dashboard anlegen (Storage & Databases → KV) und ID eintragen.
