@@ -1,0 +1,23 @@
+name: inventory-check
+
+# Verhindert README-Drift: schlägt fehl, sobald die Inventartabelle nicht mehr
+# zu den tatsächlichen Skill-Ordnern + deren metadata.version passt.
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "*/SKILL.md"
+      - "scripts/check_inventory.py"
+      - ".github/workflows/inventory-check.yml"
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python3 scripts/check_inventory.py
