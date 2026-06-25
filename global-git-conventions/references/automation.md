@@ -38,8 +38,8 @@ Bei `simple` greift der Default heute nicht (kein `package.json`-Name als Kompon
 ## Setup-Schritte (web-only, über GitHub Web)
 
 3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests" anhaken. Ohne das kann release-please keinen Release-PR öffnen.
-4. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained — Repo-Zugriff auf alle betroffenen Repos) als Secret `RELEASE_PLEASE` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". **Persönliche Accounts haben keine org-weiten Actions-Secrets**: den Token nur einmal erstellen, den Wert aber als **Repository-Secret in jedem Repo** hinterlegen (*Repo → Settings → Secrets and variables → Actions*). Ein fine-grained PAT deckt mit einem Token mehrere Repos ab; nur der Secret-Eintrag muss je Repo gesetzt werden.
-5. **Branch-Protection:** `main` darf keine Pflicht-Reviews verlangen, sonst kann der Workflow den Release-PR nicht selbst mergen (Solo-Repo: kein Problem).
+4. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained — Repo-Zugriff auf alle betroffenen Repos) als Secret `RELEASE_PLEASE_TOKEN` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". **Persönliche Accounts haben keine org-weiten Actions-Secrets**: den Token nur einmal erstellen, den Wert aber als **Repository-Secret in jedem Repo** hinterlegen (*Repo → Settings → Secrets and variables → Actions*). Ein fine-grained PAT deckt mit einem Token mehrere Repos ab; nur der Secret-Eintrag muss je Repo gesetzt werden.
+5. **Branch-Protection:** `main` darf **keine Required Reviews und keine Required Status Checks** erzwingen, sonst kann der Workflow den Release-PR nicht selbst mergen (`gh pr merge --squash` läuft gegen ein Merge-Gate; Solo-Repo: kein Problem). Force-Push-/Deletion-Schutz berührt den regulären PR-Merge dagegen NICHT und ist erwünscht — die vollständige Härtungs-Checkliste (was an, was aus, public vs. private) steht in `protection.md`.
 6. Fertig. Ab dem nächsten releasbaren Merge auf `main` öffnet release-please den Release-PR und mergt ihn automatisch.
 
 > [!NOTE]
@@ -57,7 +57,7 @@ einen zweiten Step, der den gerade geöffneten Release-PR sofort mergt:
 - name: Release-PR automatisch mergen
   if: ${{ steps.release.outputs.pr }}
   env:
-    GH_TOKEN: ${{ secrets.RELEASE_PLEASE }}
+    GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
   run: gh pr merge --squash "${{ fromJson(steps.release.outputs.pr).number }}"
 ```
 
@@ -79,13 +79,30 @@ Standardmäßig nutzt release-please das eingebaute `GITHUB_TOKEN`. Bekannte Eig
 
 Beim Auto-Merge ist das **fatal**: release-please braucht nach dem Merge des Release-PR einen **zweiten Run**, um Tag + GitHub-Release zu erstellen. Mergt der Workflow den PR mit `GITHUB_TOKEN`, bleibt dieser zweite Run aus → Version wird gebumpt, aber **kein Tag, kein Release** (Label hängt auf `autorelease: pending`). Das Cloudflare-Deploy liefe trotzdem (Branch-Push), aber ohne Tag/Changelog-Abschluss — also ein halbfertiger Release.
 
-Deshalb: **PAT als `RELEASE_PLEASE` ist Pflicht, sobald Auto-Merge aktiv ist** (war früher nur für CI auf PRs nötig). Der PAT-Push triggert den zweiten Run, der Release sauber abschließt.
+Deshalb: **PAT als `RELEASE_PLEASE_TOKEN` ist Pflicht, sobald Auto-Merge aktiv ist** (war früher nur für CI auf PRs nötig). Der PAT-Push triggert den zweiten Run, der Release sauber abschließt.
 
 ## Stolperfalle 2 — Cloudflare-Deploy-Interaktion
 
 - release-please arbeitet über PRs, nicht über direkte Pushes. Der **Auto-Merge des Release-PR** ist ein normaler Push auf `main` → Cloudflare deployt die neue Version. Mit Auto-Merge heißt das: jeder releasbare Merge auf `main` führt automatisch zu einem Deploy — der Merge ist kein bewusstes Gate mehr. Wenn mehrere Änderungen als ein Release rausgehen sollen, müssen sie **vor** dem Merge auf `main` gebündelt werden (z.B. über einen Feature-Branch/Sammel-PR), nicht erst auf `main`.
 - Die von release-please erstellten **Tags** triggern keinen zusätzlichen Cloudflare-Build, da Cloudflare auf Branch-Push baut, nicht auf Tag-Push. Kein doppelter Deploy.
 - release-please ändert deinen Deploy-Trigger nicht — es legt nur Tag + Changelog + GitHub-Release obendrauf.
+
+## Stolperfalle 3 — Multi-Worker aus einem Repo (Custom Deploy command Pflicht)
+
+Werden aus **einem** Repo über named environments (`wrangler.jsonc`) **mehrere** Worker deployt — der Top-Level-`name` weicht also von den deployten Worker-Namen ab —, dann muss in **Cloudflare Workers Builds pro Worker** ein **Custom Deploy command mit `--env`** gesetzt sein:
+
+```
+npx wrangler deploy --env <envname>
+```
+
+- **Grund 1 (Korrektheit):** Nur mit `--env` greifen der korrekte Worker-Name **und** die non-inheritable Bindings der Environment (z.B. KV-Namespaces). Ohne `--env` zieht Wrangler den Top-Level-`name` samt Top-Level-Bindings → falscher Worker / fehlende Bindings.
+- **Grund 2 (keine Autofix-PRs):** Beim Default-Command `npx wrangler deploy` öffnet Cloudflare wiederkehrend automatische PRs („Update name in Wrangler configuration file to match deployed Worker"). Ein Custom Deploy command unterdrückt diese Autofix-PRs.
+
+> [!WARNING]
+> **Nicht** auf das nackte `wrangler deploy` zurückstellen und den Top-Level-`name` auf einen einzelnen Worker-Namen ändern — das bricht das Multi-Worker-Setup (die übrigen Environments verlieren Name + Bindings). Lösung ist der `--env`-Command, nicht der Top-Level-`name`.
+
+> [!NOTE]
+> Bereits geöffnete Autofix-PRs („Update name in Wrangler configuration…") verschwinden nicht von allein und werden **nicht gemergt** — nur schließen. Ein Merge überschriebe den Top-Level-`name` und bräche das Multi-Worker-Setup.
 
 ## Wenn ein Release-PR ausbleibt
 
