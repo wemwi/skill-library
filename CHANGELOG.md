@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/wemwi/skill-library/compare/v2.4.0...v2.5.0) (2026-06-25)
+
+
+### Features
+
+* **global-workflow:** Routing um Werkzeug-Achse und Handover-Template erweitern ([66152b1](https://github.com/wemwi/skill-library/commit/66152b1be778fc575c763c5af61118a595e84836))
+
 ## [2.4.0](https://github.com/wemwi/skill-library/compare/v2.3.0...v2.4.0) (2026-06-25)
 
 
