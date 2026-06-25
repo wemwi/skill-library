@@ -57,6 +57,10 @@ Vorlage: `assets/wrangler.jsonc`. Pflichtbestandteile:
   `transport.md`).
 - `kv_namespaces` mit `"binding": "OAUTH_KV"` (siehe `storage.md`).
 - `nodejs_compat`.
+- **KEIN** `triggers`/`crons` — der Cloudflare Free Plan limitiert Cron Triggers,
+  stack-weit keine Cron Jobs. Der `scheduled`-Handler (`purgeExpiredData`) bleibt in der
+  Foundation, wird aber nicht getriggert; die Folge ist bewusst akzeptiert (siehe
+  `storage.md`).
 
 ## Ausnahme: Mehrere Worker aus einem Repo (Environments)
 
