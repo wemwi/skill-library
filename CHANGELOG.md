@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.0](https://github.com/wemwi/skill-library/compare/v2.3.0...v2.4.0) (2026-06-25)
+
+
+### Features
+
+* **global-git-conventions:** settings.md hinzufügen, RELEASE_PLEASE_TOKEN korrigieren ([#34](https://github.com/wemwi/skill-library/issues/34)) ([e77f6ea](https://github.com/wemwi/skill-library/commit/e77f6ea95178584b5c13da11993ac2d48ea40e9e))
+
 ## [2.3.0](https://github.com/wemwi/skill-library/compare/v2.2.0...v2.3.0) (2026-06-25)
 
 
