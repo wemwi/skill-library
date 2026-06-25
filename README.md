@@ -32,11 +32,7 @@ Namens-Familien: `global-*` (projektübergreifend), `selectedleafs-*`
 
 ## Setup
 
-Skill-Ordner als `.skill` packen (via `skill-creator`, Ordner als ZIP-Root):
-
-```bash
-python -m scripts.package_skill <skill-ordner> <output-verzeichnis>
-```
+Skill-Ordner als `.skill` packen (via `skill-creator`, Ordner als ZIP-Root).
 
 - **claude.ai:** das `.skill` in den Einstellungen installieren (gleicher Name überschreibt).
 - **Claude Code:** dieses Repo in den Kontext geben und den Skill-Ordner direkt lesen.
