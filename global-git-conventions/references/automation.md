@@ -26,6 +26,15 @@ Jedes Repo bekommt release-please (`googleapis/release-please-action@v5`, Manife
 
 `release-type` nach Repo-Typ: `node` für `*-mcp` und `*-foundation`, `simple` für `*-library` (siehe `types.md`).
 
+### Tag-Format: `include-component-in-tag` (Pflicht)
+
+Beide Config-Assets setzen `"include-component-in-tag": false` auf Top-Level. **Pflicht, nicht optional** — der release-please-Default ist `true`. Bei `release-type: node` zieht release-please dann den `package.json`-Namen als Komponente und präfixt damit **Tag und Release-Titel** (z.B. `github-mcp: v1.0.0` statt `v1.0.0`). Mit dem Flag auf `false` entstehen saubere `vMAJOR.MINOR.PATCH`-Tags — konsistent mit der Tag-Konvention aus `versioning.md`.
+
+Bei `simple` greift der Default heute nicht (kein `package.json`-Name als Komponente), das Flag steht dort aber **defensiv explizit** — robust gegen künftige Config-Änderungen und damit beide Assets dasselbe Tag-Verhalten garantieren.
+
+> [!WARNING]
+> **Übergang bei bereits getaggten Repos.** Wurde ein Repo zuvor mit Präfix (`<name>-vX.Y.Z`) getaggt, findet release-please nach dem Umstellen den alten Tag nicht mehr und betrachtet die Historie neu. Dann den alten Präfix-Tag **plus** das zugehörige GitHub-Release einmalig entfernen und `.release-please-manifest.json` auf den Ist-Stand setzen. Ist nur ein Release-PR offen (noch kein Tag), reicht das Flag — der PR regeneriert sich.
+
 ## Setup-Schritte (web-only, über GitHub Web)
 
 3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests" anhaken. Ohne das kann release-please keinen Release-PR öffnen.
