@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/wemwi/skill-library/compare/v1.5.3...v2.0.0) (2026-06-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* **selectedleafs-pos-restock:** rename von selectedleafs-pos-documentation
+
+### Code Refactoring
+
+* **selectedleafs-pos-restock:** rename von selectedleafs-pos-documentation ([0b166d9](https://github.com/wemwi/skill-library/commit/0b166d953729b2bfb7d3068e4dc06f8877f0f66b))
+
 ## [1.5.3](https://github.com/wemwi/skill-library/compare/v1.5.2...v1.5.3) (2026-06-24)
 
 
