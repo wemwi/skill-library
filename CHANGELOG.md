@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/wemwi/skill-library/compare/v2.2.0...v2.3.0) (2026-06-25)
+
+
+### Features
+
+* **global-git-conventions:** Custom Deploy command für Multi-Worker-Repos dokumentieren ([f936ca6](https://github.com/wemwi/skill-library/commit/f936ca629478155f24748265104dd6f415a9eef6))
+
+
+### Bug Fixes
+
+* **global-workflow:** Trigger schärfen — bei jeder Nachricht zuerst lesen, kein Auto-Load ([#31](https://github.com/wemwi/skill-library/issues/31)) ([91fed8f](https://github.com/wemwi/skill-library/commit/91fed8fc377e57d5f261f01f4fa7d8127b98ba94))
+
 ## [2.2.0](https://github.com/wemwi/skill-library/compare/v2.1.1...v2.2.0) (2026-06-25)
 
 
