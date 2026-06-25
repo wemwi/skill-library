@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/wemwi/skill-library/compare/v2.5.0...v2.6.0) (2026-06-25)
+
+
+### Features
+
+* **global-git-conventions:** protection.md für Repo-Härtung ergänzen ([#41](https://github.com/wemwi/skill-library/issues/41)) ([e5abd4d](https://github.com/wemwi/skill-library/commit/e5abd4d00d46c7a355cfafbf12c7bd4c6de20842))
+
 ## [2.5.0](https://github.com/wemwi/skill-library/compare/v2.4.0...v2.5.0) (2026-06-25)
 
 
