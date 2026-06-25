@@ -17,10 +17,13 @@ Enthaltenes Inventar:
 
 | Skill | Version | Zweck |
 |-------|---------|-------|
-| `global-git-conventions` | `–` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
-| `global-mcp-framework` | `1.3.0` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
+| `global-agent-framework` | `1.4.1` | Build-Time-Framework für Claude Managed Agents (Config, Deploy, Cron-Trigger, Permissions, Debug). |
+| `global-git-conventions` | `1.6.0` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
+| `global-mcp-framework` | `1.7.0` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
+| `global-workflow` | `1.0.0` | Universelles Arbeitsprotokoll: Task-Analyse, Modell-Routing, Nachfragen, Planung. |
 | `selectedleafs-brand` | `–` | Style-Kit der selectedleafs-Marke (Farben, Typo, Mockups, Icons). |
 | `selectedleafs-city-content` | `–` | Content-Strategie für lokale City Landing Pages. |
+| `selectedleafs-pos-restock` | `–` | Runtime-Anleitung an den `pos-restock`-Agent: Übergabeprotokoll auswerten & in Drive ablegen. |
 | `selectedleafs-telegram` | `–` | Posting-Playbook für lokale Telegram City-Channels. |
 | `tailwind-4-docs` | `–` | Tailwind CSS v4 Doku-Snapshot + Migrations-Workflow. |
 
@@ -29,11 +32,7 @@ Namens-Familien: `global-*` (projektübergreifend), `selectedleafs-*`
 
 ## Setup
 
-Skill-Ordner als `.skill` packen (via `skill-creator`, Ordner als ZIP-Root):
-
-```bash
-python -m scripts.package_skill <skill-ordner> <output-verzeichnis>
-```
+Skill-Ordner als `.skill` packen (via `skill-creator`, Ordner als ZIP-Root).
 
 - **claude.ai:** das `.skill` in den Einstellungen installieren (gleicher Name überschreibt).
 - **Claude Code:** dieses Repo in den Kontext geben und den Skill-Ordner direkt lesen.
