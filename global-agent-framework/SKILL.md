@@ -8,11 +8,12 @@ description: >-
   versioniert oder gedebuggt wird — auch wenn das Wort Skill nicht fällt. Trigger u.a.:
   Managed Agent anlegen, Agent-Config (system/tools/mcp_servers/skills), Session
   starten, Scheduled Deployment / Cron-Trigger, Webhook-Brücke zum Starten von
-  Sessions, Vault für Agent-Secrets, Permission-Policy, Agent-Version bumpen, Agent
-  debuggen, neuen Agent ins Portfolio aufnehmen. Gilt für jeden Managed Agent in
-  diesem Stack.
+  Sessions, Vault für Agent-Secrets, Permission-Policy, Least-Privilege, Allowlist/
+  Denylist, Tool-Oberfläche minimieren, enabled:false vs permission_policy, Agent-
+  Version bumpen, Agent debuggen, neuen Agent ins Portfolio aufnehmen. Gilt für jeden
+  Managed Agent in diesem Stack.
 metadata:
-  version: "1.1.0"
+  version: "1.4.0"
 ---
 
 # global-agent-framework
@@ -63,8 +64,8 @@ Skills des Agenten plus die User-Message, nicht dieser Skill.
 | `name` | Aufruf-/Tracking-ID des Agenten (Abschnitt 4). |
 | `model` | Claude 4.5 oder neuer. |
 | `system` | Persona / Dauerverhalten (Abschnitt 3). |
-| `tools` | Eingebaut: Bash, File-Ops, Web Search/Fetch, MCP. Toolset-Typ `agent_toolset_20260401`. |
-| `mcp_servers` | Die MCP-Server *dieses* Agenten (Abschnitt 5). |
+| `tools` | Toolset-Einträge. Eingebaut via `agent_toolset_20260401` (Bash, File-Ops, Web Search/Fetch). **Jeder** in `mcp_servers` deklarierte Server braucht hier zusätzlich einen eigenen `mcp_toolset`-Eintrag (`mcp_server_name` = Server-`name`), sonst erscheinen seine Tools nicht. Gating je Toolset über `enabled`/`permission_policy` (Abschnitte 5+7). |
+| `mcp_servers` | Die MCP-Server *dieses* Agenten — je `{type: url, name, url}` (Abschnitt 5). |
 | `skills` | Domänen-Kontext mit Progressive Disclosure (optional, Abschnitt 3). |
 
 Dazu optional `description`, `metadata` (Abschnitt 4) und `callable_agents`
@@ -74,11 +75,13 @@ Dazu optional `description`, `metadata` (Abschnitt 4) und `callable_agents`
 Console/Platform-API akzeptiert YAML. Zwei Vorlagen liegen unter `assets/`:
 
 - `assets/agent-config.blank.yaml` — kommentiertes Skeleton zum Kopieren. Jedes Feld
-  trägt einen Verweis auf den zuständigen Abschnitt dieses Skills.
+  trägt einen Verweis auf den zuständigen Abschnitt; die `mcp_servers`/`mcp_toolset`-
+  Verdrahtung ist als auskommentiertes Muster hinterlegt.
 - `assets/agent-config.example.yaml` — ausgefüllter `rechnungs-agent` als lebendes
-  Vorbild (Drei-Ebenen-`system`, Least-Privilege-`mcp_servers`, gefülltes `metadata`).
-  Referenz zum Abgucken, **nicht** garantiert deploybar — die Beta kann Feldnamen und
-  erlaubte Modelle verschieben.
+  Vorbild: Drei-Ebenen-`system`, `mcp_servers` als URL-Objekt, ein `mcp_toolset` mit
+  Allowlist (`enabled`) und `permission_policy`-Gate auf dem Schreib-Tool, gefülltes
+  `metadata`. Referenz zum Abgucken, **nicht** garantiert deploybar — die Beta kann
+  Feldnamen und erlaubte Modelle verschieben.
 
 ## 3. Drei-Ebenen-Regel (Herzstück)
 
@@ -124,12 +127,34 @@ keine Secrets, keine Logik.
 
 ## 5. MCP-Verdrahtung & Least-Privilege
 
+**Leitfrage vor jeder Verdrahtung: Hängt die Eigenschaft, die du kontrollieren willst,
+am CREDENTIAL/an der VERBINDUNG — oder am einzelnen TOOL-CALL?** Daraus folgt, *wo* die
+Grenze sitzt:
+
+- **Am Call** (welches Tool, ob es überhaupt läuft) → in der **Config** lösen:
+  `enabled: false` (Tool weg) oder `permission_policy` (Tool gegated, Abschnitt 7). **Ein
+  Connector** genügt.
+- **Am Credential/an der Verbindung** → **strukturell trennen**: eigener Connector /
+  eigenes Deployment / eigenes Credential / eigenes Environment.
+
+Credential-gebundene Eigenschaften sind mehr als nur „darf kommunizieren": Absender-
+**Identität**, Berechtigungs-**Scope**, **Blast-Radius** bei Kompromittierung,
+**Rotation/Widerruf**, **Audit-Zurechenbarkeit**, **Rate-Limit/Quota**,
+**Daten-Mandantentrennung**. Sobald *eine* davon getrennt sein muss, reicht Config nicht —
+es braucht zwei Verbindungen.
+
+- **Telegram = Identität** → Sende- und Lese-Bot sind token-gebunden: **zwei Bots, zwei
+  Deployments**, nicht ein Bot mit gegateten Tools.
+- **Shopify = Scope** → eine Identität genügt, aber Rechte begrenzen über das
+  **read-only-Token** (Credential + `enabled`), nicht über zwei Stores.
+- **Lexware = read-vs-write-Scope** → hängt am Token: über das **Credential** trennen,
+  nicht allein über `enabled`.
+
+Darauf aufbauend die zeitlosen Server-Regeln:
+
 - **MCP pro Agent, nicht global.** In `mcp_servers` nur die Server eintragen, die
   *dieser* Agent wirklich braucht. Ein `rechnungs-agent` bekommt `lexware-mcp` — nicht
   `telegram-mcp`, nicht `shopify-mcp`.
-- **Minimale Tool-Oberfläche.** Auch innerhalb eines Servers die Tool-Menge so klein wie
-  möglich halten; jedes zusätzliche Schreib-Tool vergrößert den Schaden bei
-  Fehlverhalten.
 - **Jeder Agent nur seine Teilmenge.** Die Server-Liste ist Teil der
   Least-Privilege-Grenze — zusammen mit Vaults (Abschnitt 6) und Permission-Policy
   (Abschnitt 7).
@@ -138,6 +163,42 @@ keine Secrets, keine Logik.
 - **Nicht jeder Job braucht MCP.** Die Sandbox bringt Bash + Python/Node u.a. mit;
   einfache Datei-Arbeit (z.B. PDF umbenennen oder komprimieren) erledigt der Agent direkt
   in der Sandbox, statt dafür einen Custom-MCP zu bauen.
+
+### Tool-Oberfläche minimieren — mit `enabled: false`, nicht mit `permission_policy`
+
+Default für jedes MCP-Toolset ist die **Allowlist**: alles aus, nur das Benötigte an.
+`enabled: false` entfernt ein Tool **strukturell** — es ist für den Agenten weder
+auffindbar noch aufrufbar (**harte Wand**: „weg", nicht „gegated"). Das ist die saubere
+Methode, nicht benötigte oder gefährliche Tools loszuwerden; nebenbei spart es
+Kontext-Ballast.
+
+> **Merksatz: Fähigkeit *entfernen* → `enabled: false`. Fähigkeit *gaten* →
+> `permission_policy` (Abschnitt 7). Nicht verwechseln.** Eine `always_ask`-Policy lässt
+> das Tool im Modell sichtbar und aufrufbar und pausiert nur davor — sie ist **kein**
+> Ersatz fürs Entfernen. Wer ein Schreib-Tool gar nicht braucht, gated es nicht, sondern
+> nimmt es weg.
+
+- **Allowlist** (Standard): `default_config.enabled: false` + pro Tool `enabled: true`.
+  Nur die freigeschalteten Tools erreichen das Modell.
+- **Denylist** (Ausnahme): `default_config` weglassen, `enabled: false` nur auf einzelne
+  gefährliche Tools.
+- **Präzedenz:** per-Tool-`configs` > `default_config` > System-Default.
+
+Mini-Beispiel — von einem schreibmächtigen Server nur die read-only-Abfrage freischalten:
+
+```yaml
+# tools[]: Allowlist auf dem MCP-Toolset — alles aus, nur graphql_query an
+- type: mcp_toolset
+  mcp_server_name: shopify
+  default_config:
+    enabled: false
+  configs:
+    - name: graphql_query   # read-only
+      enabled: true
+```
+
+(Das YAML-Grundgerüst der Agent-Config steht im Template `assets/agent-config.*.yaml` —
+hier nur das Least-Privilege-Muster, nicht die ganze Config-Mechanik.)
 
 ## 6. Secrets via Vaults
 
@@ -153,18 +214,82 @@ keine Secrets, keine Logik.
 
 ## 7. Permission-Policies & Human-in-the-Loop
 
-- **Default bewusst wählen.** `always_allow` ist als Default möglich — für **headless**
-  Betrieb (Cron, Webhook) ist das eine echte Entscheidung, kein Selbstläufer: ohne
-  menschliches Gate führt der Agent jeden erlaubten Tool-Call sofort aus.
+**`enabled` vs. `permission_policy` — die zentrale Unterscheidung.** `enabled: false` ist
+die **strukturelle** Grenze (Tool weg, Abschnitt 5). `permission_policy` ist die
+**Laufzeit**-Grenze für Tools, die *bleiben*:
+
+| Policy | Verhalten |
+|---|---|
+| `always_allow` | Tool läuft ohne Rückfrage. |
+| `always_ask` | Session pausiert vor **jedem** Aufruf und wartet auf Freigabe. |
+
+**Defaults bewusst kennen — sie sind nicht symmetrisch:**
+
+- **agent_toolset** (`agent_toolset_20260401`) → Default `always_allow`. Bash, Write,
+  Edit, web_fetch laufen also **ungefragt**, sobald das Toolset drin ist.
+- **mcp_toolset** → Default `always_ask`. Auch neu hinzukommende Tools eines MCP-Servers
+  führen so nichts ungefragt aus. Für einen vertrauten read-only-Server auf
+  `always_allow` heben; Schreib-Tools auf `always_ask` lassen.
+
+Override pro Toolset über `default_config.permission_policy`, pro Tool über die
+`configs`-Liste — gleiche Präzedenz wie bei `enabled` (per-Tool > default > System).
+
+**Daraus die HITL-Praxis:**
+
+- **Default bewusst wählen.** Für **headless** Betrieb (Cron, Webhook) ist `always_allow`
+  eine echte Entscheidung, kein Selbstläufer: ohne menschliches Gate führt der Agent jeden
+  erlaubten Tool-Call sofort aus.
 - **Lesen vs. Schreiben trennen.** Für rein lesende/ableitende Agents ist `always_allow`
-  meist okay. Für **schreibende oder geldrelevante** Aktionen (Lexware-Rechnung
-  finalisieren, Bestellung anlegen, öffentlich posten) braucht es ein Gate.
-- **„Erst vorschlagen, dann schreiben".** Sensible Agents so bauen, dass sie zuerst einen
-  **Entwurf** erzeugen (Artefakt/Nachricht) und der irreversible Schreib-Schritt eine
-  Bestätigung erfordert — entweder per Permission-Policy, die auf Schreib-Tools eine
-  Bestätigung verlangt, oder durch Aufteilen des Workflows (Agent liefert Entwurf, Mensch
-  löst den Commit aus). Dieses Verhalten zusätzlich im System-Prompt verankern
-  (Abschnitt 3).
+  meist okay. **Schreibende oder geldrelevante** Aktionen (Lexware-Rechnung finalisieren,
+  Bestellung anlegen, öffentlich posten) brauchen ein Gate.
+- **„Erst vorschlagen, dann schreiben".** Sensible Agents zuerst einen **Entwurf** erzeugen
+  lassen (Artefakt/Nachricht); der irreversible Schreib-Schritt erfordert eine
+  Bestätigung — per `permission_policy` auf den Schreib-Tools oder durch Aufteilen des
+  Workflows (Agent liefert Entwurf, Mensch löst den Commit aus). Dieses Verhalten
+  zusätzlich im System-Prompt verankern (Abschnitt 3).
+
+### Drei-Schichten-Schutz für schreibmächtige MCPs
+
+Bei einem Server, der schreiben oder Geld bewegen kann, staffelt man drei **unabhängige**
+Wände — jede hält für sich, und Schicht 2 hält sogar dann, wenn Config oder Modell
+versagen:
+
+1. **`enabled: false`** (Abschnitt 5) → die Schreib-Fähigkeit **existiert nicht** für den
+   Agenten. Harte Wand in der Config.
+2. **scope-/read-only-Credential im Vault** (Abschnitt 6) → der Server lehnt
+   serverseitig ab, selbst bei Fehlverhalten; das Secret sieht die Sandbox nie. Harte Wand
+   **unabhängig vom Agentenverhalten** — deshalb die belastbarste Schicht.
+3. **`permission_policy: always_ask`** in der Testphase, später `always_allow`, wenn
+   vertraut. Weiche Wand, Laufzeit-Gate.
+
+Beispiel Shopify: nur `graphql_query` aktiviert (Schicht 1), read-only-Token im Vault
+(Schicht 2), in der Testphase `always_ask` (Schicht 3). Zum Read-only-Agenten wird er
+schon durch Schicht 1+2 — Schicht 3 ist die Sicherung beim Einfahren.
+
+**Sonderfall: ein nötiger Write, aber nur ein generisches Mutation-Tool.** Manchmal braucht
+der Agent **genau eine** schmale Schreibaktion, der MCP-Server bietet dafür aber nur ein
+**generisches** Tool an (z.B. ein `graphql_mutation`, das *jede* Mutation abdeckt, nicht nur
+die gewünschte). Dann lässt sich **Schicht 1 nicht halten**: Du musst das generische Tool
+`enabled: true` setzen und gewährst damit *alle* Writes, nicht nur den einen. Die tragende
+Wand wandert in dem Moment auf **Schicht 2** — der **Credential-Scope** muss aufs Minimum
+des tatsächlich nötigen Writes begrenzt werden (server-seitige Ablehnung von allem anderen,
+unabhängig vom Agentenverhalten). Besonders brisant, wenn der Agent auf **ungeprüftem
+Input** operiert (OCR aus fremd gelieferten Dateien, eingehende Nachrichten): generisches
+Write-Tool + weiter Token-Scope + `always_allow` = der Input steuert potenziell *jeden*
+erlaubten Write. Sauberste Gegenmaßnahme, wenn du Schicht 1 zurückwillst: ein
+**Single-Purpose-Custom-MCP**, das nur die eine Aktion kann — das generische Tool bleibt
+aus. Passt in den `*-mcp`-Stack und ist strukturell richtig; Credential-Scope ist der
+pragmatische Zwischenschritt.
+
+**Wo `always_ask` tatsächlich freigegeben wird.** Eine `always_ask`-Policy pausiert die
+Session im Zustand `requires_action` — *wie* du freigibst, hängt am **Session-Start**:
+**interaktiv** gestartet siehst du den Entwurf und bestätigst auf dem Schirm; **per
+API/Webhook** gestartet gibt es keinen Schirm → die Freigabe ist ein **API-Call**, der
+`requires_action` auflöst (= Job der Webhook-Brücke, Abschnitt 8). Konsequenz: `always_ask`
+für einen **headless** Agenten setzt einen Freigeber voraus (Brücke oder manueller
+API-Aufruf). Ohne ihn **stallt** die Session am Gate — es erscheint kein Popup. Wer headless
+fährt und (noch) keinen API-Freigeber hat, lehnt sich daher auf Schicht 1+2 statt auf
+Schicht 3.
 
 ## 8. Trigger-Muster
 
@@ -235,8 +360,44 @@ Managed Agents ist Beta — die erlaubte Modell-Teilmenge kann von der normalen 
 abweichen. Welche konkrete ID welchem Tier entspricht und welche die Beta zulässt:
 **zum Bauzeitpunkt gegen die Console-Doku prüfen,** nicht aus diesem Skill ableiten.
 
+## 11. Environment-Strategie
+
+Das **Environment** ist der Laufzeit-Kontext der Sandbox — **Netzwerk** und **Pakete**. Es
+ist **keine Sicherheits-/Isolationsgrenze** zwischen Agenten: Wer was darf, entscheiden
+Credential-Scope (Abschnitt 6) und Tool-Config (Abschnitte 5+7), nicht das Environment.
+Greife fürs Härten also dorthin, nicht ins Environment.
+
+**Trennen nach Bedarf, nicht zur Isolation.** Environments separiert man nach
+**Paket-/Netzbedarf** — zwei Agenten mit denselben Paketen und demselben Netzprofil teilen
+sich eins; ein Agent mit Sonderpaketen bekommt ein eigenes. Mehr Environments „zur
+Sicherheit" bringen nichts (die Grenze sitzt woanders) und kosten nur Pflege.
+
+**Netzwerk — so eng wie möglich, Default ist aus.** Wähle die engste Stufe, die noch trägt:
+
+- **Limited** statt **Full**, wenn der Agent kein freies Web braucht. **Erlaubte Hosts leer
+  lassen** ist das sichere Minimum — jeder Eintrag *weitet* den Egress. Hosts nur eintragen,
+  wenn der Agent eine konkrete externe Domain wirklich braucht (z.B. `web_fetch` auf eine
+  feste API).
+- **MCP-Egress** nur an, wenn der Agent MCP-Server nutzt. **Paketmanager-Egress** nur an,
+  wenn Pakete deklariert sind (siehe ungültige Kombi unten).
+
+**Pakete deklarieren + pinnen.** Was der Agent an Bibliotheken/Tools braucht, gehört in die
+Environment-Pakete — **nicht** ins Skill, **nicht** in den System-Prompt. **Versionen
+pinnen**: reproduzierbarer Build, kein stiller Supply-Chain-Wechsel, kostet keine
+Funktionalität. Liste minimal halten, weil der Paketmanager-Egress eine Angriffsfläche ist,
+die du bei deklarierten Paketen **nicht** schließen kannst (siehe unten).
+
+**Die ungültige Kombi.** „**Limited + Paketmanager-Egress AUS + deklarierte Pakete**" ist
+**ungültig**: Das Provisioning braucht Repo-Egress (PyPI/apt), um die Pakete zu ziehen —
+ohne ihn schlägt der Build fehl. Wer Pakete deklariert, **muss** den Paketmanager-Egress
+anlassen. Du sparst also keine Sicherheit, indem du ihn abschaltest; der Hebel ist eine
+**minimale, gepinnte** Paketliste, nicht „aus".
+
+**Environment-Metadaten** (optional, wie Abschnitt 4 für den Agenten): `owner`, `purpose`,
+ggf. ein Versions-/Repo-Spiegel — reines Tracking, keine Logik, keine Secrets.
+
 ---
 
-**Geplant für v1.2** (hier bewusst noch nicht ausgeführt): Environment-Strategie im
-Detail, Datenresidenz/ZDR, Observability-Tiefe, restliches Kostenmodell (Token-Budgets,
-Caching), Lifecycle-Details, Anti-Pattern-Katalog.
+**Geplant für später** (hier bewusst noch nicht ausgeführt): Datenresidenz/ZDR,
+Observability-Tiefe, restliches Kostenmodell (Token-Budgets, Caching), Lifecycle-Details,
+Anti-Pattern-Katalog.
