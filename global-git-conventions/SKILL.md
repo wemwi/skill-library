@@ -13,7 +13,7 @@ description: >-
   einen Commit-Title oder eine Commit-Message formulieren, Upload/Commit vorbereiten.
   Gilt für alle eigenen Repos der Typen *-library, *-mcp und *-foundation.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
 ---
 
 # global-git-conventions

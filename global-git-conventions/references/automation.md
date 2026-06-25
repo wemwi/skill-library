@@ -87,6 +87,23 @@ Deshalb: **PAT als `RELEASE_PLEASE_TOKEN` ist Pflicht, sobald Auto-Merge aktiv i
 - Die von release-please erstellten **Tags** triggern keinen zusätzlichen Cloudflare-Build, da Cloudflare auf Branch-Push baut, nicht auf Tag-Push. Kein doppelter Deploy.
 - release-please ändert deinen Deploy-Trigger nicht — es legt nur Tag + Changelog + GitHub-Release obendrauf.
 
+## Stolperfalle 3 — Multi-Worker aus einem Repo (Custom Deploy command Pflicht)
+
+Werden aus **einem** Repo über named environments (`wrangler.jsonc`) **mehrere** Worker deployt — der Top-Level-`name` weicht also von den deployten Worker-Namen ab —, dann muss in **Cloudflare Workers Builds pro Worker** ein **Custom Deploy command mit `--env`** gesetzt sein:
+
+```
+npx wrangler deploy --env <envname>
+```
+
+- **Grund 1 (Korrektheit):** Nur mit `--env` greifen der korrekte Worker-Name **und** die non-inheritable Bindings der Environment (z.B. KV-Namespaces). Ohne `--env` zieht Wrangler den Top-Level-`name` samt Top-Level-Bindings → falscher Worker / fehlende Bindings.
+- **Grund 2 (keine Autofix-PRs):** Beim Default-Command `npx wrangler deploy` öffnet Cloudflare wiederkehrend automatische PRs („Update name in Wrangler configuration file to match deployed Worker"). Ein Custom Deploy command unterdrückt diese Autofix-PRs.
+
+> [!WARNING]
+> **Nicht** auf das nackte `wrangler deploy` zurückstellen und den Top-Level-`name` auf einen einzelnen Worker-Namen ändern — das bricht das Multi-Worker-Setup (die übrigen Environments verlieren Name + Bindings). Lösung ist der `--env`-Command, nicht der Top-Level-`name`.
+
+> [!NOTE]
+> Bereits geöffnete Autofix-PRs („Update name in Wrangler configuration…") verschwinden nicht von allein und werden **nicht gemergt** — nur schließen. Ein Merge überschriebe den Top-Level-`name` und bräche das Multi-Worker-Setup.
+
 ## Wenn ein Release-PR ausbleibt
 
 Hat ein gemergter PR eine releasbare Änderung, aber es erscheint kein Release-PR: den fehlgeschlagenen Workflow-Run suchen und erneut ausführen (re-run). Häufigste Ursache: PR-Titel war nicht conventional (siehe `changelog.md`).
