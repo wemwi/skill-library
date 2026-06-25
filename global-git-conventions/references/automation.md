@@ -7,7 +7,7 @@ Release-PR), **Renovate** hält Dependencies aktuell (Bump-PRs).
   `main` → release-please öffnet den Release-PR → der Workflow mergt ihn sofort → Tag,
   GitHub-Release und (bei `*-mcp`/`*-foundation`) Cloudflare-Deploy laufen ohne Handgriff.
   Der Merge ist kein Gate mehr. Mechanik und die dafür nötige PAT-Pflicht: Abschnitt
-  „Auto-Merge" unten.
+  „Auto-Merge“ unten.
 - **Renovate-Bump-PRs bleiben manuell.** Bewusst nicht auto-gemergt — ein Major-Bump auf
   einem Produktions-Worker soll eine Entscheidung bleiben. Das Dependency Dashboard zeigt
   den Rückstand zentral.
@@ -26,15 +26,24 @@ Jedes Repo bekommt release-please (`googleapis/release-please-action@v5`, Manife
 
 `release-type` nach Repo-Typ: `node` für `*-mcp` und `*-foundation`, `simple` für `*-library` (siehe `types.md`).
 
+### Tag-Format: `include-component-in-tag` (Pflicht)
+
+Beide Config-Assets setzen `"include-component-in-tag": false` auf Top-Level. **Pflicht, nicht optional** — der release-please-Default ist `true`. Bei `release-type: node` zieht release-please dann den `package.json`-Namen als Komponente und präfixt damit **Tag und Release-Titel** (z.B. `github-mcp: v1.0.0` statt `v1.0.0`). Mit dem Flag auf `false` entstehen saubere `vMAJOR.MINOR.PATCH`-Tags — konsistent mit der Tag-Konvention aus `versioning.md`.
+
+Bei `simple` greift der Default heute nicht (kein `package.json`-Name als Komponente), das Flag steht dort aber **defensiv explizit** — robust gegen künftige Config-Änderungen und damit beide Assets dasselbe Tag-Verhalten garantieren.
+
+> [!WARNING]
+> **Übergang bei bereits getaggten Repos.** Wurde ein Repo zuvor mit Präfix (`<name>-vX.Y.Z`) getaggt, findet release-please nach dem Umstellen den alten Tag nicht mehr und betrachtet die Historie neu. Dann den alten Präfix-Tag **plus** das zugehörige GitHub-Release einmalig entfernen und `.release-please-manifest.json` auf den Ist-Stand setzen. Ist nur ein Release-PR offen (noch kein Tag), reicht das Flag — der PR regeneriert sich.
+
 ## Setup-Schritte (web-only, über GitHub Web)
 
-3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests" anhaken. Ohne das kann release-please keinen Release-PR öffnen.
-4. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained — Repo-Zugriff auf alle betroffenen Repos) als Secret `RELEASE_PLEASE_TOKEN` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". **Persönliche Accounts haben keine org-weiten Actions-Secrets**: den Token nur einmal erstellen, den Wert aber als **Repository-Secret in jedem Repo** hinterlegen (*Repo → Settings → Secrets and variables → Actions*). Ein fine-grained PAT deckt mit einem Token mehrere Repos ab; nur der Secret-Eintrag muss je Repo gesetzt werden.
+3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests“ anhaken. Ohne das kann release-please keinen Release-PR öffnen.
+4. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained — Repo-Zugriff auf alle betroffenen Repos) als Secret `RELEASE_PLEASE_TOKEN` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1“. **Persönliche Accounts haben keine org-weiten Actions-Secrets**: den Token nur einmal erstellen, den Wert aber als **Repository-Secret in jedem Repo** hinterlegen (*Repo → Settings → Secrets and variables → Actions*). Ein fine-grained PAT deckt mit einem Token mehrere Repos ab; nur der Secret-Eintrag muss je Repo gesetzt werden.
 5. **Branch-Protection:** `main` darf keine Pflicht-Reviews verlangen, sonst kann der Workflow den Release-PR nicht selbst mergen (Solo-Repo: kein Problem).
 6. Fertig. Ab dem nächsten releasbaren Merge auf `main` öffnet release-please den Release-PR und mergt ihn automatisch.
 
 > [!NOTE]
-> **Kein „Allow auto-merge"-Setting nötig.** Der Workflow mergt direkt (`gh pr merge --squash`), nicht über GitHubs natives Auto-Merge. Das native Feature gibt es nur bei Repos mit Required Checks und in privaten Repos erst ab GitHub Pro — der direkte Merge funktioniert plan- und setting-unabhängig in jedem Repo.
+> **Kein „Allow auto-merge“-Setting nötig.** Der Workflow mergt direkt (`gh pr merge --squash`), nicht über GitHubs natives Auto-Merge. Das native Feature gibt es nur bei Repos mit Required Checks und in privaten Repos erst ab GitHub Pro — der direkte Merge funktioniert plan- und setting-unabhängig in jedem Repo.
 
 ## Auto-Merge — wie der Release-PR ohne Handgriff durchläuft
 
@@ -102,12 +111,12 @@ Dependency Dashboard (ein Issue pro Repo) zeigt den Gesamt-Rückstand zentral.
 3. Onboarding-PR mergen. Ab dann öffnet Renovate Bump-PRs nach Zeitplan.
 
 > [!WARNING]
-> **Silent-Falle.** Wird Renovate mit „All repositories" installiert, defaulten alle
+> **Silent-Falle.** Wird Renovate mit „All repositories“ installiert, defaulten alle
 > Repos in den **Silent-Modus** (`dryRun=lookup`): Renovate scannt, öffnet aber keine
-> PRs/Issues — Ergebnisse nur im Mend Developer Portal. Symptom: Repos zeigen „onboarded",
+> PRs/Issues — Ergebnisse nur im Mend Developer Portal. Symptom: Repos zeigen „onboarded“,
 > aber es kommen keine PRs. Fix: `"mode": "full"` in der `renovate.json` (überschreibt den
-> Default pro Repo, versioniert) oder im Portal die Engine-Setting von „Silent" auf
-> „Interactive" stellen. Bei „Selected repositories"-Installation tritt das nicht auf —
+> Default pro Repo, versioniert) oder im Portal die Engine-Setting von „Silent“ auf
+> „Interactive“ stellen. Bei „Selected repositories“-Installation tritt das nicht auf —
 > die gewählten Repos starten direkt interaktiv.
 
 ### Foundation-Pin (`*-mcp`)
