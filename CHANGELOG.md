@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/wemwi/skill-library/compare/v2.1.1...v2.2.0) (2026-06-25)
+
+
+### Features
+
+* **global-workflow:** Workflow-Skill mit Modell-Routing ([#29](https://github.com/wemwi/skill-library/issues/29)) ([b695f39](https://github.com/wemwi/skill-library/commit/b695f39a79e66f8181366d69f15d98fdb96f3419))
+
 ## [2.1.1](https://github.com/wemwi/skill-library/compare/v2.1.0...v2.1.1) (2026-06-25)
 
 
