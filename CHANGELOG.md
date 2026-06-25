@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/wemwi/skill-library/compare/v2.0.0...v2.1.0) (2026-06-25)
+
+
+### Features
+
+* **global-agent-framework:** Environment-Strategie (§11) + Write-Cluster in §7 ([d2a133b](https://github.com/wemwi/skill-library/commit/d2a133bbd4ce602f3c4dc421181a392444636657))
+
 ## [2.0.0](https://github.com/wemwi/skill-library/compare/v1.5.3...v2.0.0) (2026-06-25)
 
 
