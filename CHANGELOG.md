@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.1](https://github.com/wemwi/skill-library/compare/v2.1.0...v2.1.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* **global-git-conventions:** include-component-in-tag in release-please-Configs setzen ([#27](https://github.com/wemwi/skill-library/issues/27)) ([7d62f06](https://github.com/wemwi/skill-library/commit/7d62f06f5e07cc75a83168af0afa623bf0423fc5))
+
 ## [2.1.0](https://github.com/wemwi/skill-library/compare/v2.0.0...v2.1.0) (2026-06-25)
 
 
