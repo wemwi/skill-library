@@ -2,7 +2,7 @@
 name: global-workflow
 description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Workflow — Universelles Arbeitsprotokoll
@@ -92,7 +92,9 @@ Anker ist der Charakter, nicht das Modell — die Zuordnung nennt die aktuellen 
 
 Das Mapping Charakter→Tier ist der einzige Teil, der altern kann. Ändert sich die Tier-Landschaft, hier eine Zeile anpassen — die Logik bleibt.
 
-**Self-Check** (nach der Charakter-Bestimmung): aktives Modell mit nötigem Tier vergleichen. NUR bei echtem Mismatch handeln, sonst still bleiben:
+**Der Self-Check läuft an jeder Phasengrenze neu, nicht nur im ersten Turn.** Der Charakter eines Tasks ist nicht fix — er kippt, wenn die Arbeit von einer Denkphase (Architektur, Recherche, Abwägung) in eine Ausführungsphase (Skill-Inhalt schreiben, Commit/PR/Merge über GitHub-MCP) übergeht. An genau dieser Naht den Charakter neu bewerten; der erste Turn bindet nicht. Beispiel: Upload-/Commit-Zyklus über GitHub-MCP = mittleres Tier (Sonnet), Marker davor — auch wenn die Architektur-Phase davor auf Opus lief.
+
+**Self-Check** (nach jeder Charakter-Bestimmung): aktives Modell mit nötigem Tier vergleichen. NUR bei echtem Mismatch handeln, sonst still bleiben:
 - Aktives Tier zu HOCH (z.B. Opus für Mechanisches) → kurzer Hinweis, dann normal weiter. Token-Sparen, kein Qualitätsrisiko.
 - Aktives Tier zu NIEDRIG (z.B. Sonnet für harte Architektur) → Wechsel-Vorschlag VOR der inhaltlichen Antwort, damit Joscha wechselt und neu fragt. Achtung: diese Richtung ist unzuverlässiger — ein schwächeres Modell erkennt eigene Überforderung evtl. nicht. Im Zweifel lieber einmal mehr flaggen.
 
@@ -109,15 +111,17 @@ In Claude Code löst sich Frage 1 teilweise auf — Code wählt das Modell inter
 
 ### Handover-Marker
 
-Wenn ein Wechsel sinnvoll ist, IMMER am ENDE der Antwort als Blockquote, immer gleiche Form. Zwei Typen, je eigenes Glyph:
+Wenn ein Wechsel sinnvoll ist, IMMER am ENDE der Antwort als Blockquote, immer gleiche Form. Drei Typen, je eigenes Glyph:
 
 > **🧠 Modellwechsel** — jetzt auf das mittlere Tier (Sonnet) für den Commit-Zyklus.
 
 > **🧰 Werkzeugwechsel** — dieser Task will Claude Code: Repo-weiter Refactor mit Testlauf. Migration-Prompt unten.
 
-Beim 🧰-Marker direkt den fertigen Migration-Prompt nach `references/handover.md` mitliefern, zum Rüberkopieren — nicht nur flaggen.
+> **🔄 Kontextwechsel** — dieser Thread ist lang/themen-gemischt, frischer Chat sinnvoll. Migration-Prompt unten (→ §8).
 
-WICHTIG: Claude kann weder Modell noch Werkzeug selbst umschalten — beide Marker sind Hinweise an Joscha, der manuell wechselt (Modell per Dropdown, Werkzeug per neuer Code-Session).
+Beim 🧰- UND beim 🔄-Marker direkt den fertigen Migration-Prompt nach `references/handover.md` mitliefern, zum Rüberkopieren — nicht nur flaggen. Beim 🔄 ist es derselbe Migration-Prompt mit Ziel `frischer Chat` statt `Claude Code`.
+
+WICHTIG: Claude kann weder Modell noch Werkzeug noch Thread selbst umschalten — alle drei Marker sind Hinweise an Joscha, der manuell wechselt (Modell per Dropdown, Werkzeug per neuer Code-Session, Thread per neuem Chat). Claude erkennt und sagt an, schaltet aber nie selbst um.
 
 Lohnt sich nur bei längeren/gemischten Sessions. Bei kurzen Tasks: ein Setup nehmen und durchziehen — das Hin und Her hat selbst Reibungskosten.
 
@@ -176,7 +180,7 @@ Lange Konversationen sind teuer und ein stiller Qualitätskiller. Regeln:
 - **Korrekturen erklären.** "Falsch" ist okay, "Falsch weil X, die richtige Regel ist Y" ist besser — hilft im selben Chat und zeigt ob ein Skill-Update nötig ist.
 - **Wenn der Chat lang wird:** Zusammenfassen was bisher passiert ist, oder neuen Chat starten mit klarem Auftrag. Der „klare Auftrag" ist dasselbe Artefakt wie der Migration-Prompt — gleiches Skelett, nur Ziel `frischer Chat` statt `Claude Code` (→ `references/handover.md`).
 
-**Claude:** Wenn du merkst dass eine Konversation thematisch abdriftet oder sehr lang wird, weise Joscha freundlich darauf hin dass ein neuer Chat sinnvoll wäre.
+**Claude:** Wenn du merkst dass eine Konversation thematisch abdriftet oder sehr lang wird, weise Joscha freundlich darauf hin dass ein neuer Chat sinnvoll wäre — konkret über den `🔄 Kontextwechsel`-Marker (§3) am Antwortende, samt fertigem Migration-Prompt (Ziel `frischer Chat`).
 
 ---
 
