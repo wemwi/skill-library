@@ -1,5 +1,7 @@
 ---
 name: selectedleafs-pos-restock
+metadata:
+  version: "1.2.0"
 description: "Runtime-Anleitung an den Managed Agent pos-restock zum Auswerten EINES selectedleafs-Übergabeprotokolls (Kommissionsware-Beleg, PDF) und Ablegen in Google Drive. Liefert die operative Tiefe für Protokoll-Parsing (Store, Stadt, Sorten, neu vs. aufgefüllt), Idempotenz, PDF-Komprimierung/Umbenennung und Drive-Ablage. IMMER laden, sobald der Agent ein Übergabeprotokoll aus dem Topic Protokoll-Eingang verarbeitet — auch wenn das Wort Skill nicht fällt. Triggers on: Übergabeprotokoll, Protokoll-Eingang, pos-restock, Kommissionsware, Kommissionär, Lieferschein parsen, Restock-Beleg auswerten, Store aus Beleg ableiten, Sorten neu vs aufgefüllt, Protokoll in Drive ablegen, Protokollnummer, UL-Nummer. Nachrichtenformat und City→Channel liegen NICHT hier (→ selectedleafs-telegram)."
 ---
 
@@ -161,15 +163,36 @@ Verifiziere nach der Komprimierung, dass die Datei > 0 Byte und valide ist, bevo
 
 ## 6. Drive-Ablage (Schritt 5)
 
-Über das Google-Drive-Tool. **Ordnerstruktur (B3):**
+**Voraussetzung (Egress):** Die komprimierte PDF wird per `PUT` **direkt** aus der Sandbox zur Google-Upload-URL geschickt — die Bytes laufen nicht durch den Agenten-Kontext. Dafür muss der Upload-Host (typisch `www.googleapis.com`) in der **Egress-Allowed-Hosts-Liste** des Environments eingetragen sein. Fehlt er → Upload schlägt mit Netzwerkfehler fehl → Abbruch+Status (§7), **kein** Retry. Den genauen Host einmalig aus einer Test-Session ablesen (URL kommt im Rückgabe-Feld `uploadUrl`) und build-time ins Environment eintragen — hier nicht hardcoden.
+
+**Ordnerstruktur (B3):**
 ```
 <Übergabeprotokolle-Wurzel>/{stadt}/{store-slug}/
 ```
 - `{stadt}` = aufgelöste Metaobjekt-Stadt (§2.5), `{store-slug}` = aus dem gematchten Metaobjekt-Namen, **nicht** aus dem rohen Belegtext (stabil). Beide slugifiziert: lowercase, Umlaute falten (`ä→ae ö→oe ü→ue ß→ss`), Nicht-Alphanumerik → `-`, Mehrfach-`-` zusammenfassen. So bleiben Ablage und Channel deckungsgleich.
-- Fehlt der Stadt- oder Store-Ordner, **anlegen** (mkdir-p-Semantik), dann die umbenannte PDF hineinlegen.
+- Fehlt der Stadt- oder Store-Ordner, **anlegen** (mkdir-p-Semantik via `create_folder`).
 - Die **Wurzel/Folder-ID** ist Agent-Config (build-time, `global-agent-framework`) — nicht hier hardcoden.
 
-Beispiel-Ablage:
+**Upload-Ablauf (zweistufig, Referenz-Pfad):**
+
+Protokoll-PDFs sind Scans (~500 KB–1 MB nach Komprimierung). Das überschreitet das Inline-base64-Budget des Agenten → `upload_file` ist nicht verwendbar; stattdessen:
+
+1. **Session holen** — `create_upload_session` mit `name`, `mimeType: "application/pdf"`, `sizeBytes` (optional, aus Datei-Metadaten) und `parentFolderId` (Zielordner-ID). Gibt `{ uploadUrl, name, parentFolderId }` zurück.
+2. **Bytes direkt hochladen** — HTTP `PUT` aus der Sandbox an die `uploadUrl`, Datei-Bytes als Body. Die Session-URL trägt ihre eigene Autorisierung; kein zusätzliches Google-Credential nötig.
+
+```bash
+# Agent-Sandbox (Code-Execution)
+curl -s -o /dev/null -w "%{http_code}" \
+  -X PUT \
+  --data-binary @"<komprimierte-pdf>" \
+  "<uploadUrl>"
+# Erwarteter HTTP-Status: 200 oder 201 → Erfolg
+# Jeder andere Status → Abbruch + Fehler-Status ins Topic (§7)
+```
+
+**Fail-closed:** Gibt `create_upload_session` keinen `uploadUrl` zurück (Fehler, Netzwerkproblem), oder liefert der PUT einen Non-2xx-Status → Abbruch, keine Drive-Ablage, Fehler-Status ins Topic. Kein stiller Weiter-Lauf ohne abgelegte PDF.
+
+Beispiel-Ablage (Ergebnis):
 ```
 …/Übergabeprotokolle/Hannover/spaetkauf-hannover/2026-06-17_UL-10033-1.pdf
 ```
@@ -212,6 +235,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 | Datum | Änderung |
 |-------|----------|
+| 2026-06-26 | v1.2.0 — §6 Drive-Ablage auf Referenz-Upload umgestellt: statt Inline-base64 (`upload_file`) jetzt zweistufig via `create_upload_session` (Session-URL holen) + `curl PUT` (Bytes direkt aus Sandbox zu Google, läuft nicht durch Agenten-Kontext). Egress-Voraussetzung ergänzt (Upload-Host muss in Allowed-Hosts des Environments, einmalig via Test-Session ablesen). Fail-closed bei Non-2xx oder fehlendem `uploadUrl`. Hintergrund: ~916 KB PDF ergibt ~1,2M Zeichen base64 — sprengt das Argument-Budget des Agenten; war Root Cause des Kettenabbruchs. |
 | 2026-06-25 | Rename `selectedleafs-pos-documentation` → `selectedleafs-pos-restock` (topic-scoped, näher am Restock-Zweck). Inhaltlich unverändert ggü. v1.1.0. Frontmatter-Name + H1 angepasst, keine sonstigen Selbstreferenzen. Achtung: erzeugt ein neues Skill — alte Installation manuell entfernen, Agent neu attachen. Cross-Verweise in anderen Skills (`selectedleafs-telegram`, `global-agent-framework`) ggf. nachziehen. |
 | 2026-06-25 | v1.1.0 — Write-back ergänzt (neue §8): nach erfolgreichem 🌿-Post wird die neue Sorte an `product_list` des Stores angehängt (append-only, idempotent, Remove bleibt manuell); §1-Reihenfolge um den Write-back-Schritt erweitert, §7-Status quittiert ihn. OCR von Fallback auf **Pflichtpfad** umgestellt (Protokolle sind immer unterschriebene Scans → `tesseract -l deu` + leichte Vorverarbeitung, vorinstalliert, nicht prüfen/installieren); Textextraktions-Vorstufe und pikepdf-Digital-Zweig (§5) entfernt. Strain-Auflösung von exaktem Index-Vergleich auf **OCR-toleranten Fuzzy-Match** gegen den 9-Strain-Index umgestellt (§2.4), nur unauflösbar/mehrdeutig → §3. `liftr_store`-Match paginiert jetzt über 50 Stores hinaus (Cursor, §2.5). |
 | 2026-06-24 | v1.0.0 — Initial. Parsing (Store=Kommissionär, Protokollnr `UL-…`, Sorte nur mit Tier·Vein-Subzeile, Größen-Dedupe), Stadt aus Metaobjekt (Wunstorf-Regel), neu vs. aufgefüllt via `product_list`, Übergabe-Payload (Buckets). Vollautomatisch, Abbruch+Rückfrage bei Mehrdeutigkeit. Idempotenz via Protokollnr im Dateinamen (Drive-Existenz-Check). Naming = Datum + Protokollnr (Stadt/Store stecken im B3-Pfad, nicht doppelt im Namen), Drive B3 ({stadt}/{store-slug}). Komprimierung Ghostscript `/ebook` (Scan) bzw. pikepdf (digital). Format/Channel → `selectedleafs-telegram`. |
