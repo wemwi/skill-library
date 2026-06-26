@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/wemwi/skill-library/compare/v2.7.0...v2.8.0) (2026-06-26)
+
+
+### Features
+
+* **selectedleafs-pos-restock:** Drive-Ablage auf Referenz-Upload umstellen (v1.2.0) ([1ab6080](https://github.com/wemwi/skill-library/commit/1ab6080311e4c1fe4756790e715e2a150a40595b))
+
 ## [2.7.0](https://github.com/wemwi/skill-library/compare/v2.6.0...v2.7.0) (2026-06-25)
 
 
