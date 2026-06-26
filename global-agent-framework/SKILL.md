@@ -13,7 +13,7 @@ description: >-
   Version bumpen, Agent debuggen, neuen Agent ins Portfolio aufnehmen. Gilt für jeden
   Managed Agent in diesem Stack.
 metadata:
-  version: "1.4.1"
+  version: "1.5.0"
 ---
 
 # global-agent-framework
@@ -393,6 +393,10 @@ ohne ihn schlägt der Build fehl. Wer Pakete deklariert, **muss** den Paketmanag
 anlassen. Du sparst also keine Sicherheit, indem du ihn abschaltest; der Hebel ist eine
 **minimale, gepinnte** Paketliste, nicht „aus".
 
+**Egress-Kopplung durch Tool-Design.** Wenn ein Agent per Tool einen externen HTTP-Aufruf auslöst (z. B. `curl PUT` an eine Upload-URL), entsteht eine Egress-Abhängigkeit, auch wenn der MCP-Server selbst Limited-Egress betreibt. Die URL ist dabei oft dynamisch (Session-spezifisch, host-verifiziert erst zur Laufzeit). Regel: Jeden solchen Host **einmalig per isoliertem Testaufruf** aus der zurückgegebenen URL ablesen und dann build-time in die Allowed-Hosts-Liste des Environments eintragen — nicht raten, nicht hardcoden im Skill. Erst nach dem Eintrag die Kette scharf stellen.
+
+**Beispiel:** `create_upload_session` im google-drive-mcp gibt `uploadUrl` zurück. Der Agent liest den Hostnamen, Betreiber trägt ihn in die Allowed-Hosts ein, dann erst wird der `curl PUT`-Schritt verdrahtet.
+
 **Environment-Naming.** §4 regelt nur Agent-Namen — Umgebungen brauchen ihr eigenes Muster,
 weil sie nach Profil **geteilt** werden (oben): Der Name benennt das **Profil**, nie den
 Agenten (sonst lügt er, sobald ein zweiter Agent dasselbe Profil mitbenutzt). Muster,
@@ -432,6 +436,51 @@ seine Env-ID). Keine Logik, keine Secrets.
 
 ---
 
-**Geplant für später** (hier bewusst noch nicht ausgeführt): Datenresidenz/ZDR,
+## 12. Tool-Datenfluss & Sandbox-Grenze
+
+**Grundregel: Bytes nie durch den Kontext routen.** Der Modell-Kontext ist kein Datenpuffer für binäre oder große Nutzlasten. Alles, was der Agent als Tool-Argument konstruieren muss, zahlt aus seinem Output-Budget — bei binären oder langen Dateien ist dieses Budget erschöpft, bevor der Inhalt vollständig ist.
+
+**Drei Klassen, drei Wege:**
+
+| Klasse | Größenordnung | Weg |
+|---|---|---|
+| Strukturierte Daten / kurze Texte | < ~10 KB | Direkt als Argument (inline) — kein Problem |
+| Mittlere Dateien (Textdokumente, kleine JSONs) | 10–100 KB | Abhängig vom Agenten; kritisch prüfen |
+| Binäre oder gescannte PDFs, Bilder, Archivdateien | > ~100 KB | **Referenz-Pfad zwingend**: Tool holt/speichert, Bytes laufen nie durch Kontext |
+
+**Referenz-Pfad — Muster:**
+1. **Session holen** — das Tool initiiert eine Upload-Session serverseitig (Credential bleibt auf MCP-Server-Seite), gibt nur eine kurzlebige URL/Referenz zurück.
+2. **Bytes direkt transportieren** — Sandbox führt `curl PUT` (oder äquivalent) aus, Bytes fließen direkt zwischen Sandbox und Ziel. Kein Modell-Kontext involviert.
+
+**Tool-Kontrakt vor der Verdrahtung prüfen.** Bevor ein neues Tool in eine Kette eingebaut wird: Welche Argumente konstruiert der Agent? Welche sind binär/groß? Kann das realistische Payload-Volumen als Argument produziert werden? Ein Tool, das Datei-Bytes inline als base64-Argument erwartet, ist für Dateien > ~100 KB in einer Agenten-Kette nicht einsetzbar — das ist ein Architektur-Mismatch, kein Laufzeit-Fehler.
+
+**Fehlerbild, das auf diesen Abschnitt zeigt:** Der Agent produziert ein abgeschnittenes oder leeres Argument, versucht alternative Wege (liest andere Credentials, fragt nach Hilfsmitteln, ruft interne Endpunkte ab), oder bricht in einer Schleife ab — ohne dass ein offensichtlicher Fehler im Fachcode liegt.
+
+## 13. Fail-closed als Default
+
+**Headless Agenten ohne menschliches Gate müssen bei Fehler abbrechen, nicht improvisieren.**
+
+**Warum Improvisation gefährlicher ist als Abbruch:** Ein Agent, der bei einem Tool-Fehler weiterläuft und alternative Wege sucht, kann:
+- Credentials anderer Tools lesen (Scope-Überschreitung, selbst wenn unbeabsichtigt)
+- Interne Infrastruktur erkunden (Metadata-Endpunkte, LAN-Hosts)
+- Einen Post absetzen, obwohl eine vorgelagerte Prüfung fehlschlug
+- In einer Wiederholungsschleife externe APIs mit Anfragen fluten
+
+**Regel — Fail-closed-Verhalten ist kein Konfigurationswunsch, sondern Architektur-Default:**
+- Jeder Schritt, der eine Voraussetzung für Nachfolgeschritte bildet (Idempotenz-Check, Upload, Daten-Schreiben), ist eine Abbruch-Barriere: schlägt er fehl, folgt kein Nachfolgeschritt.
+- **Kein stiller Weiter-Lauf.** Der Fehler wird mit konkretem Kontext ins Status-Topic geschrieben, der Lauf endet.
+- **Kein Off-Surface-Verhalten.** Schlägt ein Tool fehl, sucht der Agent keine alternativen Wege, die außerhalb der deklarierten Tool-Oberfläche liegen — der System-Prompt muss das explizit verbieten.
+
+**Im System-Prompt verankern (Formulierungsvorlage):**
+```
+Wenn ein Tool-Aufruf fehlschlägt oder ein unerwartetes Ergebnis liefert,
+brichst du sofort ab und schreibst einen konkreten Fehler-Status ins Topic.
+Du suchst keine alternativen Wege außerhalb deiner Tool-Oberfläche.
+Du postest nie öffentlich, wenn ein vorgelagerter Schritt nicht erfolgreich war.
+```
+
+**Kombination mit §9 (Idempotenz):** Der Dedup-Schlüssel schützt vor Doppel-Ausführung bei Retry — Fail-closed schützt vor Halbzuständen (Post ohne Ablage, Ablage ohne Idempotenz-Eintrag). Beide gemeinsam ergeben eine robuste Kette.
+
+---
 Observability-Tiefe, restliches Kostenmodell (Token-Budgets, Caching), Lifecycle-Details,
 Anti-Pattern-Katalog.
