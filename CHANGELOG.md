@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/wemwi/skill-library/compare/v2.8.0...v2.9.0) (2026-06-26)
+
+
+### Features
+
+* **global-agent-framework:** §11 Egress-Kopplung, §12 Tool-Datenfluss, §13 Fail-closed (v1.5.0) ([1809e99](https://github.com/wemwi/skill-library/commit/1809e99b99b70691b40bea385dcec106654e8b2f))
+
 ## [2.8.0](https://github.com/wemwi/skill-library/compare/v2.7.0...v2.8.0) (2026-06-26)
 
 
