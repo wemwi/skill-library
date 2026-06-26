@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
-"""Prüft, dass die README-Inventartabelle den tatsächlichen Skills im Repo entspricht.
+"""Prüft, dass die README-Inventartabelle dieselben Skills listet wie das Repo.
 
-Drift-Quelle: Die Tabelle unter `## Bereitstellung` dupliziert `name` und
-`metadata.version` aus jedem `<skill>/SKILL.md` von Hand. Dieser Check vergleicht
-beide Seiten und schlägt fehl (Exit 1), sobald sie auseinanderlaufen:
+Die Tabelle unter `## Bereitstellung` listet jeden `<skill>/SKILL.md` mit `name`
+und `Zweck`. Versionen stehen bewusst NICHT mehr in der README — SSoT ist das
+SKILL.md-Frontmatter (`metadata.version`), die Historie die CHANGELOG, die
+veröffentlichte Version der Release-Badge. Dadurch kann die Versionsspalte nicht
+mehr driften. Dieser Check vergleicht nur noch die *Präsenz* und schlägt fehl
+(Exit 1), sobald Skills und Tabelle auseinanderlaufen:
 
 - Skill-Ordner ohne Tabellenzeile (neuer Skill nicht eingetragen)
 - Tabellenzeile ohne Skill-Ordner (Skill entfernt/umbenannt)
-- Versions-Zelle != metadata.version (Version gebumpt, README nicht nachgezogen)
 
 Die `Zweck`-Spalte bleibt redaktionell und wird NICHT geprüft.
 
@@ -21,7 +23,6 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 README = REPO / "README.md"
-NO_VERSION = "–"  # En-Dash, wie in der Tabelle für Skills ohne metadata.version
 
 
 def frontmatter(skill_md: Path) -> str:
@@ -35,37 +36,29 @@ def skill_name(fm: str, fallback: str) -> str:
     return m.group(1).strip().strip("\"'") if m else fallback
 
 
-def skill_version(fm: str) -> str:
-    # metadata.version: eingerückte version-Zeile innerhalb des metadata-Blocks
-    m = re.search(r"^\s+version:\s*[\"']?([0-9][0-9.]*)", fm, re.MULTILINE)
-    return m.group(1) if m else NO_VERSION
-
-
-def actual_skills() -> dict[str, str]:
-    skills: dict[str, str] = {}
+def actual_skills() -> set[str]:
+    names: set[str] = set()
     for skill_md in sorted(REPO.glob("*/SKILL.md")):
         fm = frontmatter(skill_md)
-        name = skill_name(fm, skill_md.parent.name)
-        skills[name] = skill_version(fm)
-    return skills
+        names.add(skill_name(fm, skill_md.parent.name))
+    return names
 
 
-def readme_rows() -> dict[str, str]:
+def readme_rows() -> set[str]:
     text = README.read_text(encoding="utf-8")
     # Inventartabelle: ab "## Bereitstellung" bis zur nächsten "## "-Sektion
     section = re.search(r"## Bereitstellung\n(.*?)(?=\n## )", text, re.DOTALL)
     body = section.group(1) if section else ""
-    rows: dict[str, str] = {}
+    names: set[str] = set()
     for line in body.splitlines():
         cells = [c.strip() for c in line.split("|")[1:-1]]
         if len(cells) < 2:
             continue
         name = cells[0].strip("`").strip()
-        version = cells[1].strip("`").strip()
         if not name or name == "Skill" or set(name) <= {"-"}:  # Header / Trennzeile
             continue
-        rows[name] = version
-    return rows
+        names.add(name)
+    return names
 
 
 def main() -> int:
@@ -73,20 +66,14 @@ def main() -> int:
     rows = readme_rows()
     errors: list[str] = []
 
-    for name, version in skills.items():
-        if name not in rows:
-            errors.append(f"  fehlt in README: `{name}` (Version `{version}`)")
-        elif rows[name] != version:
-            errors.append(
-                f"  Version weicht ab: `{name}` — SKILL.md `{version}` vs README `{rows[name]}`"
-            )
-    for name in rows:
-        if name not in skills:
-            errors.append(f"  README listet nicht-existenten Skill: `{name}`")
+    for name in sorted(skills - rows):
+        errors.append(f"  fehlt in README: `{name}`")
+    for name in sorted(rows - skills):
+        errors.append(f"  README listet nicht-existenten Skill: `{name}`")
 
     if errors:
         print("README-Inventar driftet von den Skills im Repo ab:\n")
-        print("\n".join(sorted(errors)))
+        print("\n".join(errors))
         print("\nFix: Tabelle unter '## Bereitstellung' in README.md angleichen.")
         return 1
 
