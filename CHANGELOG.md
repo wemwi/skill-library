@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.0](https://github.com/wemwi/skill-library/compare/v2.10.0...v2.11.0) (2026-06-27)
+
+
+### Features
+
+* **selectedleafs-pos-restock:** pymupdf-Kompression + deu via tessdata.fast-deu (apt-frei) ([#51](https://github.com/wemwi/skill-library/issues/51)) ([47cab5a](https://github.com/wemwi/skill-library/commit/47cab5a1a689471c05f6daf8e457adf7ceab2451))
+
 ## [2.10.0](https://github.com/wemwi/skill-library/compare/v2.9.0...v2.10.0) (2026-06-27)
 
 
