@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-restock
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
 description: "Runtime-Anleitung an den Managed Agent pos-restock zum Auswerten EINES selectedleafs-Übergabeprotokolls (Kommissionsware-Beleg, PDF) und Ablegen in Google Drive. Liefert die operative Tiefe für Protokoll-Parsing (Store, Stadt, Sorten, neu vs. aufgefüllt), Idempotenz, PDF-Komprimierung/Umbenennung und Drive-Ablage. IMMER laden, sobald der Agent ein Übergabeprotokoll aus dem Topic Protokoll-Eingang verarbeitet — auch wenn das Wort Skill nicht fällt. Triggers on: Übergabeprotokoll, Protokoll-Eingang, pos-restock, Kommissionsware, Kommissionär, Lieferschein parsen, Restock-Beleg auswerten, Store aus Beleg ableiten, Sorten neu vs aufgefüllt, Protokoll in Drive ablegen, Protokollnummer, UL-Nummer. Nachrichtenformat und City→Channel liegen NICHT hier (→ selectedleafs-telegram)."
 ---
 
@@ -167,10 +167,15 @@ Verifiziere nach der Komprimierung, dass die Datei > 0 Byte und valide ist, bevo
 
 **Ordnerstruktur (B3):**
 ```
-<Übergabeprotokolle-Wurzel>/{stadt}/{store-slug}/
+<Übergabeprotokolle-Wurzel>/{city.name}/{postal_code} {store.name}/
 ```
-- `{stadt}` = aufgelöste Metaobjekt-Stadt (§2.5), `{store-slug}` = aus dem gematchten Metaobjekt-Namen, **nicht** aus dem rohen Belegtext (stabil). Beide slugifiziert: lowercase, Umlaute falten (`ä→ae ö→oe ü→ue ß→ss`), Nicht-Alphanumerik → `-`, Mehrfach-`-` zusammenfassen. So bleiben Ablage und Channel deckungsgleich.
-- Fehlt der Stadt- oder Store-Ordner, **anlegen** (mkdir-p-Semantik via `create_folder`).
+- Alle Segmente kommen **1:1 aus den `liftr_store`-Metaobjekt-Feldern** des gematchten Stores (§2.5), **nie** aus dem rohen Belegtext oder OCR — das hält die Namen stabil und damit die Idempotenz (§4) intakt:
+  - `{city.name}` = `name`-Feld des verknüpften city-Metaobjekts (Klartext, z. B. `Hannover`) — nicht die Belegstadt, nicht lowercase. Lies dieses Feld aktiv aus dem Metaobjekt, rate es nicht aus der Adresse.
+  - `{postal_code}` = `postal_code`-Feld des Stores (z. B. `30159`), als Präfix zur Sortierung und Disambiguierung gleichnamiger Stores.
+  - `{store.name}` = `name`-Feld des Stores (Klartext mit Umlauten/Leerzeichen, z. B. `Spätkauf Hannover`).
+- **Keine Slugifizierung.** Großschreibung, Leerzeichen und Umlaute (`ä ö ü ß`) sind in Drive zulässig und gewollt (lesbare Ordner). Die einzige Anforderung an den Namen ist Determinismus aus stabiler Quelle (Metaobjekt-Feld) — die ist erfüllt; Groß/Klein und Umlaut sind für die Idempotenz irrelevant.
+- **Wiederfinden NFC-normalisiert.** Beim Ordner-Existenz-Check (§4) den abgeleiteten Namen und die gelisteten Drive-Namen vor dem Vergleich nach Unicode-NFC normalisieren, damit `ä` (ein Codepoint) nicht gegen `a`+kombinierendes Trema verliert. Da Quelle stets dasselbe Metaobjekt-Feld ist, sind beide praktisch deckungsgleich — der Normalisierungsschritt ist die Absicherung, kein erwarteter Konfliktfall.
+- Fehlt der Stadt- oder Store-Ordner, **anlegen** (mkdir-p-Semantik via `create_folder`). Vorher per `list_files` prüfen, ob er (NFC-normalisiert) schon existiert — `create_folder` dedupliziert **nicht** und legt sonst einen zweiten gleichnamigen Ordner an.
 - Die **Wurzel/Folder-ID** ist Agent-Config (build-time, `global-agent-framework`) — nicht hier hardcoden.
 
 **Upload-Ablauf (zweistufig, Referenz-Pfad):**
@@ -194,7 +199,7 @@ curl -s -o /dev/null -w "%{http_code}" \
 
 Beispiel-Ablage (Ergebnis):
 ```
-…/Übergabeprotokolle/Hannover/spaetkauf-hannover/2026-06-17_UL-10033-1.pdf
+…/Übergabeprotokolle/Hannover/30159 Spätkauf Hannover/2026-06-17_UL-10033-1.pdf
 ```
 
 ---
@@ -235,6 +240,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 | Datum | Änderung |
 |-------|----------|
+| 2026-06-27 | v1.3.0 — §6 Drive-Ordnernamen von slugifiziert auf Klartext aus Metaobjekt-Feldern umgestellt: `{stadt}/{store-slug}` → `{city.name}/{postal_code} {store.name}` (z. B. `Hannover/30159 Spätkauf Hannover`). Slugifizierung (lowercase, Umlaut-Faltung, `-`-Ersetzung) entfällt — Großschreibung, Leerzeichen und Umlaute sind in Drive zulässig; einzige Anforderung bleibt Determinismus aus stabiler Quelle (Metaobjekt-`name`/`postal_code`, nie OCR/Belegtext). NFC-Normalisierung beim Ordner-Wiederfinden ergänzt; expliziter Hinweis, dass `create_folder` nicht dedupliziert (vorher `list_files`). Idempotenz (§4, Schlüssel = Protokollnummer) und Dateiname (§5) unberührt. |
 | 2026-06-26 | v1.2.0 — §6 Drive-Ablage auf Referenz-Upload umgestellt: statt Inline-base64 (`upload_file`) jetzt zweistufig via `create_upload_session` (Session-URL holen) + `curl PUT` (Bytes direkt aus Sandbox zu Google, läuft nicht durch Agenten-Kontext). Egress-Voraussetzung ergänzt (Upload-Host muss in Allowed-Hosts des Environments, einmalig via Test-Session ablesen). Fail-closed bei Non-2xx oder fehlendem `uploadUrl`. Hintergrund: ~916 KB PDF ergibt ~1,2M Zeichen base64 — sprengt das Argument-Budget des Agenten; war Root Cause des Kettenabbruchs. |
 | 2026-06-25 | Rename `selectedleafs-pos-documentation` → `selectedleafs-pos-restock` (topic-scoped, näher am Restock-Zweck). Inhaltlich unverändert ggü. v1.1.0. Frontmatter-Name + H1 angepasst, keine sonstigen Selbstreferenzen. Achtung: erzeugt ein neues Skill — alte Installation manuell entfernen, Agent neu attachen. Cross-Verweise in anderen Skills (`selectedleafs-telegram`, `global-agent-framework`) ggf. nachziehen. |
 | 2026-06-25 | v1.1.0 — Write-back ergänzt (neue §8): nach erfolgreichem 🌿-Post wird die neue Sorte an `product_list` des Stores angehängt (append-only, idempotent, Remove bleibt manuell); §1-Reihenfolge um den Write-back-Schritt erweitert, §7-Status quittiert ihn. OCR von Fallback auf **Pflichtpfad** umgestellt (Protokolle sind immer unterschriebene Scans → `tesseract -l deu` + leichte Vorverarbeitung, vorinstalliert, nicht prüfen/installieren); Textextraktions-Vorstufe und pikepdf-Digital-Zweig (§5) entfernt. Strain-Auflösung von exaktem Index-Vergleich auf **OCR-toleranten Fuzzy-Match** gegen den 9-Strain-Index umgestellt (§2.4), nur unauflösbar/mehrdeutig → §3. `liftr_store`-Match paginiert jetzt über 50 Stores hinaus (Cursor, §2.5). |
