@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0](https://github.com/wemwi/skill-library/compare/v2.9.0...v2.10.0) (2026-06-27)
+
+
+### Features
+
+* **selectedleafs-pos-restock:** Drive-Ordnernamen als Klartext aus Metaobjekt-Feldern ([#49](https://github.com/wemwi/skill-library/issues/49)) ([53e7247](https://github.com/wemwi/skill-library/commit/53e724781037f742837d795232b17af5ca7c436c))
+
 ## [2.9.0](https://github.com/wemwi/skill-library/compare/v2.8.0...v2.9.0) (2026-06-26)
 
 
