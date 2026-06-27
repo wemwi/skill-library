@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-restock
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
 description: "Runtime-Anleitung an den Managed Agent pos-restock zum Auswerten EINES selectedleafs-Übergabeprotokolls (Kommissionsware-Beleg, PDF) und Ablegen in Google Drive. Liefert die operative Tiefe für Protokoll-Parsing (Store, Stadt, Sorten, neu vs. aufgefüllt), Idempotenz, PDF-Komprimierung/Umbenennung und Drive-Ablage. IMMER laden, sobald der Agent ein Übergabeprotokoll aus dem Topic Protokoll-Eingang verarbeitet — auch wenn das Wort Skill nicht fällt. Triggers on: Übergabeprotokoll, Protokoll-Eingang, pos-restock, Kommissionsware, Kommissionär, Lieferschein parsen, Restock-Beleg auswerten, Store aus Beleg ableiten, Sorten neu vs aufgefüllt, Protokoll in Drive ablegen, Protokollnummer, UL-Nummer. Nachrichtenformat und City→Channel liegen NICHT hier (→ selectedleafs-telegram)."
 ---
 
@@ -32,7 +32,21 @@ Du bekommst ein PDF aus dem Topic „Protokoll-Eingang" in die Sandbox (Schritt 
 6. **Komprimieren + umbenennen (§5)**, dann **in Drive ablegen (§6)**.
 7. **Status** ins Topic (§7).
 
-Protokolle sind **immer unterschriebene Scans** (Foto/Schräglage, Knickkanten, kein Text-Layer). Darum ist **OCR der Pflichtpfad, kein Fallback** — kein vorheriger Textextraktions-Versuch: leichte Vorverarbeitung (Graustufen, bei Bedarf Deskew/Kontrast), dann `tesseract -l deu`. `tesseract` inkl. deutschem Sprachpaket ist in der Env **vorinstalliert — nicht prüfen, nicht installieren**. Liefert OCR an einer entscheidungsrelevanten Stelle nur unsicheren Text (Store, Protokollnummer, Sorte), behandle das als Mehrdeutigkeit (§3) — **rate nichts**. Strain-Lesungen werden zusätzlich gegen den 9-Strain-Index gefuzzt (§2.4), damit OCR-Rauschen nicht jede Sorte zur Rückfrage macht.
+Protokolle sind **immer unterschriebene Scans** (Foto/Schräglage, Knickkanten, kein Text-Layer). Darum ist **OCR der Pflichtpfad, kein Fallback** — kein vorheriger Textextraktions-Versuch: leichte Vorverarbeitung (Graustufen, bei Bedarf Deskew/Kontrast), dann `tesseract` mit `lang="deu"`. Die **tesseract-Engine** ist im Base-Image der Env vorhanden; das **deutsche Sprachpaket** kommt deklarativ als pip-Paket `tessdata.fast-deu` (kein apt, kein File-Mount — in der Managed-Agents-Beta wird die apt-Paketzeile nicht provisioniert, deshalb nicht über apt installieren). Den tessdata-Ordner **nicht** blind aus `tessdata.data_path()` nehmen — das liefert `sys.prefix/share/tessdata` und liegt im Container ggf. neben dem echten Ort (`/usr/local/share/tessdata`); stattdessen den Kandidaten finden, der `deu.traineddata` enthält, und ihn via `--tessdata-dir` übergeben:
+
+```python
+# Agent-Sandbox: tessdata-Ordner robust bestimmen
+import tessdata, os, sys
+def tessdata_dir():
+    for c in (tessdata.data_path(), os.path.join(sys.prefix, "share", "tessdata"),
+              "/usr/local/share/tessdata", "/usr/share/tessdata"):
+        if os.path.exists(os.path.join(c, "deu.traineddata")):
+            return c
+    raise RuntimeError("deu.traineddata nicht gefunden")
+# pytesseract.image_to_string(img, lang="deu", config=f'--tessdata-dir "{tessdata_dir()}"')
+```
+
+Liefert OCR an einer entscheidungsrelevanten Stelle nur unsicheren Text (Store, Protokollnummer, Sorte), behandle das als Mehrdeutigkeit (§3) — **rate nichts**. Strain-Lesungen werden zusätzlich gegen den 9-Strain-Index gefuzzt (§2.4), damit OCR-Rauschen nicht jede Sorte zur Rückfrage macht.
 
 ---
 
@@ -145,17 +159,24 @@ Im **Agent-Sandbox (Code-Execution, nicht lokal, kein VPS)**.
 
 Beispiel: `2026-06-17_UL-10033-1.pdf`
 
-**Komprimierung — Protokolle sind Scans (bildlastig), darum Ghostscript-Downsampling:**
+**Komprimierung — Protokolle sind Scans (bildlastig), Downsampling via `pymupdf` (reines pip-Wheel, kein apt/Ghostscript):**
 
-```bash
+```python
 # Agent-Sandbox (Code-Execution)
-gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook \
-   -dNOPAUSE -dQUIET -dBATCH \
-   -sOutputFile="2026-06-17_UL-10033-1.pdf" \
-   "<eingangs-pdf>"
+import fitz  # pymupdf
+TARGET_W, Q = 1240, 75                 # ~150 dpi A4, Graustufe; Fallback 1500/q80
+doc = fitz.open("<eingangs-pdf>"); out = fitz.open()
+A4 = fitz.paper_rect("a4")
+for page in doc:
+    zoom = TARGET_W / page.rect.width  # MediaBox liegt in Scan-pt vor → feste Zielbreite, NICHT dpi=
+    pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), colorspace=fitz.csGRAY)
+    npage = out.new_page(width=A4.width, height=A4.height)
+    npage.insert_image(npage.rect, stream=pix.tobytes("jpeg", jpg_quality=Q))
+out.save("2026-06-17_UL-10033-1.pdf", deflate=True, garbage=4)
 ```
-- `/ebook` (~150 dpi) ist der Default — Beleg bleibt gut lesbar, Größe deutlich kleiner. Nur wenn das Ergebnis unlesbar würde, auf `/printer` (~300 dpi) hochgehen; `/screen` (~72 dpi) nur bei reinen Textbelegen.
-- Da Protokolle **immer Scans** sind (unterschrieben, kein Text-Layer), ist Ghostscript der **einzige** Pfad — keinen digitalen pikepdf-Sonderfall versuchen.
+- **Feste Zielbreite, nicht `dpi=`:** Die Scan-Seite hat eine MediaBox in Scan-Punkten (das Bild sitzt als 72-dpi-Vollseite drin), darum skaliert `get_pixmap(dpi=…)` ins Leere. Über `zoom = TARGET_W / page.rect.width` triffst du verlässlich die Zielbreite.
+- **1240 px / Graustufe / JPEG q75** drückt einen 5-MB-Scan auf ~0,3 MB und bleibt OCR-sicher (am realen Beleg verifiziert, Kerndaten + Umlaute). Nur wenn das Ergebnis unscharf würde, auf **1500 px / q80** (~0,5 MB) hochgehen.
+- Da Protokolle **immer Scans** sind, ist `pymupdf` der **einzige** Pfad — `pikepdf` rührt die eingebetteten Flate-Bilder nicht an (0 % Kompression) und ist hier nutzlos. `pymupdf` rendert PDF→Bild selbst, also wird **kein** poppler/`pdf2image` gebraucht.
 
 Verifiziere nach der Komprimierung, dass die Datei > 0 Byte und valide ist, bevor du sie hochlädst.
 
@@ -240,6 +261,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 | Datum | Änderung |
 |-------|----------|
+| 2026-06-27 | v1.4.0 — Kompression von Ghostscript auf **`pymupdf`** (reines pip-Wheel) umgestellt (§5): in der Managed-Agents-Beta wird die deklarierte **apt**-Paketzeile nicht provisioniert (pip greift, apt nicht — in zwei Envs reproduziert), darum gs/apt komplett raus. `pymupdf` rendert PDF→Bild selbst (kein poppler/`pdf2image`); feste Zielbreite **1240 px / Graustufe / JPEG q75** statt `dpi=` (MediaBox liegt in Scan-pt vor → `dpi=` skaliert ins Leere), ~5,3 MB → ~0,3 MB, OCR am realen Beleg verifiziert (Kerndaten + Umlaute); Fallback 1500/q80. `pikepdf` verworfen (rührt Flate-Scan-Bilder nicht an, 0 %). §1: deutsches Sprachpaket nicht mehr „apt-vorinstalliert", sondern pip-Paket **`tessdata.fast-deu`**; tessdata-Pfad über Fallback-Finder + `--tessdata-dir`, weil `tessdata.data_path()` (=`sys.prefix/share/tessdata`) im Container neben dem echten Ort (`/usr/local/share/tessdata`) liegen kann. tesseract-Engine bleibt Base-Image. |
 | 2026-06-27 | v1.3.0 — §6 Drive-Ordnernamen von slugifiziert auf Klartext aus Metaobjekt-Feldern umgestellt: `{stadt}/{store-slug}` → `{city.name}/{postal_code} {store.name}` (z. B. `Hannover/30159 Spätkauf Hannover`). Slugifizierung (lowercase, Umlaut-Faltung, `-`-Ersetzung) entfällt — Großschreibung, Leerzeichen und Umlaute sind in Drive zulässig; einzige Anforderung bleibt Determinismus aus stabiler Quelle (Metaobjekt-`name`/`postal_code`, nie OCR/Belegtext). NFC-Normalisierung beim Ordner-Wiederfinden ergänzt; expliziter Hinweis, dass `create_folder` nicht dedupliziert (vorher `list_files`). Idempotenz (§4, Schlüssel = Protokollnummer) und Dateiname (§5) unberührt. |
 | 2026-06-26 | v1.2.0 — §6 Drive-Ablage auf Referenz-Upload umgestellt: statt Inline-base64 (`upload_file`) jetzt zweistufig via `create_upload_session` (Session-URL holen) + `curl PUT` (Bytes direkt aus Sandbox zu Google, läuft nicht durch Agenten-Kontext). Egress-Voraussetzung ergänzt (Upload-Host muss in Allowed-Hosts des Environments, einmalig via Test-Session ablesen). Fail-closed bei Non-2xx oder fehlendem `uploadUrl`. Hintergrund: ~916 KB PDF ergibt ~1,2M Zeichen base64 — sprengt das Argument-Budget des Agenten; war Root Cause des Kettenabbruchs. |
 | 2026-06-25 | Rename `selectedleafs-pos-documentation` → `selectedleafs-pos-restock` (topic-scoped, näher am Restock-Zweck). Inhaltlich unverändert ggü. v1.1.0. Frontmatter-Name + H1 angepasst, keine sonstigen Selbstreferenzen. Achtung: erzeugt ein neues Skill — alte Installation manuell entfernen, Agent neu attachen. Cross-Verweise in anderen Skills (`selectedleafs-telegram`, `global-agent-framework`) ggf. nachziehen. |
