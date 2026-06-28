@@ -126,7 +126,7 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
   NICHT und steht nie in der `TOOL_ALLOWLIST`.
 - **Infra-Namen tragen den Anbieter, Tool-Namen nicht.** Worker, KV-Namespace und
   Secrets sind infra-lesbar → Anbieter/Aussteller im Namen (`google-sheets-mcp`,
-  `MCP_OAUTH_GOOGLE_SHEETS`, `GOOGLE_SERVICE_ACCOUNT_JSON`). Tool-`name`s sind
+  `MCP_OAUTH_GOOGLE_SHEETS`, `GOOGLE_REFRESH_TOKEN`). Tool-`name`s sind
   modell-lesbar → kurzes `<verb>_<objekt>` ohne Anbieter und ohne Service-Prefix
   (`append_row`, nicht `sheets_append_row`); die Server-Zuordnung macht der
   Connector-Namespace. Secret = `<AUSSTELLER>_<TYP>`, nicht nach Worker benannt
