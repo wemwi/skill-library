@@ -13,7 +13,7 @@ description: >-
   Version bumpen, Agent debuggen, neuen Agent ins Portfolio aufnehmen. Gilt für jeden
   Managed Agent in diesem Stack.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
 ---
 
 # global-agent-framework
@@ -386,6 +386,34 @@ Environment-Pakete — **nicht** ins Skill, **nicht** in den System-Prompt. **Ve
 pinnen**: reproduzierbarer Build, kein stiller Supply-Chain-Wechsel, kostet keine
 Funktionalität. Liste minimal halten, weil der Paketmanager-Egress eine Angriffsfläche ist,
 die du bei deklarierten Paketen **nicht** schließen kannst (siehe unten).
+
+**Kein Runtime-Install — harte Regel.** Die Umkehrung der Soll-Seite ist verbindlich: Ein
+**Runtime-Skill oder System-Prompt installiert nie selbst** — kein `pip install`, kein
+`npm install`, kein `apt install` im Sandbox-Code, auch nicht in einem mitgelieferten
+Code-Snippet. Erscheint ein Install-Aufruf im Agenten-Code, ist das **immer** ein Defekt mit
+genau zwei Ursachen: Entweder fehlt das Paket in der Environment-Deklaration → **dort**
+ergänzen (und pinnen), nicht im Code beschaffen. Oder es ist bereits deklariert und der
+Aufruf ist **redundant** → streichen. Ein redundanter Laufzeit-Install ist nicht harmlos: Er
+kostet pro Lauf Paketmanager-Egress **plus** mindestens einen Model-Request (bei
+hochfrequenten Cron-Agenten multipliziert sich das), und ein Install **ohne** Pin holt zur
+Laufzeit die neueste Version — also genau den stillen Drift, den das Pinning oben verhindern
+soll. Das Environment ist die **einzige** Wahrheitsquelle fürs Provisioning; ein Paket an
+zwei Orten (Env-Liste *und* Skill-Snippet) driftet auseinander.
+
+**Die Trennlinie — was im Skill-Code bleiben darf.** Die Regel verbietet das **Beschaffen**,
+nicht das **Benutzen**. Ein Snippet, das ein bereits installiertes Paket nur lokalisiert oder
+konfiguriert, ist **kein** Verstoß und gehört in den Skill:
+
+| Im Skill-Code erlaubt | Im Skill-Code verboten |
+|---|---|
+| Importieren (`import fitz`, `import pytesseract`) | Das Paket beschaffen (`pip` / `npm` / `apt install`) |
+| Ein installiertes Paket **lokalisieren** (z. B. den `tessdata`-Ordner finden, der `deu.traineddata` enthält) | Das Sprach-/Datenpaket selbst nachladen, das schon Env-deklariert ist |
+| Pfade auflösen, Engine konfigurieren (`--tessdata-dir`) | Provisioning-Schritte in den Lauf verlagern |
+
+Beispiel: Der `tessdata_dir()`-Finder eines OCR-Skills (sucht den Ordner mit
+`deu.traineddata` und übergibt ihn via `--tessdata-dir`) ist korrekt und bleibt — er
+**findet** das deklarierte Paket, er **installiert** es nicht. Ein vorangestelltes
+`pip install tessdata.fast-deu` im selben Snippet ist der Defekt und gehört raus.
 
 **Die ungültige Kombi.** „**Limited + Paketmanager-Egress AUS + deklarierte Pakete**" ist
 **ungültig**: Das Provisioning braucht Repo-Egress (PyPI/apt), um die Pakete zu ziehen —
