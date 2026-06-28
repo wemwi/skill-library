@@ -15,8 +15,10 @@ interface Env {
   MCP_AUTH_PASSWORD_HASH: string;
   // OAUTH_KV ist als KV-Binding in wrangler.jsonc gesetzt (Name PFLICHT).
   // OAUTH_PROVIDER wird vom Provider zur Laufzeit injiziert.
-  // Outbound-Secret(s) hier ergänzen — Name = <AUSSTELLER>_<TYP> (siehe secrets.md), z.B.:
-  // GOOGLE_SERVICE_ACCOUNT_JSON: string;
+  // Outbound-Credentials hier ergänzen — Name = <AUSSTELLER>_<TYP> (siehe secrets.md), z.B.:
+  // GOOGLE_OAUTH_CLIENT_ID: string;
+  // GOOGLE_OAUTH_CLIENT_SECRET: string;
+  // GOOGLE_REFRESH_TOKEN: string;
 }
 
 const logger = createLogger({
