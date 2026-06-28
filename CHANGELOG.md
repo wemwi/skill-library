@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.11.1](https://github.com/wemwi/skill-library/compare/v2.11.0...v2.11.1) (2026-06-28)
+
+
+### Bug Fixes
+
+* **global-mcp-framework:** update secret naming examples — Service Account → OAuth Refresh ([3168529](https://github.com/wemwi/skill-library/commit/31685297a6d0eb7a8412db8fd2ec3781003e56f7))
+
 ## [2.11.0](https://github.com/wemwi/skill-library/compare/v2.10.0...v2.11.0) (2026-06-27)
 
 
