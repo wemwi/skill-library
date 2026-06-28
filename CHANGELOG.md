@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.12.0](https://github.com/wemwi/skill-library/compare/v2.11.1...v2.12.0) (2026-06-28)
+
+
+### Features
+
+* **global-agent-framework:** Kein Runtime-Install — harte Regel in §11 ([19564a3](https://github.com/wemwi/skill-library/commit/19564a392a44dbe30c320efc8ca08af71c365467))
+
 ## [2.11.1](https://github.com/wemwi/skill-library/compare/v2.11.0...v2.11.1) (2026-06-28)
 
 
