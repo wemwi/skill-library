@@ -40,7 +40,7 @@ curl -s -o "<eingangs-pdf>" "<url>"
 
 **Voraussetzung (Egress):** Der Presign-Host des R2-Buckets — `<account-id>.r2.cloudflarestorage.com` — muss in den **Allowed-Hosts** des Environments stehen, sonst schlägt `curl` mit Netzwerkfehler fehl. Den Host build-time eintragen (Agent-Config, `global-agent-framework`), **nicht** hier hardcoden; er steckt im `url`-Feld der Tool-Antwort.
 
-**Fail-closed:** Gibt `create_download_url` keine `url` zurück (Fehler/Netzwerkproblem) oder liefert `curl` einen Non-2xx-Status bzw. eine 0-Byte-Datei → Abbruch, Fehler-Status ins Topic (§7), **kein** Retry und **kein** base64-Fallback über `download_file` (würde den Kontext sprengen — genau die Ursache, die der Referenz-Pfad behebt).
+**Fail-closed:** Gibt `create_download_url` keine `url` zurück (Fehler/Netzwerkproblem) oder liefert `curl` einen Non-2xx-Status bzw. eine 0-Byte-Datei → Abbruch, Fehler-Status ins Topic (§7, Adressierung mit `message_thread_id` dort), **kein** Retry und **kein** base64-Fallback über `download_file` (würde den Kontext sprengen — genau die Ursache, die der Referenz-Pfad behebt).
 
 Protokolle sind **immer unterschriebene Scans** (Foto/Schräglage, Knickkanten, kein Text-Layer). Darum ist **OCR der Pflichtpfad, kein Fallback** — kein vorheriger Textextraktions-Versuch: leichte Vorverarbeitung (Graustufen, bei Bedarf Deskew/Kontrast), dann `tesseract` mit `lang="deu"`. Die **tesseract-Engine** ist im Base-Image der Env vorhanden; das **deutsche Sprachpaket** kommt deklarativ als pip-Paket `tessdata.fast-deu` (kein apt, kein File-Mount — in der Managed-Agents-Beta wird die apt-Paketzeile nicht provisioniert, deshalb nicht über apt installieren). Den tessdata-Ordner **nicht** blind aus `tessdata.data_path()` nehmen — das liefert `sys.prefix/share/tessdata` und liegt im Container ggf. neben dem echten Ort (`/usr/local/share/tessdata`); stattdessen den Kandidaten finden, der `deu.traineddata` enthält, und ihn via `--tessdata-dir` übergeben:
 
@@ -197,7 +197,7 @@ Leere Buckets sind erlaubt. Sind **beide** Buckets leer (nur Werbemittel/POS im 
 
 ## 3. Mehrdeutigkeit → Abbruch (verbindlich)
 
-**Ist Store oder Stadt nicht eindeutig bestimmbar, postest du NICHTS öffentlich.** Stattdessen: kurze Rückfrage ins Topic „Protokoll-Eingang" + Kette abbrechen (kein Post, keine Drive-Ablage). Auslöser:
+**Ist Store oder Stadt nicht eindeutig bestimmbar, postest du NICHTS öffentlich.** Stattdessen: kurze Rückfrage ins Topic „Protokoll-Eingang" + Kette abbrechen (kein Post, keine Drive-Ablage). Adressierung des Topic-Posts → §7. Auslöser:
 
 - Store-Name matcht **null oder mehrere** `liftr_store`-Metaobjekte.
 - Gematchter Store hat **keine** zugewiesene Stadt/Channel.
@@ -298,7 +298,7 @@ curl -s -o /dev/null -w "%{http_code}" \
 # Jeder andere Non-2xx → ebenso Abbruch.
 ```
 
-**Fail-closed:** Gibt `create_upload_session` keinen `uploadUrl` zurück (Fehler, Netzwerkproblem), oder liefert der PUT einen Non-2xx-Status (**inkl. 308 = nicht finalisiert**) → Abbruch, keine Drive-Ablage, Fehler-Status ins Topic. Kein stiller Weiter-Lauf ohne abgelegte PDF.
+**Fail-closed:** Gibt `create_upload_session` keinen `uploadUrl` zurück (Fehler, Netzwerkproblem), oder liefert der PUT einen Non-2xx-Status (**inkl. 308 = nicht finalisiert**) → Abbruch, keine Drive-Ablage, Fehler-Status ins Topic (§7, Adressierung mit `message_thread_id` dort). Kein stiller Weiter-Lauf ohne abgelegte PDF.
 
 Beispiel-Ablage (Ergebnis):
 ```
@@ -309,7 +309,7 @@ Beispiel-Ablage (Ergebnis):
 
 ## 7. Status-Rückmeldung ins Topic (Schritt 6, kompakt)
 
-Genau **eine** knappe Status-Zeile ins Topic „Protokoll-Eingang", je nach Ausgang:
+Genau **eine** knappe Status-Zeile ins Topic „Protokoll-Eingang" (= Topic „Übergabeprotokolle", `message_thread_id: 2` — beide Namen meinen denselben Thread), je nach Ausgang:
 
 | Ausgang | Status (Beispiel) |
 |---|---|
@@ -317,6 +317,19 @@ Genau **eine** knappe Status-Zeile ins Topic „Protokoll-Eingang", je nach Ausg
 | Nichts zu posten | „✅ `UL-10033-1` — nur Werbemittel/POS, keine Sorten. Kein Post, PDF abgelegt." |
 | Bereits verarbeitet | „↩︎ `UL-10033-1` bereits verarbeitet, übersprungen." |
 | Mehrdeutig (§3) | „⚠️ `UL-10033-1` — <konkrete Rückfrage>. Verarbeitung pausiert." |
+
+**Adressierung (gilt für Status, Rückfragen §3 und Fehler-Status §1.1/§6):**
+
+```
+post_message(
+  chat_id           = <Operations-Chat chat_id aus registry.md §3>,   # -1003918922935
+  message_thread_id = <„Übergabeprotokolle" thread aus registry.md §3>,  # 2
+  text              = "<Status-Zeile>",
+  parse_mode        = "HTML"
+)
+```
+
+Beide Werte kommen aus `registry.md §3` — **nie hier hardcoden**. Fehlt `message_thread_id`, landet die Zeile im General-Topic statt beim Restock-Eingang. Dieser Parameter ist seit `telegram-mcp` PR #61 im `post_message`-Tool verfügbar.
 
 Keine Sorten-/Mengen-Details öffentlich in den City-Channel schreiben, die nicht aus den Restock-Post-Templates stammen — der Status bleibt im Topic.
 
@@ -336,7 +349,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
   ```graphql
   mutation($id: ID!) {
     metaobjectUpdate(id: $id, metaobject: {
-      fields: [{ key: "product_list", value: "["gid://shopify/Product/111","gid://shopify/Product/222"]" }]
+      fields: [{ key: "product_list", value: "[\"gid://shopify/Product/111\",\"gid://shopify/Product/222\"]" }]
     }) {
       metaobject { id product_list: field(key: "product_list") { value } }
       userErrors { field message }
