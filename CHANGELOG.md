@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.3](https://github.com/wemwi/skill-library/compare/v2.20.2...v2.20.3) (2026-06-29)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** restock.md gegen latenten KeyError + Dedupe-Fumble härten (v1.0.3) ([#74](https://github.com/wemwi/skill-library/issues/74)) ([327917a](https://github.com/wemwi/skill-library/commit/327917a92a8e1b148510d1229a2c0657927df5bc))
+
 ## [2.20.2](https://github.com/wemwi/skill-library/compare/v2.20.1...v2.20.2) (2026-06-29)
 
 
