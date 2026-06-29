@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-restock
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
 description: "Runtime-Anleitung an den Managed Agent pos-restock zum Auswerten EINES selectedleafs-Übergabeprotokolls (Kommissionsware-Beleg, PDF) und Ablegen in Google Drive. Liefert die operative Tiefe für Protokoll-Parsing (Store, Stadt, Sorten, neu vs. aufgefüllt), Idempotenz, PDF-Komprimierung/Umbenennung und Drive-Ablage. IMMER laden, sobald der Agent ein Übergabeprotokoll aus dem Topic Protokoll-Eingang verarbeitet — auch wenn das Wort Skill nicht fällt. Triggers on: Übergabeprotokoll, Protokoll-Eingang, pos-restock, Kommissionsware, Kommissionär, Lieferschein parsen, Restock-Beleg auswerten, Store aus Beleg ableiten, Sorten neu vs aufgefüllt, Protokoll in Drive ablegen, Protokollnummer, UL-Nummer. Nachrichtenformat und City→Channel liegen NICHT hier (→ selectedleafs-telegram)."
 ---
 
@@ -52,7 +52,7 @@ curl -s -o "<eingangs-pdf>" "<url>"
 Protokolle sind **immer unterschriebene Scans** (Foto/Schräglage, Knickkanten, kein Text-Layer). Darum ist **OCR der Pflichtpfad, kein Fallback** — kein vorheriger Textextraktions-Versuch: leichte Vorverarbeitung (Graustufen, bei Bedarf Deskew/Kontrast), dann `tesseract` mit `lang="deu"`. Die **tesseract-Engine** ist im Base-Image der Env vorhanden; das **deutsche Sprachpaket** kommt deklarativ als pip-Paket `tessdata.fast-deu` (kein apt, kein File-Mount — in der Managed-Agents-Beta wird die apt-Paketzeile nicht provisioniert, deshalb nicht über apt installieren). Den tessdata-Ordner **nicht** blind aus `tessdata.data_path()` nehmen — das liefert `sys.prefix/share/tessdata` und liegt im Container ggf. neben dem echten Ort (`/usr/local/share/tessdata`); stattdessen den Kandidaten finden, der `deu.traineddata` enthält, und ihn via `--tessdata-dir` übergeben:
 
 ```python
-# Agent-Sandbox: tessdata-Ordner robust bestimmen
+# Agent-Sandbox: 1) tessdata-Ordner robust bestimmen
 import tessdata, os, sys
 def tessdata_dir():
     for c in (tessdata.data_path(), os.path.join(sys.prefix, "share", "tessdata"),
@@ -60,8 +60,28 @@ def tessdata_dir():
         if os.path.exists(os.path.join(c, "deu.traineddata")):
             return c
     raise RuntimeError("deu.traineddata nicht gefunden")
-# pytesseract.image_to_string(img, lang="deu", config=f'--tessdata-dir "{tessdata_dir()}"')
+
+# 2) Seiten EINMAL rendern (pymupdf). tesseract kann PDF NICHT lesen
+#    ("Pdf reading is not supported") → immer auf gerenderte Bilder, NIE auf die PDF-Datei.
+import fitz, glob
+OCR_W = 2480                               # feste Zielbreite ~300 dpi A4 für zuverlässige OCR
+doc = fitz.open("<eingangs-pdf>")
+for i, page in enumerate(doc):
+    zoom = OCR_W / page.rect.width         # MediaBox liegt in Scan-pt vor → feste Zielbreite, NICHT dpi=
+    pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), colorspace=fitz.csGRAY)
+    pix.save(f"/tmp/page_{i:03d}.png")     # bleibt auf Platte → §5 nutzt dieselben Seiten, KEIN 2. Render
+
+# 3) OCR auf den gerenderten Seiten (nie tesseract auf die PDF):
+import pytesseract
+from PIL import Image
+ocr_text = "\n".join(
+    pytesseract.image_to_string(Image.open(p), lang="deu",
+        config=f'--tessdata-dir "{tessdata_dir()}"')
+    for p in sorted(glob.glob("/tmp/page_*.png"))
+)
 ```
+
+**Ein Render für beides.** Der Schritt oben rendert die Seiten **einmal** hochauflösend (`OCR_W`, ~300 dpi) für die Texterkennung und legt sie als `/tmp/page_*.png` ab. Die Komprimierung (§5) skaliert **genau diese PNGs** auf die Archivbreite herunter — sie öffnet das PDF nicht erneut und rendert nicht ein zweites Mal. Bewusst `OCR_W` > Archivbreite: OCR braucht die höhere Auflösung, das Archiv nicht (Downscale ist verlustarm).
 
 Liefert OCR an einer entscheidungsrelevanten Stelle nur unsicheren Text (Store, Protokollnummer, Sorte), behandle das als Mehrdeutigkeit (§3) — **rate nichts**. Strain-Lesungen werden zusätzlich gegen den 9-Strain-Index gefuzzt (§2.4), damit OCR-Rauschen nicht jede Sorte zur Rückfrage macht.
 
@@ -176,22 +196,23 @@ Im **Agent-Sandbox (Code-Execution, nicht lokal, kein VPS)**.
 
 Beispiel: `2026-06-17_UL-10033-1.pdf`
 
-**Komprimierung — Protokolle sind Scans (bildlastig), Downsampling via `pymupdf` (reines pip-Wheel, kein apt/Ghostscript):**
+**Komprimierung — die Seiten sind in §1.1 schon gerendert (`/tmp/page_*.png`, Graustufe, `OCR_W` breit). Hier nur herunterskalieren, kein zweiter Render:**
 
 ```python
-# Agent-Sandbox (Code-Execution)
-import fitz  # pymupdf
-TARGET_W, Q = 1240, 75                 # ~150 dpi A4, Graustufe; Fallback 1500/q80
-doc = fitz.open("<eingangs-pdf>"); out = fitz.open()
-A4 = fitz.paper_rect("a4")
-for page in doc:
-    zoom = TARGET_W / page.rect.width  # MediaBox liegt in Scan-pt vor → feste Zielbreite, NICHT dpi=
-    pix = page.get_pixmap(matrix=fitz.Matrix(zoom, zoom), colorspace=fitz.csGRAY)
+# Agent-Sandbox (Code-Execution) — Archiv aus den §1.1-Seiten, KEIN zweites fitz.open()/Rendern
+import fitz, glob, io
+from PIL import Image
+ARCH_W, Q = 1240, 75                       # ~150 dpi A4; Fallback 1500/q80
+out = fitz.open(); A4 = fitz.paper_rect("a4")
+for p in sorted(glob.glob("/tmp/page_*.png")):       # die in §1.1 gerenderten OCR-Seiten
+    img = Image.open(p)                              # bereits Graustufe, OCR_W breit
+    img = img.resize((ARCH_W, round(img.height * ARCH_W / img.width)))
+    buf = io.BytesIO(); img.save(buf, format="JPEG", quality=Q)
     npage = out.new_page(width=A4.width, height=A4.height)
-    npage.insert_image(npage.rect, stream=pix.tobytes("jpeg", jpg_quality=Q))
+    npage.insert_image(npage.rect, stream=buf.getvalue())
 out.save("2026-06-17_UL-10033-1.pdf", deflate=True, garbage=4)
 ```
-- **Feste Zielbreite, nicht `dpi=`:** Die Scan-Seite hat eine MediaBox in Scan-Punkten (das Bild sitzt als 72-dpi-Vollseite drin), darum skaliert `get_pixmap(dpi=…)` ins Leere. Über `zoom = TARGET_W / page.rect.width` triffst du verlässlich die Zielbreite.
+- **Render-Sharing:** §1.1 rendert das PDF einmal hochauflösend (`OCR_W`) für die OCR; hier werden exakt diese PNGs auf `ARCH_W` (1240 px) herunterskaliert. Das spart das zweite Öffnen/Rendern des PDFs — der ursprünglich teuerste, doppelt ausgeführte Schritt. Sind die PNGs (wider Erwarten) nicht vorhanden, fällt der Schritt auf `fitz.open("<eingangs-pdf>")` + Render bei `ARCH_W` zurück.
 - **1240 px / Graustufe / JPEG q75** drückt einen 5-MB-Scan auf ~0,3 MB und bleibt OCR-sicher (am realen Beleg verifiziert, Kerndaten + Umlaute). Nur wenn das Ergebnis unscharf würde, auf **1500 px / q80** (~0,5 MB) hochgehen.
 - Da Protokolle **immer Scans** sind, ist `pymupdf` der **einzige** Pfad — `pikepdf` rührt die eingebetteten Flate-Bilder nicht an (0 % Kompression) und ist hier nutzlos. `pymupdf` rendert PDF→Bild selbst, also wird **kein** poppler/`pdf2image` gebraucht.
 
@@ -277,6 +298,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 | Datum | Änderung |
 |-------|----------|
+| 2026-06-29 | v1.6.0 — Render-Sharing zwischen OCR (§1.1) und Komprimierung (§5). **§1.1:** Der OCR-Schritt rendert die Seiten jetzt explizit mit `pymupdf` zu Graustufen-PNGs (`/tmp/page_*.png`, feste Breite `OCR_W` ~300 dpi) und gibt **diese** an `tesseract` — vorher war der Render-Schritt nicht ausformuliert (nur der `tessdata_dir()`-Finder + ein nebulöses `img`), wodurch der Agent `tesseract` auf die PDF-Datei selbst ansetzte und mit „Pdf reading is not supported" abbrach. Jetzt explizit: nie `tesseract` auf die PDF, immer auf die gerenderten Bilder. **§5:** Komprimierung öffnet das PDF **nicht mehr ein zweites Mal**, sondern skaliert die in §1.1 erzeugten PNGs auf `ARCH_W` (1240 px) herunter → **ein** Render statt zwei (der bisher teuerste, doppelt ausgeführte Schritt entfällt); Fallback auf eigenes `fitz.open`+Render, falls die PNGs fehlen. `OCR_W` (OCR) bewusst > `ARCH_W` (Archiv), Downscale ist verlustarm. Kompressionsparameter (Graustufe, q75, Fallback 1500/q80) und feste-Zielbreite-statt-`dpi=` unverändert. |
 | 2026-06-29 | v1.5.0 — Auf die neuen MCP-Tools umgestellt. **§1.1 (neu) Download auf Referenz-Pfad:** Inline-base64 `download_file` → `create_download_url` (lädt serverseitig von Telegram nach R2, Bot-Token bleibt am Worker, gibt eine token-freie presigned GET-URL zurück; per `curl -o` in die Sandbox, läuft nicht durch den Agenten-Kontext). Egress-Voraussetzung ergänzt (`<account-id>.r2.cloudflarestorage.com` in Allowed-Hosts, build-time). Fail-closed bei fehlender `url`/Non-2xx, kein base64-Fallback. Scope zieht Schritt 1 in die „Tiefe" (System-Prompt triggert, Skill liefert den Tool-Call) — Spiegel zur Upload-Seite §6. **§6 Drive-Ablage:** manuelle `list_files`+`create_folder`-Ordnerschleife durch **einen** `ensure_folder_path`-Call ersetzt (mkdir-p für `{city.name}`/`{postal_code} {store.name}`); NFC-Normalisierung + Dedup laufen jetzt serverseitig im Tool → der manuelle NFC-Wiederfind-Hinweis entfällt, Rückgabe-`id` ist der Zielordner. **§4:** Ordner-Bestimmung zeigt auf `ensure_folder_path`; der `list_files`-Existenz-Check fürs `_<protokoll_nr>.pdf` (Idempotenz) bleibt. Tool-Kontrakte aus telegram-mcp 4.2.1 + google-drive-mcp `main` übernommen (nicht geraten). |
 | 2026-06-27 | v1.4.0 — Kompression von Ghostscript auf **`pymupdf`** (reines pip-Wheel) umgestellt (§5): in der Managed-Agents-Beta wird die deklarierte **apt**-Paketzeile nicht provisioniert (pip greift, apt nicht — in zwei Envs reproduziert), darum gs/apt komplett raus. `pymupdf` rendert PDF→Bild selbst (kein poppler/`pdf2image`); feste Zielbreite **1240 px / Graustufe / JPEG q75** statt `dpi=` (MediaBox liegt in Scan-pt vor → `dpi=` skaliert ins Leere), ~5,3 MB → ~0,3 MB, OCR am realen Beleg verifiziert (Kerndaten + Umlaute); Fallback 1500/q80. `pikepdf` verworfen (rührt Flate-Scan-Bilder nicht an, 0 %). §1: deutsches Sprachpaket nicht mehr „apt-vorinstalliert", sondern pip-Paket **`tessdata.fast-deu`**; tessdata-Pfad über Fallback-Finder + `--tessdata-dir`, weil `tessdata.data_path()` (=`sys.prefix/share/tessdata`) im Container neben dem echten Ort (`/usr/local/share/tessdata`) liegen kann. tesseract-Engine bleibt Base-Image. |
 | 2026-06-27 | v1.3.0 — §6 Drive-Ordnernamen von slugifiziert auf Klartext aus Metaobjekt-Feldern umgestellt: `{stadt}/{store-slug}` → `{city.name}/{postal_code} {store.name}` (z. B. `Hannover/30159 Spätkauf Hannover`). Slugifizierung (lowercase, Umlaut-Faltung, `-`-Ersetzung) entfällt — Großschreibung, Leerzeichen und Umlaute sind in Drive zulässig; einzige Anforderung bleibt Determinismus aus stabiler Quelle (Metaobjekt-`name`/`postal_code`, nie OCR/Belegtext). NFC-Normalisierung beim Ordner-Wiederfinden ergänzt; expliziter Hinweis, dass `create_folder` nicht dedupliziert (vorher `list_files`). Idempotenz (§4, Schlüssel = Protokollnummer) und Dateiname (§5) unberührt. |
