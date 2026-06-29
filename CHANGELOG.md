@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.1](https://github.com/wemwi/skill-library/compare/v2.20.0...v2.20.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** tote selectedleafs-telegram-Verweise im restock-Body repointen ([157e7a9](https://github.com/wemwi/skill-library/commit/157e7a988fe0029e530257a6d71e5e155187ce7d))
+
 ## [2.20.0](https://github.com/wemwi/skill-library/compare/v2.19.0...v2.20.0) (2026-06-29)
 
 
