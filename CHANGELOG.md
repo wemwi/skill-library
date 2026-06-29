@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.13.0](https://github.com/wemwi/skill-library/compare/v2.12.0...v2.13.0) (2026-06-29)
+
+
+### Features
+
+* **global-stress-test:** Skill zur Konzept-Härtung + Verdrahtung in global-workflow ([#57](https://github.com/wemwi/skill-library/issues/57)) ([b26efc8](https://github.com/wemwi/skill-library/commit/b26efc8a008bafda7b43bb407ba3fc464cd9da73))
+
 ## [2.12.0](https://github.com/wemwi/skill-library/compare/v2.11.1...v2.12.0) (2026-06-28)
 
 
