@@ -13,7 +13,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
 ---
 
 # global-mcp-framework
@@ -48,7 +48,7 @@ Datei, damit ein Debug-Fall genau eine Datei lädt statt aller. Lies gezielt:
 |---|---|
 | OAuth-Provider verdrahten, `/authorize`-Login bauen, was der Provider selbst macht | `references/auth.md` |
 | Transport-Setup, "Session terminated" beim Tool-Call | `references/transport.md` |
-| KV-Binding/Namespace anlegen, KV-Hygiene (kein Cron auf Free Plan) | `references/storage.md` |
+| KV-Binding/Namespace, KV-Hygiene (kein Cron auf Free Plan); R2 presigned Download (großer Payload statt base64) | `references/storage.md` |
 | Inbound-Hash vs. Outbound-Key setzen, "Authorization failed" nach Consent | `references/secrets.md` |
 | Repo-Layout, Workers-Builds Root directory, Deploy command, PR/Merge/Build, Foundation-Tag bumpen, Build-Cache-Falle | `references/deploy.md` |
 | Repo-/Naming-Standard (Worker/Tool/Secret), Folder-Struktur, Connector-URL, `login`-Config | `references/conventions.md` |
