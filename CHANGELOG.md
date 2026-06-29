@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.0](https://github.com/wemwi/skill-library/compare/v2.19.0...v2.20.0) (2026-06-29)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** POS-Operations-Skill konsolidieren (restock + telegram) ([0f7e634](https://github.com/wemwi/skill-library/commit/0f7e634431f398d40ca86a8fab03e3f5b96ea342))
+
 ## [2.19.0](https://github.com/wemwi/skill-library/compare/v2.18.0...v2.19.0) (2026-06-29)
 
 
