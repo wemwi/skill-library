@@ -5,11 +5,11 @@ Operative Anleitung **an dich, den Agenten `pos-restock`**, für den Kern deiner
 **Scope:** Schritt 1, 2, 4, 5 deiner Kette. Schritt 3 (Posten) und 6 (Status) führst du laut System-Prompt aus. Auch für Schritt 1 gilt das Muster von §5/§6: der **System-Prompt triggert** (es liegt ein PDF im Topic „Protokoll-Eingang" bereit), dieser Skill liefert nur die **Tiefe des Tool-Calls** (§1.1) — er dupliziert den System-Prompt nicht und entscheidet nicht über den Auslöser.
 
 **Abgrenzung — was NICHT hier steht:**
-- **Restock-Nachrichtenformat + City→Channel-Zuordnung** → `selectedleafs-telegram` (§5 Templates, §10 Auslöser). Du lieferst nur Stadt + Sorten-Buckets; das Rendern und der Channel laufen dort.
+- **Restock-Nachrichtenformat** → Sektion „Restock-Post-Templates" am Ende dieser reference (📦/🌿 + kanonischer Index). **City→Channel-Ableitung** → `telegram.md` §2.1. Du lieferst nur Stadt + Sorten-Buckets; das Rendern (lokal) und die Channel-Auflösung laufen dort.
 - **Managed-Agents-/Console-Mechanik** (Config, Tools, Deploy) → `global-agent-framework` (build-time).
 - **Store-Daten** → Shopify MCP (`graphql_query`), zweistufig & feldselektiv (§2.5) — nie ein Voll-Dump aller Store-Felder.
 
-**Verhältnis zu telegram §10:** Dort ist die Protokoll-Verarbeitung *halb-manuell mit Review* beschrieben. **Du läufst vollautomatisch** und postest ohne Vorab-Bestätigung — der Mensch-im-Loop ist hier durch den harten Abbruch bei Unklarheit (§3) ersetzt. Bei Mehrdeutigkeit postest du nie öffentlich, sondern stellst eine Rückfrage im Topic „Protokoll-Eingang" und brichst ab.
+**Vollautomatik (kein Review-Schritt):** **Du läufst vollautomatisch** und postest ohne Vorab-Bestätigung — der Mensch-im-Loop ist hier durch den harten Abbruch bei Unklarheit (§3) ersetzt. Bei Mehrdeutigkeit postest du nie öffentlich, sondern stellst eine Rückfrage im Topic „Protokoll-Eingang" und brichst ab.
 
 ---
 
@@ -20,7 +20,7 @@ Du bekommst ein PDF aus dem Topic „Protokoll-Eingang" in die Sandbox (Schritt 
 1. **Idempotenz-Check zuerst (§4)** — schon verarbeitet? → abbrechen, bevor du irgendetwas postest oder ablegst.
 2. **Parsen (§2)** — Store, Stadt, Sorten, neu vs. aufgefüllt.
 3. **Mehrdeutig? (§3)** → Rückfrage im Topic, abbrechen. Sonst weiter.
-4. **Posten** — Stadt + Sorten-Buckets an den Telegram-Schritt übergeben (Format/Channel → `selectedleafs-telegram`).
+4. **Posten** — Stadt + Sorten-Buckets rendern (Templates → Sektion „Restock-Post-Templates" am Ende; Channel → `telegram.md` §2.1).
 5. **Write-back (§8)** — gepostete **neue Sorten (🌿)** nach erfolgreichem Post an die `product_list` des Stores anhängen.
 6. **Komprimieren + umbenennen (§5)**, dann **in Drive ablegen (§6)**.
 7. **Status** ins Topic (§7).
@@ -113,7 +113,7 @@ Spalten: `Pos. | Artikelnummer | Artikelbezeichnung | Menge | Gewicht | MHD`. Di
 - POS-Displays, Theken-Material, Werbemittel (typisch Artikel-Nr. mit **`M`-Präfix**, z. B. `M10000-001`) → ignorieren, auch wenn der Titel „White Vein Kratom" enthält.
 - Verkaufbare Sorten haben numerische Strain-SKUs (z. B. `10001-002`) **plus** die Subzeile.
 
-`Menge`, `Gewicht`, `MHD` sind für den Post **irrelevant** (Verfügbarkeit ist binär — telegram §6). Nur Strain + Vein zählen.
+`Menge`, `Gewicht`, `MHD` sind für den Post **irrelevant** (Verfügbarkeit ist binär). Nur Strain + Vein zählen.
 
 ### 2.4 Strain + Vein extrahieren, Größen dedupen
 
@@ -122,7 +122,7 @@ Je verkaufbarer Position:
 - **Vein** = das Wort vor „Kratom" in der Subzeile. „€ · White Kratom" → White.
 - **Dedupe über Größen:** dieselbe Strain+Vein-Kombination aus mehreren Positionen (z. B. „Indo Fusion 25g" + „Indo Fusion 50g") kollabiert zu **einer** Sorte „Indo Fusion (White)".
 
-**Fuzzy-Match gegen den kanonischen 9-Strain-Index (telegram §5):** Den OCR-Strain **nicht wörtlich übernehmen**, sondern auf den nächstgelegenen Index-Eintrag mappen (OCR-tolerant, z. B. „lndo Fuslon" → „Indo Fusion", „Borneo Blizz" → „Borneo Bliss"). Liegt der beste Treffer klar über der Ähnlichkeitsschwelle → **diesen kanonischen Namen verwenden** (nicht den rohen OCR-Text). Bleibt der beste Treffer mehrdeutig (zwei Index-Einträge ähnlich nah) oder unter der Schwelle (kein plausibler Match → mutmaßlich echte Katalog-Neuheit oder unlesbar) → **nicht öffentlich raten**, sondern §3 (Rückfrage). Der Index selbst (Sortierung/Tier) lebt in telegram — hier nur Auflösung + Plausibilisierung.
+**Fuzzy-Match gegen den kanonischen 9-Strain-Index (Sektion „Restock-Post-Templates" am Ende):** Den OCR-Strain **nicht wörtlich übernehmen**, sondern auf den nächstgelegenen Index-Eintrag mappen (OCR-tolerant, z. B. „lndo Fuslon" → „Indo Fusion", „Borneo Blizz" → „Borneo Bliss"). Liegt der beste Treffer klar über der Ähnlichkeitsschwelle → **diesen kanonischen Namen verwenden** (nicht den rohen OCR-Text). Bleibt der beste Treffer mehrdeutig (zwei Index-Einträge ähnlich nah) oder unter der Schwelle (kein plausibler Match → mutmaßlich echte Katalog-Neuheit oder unlesbar) → **nicht öffentlich raten**, sondern §3 (Rückfrage). Der Index selbst (Sortierung/Tier) lebt dort — hier nur Auflösung + Plausibilisierung.
 
 ### 2.5 Store → Metaobjekt-Match → Stadt & Channel (Wunstorf-Regel)
 
@@ -178,7 +178,7 @@ Die Entscheidung ist **pro Sorte**: ein Protokoll kann gleichzeitig aufgefüllte
 
 ### 2.7 Was dieser Skill liefert (Übergabe-Payload)
 
-Du übergibst an den Telegram-Schritt (Format/Channel → `selectedleafs-telegram` §5/§10) **strukturierte Daten, keinen fertigen Text**:
+Du übergibst an den Render-/Post-Schritt (Templates → Sektion „Restock-Post-Templates" am Ende; Channel → `telegram.md` §2.1) **strukturierte Daten, keinen fertigen Text**:
 
 ```
 {
@@ -313,7 +313,7 @@ Genau **eine** knappe Status-Zeile ins Topic „Protokoll-Eingang", je nach Ausg
 | Bereits verarbeitet | „↩︎ `UL-10033-1` bereits verarbeitet, übersprungen." |
 | Mehrdeutig (§3) | „⚠️ `UL-10033-1` — <konkrete Rückfrage>. Verarbeitung pausiert." |
 
-Keine Sorten-/Mengen-Details öffentlich in den City-Channel schreiben, die nicht aus dem Telegram-Format (§5) stammen — der Status bleibt im Topic.
+Keine Sorten-/Mengen-Details öffentlich in den City-Channel schreiben, die nicht aus den Restock-Post-Templates stammen — der Status bleibt im Topic.
 
 Wurden **neue Sorten** gepostet, den Write-back (§8) in derselben Zeile kurz quittieren, z. B.: „✅ `UL-10040-1` — Kiosk Linden (Hannover): 0 aufgefüllt, 1 neu (Sortiment ergänzt). Gepostet + in Drive abgelegt."
 
@@ -343,7 +343,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 - **Nur bei erfolgreichem Post.** Schlägt der 🌿-Post fehl, **kein** Write-back — sonst meldete `product_list` eine Sorte als geführt, die nie announced wurde.
 - **Tool / Permission ist build-time.** Der Write-back ist eine **Mutation** aufs Metaobjekt; das read-only `graphql_query` reicht dafür nicht. Tool-Oberfläche, Least-Privilege und Bestätigungs-Policy regelt `global-agent-framework` — dieser Skill beschreibt nur das **Verhalten**, nicht die Tool-Mechanik.
 
-**Bewusste Folge fürs Typing:** Nimmt der Mensch eine ausverkaufte Sorte später aus `product_list` und sie wird erneut geliefert, postet der Agent sie wieder als 🌿 „Neue Sorte" (nicht 📦). Das ist laut telegram-SSOT korrekt (Trigger = Membership in `product_list`) und braucht **keinen** „kennen-wir-schon"-Sonderfall. Wer das Framing später glätten will, müsste eine separate Historie führen — bewusst nicht Teil dieser Kette.
+**Bewusste Folge fürs Typing:** Nimmt der Mensch eine ausverkaufte Sorte später aus `product_list` und sie wird erneut geliefert, postet der Agent sie wieder als 🌿 „Neue Sorte" (nicht 📦). Das ist korrekt (Trigger = Membership in `product_list`) und braucht **keinen** „kennen-wir-schon"-Sonderfall. Wer das Framing später glätten will, müsste eine separate Historie führen — bewusst nicht Teil dieser Kette.
 
 ---
 
