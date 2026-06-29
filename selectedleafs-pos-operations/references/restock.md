@@ -17,9 +17,9 @@ Operative Anleitung **an dich, den Agenten `pos-restock`**, für den Kern deiner
 
 Du bekommst ein PDF aus dem Topic „Protokoll-Eingang" in die Sandbox (Schritt 1). Dann **in dieser Reihenfolge**:
 
-1. **Idempotenz-Check zuerst (§4)** — schon verarbeitet? → abbrechen, bevor du irgendetwas postest oder ablegst.
-2. **Parsen (§2)** — Store, Stadt, Sorten, neu vs. aufgefüllt.
-3. **Mehrdeutig? (§3)** → Rückfrage im Topic, abbrechen. Sonst weiter.
+1. **Parsen (§2)** — Store, Stadt, Sorten, neu vs. aufgefüllt; dabei `protokoll_nr` (§2.2) und Store-Metaobjekt (§2.5) auflösen.
+2. **Mehrdeutig? (§3)** → Rückfrage im Topic, abbrechen. Sonst weiter.
+3. **Idempotenz-Check (§4)** — Zielordner via `ensure_folder_path` (§6) + `list_files` auf `_<protokoll_nr>.pdf`; existiert sie → abbrechen. **Dieser Check läuft zwingend VOR jedem Post/Ablegen.** Er steht hier (nicht ganz oben), weil er `protokoll_nr` + Store-Match aus Schritt 1 braucht — vorher ist der Zielordner nicht bestimmbar.
 4. **Posten** — Stadt + Sorten-Buckets rendern (Templates → Sektion „Restock-Post-Templates" am Ende; Channel → `telegram.md` §2.1).
 5. **Write-back (§8)** — gepostete **neue Sorten (🌿)** nach erfolgreichem Post an die `product_list` des Stores anhängen.
 6. **Komprimieren + umbenennen (§5)**, dann **in Drive ablegen (§6)**.
@@ -118,7 +118,7 @@ Spalten: `Pos. | Artikelnummer | Artikelbezeichnung | Menge | Gewicht | MHD`. Di
 ### 2.4 Strain + Vein extrahieren, Größen dedupen
 
 Je verkaufbarer Position:
-- **Strain** = fette Produktzeile **ohne Größen-Suffix** (`25g`/`50g`/`100g` …). „Indo Fusion 25g" → „Indo Fusion".
+- **Strain** = fette Produktzeile **ohne Größen-Suffix** (`25g`/`50g`/`100g` …). „Indo Fusion 25g" → „Indo Fusion". Suffix robust strippen, nicht zeichenweise von Hand: `strain = re.sub(r"\s*\d+\s*g\b", "", produktzeile, flags=re.I).strip()`. `rstrip("0123456789").replace("g","")` lässt „Indo Fusion 25" stehen und zerlegt Strain-Namen, die ein `g` enthalten — nicht verwenden.
 - **Vein** = das Wort vor „Kratom" in der Subzeile. „€ · White Kratom" → White.
 - **Dedupe über Größen:** dieselbe Strain+Vein-Kombination aus mehreren Positionen (z. B. „Indo Fusion 25g" + „Indo Fusion 50g") kollabiert zu **einer** Sorte „Indo Fusion (White)".
 
@@ -136,7 +136,7 @@ Je verkaufbarer Position:
        }
      }
      ```
-   - **1b Detail-Stufe (nur der Treffer, nur die nötigen Felder):** Für die gematchte `id` genau die sechs Felder holen, die die Kette braucht — `name`, `postal_code`, `city`→`name`, `district`→`name`, `product_list`, `google_place`. Die city-Referenz wird **im selben Query** zum Klartext aufgelöst (kein separater Lookup). `product_list` liefert Produkt-GIDs (für §2.6). `google_place` ist ein **JSON-codierter String** (Feld-`value` per `json.loads` parsen) und liefert `place_id` + `name` für den `{maps_link}` der Post-Templates (Sektion „Restock-Post-Templates", Render-Regeln) — **ohne dieses Feld kein gültiger Maps-Link**, der Post ginge sonst mit Platzhalter raus.
+   - **1b Detail-Stufe (nur der Treffer, nur die nötigen Felder):** Für die gematchte `id` genau die sechs Felder holen, die die Kette braucht — `name`, `postal_code`, `city`→`name`, `district`→`name`, `product_list`, `google_place`. Die city-Referenz wird **im selben Query** zum Klartext aufgelöst (kein separater Lookup). `product_list` liefert Produkt-GIDs (für §2.6). `google_place` ist ein **JSON-codierter String** (Feld-`value` per `json.loads` parsen) und liefert die Keys `id` (= place_id) + `displayName` (= name) für den `{maps_link}` der Post-Templates (Sektion „Restock-Post-Templates", Render-Regeln) — die Keys heißen im Feld **`id`/`displayName`**, **nicht** `place_id`/`name`; ein `google_place['place_id']` wirft `KeyError`. **Ohne dieses Feld kein gültiger Maps-Link**, der Post ginge sonst mit Platzhalter raus.
      ```graphql
      query($id: ID!) {
        metaobject(id: $id) {
@@ -401,7 +401,7 @@ Strain ist die News, passt komplett in die Headline (kein Payload-Block). Headli
 ### Render-Regeln (beide Typen)
 
 - **`parse_mode = HTML`.** Inline-Link als `<a href="…">Text</a>`; **MarkdownV2 nicht** verwenden (müsste `.`, `-`, `(`, `)` in Adressen/Maps-Links escapen → bricht ständig).
-- **`{maps_link}`** = `https://www.google.com/maps/search/?api=1&query={name}&query_place_id={place_id}` aus dem `google_place`-Feld des Stores — in HTML **jedes `&` → `&amp;`**.
+- **`{maps_link}`** = `https://www.google.com/maps/search/?api=1&query={name}&query_place_id={place_id}` aus dem `google_place`-Feld des Stores. **Reale JSON-Keys im Feld:** `id` (= `{place_id}`) und `displayName` (= `{name}`) — **nicht** `place_id`/`name`. Den `query`-Wert (`{name}` = `displayName`, enthält Leerzeichen/Umlaute) mit `urllib.parse.quote` URL-kodieren; **danach** im HTML **jedes `&` → `&amp;`**.
 - **CTA** = Link-Text „Google Maps öffnen", Leerzeile davor, kein Pfeil-Präfix, keine Urgency-/„Jetzt"-Floskeln, kein roher URL, kein Underline, **Link-Preview aus**.
 - **`{stadtteil}`** = `district`→`name` des Stores (GID auflösen, nicht aus PLZ raten). Ton: warm, lokaler Tipp — kein Shop-Ton.
 - Posting läuft über die Telegram-Post-Tools (`post_message`); Tool-Oberfläche/Permission ist build-time (`global-agent-framework`), nicht hier.
