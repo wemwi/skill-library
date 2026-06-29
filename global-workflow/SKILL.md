@@ -2,7 +2,7 @@
 name: global-workflow
 description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # Workflow — Universelles Arbeitsprotokoll
@@ -44,6 +44,8 @@ Verwende bei:
 - Alles was >1 Datei betrifft
 - Architektur-Entscheidungen
 - Wenn du unsicher bist → Default ist Spec-First
+
+**Bei Konzept-/Architektur-/Design-Entscheidungen zusätzlich `global-stress-test` laden** — der härtet den Entwurf (Bruchstellen, Skalierbarkeit unter Last, blinde Winkel), bevor er in einen Plan gegossen wird. Die „Risiken"-Sektion im Plan-Format unten ist der leichte Default; der Stress-Test ist der Tiefendurchlauf und füttert genau diese Sektion, statt sie zu ersetzen. Nicht bei Routine-Ausführung feuern (Section bauen, Commit/PR, Lookup, Statuscheck, Mini-Edit).
 
 **Plan-Format:**
 ```
