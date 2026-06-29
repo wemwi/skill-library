@@ -2,7 +2,7 @@
 name: global-workflow
 description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
 ---
 
 # Workflow — Universelles Arbeitsprotokoll
@@ -150,6 +150,16 @@ Lohnt sich nur bei längeren/gemischten Sessions. Bei kurzen Tasks: ein Setup ne
 3. **Minimal-Prinzip:** Nur hinzufügen was explizit fehlt — keine "Verbesserungen" ohne Rückfrage
 4. **Seiteneffekte:** Wer nutzt diese Datei noch? Kann die Änderung etwas kaputt machen?
 5. **Bei Unsicherheit fragen**
+
+### 5.1 Skill-Updates token-effizient
+
+Der volle Datei-Inhalt läuft **genau einmal** durch den Kontext (beim Commit) — jeder andere Schritt vermeidet die Voll-Durchquerung:
+
+1. **Basis = installierte Version:** `cp /mnt/skills/user/<name>/SKILL.md /home/claude/`. Nie base64 aus der GitHub-API abtippen, nie den Volltext per `curl` in den Kontext laden. Bei Drift-Verdacht nur Byte-Größe/SHA gegen `main` prüfen, nicht den Inhalt.
+2. **Edits via `str_replace`** auf der lokalen Datei (nur die Diffs) — die Datei nie komplett neu schreiben.
+3. **Struktur-Check via `grep`** (Version, Abschnittszahl, Marker) — kein erneutes `cat` der Vollversion zur reinen Kontrolle.
+4. **Commit = ein `push_files`** mit vollem `content` (bei GitHub-MCP unvermeidbar — das ist die *eine* Durchquerung). Danach Byte-Verifikation: `curl` der raw-URL **nach `/tmp`** + `diff` gegen lokal → nur „IDENTISCH" landet im Kontext, nicht der Inhalt.
+5. PR → Squash-Merge (→ `global-git-conventions`), dann `.skill`-Paket bauen und ausliefern.
 
 ---
 
