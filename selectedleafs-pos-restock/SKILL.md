@@ -1,15 +1,15 @@
 ---
 name: selectedleafs-pos-restock
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
 description: "Runtime-Anleitung an den Managed Agent pos-restock zum Auswerten EINES selectedleafs-Übergabeprotokolls (Kommissionsware-Beleg, PDF) und Ablegen in Google Drive. Liefert die operative Tiefe für Protokoll-Parsing (Store, Stadt, Sorten, neu vs. aufgefüllt), Idempotenz, PDF-Komprimierung/Umbenennung und Drive-Ablage. IMMER laden, sobald der Agent ein Übergabeprotokoll aus dem Topic Protokoll-Eingang verarbeitet — auch wenn das Wort Skill nicht fällt. Triggers on: Übergabeprotokoll, Protokoll-Eingang, pos-restock, Kommissionsware, Kommissionär, Lieferschein parsen, Restock-Beleg auswerten, Store aus Beleg ableiten, Sorten neu vs aufgefüllt, Protokoll in Drive ablegen, Protokollnummer, UL-Nummer. Nachrichtenformat und City→Channel liegen NICHT hier (→ selectedleafs-telegram)."
 ---
 
 # selectedleafs POS-Restock — Übergabeprotokoll auswerten & ablegen
 
-Operative Anleitung **an dich, den Agenten `pos-restock`**, für den Kern deiner Kette: ein Übergabeprotokoll auswerten (Schritt 2), das PDF komprimieren/umbenennen (Schritt 4) und in Google Drive ablegen (Schritt 5). Du verarbeitest **genau ein Protokoll pro Lauf**.
+Operative Anleitung **an dich, den Agenten `pos-restock`**, für den Kern deiner Kette: das Protokoll-PDF in die Sandbox holen (Schritt 1), ein Übergabeprotokoll auswerten (Schritt 2), das PDF komprimieren/umbenennen (Schritt 4) und in Google Drive ablegen (Schritt 5). Du verarbeitest **genau ein Protokoll pro Lauf**.
 
-**Scope:** Schritt 2, 4, 5 deiner Kette. Schritt 1 (PDF laden), 3 (Posten), 6 (Status) führst du laut System-Prompt aus — dieser Skill ergänzt die Tiefe, dupliziert den System-Prompt nicht.
+**Scope:** Schritt 1, 2, 4, 5 deiner Kette. Schritt 3 (Posten) und 6 (Status) führst du laut System-Prompt aus. Auch für Schritt 1 gilt das Muster von §5/§6: der **System-Prompt triggert** (es liegt ein PDF im Topic „Protokoll-Eingang" bereit), dieser Skill liefert nur die **Tiefe des Tool-Calls** (§1.1) — er dupliziert den System-Prompt nicht und entscheidet nicht über den Auslöser.
 
 **Abgrenzung — was NICHT hier steht:**
 - **Restock-Nachrichtenformat + City→Channel-Zuordnung** → `selectedleafs-telegram` (§5 Templates, §10 Auslöser). Du lieferst nur Stadt + Sorten-Buckets; das Rendern und der Channel laufen dort.
@@ -31,6 +31,23 @@ Du bekommst ein PDF aus dem Topic „Protokoll-Eingang" in die Sandbox (Schritt 
 5. **Write-back (§8)** — gepostete **neue Sorten (🌿)** nach erfolgreichem Post an die `product_list` des Stores anhängen.
 6. **Komprimieren + umbenennen (§5)**, dann **in Drive ablegen (§6)**.
 7. **Status** ins Topic (§7).
+
+### 1.1 PDF in die Sandbox holen (Schritt 1, Referenz-Pfad)
+
+Das Protokoll kommt als Telegram-Dokument im Topic „Protokoll-Eingang" an. Protokolle sind Scans (~0,5–1 MB) — das **Inline-base64-Budget** des Agenten reicht dafür nicht, `download_file` (gibt die Bytes als base64 durch den Kontext zurück) ist daher **nicht** der Weg. Stattdessen der Referenz-Pfad, spiegelbildlich zur Upload-Seite (§6):
+
+1. **Referenz holen** — `create_download_url` mit der `file_id` des PDF-Anhangs (aus dem eingehenden Update, `document.file_id` — **nicht** die `message_id`). Der Bot-Token bleibt serverseitig; das Tool lädt die Datei serverseitig von Telegram, legt die Bytes in R2 ab und gibt JSON zurück: `{ url, key, file_name, mime_type, size, expires_in }`. `url` ist eine **token-freie, kurzlebige** presigned GET-URL.
+2. **Bytes direkt ziehen** — die `url` per `curl -o` in die Sandbox holen; die Bytes laufen **nicht** durch den Agenten-Kontext. Zügig nach dem Call ausführen — die URL läuft nach `expires_in` Sekunden ab.
+
+```bash
+# Agent-Sandbox (Code-Execution)
+curl -s -o "<eingangs-pdf>" "<url>"
+# Danach prüfen: Datei > 0 Byte und valides PDF, bevor du weitermachst (§2).
+```
+
+**Voraussetzung (Egress):** Der Presign-Host des R2-Buckets — `<account-id>.r2.cloudflarestorage.com` — muss in den **Allowed-Hosts** des Environments stehen, sonst schlägt `curl` mit Netzwerkfehler fehl. Den Host build-time eintragen (Agent-Config, `global-agent-framework`), **nicht** hier hardcoden; er steckt im `url`-Feld der Tool-Antwort.
+
+**Fail-closed:** Gibt `create_download_url` keine `url` zurück (Fehler/Netzwerkproblem) oder liefert `curl` einen Non-2xx-Status bzw. eine 0-Byte-Datei → Abbruch, Fehler-Status ins Topic (§7), **kein** Retry und **kein** base64-Fallback über `download_file` (würde den Kontext sprengen — genau die Ursache, die der Referenz-Pfad behebt).
 
 Protokolle sind **immer unterschriebene Scans** (Foto/Schräglage, Knickkanten, kein Text-Layer). Darum ist **OCR der Pflichtpfad, kein Fallback** — kein vorheriger Textextraktions-Versuch: leichte Vorverarbeitung (Graustufen, bei Bedarf Deskew/Kontrast), dann `tesseract` mit `lang="deu"`. Die **tesseract-Engine** ist im Base-Image der Env vorhanden; das **deutsche Sprachpaket** kommt deklarativ als pip-Paket `tessdata.fast-deu` (kein apt, kein File-Mount — in der Managed-Agents-Beta wird die apt-Paketzeile nicht provisioniert, deshalb nicht über apt installieren). Den tessdata-Ordner **nicht** blind aus `tessdata.data_path()` nehmen — das liefert `sys.prefix/share/tessdata` und liegt im Container ggf. neben dem echten Ort (`/usr/local/share/tessdata`); stattdessen den Kandidaten finden, der `deu.traineddata` enthält, und ihn via `--tessdata-dir` übergeben:
 
@@ -138,8 +155,8 @@ Rückfrage knapp und konkret halten, z. B.: „Protokoll `UL-10033-1`: Store ‚
 
 **Schlüssel = Protokollnummer** (`UL-10033-1`). Da der Dateiname in Drive die Nummer enthält (§5), ist der Idempotenz-Check ein Existenz-Check im Ziel-Ordner:
 
-1. Ziel-Ordner in Drive bestimmen (§6).
-2. Prüfen, ob dort bereits eine Datei mit Endung `_<protokoll_nr>.pdf` liegt.
+1. Ziel-Ordner in Drive bestimmen — `ensure_folder_path` (§6) liefert die Zielordner-`id` (idempotent; legt den Stadt/Store-Pfad bei Bedarf an, ohne zu duplizieren).
+2. In diesem Ordner per `list_files` prüfen, ob bereits eine Datei mit Endung `_<protokoll_nr>.pdf` liegt.
 3. **Existiert sie → abbrechen**, nicht erneut posten/ablegen. Status ins Topic: „Protokoll `UL-10033-1` bereits verarbeitet, übersprungen."
 
 Diesen Check **vor** dem Posten ausführen (§1), damit ein doppelt eingereichtes Protokoll keinen Doppel-Post erzeugt. Kein externer State/keine DB nötig — der Drive-Ordner ist die Quelle der Wahrheit (web-only-tauglich).
@@ -195,8 +212,7 @@ Verifiziere nach der Komprimierung, dass die Datei > 0 Byte und valide ist, bevo
   - `{postal_code}` = `postal_code`-Feld des Stores (z. B. `30159`), als Präfix zur Sortierung und Disambiguierung gleichnamiger Stores.
   - `{store.name}` = `name`-Feld des Stores (Klartext mit Umlauten/Leerzeichen, z. B. `Spätkauf Hannover`).
 - **Keine Slugifizierung.** Großschreibung, Leerzeichen und Umlaute (`ä ö ü ß`) sind in Drive zulässig und gewollt (lesbare Ordner). Die einzige Anforderung an den Namen ist Determinismus aus stabiler Quelle (Metaobjekt-Feld) — die ist erfüllt; Groß/Klein und Umlaut sind für die Idempotenz irrelevant.
-- **Wiederfinden NFC-normalisiert.** Beim Ordner-Existenz-Check (§4) den abgeleiteten Namen und die gelisteten Drive-Namen vor dem Vergleich nach Unicode-NFC normalisieren, damit `ä` (ein Codepoint) nicht gegen `a`+kombinierendes Trema verliert. Da Quelle stets dasselbe Metaobjekt-Feld ist, sind beide praktisch deckungsgleich — der Normalisierungsschritt ist die Absicherung, kein erwarteter Konfliktfall.
-- Fehlt der Stadt- oder Store-Ordner, **anlegen** (mkdir-p-Semantik via `create_folder`). Vorher per `list_files` prüfen, ob er (NFC-normalisiert) schon existiert — `create_folder` dedupliziert **nicht** und legt sonst einen zweiten gleichnamigen Ordner an.
+- **Ordnerpfad idempotent auflösen/anlegen — ein Call.** Statt `list_files`+`create_folder` von Hand zu kombinieren: `ensure_folder_path` mit `parentFolderId` = Übergabeprotokolle-Wurzel und `segments = [ "{city.name}", "{postal_code} {store.name}" ]`. Das Tool legt fehlende Segmente an und nutzt vorhandene wieder — **mkdir-p, idempotent**: nie ein zweiter gleichnamiger Ordner. Der Vergleich ist **serverseitig** Unicode-NFC-normalisiert (ä/ö/ü/ß sicher), exakt und case-sensitiv; gleichnamige Dateien werden ignoriert. Du musst Namen daher **nicht mehr selbst NFC-normalisieren** und keinen Existenz-Check vorschalten — das übernimmt das Tool. Rückgabe: `{ id, name, webViewLink?, created[] }`. `id` ist der **Zielordner** (für die PDF-Ablage und den Idempotenz-Check §4); `created` listet die in diesem Lauf neu angelegten Segmente (leer = Pfad existierte bereits, z. B. beim Zweitlauf).
 - Die **Wurzel/Folder-ID** ist Agent-Config (build-time, `global-agent-framework`) — nicht hier hardcoden.
 
 **Upload-Ablauf (zweistufig, Referenz-Pfad):**
@@ -261,6 +277,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 | Datum | Änderung |
 |-------|----------|
+| 2026-06-29 | v1.5.0 — Auf die neuen MCP-Tools umgestellt. **§1.1 (neu) Download auf Referenz-Pfad:** Inline-base64 `download_file` → `create_download_url` (lädt serverseitig von Telegram nach R2, Bot-Token bleibt am Worker, gibt eine token-freie presigned GET-URL zurück; per `curl -o` in die Sandbox, läuft nicht durch den Agenten-Kontext). Egress-Voraussetzung ergänzt (`<account-id>.r2.cloudflarestorage.com` in Allowed-Hosts, build-time). Fail-closed bei fehlender `url`/Non-2xx, kein base64-Fallback. Scope zieht Schritt 1 in die „Tiefe" (System-Prompt triggert, Skill liefert den Tool-Call) — Spiegel zur Upload-Seite §6. **§6 Drive-Ablage:** manuelle `list_files`+`create_folder`-Ordnerschleife durch **einen** `ensure_folder_path`-Call ersetzt (mkdir-p für `{city.name}`/`{postal_code} {store.name}`); NFC-Normalisierung + Dedup laufen jetzt serverseitig im Tool → der manuelle NFC-Wiederfind-Hinweis entfällt, Rückgabe-`id` ist der Zielordner. **§4:** Ordner-Bestimmung zeigt auf `ensure_folder_path`; der `list_files`-Existenz-Check fürs `_<protokoll_nr>.pdf` (Idempotenz) bleibt. Tool-Kontrakte aus telegram-mcp 4.2.1 + google-drive-mcp `main` übernommen (nicht geraten). |
 | 2026-06-27 | v1.4.0 — Kompression von Ghostscript auf **`pymupdf`** (reines pip-Wheel) umgestellt (§5): in der Managed-Agents-Beta wird die deklarierte **apt**-Paketzeile nicht provisioniert (pip greift, apt nicht — in zwei Envs reproduziert), darum gs/apt komplett raus. `pymupdf` rendert PDF→Bild selbst (kein poppler/`pdf2image`); feste Zielbreite **1240 px / Graustufe / JPEG q75** statt `dpi=` (MediaBox liegt in Scan-pt vor → `dpi=` skaliert ins Leere), ~5,3 MB → ~0,3 MB, OCR am realen Beleg verifiziert (Kerndaten + Umlaute); Fallback 1500/q80. `pikepdf` verworfen (rührt Flate-Scan-Bilder nicht an, 0 %). §1: deutsches Sprachpaket nicht mehr „apt-vorinstalliert", sondern pip-Paket **`tessdata.fast-deu`**; tessdata-Pfad über Fallback-Finder + `--tessdata-dir`, weil `tessdata.data_path()` (=`sys.prefix/share/tessdata`) im Container neben dem echten Ort (`/usr/local/share/tessdata`) liegen kann. tesseract-Engine bleibt Base-Image. |
 | 2026-06-27 | v1.3.0 — §6 Drive-Ordnernamen von slugifiziert auf Klartext aus Metaobjekt-Feldern umgestellt: `{stadt}/{store-slug}` → `{city.name}/{postal_code} {store.name}` (z. B. `Hannover/30159 Spätkauf Hannover`). Slugifizierung (lowercase, Umlaut-Faltung, `-`-Ersetzung) entfällt — Großschreibung, Leerzeichen und Umlaute sind in Drive zulässig; einzige Anforderung bleibt Determinismus aus stabiler Quelle (Metaobjekt-`name`/`postal_code`, nie OCR/Belegtext). NFC-Normalisierung beim Ordner-Wiederfinden ergänzt; expliziter Hinweis, dass `create_folder` nicht dedupliziert (vorher `list_files`). Idempotenz (§4, Schlüssel = Protokollnummer) und Dateiname (§5) unberührt. |
 | 2026-06-26 | v1.2.0 — §6 Drive-Ablage auf Referenz-Upload umgestellt: statt Inline-base64 (`upload_file`) jetzt zweistufig via `create_upload_session` (Session-URL holen) + `curl PUT` (Bytes direkt aus Sandbox zu Google, läuft nicht durch Agenten-Kontext). Egress-Voraussetzung ergänzt (Upload-Host muss in Allowed-Hosts des Environments, einmalig via Test-Session ablesen). Fail-closed bei Non-2xx oder fehlendem `uploadUrl`. Hintergrund: ~916 KB PDF ergibt ~1,2M Zeichen base64 — sprengt das Argument-Budget des Agenten; war Root Cause des Kettenabbruchs. |
