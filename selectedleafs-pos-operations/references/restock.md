@@ -136,7 +136,7 @@ Je verkaufbarer Position:
        }
      }
      ```
-   - **1b Detail-Stufe (nur der Treffer, nur die nötigen Felder):** Für die gematchte `id` genau die fünf Felder holen, die die Kette braucht — `name`, `postal_code`, `city`→`name`, `district`→`name`, `product_list`. Die city-Referenz wird **im selben Query** zum Klartext aufgelöst (kein separater Lookup). `product_list` liefert Produkt-GIDs (für §2.6).
+   - **1b Detail-Stufe (nur der Treffer, nur die nötigen Felder):** Für die gematchte `id` genau die sechs Felder holen, die die Kette braucht — `name`, `postal_code`, `city`→`name`, `district`→`name`, `product_list`, `google_place`. Die city-Referenz wird **im selben Query** zum Klartext aufgelöst (kein separater Lookup). `product_list` liefert Produkt-GIDs (für §2.6). `google_place` ist ein **JSON-codierter String** (Feld-`value` per `json.loads` parsen) und liefert `place_id` + `name` für den `{maps_link}` der Post-Templates (Sektion „Restock-Post-Templates", Render-Regeln) — **ohne dieses Feld kein gültiger Maps-Link**, der Post ginge sonst mit Platzhalter raus.
      ```graphql
      query($id: ID!) {
        metaobject(id: $id) {
@@ -145,6 +145,7 @@ Je verkaufbarer Position:
          city:         field(key: "city")     { reference { ... on Metaobject { name: field(key: "name") { value } } } }
          district:     field(key: "district") { reference { ... on Metaobject { name: field(key: "name") { value } } } }
          product_list: field(key: "product_list") { value }
+         google_place: field(key: "google_place") { value }
        }
      }
      ```
@@ -279,21 +280,25 @@ Protokoll-PDFs sind Scans (~500 KB–1 MB nach Komprimierung). Das überschreite
 
 1. **Komprimierung abschließen (§5), dann erst Session holen.** Die Upload-Session (`create_upload_session`) ist an die bei der Eröffnung deklarierte `sizeBytes` gebunden — ändert sich die Dateigröße danach (z. B. durch nochmalige Komprimierung), ist die Session **ungültig** und jeder PUT liefert HTTP 400. Daher: **erst komprimieren, Endgröße feststellen, dann Session eröffnen** — nie umgekehrt.
 2. **Session holen** — `create_upload_session` mit `name`, `mimeType: "application/pdf"`, `sizeBytes` (exakte Byte-Zahl der finalen PDF, z. B. via `os.path.getsize()`) und `parentFolderId` (Zielordner-ID). Gibt `{ uploadUrl, name, parentFolderId }` zurück.
-3. **Bytes direkt hochladen** — HTTP `PUT` aus der Sandbox an die `uploadUrl`, Datei-Bytes als Body. Die Session-URL trägt ihre eigene Autorisierung; kein zusätzliches Google-Credential nötig. Erwarteter Status: **200 oder 201**. HTTP 308 (Resume Incomplete) ist kein Fehler, aber bei vollständigem Single-PUT-Upload nicht zu erwarten.
+3. **Bytes finalisierend hochladen** — Die `uploadUrl` ist eine **resumable** Session (`uploadType=resumable`). Ein Single-`PUT` finalisiert sie **nur**, wenn er den Header `Content-Range: bytes 0-(N-1)/N` trägt (N = exakte Byte-Zahl der finalen PDF, **identisch** zur deklarierten `sizeBytes`). **Ohne `Content-Range` hält Google die Session offen und antwortet HTTP 308 (Resume Incomplete) — die Datei wird dann NICHT committet.** Erfolg ist **ausschließlich 200 oder 201**; **308 ist kein Erfolg, sondern ein nicht abgeschlossener Upload** und wird wie jeder Non-2xx behandelt (Abbruch, §7). Die Session-URL trägt ihre eigene Autorisierung; kein zusätzliches Google-Credential nötig. **Die lokale `/tmp`-Datei beweist die Ablage nicht** — Bestätigung ist allein der 2xx-Status des PUT (optional härtbar via `list_files` auf den finalen Dateinamen im Zielordner).
 
 **Häufige Fehlerursache HTTP 400:** Fast immer ein `sizeBytes`-Mismatch — die deklarierte Größe stimmt nicht mit der tatsächlichen Datei überein, weil die Datei **nach** der Session-Eröffnung noch verändert wurde. Lösung: neue Session mit korrekter `sizeBytes` (nicht dieselbe Session erneut verwenden). Die 256-KB-Chunk-Grenze (262.144 Bytes) ist **kein hartes Limit** für den Datei-Upload — sie betrifft nur die Chunk-Größe bei resumable Multi-Part-Uploads, nicht die Gesamtgröße der Datei.
 
 ```bash
-# Agent-Sandbox (Code-Execution)
+# Agent-Sandbox (Code-Execution) — finalisierender Single-PUT einer resumable Session
+SIZE=$(stat -c%s "<komprimierte-pdf>")   # exakt dieselbe Zahl wie sizeBytes oben
 curl -s -o /dev/null -w "%{http_code}" \
   -X PUT \
+  -H "Content-Length: ${SIZE}" \
+  -H "Content-Range: bytes 0-$((SIZE-1))/${SIZE}" \
   --data-binary @"<komprimierte-pdf>" \
   "<uploadUrl>"
-# Erwarteter HTTP-Status: 200 oder 201 → Erfolg
-# Jeder andere Status → Abbruch + Fehler-Status ins Topic (§7)
+# Erfolg = ausschließlich 200 oder 201.
+# 308 (Resume Incomplete) = NICHT finalisiert (Content-Range fehlte/Teil-Upload) → wie Non-2xx: Abbruch + Fehler-Status (§7).
+# Jeder andere Non-2xx → ebenso Abbruch.
 ```
 
-**Fail-closed:** Gibt `create_upload_session` keinen `uploadUrl` zurück (Fehler, Netzwerkproblem), oder liefert der PUT einen Non-2xx-Status → Abbruch, keine Drive-Ablage, Fehler-Status ins Topic. Kein stiller Weiter-Lauf ohne abgelegte PDF.
+**Fail-closed:** Gibt `create_upload_session` keinen `uploadUrl` zurück (Fehler, Netzwerkproblem), oder liefert der PUT einen Non-2xx-Status (**inkl. 308 = nicht finalisiert**) → Abbruch, keine Drive-Ablage, Fehler-Status ins Topic. Kein stiller Weiter-Lauf ohne abgelegte PDF.
 
 Beispiel-Ablage (Ergebnis):
 ```
