@@ -36,6 +36,13 @@ Drittanbieter-Credential. Auf jedem Worker gleich, nicht aussteller-basiert.
 | Personal Access Token | `_TOKEN` | `GITHUB_TOKEN` |
 | Basic Auth | `_USERNAME` / `_PASSWORD` | `JTL_USERNAME` |
 | Signing-/Webhook-Secret | `_SIGNING_SECRET` / `_WEBHOOK_SECRET` | `TELEGRAM_WEBHOOK_SECRET` |
+| S3-Credential (R2 presign) | `_ACCESS_KEY_ID` / `_SECRET_ACCESS_KEY` | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
+
+**Cloudflare-interne Credentials** (R2-S3 für presigned URLs) sind der eine Sonderfall:
+kein externer Aussteller, daher steht der **Produktname** (`R2`) vorn statt einer Marke.
+Es ist das S3-kompatible Access-Key-Paar — **nicht** der Bearer-Token-*Value* desselben
+R2-API-Tokens (der ist für die native REST-API; `aws4fetch` signiert nur mit dem
+Key-Paar). Mechanik: `references/storage.md`.
 
 Konsistenz-Prinzip (gesamtes Framework): **infra-lesbar (Worker, KV, Secret) →
 Anbieter/Aussteller rein. Modell-lesbar (Tool) → Anbieter raus.**
