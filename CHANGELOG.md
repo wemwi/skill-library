@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.21.0](https://github.com/wemwi/skill-library/compare/v2.20.3...v2.21.0) (2026-06-29)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** post_message-Adressierung mit message_thread_id (v1.1.0) ([70f60a3](https://github.com/wemwi/skill-library/commit/70f60a3a4b075cd0f354f9aaf757a2207c27df41))
+
 ## [2.20.3](https://github.com/wemwi/skill-library/compare/v2.20.2...v2.20.3) (2026-06-29)
 
 
