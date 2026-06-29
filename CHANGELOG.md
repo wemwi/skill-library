@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.16.0](https://github.com/wemwi/skill-library/compare/v2.15.0...v2.16.0) (2026-06-29)
+
+
+### Features
+
+* **selectedleafs-pos-restock:** Render zwischen OCR und Komprimierung teilen ([#63](https://github.com/wemwi/skill-library/issues/63)) ([f582aad](https://github.com/wemwi/skill-library/commit/f582aad3a73e41a18c35470d59aa9c25f7049dbd))
+
 ## [2.15.0](https://github.com/wemwi/skill-library/compare/v2.14.0...v2.15.0) (2026-06-29)
 
 
