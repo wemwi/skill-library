@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-restock
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
 description: "Runtime-Anleitung an den Managed Agent pos-restock zum Auswerten EINES selectedleafs-Übergabeprotokolls (Kommissionsware-Beleg, PDF) und Ablegen in Google Drive. Liefert die operative Tiefe für Protokoll-Parsing (Store, Stadt, Sorten, neu vs. aufgefüllt), Idempotenz, PDF-Komprimierung/Umbenennung und Drive-Ablage. IMMER laden, sobald der Agent ein Übergabeprotokoll aus dem Topic Protokoll-Eingang verarbeitet — auch wenn das Wort Skill nicht fällt. Triggers on: Übergabeprotokoll, Protokoll-Eingang, pos-restock, Kommissionsware, Kommissionär, Lieferschein parsen, Restock-Beleg auswerten, Store aus Beleg ableiten, Sorten neu vs aufgefüllt, Protokoll in Drive ablegen, Protokollnummer, UL-Nummer. Nachrichtenformat und City→Channel liegen NICHT hier (→ selectedleafs-telegram)."
 ---
 
@@ -14,7 +14,7 @@ Operative Anleitung **an dich, den Agenten `pos-restock`**, für den Kern deiner
 **Abgrenzung — was NICHT hier steht:**
 - **Restock-Nachrichtenformat + City→Channel-Zuordnung** → `selectedleafs-telegram` (§5 Templates, §10 Auslöser). Du lieferst nur Stadt + Sorten-Buckets; das Rendern und der Channel laufen dort.
 - **Managed-Agents-/Console-Mechanik** (Config, Tools, Deploy) → `global-agent-framework` (build-time).
-- **Store-Daten** → Shopify MCP: `listMetaobjects(type: "liftr_store")`.
+- **Store-Daten** → Shopify MCP (`graphql_query`), zweistufig & feldselektiv (§2.5) — nie ein Voll-Dump aller Store-Felder.
 
 **Verhältnis zu telegram §10:** Dort ist die Protokoll-Verarbeitung *halb-manuell mit Review* beschrieben. **Du läufst vollautomatisch** und postest ohne Vorab-Bestätigung — der Mensch-im-Loop ist hier durch den harten Abbruch bei Unklarheit (§3) ersetzt. Bei Mehrdeutigkeit postest du nie öffentlich, sondern stellst eine Rückfrage im Topic „Protokoll-Eingang" und brichst ab.
 
@@ -125,7 +125,29 @@ Je verkaufbarer Position:
 
 ### 2.5 Store → Metaobjekt-Match → Stadt & Channel (Wunstorf-Regel)
 
-1. Store-Name (§2.1) gegen `listMetaobjects(type: "liftr_store")` matchen (Name-Match, kein gespeichertes Mapping). **Über die Standard-Seitengröße (50) hinaus paginieren** (Cursor / `pageInfo.hasNextPage`, Seite für Seite, bis ein eindeutiger Match steht oder alle Seiten durch sind) — sonst sind Stores ab dem 51. unauffindbar und würden fälschlich als „kein Match" (§3) behandelt.
+1. **Store → Metaobjekt-Match in zwei Stufen** (Name-Match, kein gespeichertes Mapping) — schlank statt Voll-Dump aller Store-Felder:
+   - **1a Match-Stufe (nur `id` + `name`):** Per `graphql_query` alle `liftr_store`-Metaobjekte mit *nur diesen zwei Feldern* holen und **über die Standard-Seitengröße (50) hinaus paginieren** (Cursor / `pageInfo.hasNextPage`, bis ein eindeutiger Match steht oder alle Seiten durch sind) — sonst sind Stores ab dem 51. unauffindbar und würden fälschlich als „kein Match" (§3) behandelt. Den OCR-Store-Namen **OCR-tolerant** gegen diese Namensliste matchen (wie bei den Strains §2.4) → genau eine Store-`id`. **Kein** serverseitiger `display_name`-Filter: gegen OCR-Abweichungen zu fragil (er fände bei Tippfehlern nichts → fälschlich §3).
+     ```graphql
+     query($cursor: String) {
+       metaobjects(type: "liftr_store", first: 50, after: $cursor) {
+         edges { node { id name: field(key: "name") { value } } }
+         pageInfo { hasNextPage endCursor }
+       }
+     }
+     ```
+   - **1b Detail-Stufe (nur der Treffer, nur die nötigen Felder):** Für die gematchte `id` genau die fünf Felder holen, die die Kette braucht — `name`, `postal_code`, `city`→`name`, `district`→`name`, `product_list`. Die city-Referenz wird **im selben Query** zum Klartext aufgelöst (kein separater Lookup). `product_list` liefert Produkt-GIDs (für §2.6).
+     ```graphql
+     query($id: ID!) {
+       metaobject(id: $id) {
+         name:         field(key: "name")         { value }
+         postal_code:  field(key: "postal_code")  { value }
+         city:         field(key: "city")     { reference { ... on Metaobject { name: field(key: "name") { value } } } }
+         district:     field(key: "district") { reference { ... on Metaobject { name: field(key: "name") { value } } } }
+         product_list: field(key: "product_list") { value }
+       }
+     }
+     ```
+   - **Nie** `fields { key value }` (= alle ~25 Felder inkl. der JSON-Blobs `google_place`/`opening_hours` und der `assortment_`/`service_`/`testimonial_list`-Referenzen) über alle Stores ziehen — genau das ist der Token-Fresser, den diese zwei Stufen ersetzen (schlanke Namensliste + ein Einzelstore statt Voll-Dump).
 2. **Stadt/Channel kommt aus dem Metaobjekt, nicht aus der Belegadresse.** Ein Store kann physisch z. B. in Wunstorf liegen, aber redaktionell der Hannover-Page/dem Hannover-Channel zugeordnet sein — dann ist die maßgebliche Stadt **Hannover**. Lies die zugewiesene Stadt aus dem Store-Metaobjekt (Stadt-/`district`-Zuordnung), **nicht** die Postanschrift.
 3. Die Belegstadt dient nur als **Plausi-Check**: weicht sie stark von der Metaobjekt-Stadt ab, ist das ein Signal, aber das Metaobjekt gewinnt. Nur wenn **kein eindeutiger Store-Match** existiert oder dem Store **keine Stadt** zugeordnet ist → §3.
 
@@ -298,6 +320,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 | Datum | Änderung |
 |-------|----------|
+| 2026-06-29 | v1.7.0 — Token-Hebel im Store-Lookup (§2.5). Der Match lief vorher als Voll-Dump (`listMetaobjects(type:"liftr_store")` über alle Stores mit allen ~25 Feldern, inkl. der JSON-Blobs `google_place`/`opening_hours` und der `assortment_`/`service_`/`testimonial_list`-Referenzen) → ~22k Zeichen pro Lauf. Jetzt **zweistufig** über `graphql_query`: **1a** alle Stores mit *nur* `id` + `name` (paginiert), OCR-toleranter Client-Match → eine `id`; **1b** `metaobject(id:)` nur für den Treffer mit genau `name`, `postal_code`, `city`→`name`, `district`→`name`, `product_list` — city-Referenz im selben Query aufgelöst (kein separater Lookup). Kein serverseitiger `display_name`-Filter (gegen OCR-Abweichung zu fragil → fälschlich §3). Queries am realen Shop verifiziert. Abgrenzungszeile (§Kopf) von `listMetaobjects` auf den feldselektiven Ansatz gezogen. Match-Robustheit und Wunstorf-Regel (§2.5.2/3) unverändert. |
 | 2026-06-29 | v1.6.0 — Render-Sharing zwischen OCR (§1.1) und Komprimierung (§5). **§1.1:** Der OCR-Schritt rendert die Seiten jetzt explizit mit `pymupdf` zu Graustufen-PNGs (`/tmp/page_*.png`, feste Breite `OCR_W` ~300 dpi) und gibt **diese** an `tesseract` — vorher war der Render-Schritt nicht ausformuliert (nur der `tessdata_dir()`-Finder + ein nebulöses `img`), wodurch der Agent `tesseract` auf die PDF-Datei selbst ansetzte und mit „Pdf reading is not supported" abbrach. Jetzt explizit: nie `tesseract` auf die PDF, immer auf die gerenderten Bilder. **§5:** Komprimierung öffnet das PDF **nicht mehr ein zweites Mal**, sondern skaliert die in §1.1 erzeugten PNGs auf `ARCH_W` (1240 px) herunter → **ein** Render statt zwei (der bisher teuerste, doppelt ausgeführte Schritt entfällt); Fallback auf eigenes `fitz.open`+Render, falls die PNGs fehlen. `OCR_W` (OCR) bewusst > `ARCH_W` (Archiv), Downscale ist verlustarm. Kompressionsparameter (Graustufe, q75, Fallback 1500/q80) und feste-Zielbreite-statt-`dpi=` unverändert. |
 | 2026-06-29 | v1.5.0 — Auf die neuen MCP-Tools umgestellt. **§1.1 (neu) Download auf Referenz-Pfad:** Inline-base64 `download_file` → `create_download_url` (lädt serverseitig von Telegram nach R2, Bot-Token bleibt am Worker, gibt eine token-freie presigned GET-URL zurück; per `curl -o` in die Sandbox, läuft nicht durch den Agenten-Kontext). Egress-Voraussetzung ergänzt (`<account-id>.r2.cloudflarestorage.com` in Allowed-Hosts, build-time). Fail-closed bei fehlender `url`/Non-2xx, kein base64-Fallback. Scope zieht Schritt 1 in die „Tiefe" (System-Prompt triggert, Skill liefert den Tool-Call) — Spiegel zur Upload-Seite §6. **§6 Drive-Ablage:** manuelle `list_files`+`create_folder`-Ordnerschleife durch **einen** `ensure_folder_path`-Call ersetzt (mkdir-p für `{city.name}`/`{postal_code} {store.name}`); NFC-Normalisierung + Dedup laufen jetzt serverseitig im Tool → der manuelle NFC-Wiederfind-Hinweis entfällt, Rückgabe-`id` ist der Zielordner. **§4:** Ordner-Bestimmung zeigt auf `ensure_folder_path`; der `list_files`-Existenz-Check fürs `_<protokoll_nr>.pdf` (Idempotenz) bleibt. Tool-Kontrakte aus telegram-mcp 4.2.1 + google-drive-mcp `main` übernommen (nicht geraten). |
 | 2026-06-27 | v1.4.0 — Kompression von Ghostscript auf **`pymupdf`** (reines pip-Wheel) umgestellt (§5): in der Managed-Agents-Beta wird die deklarierte **apt**-Paketzeile nicht provisioniert (pip greift, apt nicht — in zwei Envs reproduziert), darum gs/apt komplett raus. `pymupdf` rendert PDF→Bild selbst (kein poppler/`pdf2image`); feste Zielbreite **1240 px / Graustufe / JPEG q75** statt `dpi=` (MediaBox liegt in Scan-pt vor → `dpi=` skaliert ins Leere), ~5,3 MB → ~0,3 MB, OCR am realen Beleg verifiziert (Kerndaten + Umlaute); Fallback 1500/q80. `pikepdf` verworfen (rührt Flate-Scan-Bilder nicht an, 0 %). §1: deutsches Sprachpaket nicht mehr „apt-vorinstalliert", sondern pip-Paket **`tessdata.fast-deu`**; tessdata-Pfad über Fallback-Finder + `--tessdata-dir`, weil `tessdata.data_path()` (=`sys.prefix/share/tessdata`) im Container neben dem echten Ort (`/usr/local/share/tessdata`) liegen kann. tesseract-Engine bleibt Base-Image. |
