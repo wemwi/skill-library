@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-restock
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
 description: "Runtime-Anleitung an den Managed Agent pos-restock zum Auswerten EINES selectedleafs-Übergabeprotokolls (Kommissionsware-Beleg, PDF) und Ablegen in Google Drive. Liefert die operative Tiefe für Protokoll-Parsing (Store, Stadt, Sorten, neu vs. aufgefüllt), Idempotenz, PDF-Komprimierung/Umbenennung und Drive-Ablage. IMMER laden, sobald der Agent ein Übergabeprotokoll aus dem Topic Protokoll-Eingang verarbeitet — auch wenn das Wort Skill nicht fällt. Triggers on: Übergabeprotokoll, Protokoll-Eingang, pos-restock, Kommissionsware, Kommissionär, Lieferschein parsen, Restock-Beleg auswerten, Store aus Beleg ableiten, Sorten neu vs aufgefüllt, Protokoll in Drive ablegen, Protokollnummer, UL-Nummer. Nachrichtenformat und City→Channel liegen NICHT hier (→ selectedleafs-telegram)."
 ---
 
@@ -85,6 +85,14 @@ ocr_text = "\n".join(
 
 Liefert OCR an einer entscheidungsrelevanten Stelle nur unsicheren Text (Store, Protokollnummer, Sorte), behandle das als Mehrdeutigkeit (§3) — **rate nichts**. Strain-Lesungen werden zusätzlich gegen den 9-Strain-Index gefuzzt (§2.4), damit OCR-Rauschen nicht jede Sorte zur Rückfrage macht.
 
+**Bekannte OCR-Artefakte auf diesen Belegen** (keine §3-Auslöser, einfach kompensieren):
+- `selectedieafs` → `selectedleafs` (l/i-Vertauschung, Scan-Rauschen — für die Store-Zuordnung irrelevant).
+- `»-` vor dem Vein: Die Tier-Subzeile beginnt im Scan oft mit `€ »-` statt `€ ·` — das Vein-Muster daher **nicht** auf den Punkt `·` festnageln, sondern auf das Vein-Wort direkt vor `Kratom` matchen: `re.search(r"(White|Green|Red)\s+Kratom", zeile, re.IGNORECASE)` — funktioniert unabhängig vom Trennzeichen davor.
+- Mojibake `\xc2\xbb` (= `»`) und `\xe2\x82\xac` (= `€`) in raw bytes: beim Vein-Match auf den Unicode-String (nach `utf-8`-Decode) operieren, nicht auf Byte-Rohdaten.
+- `M-CM-<r` für `für` in POS-Beschreibungen: nur Werbematerial, kein Strain — schon durch §2.3 (M-Präfix-Regel) abgedeckt.
+
+**Parsing-Budget:** Extrahiere in **einem** Block, richte bei Artefakten **höchstens einmal** die Regex nach (max. ein Inspektion-/Korrektur-Schritt). Starte keine iterative Debug-Schleife über mehrere Turns — bei anhaltender Unlesbarkeit sofort §3 (Rückfrage), statt im Kreis zu debuggen.
+
 ---
 
 ## 2. Protokoll parsen (Schritt 2)
@@ -155,11 +163,25 @@ Dieselbe aufgelöste Stadt benutzt du in §6 für den Drive-Pfad — so bleiben 
 
 ### 2.6 Neu vs. aufgefüllt (pro Sorte, via `product_list`)
 
-Pro deduplizierter Sorte gegen die `product_list` des **gematchten Stores** prüfen:
-- Strain **in** `product_list` → **aufgefüllt** (📦 Restock).
-- Strain **nicht in** `product_list` → **neue Sorte** (🌿).
+`product_list` enthält **Produkt-GIDs** (z. B. `gid://shopify/Product/15603432653149`), keine Klartext-Strain-Namen. Darum **in zwei Schritten**:
+
+**Schritt A — GIDs zu Titeln auflösen (ein Query für alle):**
+```graphql
+query($ids: [ID!]!) {
+  nodes(ids: $ids) {
+    ... on Product { id title }
+  }
+}
+```
+`ids` = JSON-Parse der `product_list`-Value aus §2.5 1b (String → Array). Das ergibt eine Map `{ gid → title }`. Titel sind Klartext-Strain-Namen ohne Größensuffix (z. B. `"Indo Fusion"`).
+
+**Schritt B — Zuordnung pro deduplizierter Sorte (§2.4):**
+- Strain-Name aus OCR-Extraktion (§2.4, kanonisch) in der Titel-Map enthalten (Fuzzy-tolerant) → **aufgefüllt** (📦 Restock).
+- Nicht enthalten → **neue Sorte** (🌿).
 
 Die Entscheidung ist **pro Sorte**: ein Protokoll kann gleichzeitig aufgefüllte und neue Sorten enthalten → zwei Buckets.
+
+**Write-back (§8) und Query-Effizienz:** `nodes(ids:)` ist batch-fähig — **ein** Query für beliebig viele GIDs, keine N-Aliase. Den Query **nicht** aufsplitten (kein `product1: product(id:), product2: product(id:), …`).
 
 ### 2.7 Was dieser Skill liefert (Übergabe-Payload)
 
@@ -262,8 +284,11 @@ Verifiziere nach der Komprimierung, dass die Datei > 0 Byte und valide ist, bevo
 
 Protokoll-PDFs sind Scans (~500 KB–1 MB nach Komprimierung). Das überschreitet das Inline-base64-Budget des Agenten → `upload_file` ist nicht verwendbar; stattdessen:
 
-1. **Session holen** — `create_upload_session` mit `name`, `mimeType: "application/pdf"`, `sizeBytes` (optional, aus Datei-Metadaten) und `parentFolderId` (Zielordner-ID). Gibt `{ uploadUrl, name, parentFolderId }` zurück.
-2. **Bytes direkt hochladen** — HTTP `PUT` aus der Sandbox an die `uploadUrl`, Datei-Bytes als Body. Die Session-URL trägt ihre eigene Autorisierung; kein zusätzliches Google-Credential nötig.
+1. **Komprimierung abschließen (§5), dann erst Session holen.** Die Upload-Session (`create_upload_session`) ist an die bei der Eröffnung deklarierte `sizeBytes` gebunden — ändert sich die Dateigröße danach (z. B. durch nochmalige Komprimierung), ist die Session **ungültig** und jeder PUT liefert HTTP 400. Daher: **erst komprimieren, Endgröße feststellen, dann Session eröffnen** — nie umgekehrt.
+2. **Session holen** — `create_upload_session` mit `name`, `mimeType: "application/pdf"`, `sizeBytes` (exakte Byte-Zahl der finalen PDF, z. B. via `os.path.getsize()`) und `parentFolderId` (Zielordner-ID). Gibt `{ uploadUrl, name, parentFolderId }` zurück.
+3. **Bytes direkt hochladen** — HTTP `PUT` aus der Sandbox an die `uploadUrl`, Datei-Bytes als Body. Die Session-URL trägt ihre eigene Autorisierung; kein zusätzliches Google-Credential nötig. Erwarteter Status: **200 oder 201**. HTTP 308 (Resume Incomplete) ist kein Fehler, aber bei vollständigem Single-PUT-Upload nicht zu erwarten.
+
+**Häufige Fehlerursache HTTP 400:** Fast immer ein `sizeBytes`-Mismatch — die deklarierte Größe stimmt nicht mit der tatsächlichen Datei überein, weil die Datei **nach** der Session-Eröffnung noch verändert wurde. Lösung: neue Session mit korrekter `sizeBytes` (nicht dieselbe Session erneut verwenden). Die 256-KB-Chunk-Grenze (262.144 Bytes) ist **kein hartes Limit** für den Datei-Upload — sie betrifft nur die Chunk-Größe bei resumable Multi-Part-Uploads, nicht die Gesamtgröße der Datei.
 
 ```bash
 # Agent-Sandbox (Code-Execution)
@@ -309,6 +334,19 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 - **Nur anhängen, nie entfernen.** Du fügst jede tatsächlich gepostete neue Sorte zur `product_list` des gematchten Store-Metaobjekts hinzu. Das Auslisten ausverkaufter Sorten macht der Mensch **manuell** — der Agent löscht nie aus `product_list`.
 - **Idempotent, kein Clobbern.** Vor dem Anhängen prüfen, ob die Sorte schon enthalten ist (sollte sie nicht, sonst wäre sie 📦 gewesen); bestehende Einträge nie überschreiben, nur ergänzen.
 - **Repräsentation deckungsgleich mit der Leseseite (§2.6).** In genau der Form anhängen, in der `product_list` Sorten führt, damit Lese- (§2.6) und Schreibseite konsistent bleiben — sonst zählt dieselbe Sorte beim nächsten Lauf wieder als neu.
+- **Mutation-Signatur: `value` ist `String!`, nicht `JSON!`.** Das Metaobject-Feld `product_list` trägt einen JSON-codierten String — das GraphQL-Schema akzeptiert den Wert als `String!`-Literal (kein `$value: JSON!`-Variable). Immer den serialisierten JSON-Array direkt inline übergeben:
+  ```graphql
+  mutation($id: ID!) {
+    metaobjectUpdate(id: $id, metaobject: {
+      fields: [{ key: "product_list", value: "["gid://shopify/Product/111","gid://shopify/Product/222"]" }]
+    }) {
+      metaobject { id product_list: field(key: "product_list") { value } }
+      userErrors { field message }
+    }
+  }
+  ```
+  Eine Variable `$value: JSON!` erzeugt einen Type-Mismatch-Error. Den neuen GID per `products(first:5, query:"title:\"<strain-name>\"")`  ermitteln; `first:` **nicht** weglassen (sonst `"first or last must be provided"`-Error).
+- **Neue Session bei Größenänderung (→ §6).** Dieser Hinweis gilt nicht direkt für den Write-back, sondern ist in §6 verankert — der Vollständigkeit halber: Write-back läuft **vor** dem Upload; die Upload-Session wird erst danach eröffnet, wenn die finale PDF-Größe feststeht.
 - **Nur bei erfolgreichem Post.** Schlägt der 🌿-Post fehl, **kein** Write-back — sonst meldete `product_list` eine Sorte als geführt, die nie announced wurde.
 - **Tool / Permission ist build-time.** Der Write-back ist eine **Mutation** aufs Metaobjekt; das read-only `graphql_query` reicht dafür nicht. Tool-Oberfläche, Least-Privilege und Bestätigungs-Policy regelt `global-agent-framework` — dieser Skill beschreibt nur das **Verhalten**, nicht die Tool-Mechanik.
 
@@ -320,6 +358,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 | Datum | Änderung |
 |-------|----------|
+| 2026-06-29 | v1.8.0 — Drei Patches aus Run-Analyse (sesn_01XwoJ). **§1.1 + §2.4 (OCR-Robustheit):** Bekannte Artefakte dieser Belege dokumentiert (`»-` statt `·` vor Vein, Mojibake `\xc2\xbb`/`\xe2\x82\xac`, l/i-Vertauschung bei `selectedleafs`) mit konkretem Vein-Regex-Muster (`re.search(r"(White|Green|Red)\s+Kratom")`); Parsing-Budget auf max. einen Inspektion-/Korrektur-Schritt begrenzt — statt iterativer Debug-Schleife sofort §3. **§2.6 (GID→Titel):** `product_list`-Felder sind Produkt-GIDs, nicht Klartext-Namen — explizit als 2-Schritte ausformuliert: **A** `nodes(ids:)` (ein Batch-Query für beliebig viele GIDs → Titel-Map) statt N-Aliase (`product1/product2/…`), **B** Fuzzy-Match der OCR-Strain-Namen gegen die Titel-Map. **§8 (Mutation-Signatur):** `product_list`-Feld ist `String!`, nicht `JSON!` — `$value: JSON!`-Variable erzeugt Type-Mismatch-Error; Wert immer als serialisierten JSON-String inline übergeben. Reminder `first:` bei `products(query:…)` (sonst „first or last must be provided"). **§6 (Upload-Session-Reihenfolge):** Session erst nach abgeschlossener Komprimierung mit exakter `sizeBytes` eröffnen — Änderung der Dateigröße nach Session-Eröffnung macht die Session ungültig (HTTP 400 = Size-Mismatch, nicht 256-KB-Limit). 256-KB-Chunk-Grenze ist kein hartes Datei-Größen-Limit (Klarstellung). |
 | 2026-06-29 | v1.7.0 — Token-Hebel im Store-Lookup (§2.5). Der Match lief vorher als Voll-Dump (`listMetaobjects(type:"liftr_store")` über alle Stores mit allen ~25 Feldern, inkl. der JSON-Blobs `google_place`/`opening_hours` und der `assortment_`/`service_`/`testimonial_list`-Referenzen) → ~22k Zeichen pro Lauf. Jetzt **zweistufig** über `graphql_query`: **1a** alle Stores mit *nur* `id` + `name` (paginiert), OCR-toleranter Client-Match → eine `id`; **1b** `metaobject(id:)` nur für den Treffer mit genau `name`, `postal_code`, `city`→`name`, `district`→`name`, `product_list` — city-Referenz im selben Query aufgelöst (kein separater Lookup). Kein serverseitiger `display_name`-Filter (gegen OCR-Abweichung zu fragil → fälschlich §3). Queries am realen Shop verifiziert. Abgrenzungszeile (§Kopf) von `listMetaobjects` auf den feldselektiven Ansatz gezogen. Match-Robustheit und Wunstorf-Regel (§2.5.2/3) unverändert. |
 | 2026-06-29 | v1.6.0 — Render-Sharing zwischen OCR (§1.1) und Komprimierung (§5). **§1.1:** Der OCR-Schritt rendert die Seiten jetzt explizit mit `pymupdf` zu Graustufen-PNGs (`/tmp/page_*.png`, feste Breite `OCR_W` ~300 dpi) und gibt **diese** an `tesseract` — vorher war der Render-Schritt nicht ausformuliert (nur der `tessdata_dir()`-Finder + ein nebulöses `img`), wodurch der Agent `tesseract` auf die PDF-Datei selbst ansetzte und mit „Pdf reading is not supported" abbrach. Jetzt explizit: nie `tesseract` auf die PDF, immer auf die gerenderten Bilder. **§5:** Komprimierung öffnet das PDF **nicht mehr ein zweites Mal**, sondern skaliert die in §1.1 erzeugten PNGs auf `ARCH_W` (1240 px) herunter → **ein** Render statt zwei (der bisher teuerste, doppelt ausgeführte Schritt entfällt); Fallback auf eigenes `fitz.open`+Render, falls die PNGs fehlen. `OCR_W` (OCR) bewusst > `ARCH_W` (Archiv), Downscale ist verlustarm. Kompressionsparameter (Graustufe, q75, Fallback 1500/q80) und feste-Zielbreite-statt-`dpi=` unverändert. |
 | 2026-06-29 | v1.5.0 — Auf die neuen MCP-Tools umgestellt. **§1.1 (neu) Download auf Referenz-Pfad:** Inline-base64 `download_file` → `create_download_url` (lädt serverseitig von Telegram nach R2, Bot-Token bleibt am Worker, gibt eine token-freie presigned GET-URL zurück; per `curl -o` in die Sandbox, läuft nicht durch den Agenten-Kontext). Egress-Voraussetzung ergänzt (`<account-id>.r2.cloudflarestorage.com` in Allowed-Hosts, build-time). Fail-closed bei fehlender `url`/Non-2xx, kein base64-Fallback. Scope zieht Schritt 1 in die „Tiefe" (System-Prompt triggert, Skill liefert den Tool-Call) — Spiegel zur Upload-Seite §6. **§6 Drive-Ablage:** manuelle `list_files`+`create_folder`-Ordnerschleife durch **einen** `ensure_folder_path`-Call ersetzt (mkdir-p für `{city.name}`/`{postal_code} {store.name}`); NFC-Normalisierung + Dedup laufen jetzt serverseitig im Tool → der manuelle NFC-Wiederfind-Hinweis entfällt, Rückgabe-`id` ist der Zielordner. **§4:** Ordner-Bestimmung zeigt auf `ensure_folder_path`; der `list_files`-Existenz-Check fürs `_<protokoll_nr>.pdf` (Idempotenz) bleibt. Tool-Kontrakte aus telegram-mcp 4.2.1 + google-drive-mcp `main` übernommen (nicht geraten). |
