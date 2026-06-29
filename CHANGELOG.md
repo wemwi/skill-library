@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.20.2](https://github.com/wemwi/skill-library/compare/v2.20.1...v2.20.2) (2026-06-29)
+
+
+### Bug Fixes
+
+* **pos-operations:** resumable-Upload finalisieren + google_place für Maps-Link ([#72](https://github.com/wemwi/skill-library/issues/72)) ([b590c12](https://github.com/wemwi/skill-library/commit/b590c120baaf0316876f0c51c1ef86006391fed0))
+
 ## [2.20.1](https://github.com/wemwi/skill-library/compare/v2.20.0...v2.20.1) (2026-06-29)
 
 
