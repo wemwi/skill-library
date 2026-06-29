@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.19.0](https://github.com/wemwi/skill-library/compare/v2.18.0...v2.19.0) (2026-06-29)
+
+
+### Features
+
+* **skill:** selectedleafs-pos-restock v1.8.0 — OCR-Robustheit, GID-Auflösung, Upload-Session-Reihenfolge ([db86d0d](https://github.com/wemwi/skill-library/commit/db86d0d177826b603075377e5aa039609608c466))
+
 ## [2.18.0](https://github.com/wemwi/skill-library/compare/v2.17.0...v2.18.0) (2026-06-29)
 
 
