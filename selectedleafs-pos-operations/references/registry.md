@@ -1,6 +1,6 @@
 # Registry — Werte-Verzeichnis (Entität → Ziel)
 
-Dieses Verzeichnis hält **statische Werte** (IDs, Maps, Pfade) aus dem Always-on-Body heraus, damit der Skill bei wachsender Städte-/Store-Zahl nicht in der Breite explodiert. Hier stehen **Werte, keine Logik** — die Ableitungs-/Override-Regeln leben in den Domänen-references (z. B. Channel-Ableitung in `telegram.md` §2.1, Drive-Pfad-Template in `restock.md` §6).
+Dieses Verzeichnis hält **statische Werte** (IDs, Maps, Pfade) aus dem Always-on-Body heraus, damit der Skill bei wachsender Städte-/Store-Zahl nicht in der Breite explodiert. Die City→Channel-Map (§1) ist hier vollständiger Wert **und** alleinige Logik (direkter Lookup) — anders als z. B. der Drive-Pfad, dessen Konstruktionsregel in `restock.md` §6 lebt.
 
 **Abgrenzung — was NICHT hier steht:**
 - **Lauf-spezifische IDs** (`file_id` des eingehenden PDFs, per-Lauf `chat_id`/`message_id`) kommen aus der **Webhook-Injektion** in die Session, nie aus diesem Verzeichnis.
@@ -10,14 +10,13 @@ Dieses Verzeichnis hält **statische Werte** (IDs, Maps, Pfade) aus dem Always-o
 
 ## 1. City → Channel
 
-Default-Ableitung (`kratom_<stadt-lowercase>`) und Override-Vorrang: Regel in `telegram.md` §2.1. Hier die konkreten Einträge:
+**Direkter Lookup, kein Ableitungsmechanismus, kein Override.** Jede Stadt hat genau einen Eintrag — Test- und Prod-Agenten sind getrennte Deployments mit eigenem System-Prompt/Config (`global-agent-framework`), daher kein Per-Run-Schalter und keine Vorrangregel nötig. Konkrete Einträge:
 
 | Stadt | Channel-Username | Numerische `chat_id` | Status |
 |-------|------------------|----------------------|--------|
 | Hannover | `kratom_hannover` | `-1003904362997` | live (Pilot) |
 
-- Solange kein Override-Eintrag existiert, gilt die Default-Ableitung aus `telegram.md` §2.1.
-- Weitere Städte werden hier ergänzt, sobald ihr Channel live geht (Aktivierungsschwelle, vgl. `telegram.md` §1).
+- Jede live geschaltete Stadt braucht hier einen Eintrag (Restock postet ausschließlich gegen diese Tabelle, ohne Fallback-Ableitung). Weitere Städte werden ergänzt, sobald ihr Channel live geht (Aktivierungsschwelle, vgl. `telegram.md` §1).
 - Test-Channel (nicht öffentlich, für Posting-Dry-Runs): `Broadcast Test` = `-1004399731658`.
 
 ---

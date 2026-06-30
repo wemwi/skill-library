@@ -1,6 +1,6 @@
 # Telegram — generisches Channel-Handwerk
 
-Generisches Produktions- und Posting-Playbook für die lokalen selectedleafs-Telegram-Channels (Titel-Muster „Kratom [Stadt] | selectedleafs.com"). Diese reference trägt das **Handwerk** — Channel-Lifecycle/Setup, Format-System, Posting-Mechanik, Channel-Ableitung, Pinned/Launch. **Domänen-spezifische Post-Templates leben in der jeweiligen Domänen-reference**, nicht hier:
+Generisches Produktions- und Posting-Playbook für die lokalen selectedleafs-Telegram-Channels (Titel-Muster „Kratom [Stadt] | selectedleafs.com"). Diese reference trägt das **Handwerk** — Channel-Lifecycle/Setup, Format-System, Posting-Mechanik, Pinned/Launch. **Domänen-spezifische Post-Templates leben in der jeweiligen Domänen-reference**, nicht hier:
 
 - **📦 Frisch aufgefüllt / 🌿 Neue Sorte** → `references/restock.md` (Sektion „Restock-Post-Templates"). Die Restock-Kette braucht diese reference **nicht** — sie hat ihre Templates lokal.
 - **🎉 Neuer Partner** → gehört zur Launch-Domäne (`references/launch.md`); solange die ein Stub ist, steht das Template übergangsweise unten in §5 (markiert).
@@ -36,15 +36,7 @@ Generisches Produktions- und Posting-Playbook für die lokalen selectedleafs-Tel
 | Weiterleiten & Speichern | **AN** (Forwards = Wachstumshebel) |
 | Pretty Link | Shopify URL-Redirect `/[stadt]` → `/pages/kratom-kaufen-[stadt]` (301). SEO-Handle nicht umbenennen. UTM ins Ziel baken: `?utm_source=telegram&utm_medium=channel&utm_campaign=[stadt]`. |
 
-### 2.1 Channel-Ableitung (Stadt → Channel, Regel mit Override-Vorrang)
-
-Die **Logik**, welcher Channel zu einer aufgelösten Stadt gehört — die konkreten **Werte/Overrides** stehen in `references/registry.md`:
-
-1. **Default-Ableitung:** `channel_username = "kratom_" + <stadt>.lower()` (z. B. Hannover → `kratom_hannover`). Posten kann gegen `@<username>` laufen, ohne numerische `chat_id`.
-2. **Override-Vorrang:** Hat `registry.md` für die Stadt einen **expliziten** Channel-Eintrag (anderer Username, Fallback `selectedleafs_[stadt]`, oder numerische `chat_id`), **gewinnt der Registry-Eintrag** über die Default-Ableitung. Die Ableitung ist nur der Fallback, wenn kein Eintrag existiert.
-3. **Kein Channel ableitbar / Stadt nicht im Registry und Default-Channel existiert nicht** → nicht öffentlich raten; die aufrufende Domänen-Kette entscheidet über Abbruch/Rückfrage (z. B. restock §3).
-
-Die **Stadt selbst** kommt nie aus einer Belegadresse, sondern aus dem Store-Metaobjekt (redaktionelle Zuordnung — ein Store in Wunstorf kann dem Hannover-Channel zugeordnet sein). Die Auflösung Store → Stadt liegt in der jeweiligen Domänen-reference (restock §2.5), nicht hier.
+Die **Stadt selbst** kommt nie aus einer Belegadresse, sondern aus dem Store-Metaobjekt (redaktionelle Zuordnung — ein Store in Wunstorf kann dem Hannover-Channel zugeordnet sein). Die Auflösung Store → Stadt liegt in der jeweiligen Domänen-reference (restock §2.5), nicht hier. Der Channel selbst (City → `chat_id`/Username) ist ein direkter Lookup in `references/registry.md` §1 — keine Ableitungslogik, kein Override-Mechanismus.
 
 ---
 

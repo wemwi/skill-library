@@ -5,7 +5,7 @@ Operative Anleitung **an dich, den Agenten `pos-restock`**, für den Kern deiner
 **Scope:** Schritt 1, 2, 4, 5 deiner Kette. Schritt 3 (Posten) und 6 (Status) führst du laut System-Prompt aus. Auch für Schritt 1 gilt das Muster von §5/§6: der **System-Prompt triggert** (es liegt ein PDF im Topic „Protokoll-Eingang" bereit), dieser Skill liefert nur die **Tiefe des Tool-Calls** (§1.1) — er dupliziert den System-Prompt nicht und entscheidet nicht über den Auslöser.
 
 **Abgrenzung — was NICHT hier steht:**
-- **Restock-Nachrichtenformat** → Sektion „Restock-Post-Templates" am Ende dieser reference (📦/🌿 + kanonischer Index). **City→Channel-Ableitung** → `telegram.md` §2.1. Du lieferst nur Stadt + Sorten-Buckets; das Rendern (lokal) und die Channel-Auflösung laufen dort.
+- **Restock-Nachrichtenformat** → Sektion „Restock-Post-Templates" am Ende dieser reference (📦/🌿 + kanonischer Index). **City→Channel** → direkter Lookup in `registry.md` §1 (kein Sprung in `telegram.md` nötig). Du lieferst nur Stadt + Sorten-Buckets; das Rendern (lokal) und der Channel-Lookup laufen aus dieser reference + `registry.md`.
 - **Managed-Agents-/Console-Mechanik** (Config, Tools, Deploy) → `global-agent-framework` (build-time).
 - **Store-Daten** → Shopify MCP (`graphql_query`), zweistufig & feldselektiv (§2.5) — nie ein Voll-Dump aller Store-Felder.
 
@@ -20,7 +20,7 @@ Du bekommst ein PDF aus dem Topic „Protokoll-Eingang" in die Sandbox (Schritt 
 1. **Parsen (§2)** — Store, Stadt, Sorten, neu vs. aufgefüllt; dabei `protokoll_nr` (§2.2) und Store-Metaobjekt (§2.5) auflösen.
 2. **Mehrdeutig? (§3)** → Rückfrage im Topic, abbrechen. Sonst weiter.
 3. **Idempotenz-Check (§4)** — Zielordner via `ensure_folder_path` (§6) + `list_files` auf `_<protokoll_nr>.pdf`; existiert sie → abbrechen. **Dieser Check läuft zwingend VOR jedem Post/Ablegen.** Er steht hier (nicht ganz oben), weil er `protokoll_nr` + Store-Match aus Schritt 1 braucht — vorher ist der Zielordner nicht bestimmbar.
-4. **Posten** — Stadt + Sorten-Buckets rendern (Templates → Sektion „Restock-Post-Templates" am Ende; Channel → `telegram.md` §2.1).
+4. **Posten** — Stadt + Sorten-Buckets rendern (Templates → Sektion „Restock-Post-Templates" am Ende; Channel → direkter Lookup in `registry.md` §1).
 5. **Write-back (§8)** — gepostete **neue Sorten (🌿)** nach erfolgreichem Post an die `product_list` des Stores anhängen.
 6. **Komprimieren + umbenennen (§5)**, dann **in Drive ablegen (§6)**.
 7. **Status** ins Topic (§7).
@@ -179,7 +179,7 @@ Die Entscheidung ist **pro Sorte**: ein Protokoll kann gleichzeitig aufgefüllte
 
 ### 2.7 Was dieser Skill liefert (Übergabe-Payload)
 
-Du übergibst an den Render-/Post-Schritt (Templates → Sektion „Restock-Post-Templates" am Ende; Channel → `telegram.md` §2.1) **strukturierte Daten, keinen fertigen Text**:
+Du übergibst an den Render-/Post-Schritt (Templates → Sektion „Restock-Post-Templates" am Ende; Channel → direkter Lookup in `registry.md` §1) **strukturierte Daten, keinen fertigen Text**:
 
 ```
 {
@@ -367,7 +367,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 ## Restock-Post-Templates (📦 / 🌿)
 
-Die in §1/§2.7 erwähnte Übergabe an den „Telegram-Schritt" rendert **mit diesen Templates** — sie liegen bewusst hier, damit die Restock-Kette ohne Sprung in eine andere Domänen-reference auskommt. Das **generische** Telegram-Handwerk (Format-System, vollständige Emoji-Legende, Channel-Ableitung `kratom_<stadt>` inkl. Override, Posting-Mechanik, Pinned/Launch) steht in `references/telegram.md`; hier nur die zwei Post-Typen, die diese Kette erzeugt.
+Die in §1/§2.7 erwähnte Übergabe an den „Telegram-Schritt" rendert **mit diesen Templates** — sie liegen bewusst hier, damit die Restock-Kette ohne Sprung in eine andere Domänen-reference auskommt (Channel-Ziel kommt als direkter Lookup aus `registry.md` §1, ebenfalls ohne `telegram.md`). Das **generische** Telegram-Handwerk (Format-System, vollständige Emoji-Legende, Posting-Mechanik, Pinned/Launch) steht in `references/telegram.md`; hier nur die zwei Post-Typen, die diese Kette erzeugt.
 
 Du lieferst aus §2.7 **strukturierte Buckets** (`aufgefuellt` → 📦, `neue_sorten` → 🌿). Pro nicht-leerem Bucket genau **ein** Post in den City-Channel der aufgelösten Stadt (§2.5).
 
