@@ -13,7 +13,7 @@ description: >-
   Version bumpen, Agent debuggen, neuen Agent ins Portfolio aufnehmen. Gilt für jeden
   Managed Agent in diesem Stack.
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
 ---
 
 # global-agent-framework
@@ -316,6 +316,30 @@ Zwei Wege, einen Agent zu starten:
 
 **Wahl:** planbar/wiederkehrend → Cron. Ereignisgetrieben/extern angestoßen →
 Webhook-Brücke.
+
+**Dispatch bei mehreren Agenten an einer Quelle (Manifest-Muster).**
+
+Sobald eine Webhook-Brücke mehr als einen Agent bedient, stellt sich die Routing-Frage:
+welches Event weckt welchen Agent? Diese Entscheidung gehört in die **Brücke**, nicht in
+den Agenten.
+
+- **Filtern VOR dem Session-Start, nicht danach.** Ein Managed Agent ist rein reaktiv — er
+  kann sich nicht selbst „nicht zuständig" sagen, ohne vorher geweckt worden zu sein, und
+  die **Session-Kosten fallen beim Wecken an**, vor jedem Self-Filtering. Ein Agent, der
+  ein fremdes Event nur verwirft, hat schon bezahlt. Also entscheidet die Brücke, **bevor**
+  sie Session `create` ruft.
+- **Eine Quelle, eine URL — Topic statt Pfad trennt.** Ein Bot / eine Event-Quelle pro
+  Gruppe bekommt **eine** Webhook-URL. Die Agenten werden nicht über getrennte URL-Pfade
+  unterschieden, sondern über das **Topic der eingehenden Nachricht** (bei Telegram:
+  `message_thread_id`). Eine Quelle, ein Endpoint, n Agenten.
+- **Deklaratives Manifest als Single Source.** Die Zuordnung Topic → Agent-Key liegt als
+  **Manifest im Repo** — nicht in KV. Versioniert, im Code-Review sichtbar, kein
+  Live-State zum Pflegen. Ein neuer Agent ist **eine Manifest-Zeile**, kein Eingriff in die
+  Dispatch-Logik.
+- **Kein Treffer → ignorieren, fail-closed.** Die Auflösung (`resolveTopicRoute`-Form) gibt
+  bei fehlendem Manifest-Eintrag **`null`** zurück → das Event wird **verworfen, ohne
+  Session-Start**. Ein unbekanntes Topic kostet damit nichts (vgl. Abschnitt 13). Niemals
+  ein „Default-Agent"-Fallback, der jedes Fremd-Event in eine bezahlte Session zieht.
 
 ## 9. Idempotenz & irreversible Aktionen
 
