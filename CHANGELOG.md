@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.22.0](https://github.com/wemwi/skill-library/compare/v2.21.0...v2.22.0) (2026-06-30)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** inventory.md aus Stub migriert (v1.2.0) ([7568b3f](https://github.com/wemwi/skill-library/commit/7568b3f0ee3e01c391b3b36392fa804a33620a75))
+
 ## [2.21.0](https://github.com/wemwi/skill-library/compare/v2.20.3...v2.21.0) (2026-06-29)
 
 
