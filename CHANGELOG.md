@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.23.0](https://github.com/wemwi/skill-library/compare/v2.22.0...v2.23.0) (2026-06-30)
+
+
+### Features
+
+* **global-agent-framework:** Manifest-Dispatch-Muster für Webhook-Brücken in §8 ([#81](https://github.com/wemwi/skill-library/issues/81)) ([d44b62d](https://github.com/wemwi/skill-library/commit/d44b62d88797cf032a59415156b3993f0813e22f))
+
 ## [2.22.0](https://github.com/wemwi/skill-library/compare/v2.21.0...v2.22.0) (2026-06-30)
 
 
