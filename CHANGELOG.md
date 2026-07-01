@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.24.0](https://github.com/wemwi/skill-library/compare/v2.23.0...v2.24.0) (2026-07-01)
+
+
+### Features
+
+* **selectedleafs-brand:** Logo-Assets in SVG/PNG-Unterordner aufteilen ([62c4443](https://github.com/wemwi/skill-library/commit/62c4443ea9f92579e562a3d051cda2cd0e572c8a))
+
 ## [2.23.0](https://github.com/wemwi/skill-library/compare/v2.22.0...v2.23.0) (2026-06-30)
 
 
