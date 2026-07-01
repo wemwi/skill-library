@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.25.0](https://github.com/wemwi/skill-library/compare/v2.24.0...v2.25.0) (2026-07-01)
+
+
+### Features
+
+* **global-workflow:** harten Werkzeug-Trigger für Multi-File-Sweeps ([#85](https://github.com/wemwi/skill-library/issues/85)) ([062f7bb](https://github.com/wemwi/skill-library/commit/062f7bb9d7bcd3f71b21c2e2f05797128fe0346d))
+
 ## [2.24.0](https://github.com/wemwi/skill-library/compare/v2.23.0...v2.24.0) (2026-07-01)
 
 
