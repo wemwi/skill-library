@@ -2,7 +2,7 @@
 name: global-workflow
 description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
 ---
 
 # Workflow — Universelles Arbeitsprotokoll
@@ -106,6 +106,8 @@ Das Mapping Charakter→Tier ist der einzige Teil, der altern kann. Ändert sich
 |--------|----------|
 | Wenige Dateien, Denken/Design/Content, plan→approve-Rhythmus | Chat (hier) |
 | Arbeitsform riecht nach Ausführungsschleife — viele Dateien gleichzeitig, Code wirklich ausführen/testen, lange agentische Schleife | Claude Code |
+
+**Harter Mechanik-Trigger (nicht verhandelbar).** Sobald die Ausführung Repo-Dateiinhalte durch den Chat-Kontext routet — GitHub-MCP `get_file_contents` → dekodieren → editieren → `push_files` über **mehr als 1-2 Dateien** — ist das Claude Code, **unabhängig davon, wie trivial der einzelne Edit ist**. Auslöser ist der Byte-Durchlauf durch den Kontext, nicht die Denk-Komplexität — dasselbe Prinzip wie `global-agent-framework` §12 („Bytes nie durch den Kontext routen"), hier als Selbst-Regel. Ein rein subtraktiver Sweep über 6 Dateien fühlt sich denk-trivial an; genau diese Trivialität darf NICHT auf die Werkzeugwahl durchschlagen (das ist der Kollaps von Frage 1 in Frage 2). **Chirurgische Ausnahme:** 1-2 Dateien, gezielter Edit, PR-Merge bleiben im Chat (§5.1) — und die Memory-Regel „GitHub-MCP verbunden → Zyklus selbst" gilt genau für diesen Fall: sie regelt die Commit-*Mechanik* (selbst mergen statt getrennter Blöcke), nicht das *Medium*. Ab dem Sweep gewinnt dieser Trigger, und der Zyklus läuft dann in Claude Code.
 
 Der Wechsel läuft über einen **Migration-Prompt** (→ `references/handover.md`), nicht über einen rohen Kontextbruch — der Prompt IST der Kontexttransfer. Dadurch darf die Schwelle niedriger liegen als bei einem echten Bruch: nicht „lohnt der Aufwand?", sondern „passt die Arbeitsform?". Ehrlich bleibt: billiger als ein Bruch, aber nicht gratis — diese Session endet, Weiter-Iterieren im selben Thread geht nicht.
 
