@@ -332,21 +332,33 @@ Layer order (low→high): `base` 1 · `above` 2 · `elevated` 10 · `dropdown` 1
 
 ## 11. Logo & Identity
 
-The real logos live in `assets/logos/` as fully path-outlined SVGs (no `<text>`, no embedded font). They are self-contained and render identically everywhere — **prefer inlining them over any approximation.** The custom display typeface is baked into the paths; there is no font file to load.
+Logos live in two sub-folders under `assets/logos/`:
 
-### Asset Files
+- **`assets/logos/SVG/`** — fully path-outlined SVGs (no `<text>`, no embedded font). Self-contained, render identically everywhere. **Prefer inlining SVG over any approximation.** The custom display typeface is baked into the paths; there is no font file to load.
+- **`assets/logos/PNG/`** — high-resolution raster exports of the same four logo variants (no Favicon PNG). Use for print, Office/Slides, or wherever SVG is not supported.
+
+### SVG Files
 
 | File | Ink color | Use on | Dimensions (viewBox) |
 |------|-----------|--------|----------------------|
-| `assets/logos/Logo-Dark-Plain.svg` | Black wordmark | **Light** backgrounds | 360×116 (~3.1:1) |
-| `assets/logos/Logo-Light-Plain.svg` | White wordmark | **Dark** backgrounds | 360×116 (~3.1:1) |
-| `assets/logos/Logo-Dark-Claim.svg` | Black + gold claim | **Light** backgrounds | 360×175 |
-| `assets/logos/Logo-Light-Claim.svg` | White + gold claim | **Dark** backgrounds | 360×175 |
-| `assets/logos/Favicon.svg` | Gradient + white leaf | Anywhere | 155×155 |
+| `assets/logos/SVG/Logo-Dark-Plain.svg` | Black wordmark | **Light** backgrounds | 360×116 (~3.1:1) |
+| `assets/logos/SVG/Logo-Light-Plain.svg` | White wordmark | **Dark** backgrounds | 360×116 (~3.1:1) |
+| `assets/logos/SVG/Logo-Dark-Claim.svg` | Black + gold claim | **Light** backgrounds | 360×175 |
+| `assets/logos/SVG/Logo-Light-Claim.svg` | White + gold claim | **Dark** backgrounds | 360×175 |
+| `assets/logos/SVG/Favicon.svg` | Gradient + white leaf | Anywhere | 155×155 |
+
+### PNG Files
+
+| File | Ink color | Use on |
+|------|-----------|--------|
+| `assets/logos/PNG/Logo-Dark-Plain.png` | Black wordmark | **Light** backgrounds |
+| `assets/logos/PNG/Logo-Light-Plain.png` | White wordmark | **Dark** backgrounds |
+| `assets/logos/PNG/Logo-Dark-Claim.png` | Black + gold claim | **Light** backgrounds |
+| `assets/logos/PNG/Logo-Light-Claim.png` | White + gold claim | **Dark** backgrounds |
 
 Naming: **Dark** = dark ink (for light backgrounds), **Light** = light/white ink (for dark backgrounds). **Plain** = wordmark + leaf only. **Claim** = adds the gold tagline (`#B8923A`) below the wordmark, hence the taller viewBox.
 
-For the selectedleafs site (dark theme) the default is `Logo-Light-Plain.svg`.
+For the selectedleafs site (dark theme) the default is `SVG/Logo-Light-Plain.svg`.
 
 ### Wordmark
 
@@ -367,7 +379,7 @@ Rounded mark with a multi-stop green gradient background and a white leaf center
 
 Gradient stops (top→bottom): `#1A3C33 → #1E4D42 → #2B6E5E → #1E4D42`.
 
-Demo approximation (when you don't want to inline `assets/logos/Favicon.svg`):
+Demo approximation (when you don't want to inline `assets/logos/SVG/Favicon.svg`):
 
 ```jsx
 <div style={{
@@ -382,8 +394,9 @@ Demo approximation (when you don't want to inline `assets/logos/Favicon.svg`):
 
 ### Logo in Demos — decision order
 
-1. **Exact logo (preferred):** read the relevant file from `assets/logos/` and paste the SVG markup inline. It has no external dependencies, so it works as-is in any React/HTML artifact. Pick the variant by background (Light ink on dark, Dark ink on light).
-2. **Quick approximation (throwaway mockups only):** wordmark as `'Lora', Georgia, serif` bold rendering "Selected" + "leafs."; leaf as Lucide `Leaf` in brand greens (`#326757` / `#21453A`).
+1. **Exact logo (preferred):** read the relevant file from `assets/logos/SVG/` and paste the SVG markup inline. It has no external dependencies, so it works as-is in any React/HTML artifact. Pick the variant by background (Light ink on dark, Dark ink on light).
+2. **PNG fallback:** use the matching file from `assets/logos/PNG/` when SVG inline is not practical (e.g., email, Office, external tool).
+3. **Quick approximation (throwaway mockups only):** wordmark as `'Lora', Georgia, serif` bold rendering "Selected" + "leafs."; leaf as Lucide `Leaf` in brand greens (`#326757` / `#21453A`).
 
 ---
 
