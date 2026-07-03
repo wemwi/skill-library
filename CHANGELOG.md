@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.26.1](https://github.com/wemwi/skill-library/compare/v2.26.0...v2.26.1) (2026-07-03)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Description unter 1024-Zeichen-Limit gekürzt ([c77a549](https://github.com/wemwi/skill-library/commit/c77a5494017c82e0006420615dccede713dfa48f))
+
 ## [2.26.0](https://github.com/wemwi/skill-library/compare/v2.25.0...v2.26.0) (2026-07-03)
 
 
