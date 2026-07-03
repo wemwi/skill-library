@@ -73,12 +73,14 @@ Kunden-Nr **numerisch** vergleichen (Lexware/PDF liefert ggf. String) — die Zi
 
 **Nie schreiben:** die mit Formel markierten Spalten (Store/Kosten/Provision) — sie werden ausschließlich durch `inheritFromBefore` vererbt (§6.2). Ein direkter Schreibversuch würde die Formel durch einen Literalwert ersetzen und die Zeile von künftigen Änderungen an `Kosten_Ware_KG`/`Kosten_Einheit_Gesamt`/`Allgemein!C8` abkoppeln.
 
+**Dezimaltrenner:** Das Sheet ist DE-Locale (Formeln nutzen `;` als Argumenttrenner). `batch_update_ranges` schreibt `USER_ENTERED` — Dezimalzahlen (Menge, Nettoumsatz) deshalb mit **Komma** übergeben (z. B. `369,57`, nicht `369.57`), sonst riskiert der Punkt eine Fehlinterpretation als Tausendertrenner.
+
 ### 6.2 Position — vor der Footer-Zeile einfügen, nicht anhängen
 
 **`append_row`/`values.append` ist hier falsch** — es schreibt unterhalb des belegten Bereichs, also **unter** die Footer-/Summenzeile und **außerhalb** der nativen Table. Die neue Zeile würde dann in keinem `SUM(Umsatz[...])` mehr auftauchen; Provisions- und Auszahlungssummen wären zu niedrig, ohne sichtbaren Fehler.
 
-1. Footer-Zeilenindex = `endRowIndex` aus dem `list_tables`-Read (§6.1) — **pro Run neu lesen**, nie eine Zeilennummer hardcoden (die Table wächst mit jedem Insert).
-2. `insert_dimension` mit `inheritFromBefore: true` an genau dieser Position (verschiebt die bestehende Footer-Zeile automatisch eine Zeile nach unten und übernimmt deren Formel-Vorlage für die neue Zeile — das erledigt §6.1's „Store/Kosten/Provision nie schreiben“ automatisch mit).
+1. `endRowIndex` aus dem `list_tables`-Read (§6.1) ist GridRange-**exklusiv** — er zeigt eine Zeile **hinter** die Footer-Zeile, nicht auf sie. Der 0-based Einfügeindex ist deshalb **`endRowIndex - 1`**. Wörtlich `endRowIndex` als Einfügeindex genommen landet die neue Zeile **unter** dem Footer, außerhalb der Table — Summenformeln bleiben zu niedrig, ohne sichtbaren Fehler. **Pro Run neu lesen**, nie eine Zeilennummer hardcoden (die Table wächst mit jedem Insert).
+2. `insert_dimension` mit `range = {startIndex: endRowIndex - 1, endIndex: endRowIndex}` und `inheritFromBefore: true` (verschiebt die bestehende Footer-Zeile automatisch eine Zeile nach unten und übernimmt deren Formel-Vorlage für die neue Zeile — das erledigt §6.1's „Store/Kosten/Provision nie schreiben“ automatisch mit).
 3. `batch_update_ranges` (USER_ENTERED) für **nur** B/C/D/E/G/H/J der neuen Zeile, laut Tabelle in §6.1. L/M bleiben leer (keine Werte in dieser Domäne).
 4. **Verifikation (Pflicht vor DoD-Abnahme, danach optional):** `get_range` auf F/I/K der neuen Zeile mit `valueRenderOption: FORMULA` lesen und gegen das Muster der Nachbarzeile prüfen — bestätigt, dass `inheritFromBefore` wirklich vererbt hat und die Table sich erweitert hat (`list_tables` erneut, `endRowIndex` um 1 gewachsen).
 
@@ -107,7 +109,9 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 
 ## 9. Status-Rückmeldung ins Topic
 
-**Offen — Platzhalter bis Bestätigung:** `registry.md` §3 hat noch **keinen** dedizierten Topic für die Invoice-Domäne (nur General=`1`, Übergabeprotokolle=`2`, Bestandsprotokolle=`34`). Diese reference postet bis auf Weiteres ins **General-Topic (`message_thread_id: 1`)** — sobald ein eigener Topic in Telegram angelegt ist, ist die Änderung eine einzeilige `registry.md`-Ergänzung plus Anpassung dieser Zeile, kein Skill-Umbau.
+**Offen — Platzhalter bis Bestätigung:** `registry.md` §3 hat noch **keinen** dedizierten Topic für die Invoice-Domäne (nur General, Übergabeprotokolle=`2`, Bestandsprotokolle=`34`). Diese reference postet bis auf Weiteres ins **General**-Topic — sobald ein eigener Topic in Telegram angelegt ist, ist die Änderung eine einzeilige `registry.md`-Ergänzung plus Anpassung dieser Zeile, kein Skill-Umbau.
+
+**General adressieren:** In Telegram-Foren ist General **keine** reguläre `message_thread_id` — `message_thread_id: 1` wird von der Bot-API mit „message thread not found“ abgelehnt. General wird ausschließlich durch **Weglassen** des Parameters `message_thread_id` erreicht (verifiziert per realem Test-Post).
 
 | Ausgang | Status (Beispiel) |
 |---|---|
@@ -121,7 +125,7 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 ```
 post_message(
   chat_id           = <Operations-Chat chat_id aus registry.md §3>,   # -1003918922935
-  message_thread_id = 1,                                             # General — bis Invoice-Topic existiert
+  # message_thread_id weglassen -> General, bis Invoice-Topic existiert
   text              = "<Status-Zeile>",
   parse_mode        = "HTML"
 )
