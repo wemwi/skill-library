@@ -2,6 +2,17 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [1.4.0] — `invoice.md`
+
+- `invoice.md` aus dem Stub migriert: Rechnung-Insert + paid-Update in die Vertriebler-Provisionsliste (Google Sheet), Findung per Registry-Map (`registry.md` §4, neu gefüllt).
+- Vorab-Stresstest (`global-stress-test`) deckte zwei tragende Annahmen aus dem Ausgangs-Handover auf, die an der realen Sheet-Struktur brachen:
+  1. **Insert-Position:** Die Umsatz-Table hat ihre Footer-/Summenzeile als **Teil der nativen Table** direkt nach der letzten Datenzeile — kein freier Zwischenraum, wie ein früherer Plan annahm. `append_row` hätte unterhalb des Footers und außerhalb der Table geschrieben; neue Zeilen wären aus allen `SUM()`/`SUMIFS()` gefallen, ohne sichtbaren Fehler. Fix: `insert_dimension inheritFromBefore` **vor** der Footer-Zeile, deren Index pro Run dynamisch aus `list_tables` gelesen wird (nie hardcoden).
+  2. **Datei-Findung:** Ein Vertriebler-Ordner kann mehrere Jahres-Dateien enthalten (z. B. `Provision Schlegel 2025` **und** `2026` gleichzeitig real vorgefunden). Ein Präfix-`contains`-Match ist damit mehrdeutig. Fix: exakter Name-Match `"{Präfix} {Rechnungsjahr}"`, bei ≠ 1 Treffer Abbruch + Rückfrage statt Fallback auf „neueste Datei".
+- `paid`-Status-Mapping (`paid`/`paidoff` → „Bezahlt", `open`/`overdue` → „Offen") verifiziert per `get_voucher` an je einem realen offenen und bezahlten Beleg, nicht aus dem Handover übernommen.
+- Bewusste Entscheidung: Store-Status (`Aktiv`/`Inaktiv`) ist **kein** Guard — einziges Match-Kriterium ist die Kunden-Nr. in `Stores`. Lexware ist Ground Truth für ein bestehendes Geschäftsverhältnis, ein veralteter Sheet-Status widerspricht dem nicht.
+- Storno-/Korrektur-Belege (abweichendes Rechnung-Nr.-Suffix) bewusst **ohne** Sonderbehandlung — laufen naiv als eigene Zeile (Non-Goal, explizit dokumentiert).
+- `registry.md` §4 gefüllt: Vertriebler → Drive-Ordner + Datei-Präfix (bewusst **keine** Spreadsheet-IDs — Rollover ist Copy-based, eine zentrale ID-Liste würde bei jedem Jahreswechsel veralten).
+
 ## [1.3.0]
 
 **Geändert**
@@ -16,7 +27,7 @@ Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Chan
 
 ## [1.2.1] — `inventory.md`
 
-- `inventory.md` **selbsttragend** gemacht: die anfangs auf `restock.md` §1.1/§2.5/§6 zeigenden Quer-Verweise durch inline-Mechanik ersetzt (Router-Invariante „jede reference fährt allein" — `restock.md` blieb unangetastet).
+- `inventory.md` **selbsttragend** gemacht: die anfangs auf `restock.md` §1.1/§2.5/§6 zeigenden Quer-Verweise durch inline-Mechanik ersetzt (Router-Invariante „jede reference fährt allein\" — `restock.md` blieb unangetastet).
 - Reduzierter Umfang gegenüber Restock: kein Sorten-/Vein-Parsing, kein Neu-vs-aufgefüllt, kein `product_list`-Write-back, kein City-Channel-Post.
 - Zwei bewusste Abweichungen aus dem Vorab-Stresstest:
   1. **Idempotenz-Schlüssel ist `{JJJJ-MM-TT}.pdf` im Store-Ordner**, nicht die Kunden-Nr. auf dem Beleg — letztere ist partner-konstant (nicht protokoll-eindeutig) und liegt zudem nicht im `liftr_store`-Metaobjekt; eine Kunden-Nr.-Kennung hätte jedes Folgeprotokoll desselben Stores fälschlich als Duplikat behandelt. Bei Kollision (zwei Protokolle desselben Stores am selben Tag) **Rückfrage ins Topic statt stillem Überspringen** — anders als Restocks Idempotenz-Skip, weil hier echter Datenverlust drohen würde statt eines harmlosen Doppel-Posts.
@@ -28,7 +39,7 @@ Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Chan
 
 ## [1.1.0] — `restock.md`
 
-- §7 um die vollständige `post_message`-Adressierung ergänzt: Status-Zeilen, Rückfragen (§3) und Fehler-Status (§1.1/§6) gehen via `post_message` mit `chat_id` und `message_thread_id` aus `registry.md` §3 — Topic „Übergabeprotokolle" = `message_thread_id: 2`. Ohne diesen Parameter hätten alle Topic-Posts den General-Thread statt den Restock-Eingang getroffen. Parameter ist seit `telegram-mcp` PR #61 im `post_message`-Tool live.
+- §7 um die vollständige `post_message`-Adressierung ergänzt: Status-Zeilen, Rückfragen (§3) und Fehler-Status (§1.1/§6) gehen via `post_message` mit `chat_id` und `message_thread_id` aus `registry.md` §3 — Topic „Übergabeprotokolle\" = `message_thread_id: 2`. Ohne diesen Parameter hätten alle Topic-Posts den General-Thread statt den Restock-Eingang getroffen. Parameter ist seit `telegram-mcp` PR #61 im `post_message`-Tool live.
 
 ## [1.0.3] — `restock.md`
 
