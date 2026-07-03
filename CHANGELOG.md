@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.26.0](https://github.com/wemwi/skill-library/compare/v2.25.0...v2.26.0) (2026-07-03)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** invoice.md aus Stub migriert (Rechnung-Insert + paid-Update) ([8e98128](https://github.com/wemwi/skill-library/commit/8e981280c46d635d186820f275776d41c01c1353))
+
 ## [2.25.0](https://github.com/wemwi/skill-library/compare/v2.24.0...v2.25.0) (2026-07-01)
 
 
