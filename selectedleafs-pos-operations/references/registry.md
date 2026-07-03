@@ -53,6 +53,10 @@ Hinweis: Dies ist der **interne Operations-Chat**, nicht ein öffentlicher City-
 
 ## 4. Sheets (Provisions-/Abrechnungs-Domäne)
 
-Der Drive-Ordner **Provisionsabrechnung** liegt in §2 (Invoice-Wurzel). Die eigentlichen **Sheet-IDs der Vertriebler-Provisionslisten** sind noch offen.
+Der Drive-Ordner **Provisionsabrechnung** liegt in §2 (Invoice-Wurzel). Pro Vertriebler steht hier **nur** sein Unterordner + Datei-Präfix — **keine** Spreadsheet-IDs. Grund: Rollover ist Copy-based (jedes Jahr eine neue Datei `{Präfix} {Jahr}`), eine zentrale ID-Liste würde bei jedem Jahreswechsel von Hand nachgepflegt werden müssen. `invoice.md` §2 löst die aktuelle Spreadsheet-ID stattdessen **pro Lauf** über `list_files` + exakten Namens-Match auf — das hier ist die einzige Registry-Pflicht.
 
-*TODO — wird mit der Invoice-Domäne (`invoice.md`) gefüllt: Spreadsheet-IDs je Vertriebler. Aktuell keine Werte hinterlegt (Domäne ist Stub).*
+| Vertriebler | Ordner-`parentFolderId` | Datei-Präfix |
+|---|---|---|
+| Christian Schlegel | `1OwQH8AMQYKZtM8KYrLlBjVXF_Y8A1Xbo` | `Provision Schlegel` |
+
+Neuer Vertriebler = neue Zeile hier + Skill-Version-Bump — **kein** Agent-Config-Rebuild (`invoice.md` liest ausschließlich aus dieser Tabelle, kein Vertriebler-Name im Prompt/Config hardcodiert).
