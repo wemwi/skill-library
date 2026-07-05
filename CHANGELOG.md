@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.26.3](https://github.com/wemwi/skill-library/compare/v2.26.2...v2.26.3) (2026-07-05)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** invoice.md §1 auf uhrfreien Status-Poll umstellen ([432aa4e](https://github.com/wemwi/skill-library/commit/432aa4e400be57861f010fab3b0f8eb88fa9ee4f))
+
 ## [2.26.2](https://github.com/wemwi/skill-library/compare/v2.26.1...v2.26.2) (2026-07-03)
 
 
