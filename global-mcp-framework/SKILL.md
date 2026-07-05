@@ -13,7 +13,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
 ---
 
 # global-mcp-framework
@@ -50,7 +50,7 @@ Datei, damit ein Debug-Fall genau eine Datei lädt statt aller. Lies gezielt:
 | Transport-Setup, "Session terminated" beim Tool-Call | `references/transport.md` |
 | KV-Binding/Namespace, KV-Hygiene (kein Cron auf Free Plan); R2 presigned Download (großer Payload statt base64) | `references/storage.md` |
 | Inbound-Hash vs. Outbound-Key setzen, "Authorization failed" nach Consent | `references/secrets.md` |
-| Repo-Layout, Workers-Builds Root directory, Deploy command, PR/Merge/Build, Foundation-Tag bumpen, Build-Cache-Falle | `references/deploy.md` |
+| Repo-Layout, Workers-Builds Root directory, Deploy command, PR/Merge/Build, Foundation-Tag bumpen, Build-Cache-Falle, Non-Production-Branch-Builds abschalten, Renovate-Dependency-PR failt (Lockfile-Drift) | `references/deploy.md` |
 | Repo-/Naming-Standard (Worker/Tool/Secret), Folder-Struktur, Connector-URL, `login`-Config | `references/conventions.md` |
 | Irgendein Fehlersymptom, Discovery-Check, Live-Logs, verifizierte CF-Fakten | `references/diagnostics.md` |
 
@@ -144,3 +144,11 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
   Fehler erst nach dem Merge. Die Gate-Hooks (`assets/hooks/`) machen das verbindlich.
 - **server-template ist die Wahrheit.** Die `assets/`-Dateien sind Spiegel; bei
   Abweichung gilt das `server-template/` der Foundation. Keine Asset-Drift dulden.
+- **Non-Production-Branch-Builds aus, Lockfiles konsistent halten.** Reine MCP-Worker
+  brauchen keine Preview-URLs — Cloudflares Branch-Builds für Renovate-Dependency-PRs
+  erzeugen nur fehlschlagende Builds (Lockfile hinkt dem Range-Bump hinterher). Pro
+  Worker in **Settings → Build → Branch control** die Checkbox „Builds for non-production
+  branches" deaktivieren (kein globales Toggle, nicht per MCP erreichbar). Das ist aber
+  nur Symptom-Kosmetik: den Drift selbst verhindert saubere Renovate-Lockfile-Pflege plus
+  Konsistenz-Check **vor** jedem Dependency-Merge — sonst failt der Bump im
+  `main`-Build. Details: `references/deploy.md`.
