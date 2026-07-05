@@ -12,6 +12,47 @@ auf Branch-Push (`main`), nicht auf Tag-Push — der Merge des release-please-Re
 ist so ein `main`-Push und löst genau einen Deploy aus. Kein Doppel-Deploy, keine
 Verzahnung nötig.
 
+## Branch-Builds abschalten & Renovate-Lockfile-Drift
+
+Zwei zusammenhängende Regeln, die den Stack vor fehlschlagenden Builds durch
+Renovate-Dependency-PRs schützen. Beide beim Anlegen jedes neuen `*-mcp`-Workers
+mit einrichten.
+
+**1. Non-Production-Branch-Builds deaktivieren.** Cloudflare Workers Builds baut per
+Default **jeden** Branch-Push, auch die von Renovate geöffneten Dependency-PR-Branches.
+Genau die sind die Gefahrenquelle: Renovate hebt in einem PR die `package.json`-Range
+(z.B. `@cloudflare/workers-types` von `^4` auf `^5`), das mitgelieferte Lockfile hängt
+aber hinterher → `npm ci` bricht mit „package.json and package-lock.json not in sync"
+ab (Rolling-Date-Versionen der Cloudflare-Pakete verschärfen das, weil täglich neue
+Versionen erscheinen). Der Branch-Build failt, ohne dass je etwas gemergt wurde.
+Deaktivieren: Cloudflare → Worker → **Settings → Build → Branch control** → Checkbox
+**„Builds for non-production branches"** aus. Gilt ab dem nächsten Build und ist eine
+**Pro-Worker-Einstellung** — es gibt kein globales Toggle, also für jeden `*-mcp`-Worker
+einzeln setzen. Der MCP-Connector erreicht diese Einstellung **nicht**; sie geht nur
+über das Dashboard.
+
+Das ist der pragmatische Default für diesen Stack (kein Preview-URL-Bedarf für reine
+MCP-Worker). Es nimmt aber auch die Frühwarnung, die ein grüner/roter PR-Build sonst
+liefert — deshalb Regel 2.
+
+**2. Lockfile-Drift an der Wurzel verhindern.** Non-Production-Builds aus zu schalten
+versteckt nur das Symptom. Das kaputte Lockfile im Renovate-PR bleibt — und schlägt in
+den **Production-`main`-Build** durch, sobald der PR gemergt wird (dann ohne Vorwarnung,
+weil kein Branch-Build mehr davor lief). Absicherung:
+
+- Renovate so konfigurieren, dass Lockfile-Updates zuverlässig mit dem Range-Bump
+  laufen (Basis-Config: `global-git-conventions`, `references/automation.md`).
+- **Vor dem Merge jedes Dependency-PRs** die Lockfile-Konsistenz prüfen: bei
+  Konflikt/veraltetem Lockfile die Renovate-Rebase-Box im PR ankreuzen (oder das
+  Lockfile im Branch neu erzeugen), bis der Diff `package.json` **und** `package-lock.json`
+  gemeinsam bewegt.
+- Major-Bumps von `@cloudflare/workers-types` sind Ambient-Typ-Änderungen — vor dem
+  Merge muss `npm run typecheck` grün sein.
+
+`main` selbst ist davon nie betroffen, solange sein Lockfile konsistent ist; ein
+sauberer `main`-Stand baut immer. Bricht ein Build trotz sauberem `main`, baut Cloudflare
+einen anderen Ref (offener PR-Branch) — dann greift Regel 1.
+
 ## Repo-Layout & Workers-Builds (häufigste Build-Fehler)
 
 Die `wrangler.jsonc` muss im **Build-Root** liegen — dem Verzeichnis, das Workers
