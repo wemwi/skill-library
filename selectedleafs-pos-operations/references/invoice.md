@@ -4,7 +4,12 @@ Lexware-Rechnung eines Kiosk-Partners in die Provisionsliste (Google Sheet) des 
 
 ## 1. Trigger & Reihenfolge
 
-Trigger ist ein **Lexware-Delta-Poll** (`list_vouchers` mit `updatedDateFrom`, `voucherType: salesinvoice`) über Scheduled Deployment — kein `agent-bridge`-Topic, kein Webhook. Pro Lauf, pro betroffenem Voucher:
+Trigger ist ein **Lexware-Status-Poll** (`list_vouchers`, `voucherType: salesinvoice`) über Scheduled Deployment (Cron) — kein `agent-bridge`-Topic, kein Webhook. **Kein Zeitfilter** (`updatedDateFrom`): der Agent hat keine verlässliche Uhr, die Dedup trägt die Idempotenz (§5), nicht ein Zeitfenster. Gepollt werden die relevanten Status in **zwei** Calls, weil `overdue` in der Lexware-API **nicht** mit anderen Status kombinierbar ist:
+
+- `voucherStatus: open,paid,paidoff`
+- `voucherStatus: overdue`
+
+Pro Lauf, pro Voucher aus beiden Ergebnissen:
 
 1. **Insert-Pfad** (§2–§6) für Voucher, die noch nicht als Zeile existieren.
 2. **paid-Update-Pfad** (§7) für Voucher, deren `voucherStatus` gewechselt hat und die bereits als Zeile existieren.
