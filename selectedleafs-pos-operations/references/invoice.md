@@ -17,11 +17,12 @@ Die `agent-bridge` startet die Session aus einem Lexware-`voucher.*`-Webhook und
 
 Läuft der Agent **ohne** injizierte `resourceId` (monatlicher Scheduled Deployment / Cron), ist es der **Backstop-Poll**: er fängt Belege, deren Event verloren ging (Zustellfehler, Endpoint-Downtime). Er ist **nicht** der Primärpfad — der Event-Pfad ist es.
 
-- **Gefenstert**, nicht voll: `list_vouchers` (`voucherType: salesinvoice`) mit `updatedDateFrom` = **heute − 35 Tage** (Fenster-Untergrenze kommt aus der Cron-Injektion, analog zur `resourceId`-Injektion des Event-Pfads). 35 Tage = Monatskadenz + ~5 Tage Slack; das Fenster **bounded nur den Scan**, es trägt nicht die Korrektheit — die trägt die §5-Idempotenz (jeder bereits eingetragene Beleg wird beim Read übersprungen, auch in der Fenster-Überlappung).
+- **Gefenstert**, nicht voll: `list_vouchers` (`voucherType: salesinvoice`) mit `updatedDateFrom` = **heute − 35 Tage**. Diese Untergrenze **berechnet der Agent im Backstop-Modus selbst** per bash (`date -d '35 days ago'`) — der Scheduled-Deployment-Trigger injiziert bewusst **keinen** Wert (die „Erste Nachricht" des Deployments trägt kein `resourceId`; genau dieses Fehlen ist die Backstop-Erkennung, §1a/§1b). 35 Tage = Monatskadenz + ~5 Tage Slack; das Fenster **bounded nur den Scan**, es trägt nicht die Korrektheit — die trägt die §5-Idempotenz (jeder bereits eingetragene Beleg wird beim Read übersprungen, auch in der Fenster-Überlappung).
 - Gepollt in **zwei** Calls, weil `overdue` in der Lexware-API **nicht** mit anderen Status kombinierbar ist:
   - `voucherStatus: open,paid,paidoff`
   - `voucherStatus: overdue`
 - Pro Voucher aus beiden Ergebnissen normal weiter ab §2 → §5 → §6/§7.
+- **Lauf-Abschluss — unbedingte Zusammenfassung (Lebenssignal):** Nach beiden Ergebnislisten postet der Backstop **immer genau eine** Zusammenfassung ins General-Topic (§9) — auch bei 0 geprüften / 0 nachgetragenen Belegen. Diese Meldung ist das grobe Lebenssignal; ihr **Ausbleiben** (statt eines „0/0“-Posts) ist das Ausfallsignal. Der Event-Pfad (§1a) postet **keine** solche Sammelmeldung — nur der Backstop.
 
 **Beide Modi teilen ab §2 denselben Code** (Findung, Extraktion, Idempotenz-Read, Insert/paid-Update) — die Verzweigung betrifft ausschließlich die Voucher-Beschaffung in diesem Abschnitt. Der Idempotenz-Read (§5) ist in **beiden** Modi der Entscheider zwischen Insert (§2–§6) und paid-Update (§7).
 
@@ -135,6 +136,7 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 | Partner nicht in Registry (§2) | „⚠️ Partner „<partner>“ aus RG-… nicht in registry.md §4 — Rückfrage nötig.“ |
 | Datei-Findung ≠ 1 Treffer (§2) | „⚠️ RG-…: <0\|N> Treffer für „<Präfix> <Jahr>“ im Ordner — bitte prüfen.“ |
 | Checksum-Mismatch (§3) | „⚠️ RG-…: Positionssumme ≠ Rechnungsbetrag laut Extraktion — bitte manuell prüfen.“ |
+| Backstop-Lauf abgeschlossen (§1b) | „♻️ Backstop-Lauf: {X} geprüft, {Y} nachgetragen, {Z} Status-Updates.“ — **immer** posten, auch bei 0/0/0. |
 
 ```
 post_message(
