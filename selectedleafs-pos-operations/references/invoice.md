@@ -4,17 +4,26 @@ Lexware-Rechnung eines Kiosk-Partners in die Provisionsliste (Google Sheet) des 
 
 ## 1. Trigger & Reihenfolge
 
-Trigger ist ein **Lexware-Status-Poll** (`list_vouchers`, `voucherType: salesinvoice`) über Scheduled Deployment (Cron) — kein `agent-bridge`-Topic, kein Webhook. **Kein Zeitfilter** (`updatedDateFrom`): der Agent hat keine verlässliche Uhr, die Dedup trägt die Idempotenz (§5), nicht ein Zeitfenster. Gepollt werden die relevanten Status in **zwei** Calls, weil `overdue` in der Lexware-API **nicht** mit anderen Status kombinierbar ist:
+Die Kette hat **zwei Eintritts-Modi**, unterschieden am injizierten Input der User-Message. **Der `eventType` verzweigt nicht** — er ist nur Kontext; ob Insert oder paid-Update dran ist, entscheidet immer erst der Idempotenz-Read (§5). Was verzweigt, ist **wie du an den/die Voucher kommst**:
 
-- `voucherStatus: open,paid,paidoff`
-- `voucherStatus: overdue`
+### 1a. Event-Primärpfad — `resourceId` injiziert (Regelfall)
 
-Pro Lauf, pro Voucher aus beiden Ergebnissen:
+Die `agent-bridge` startet die Session aus einem Lexware-`voucher.*`-Webhook und injiziert **`resourceId` + `eventType` + `eventDate`** in die User-Message (Trigger empirisch bewiesen: `voucher.created` = neuer Beleg, `voucher.status.changed` = u. a. Zahlungseingang).
 
-1. **Insert-Pfad** (§2–§6) für Voucher, die noch nicht als Zeile existieren.
-2. **paid-Update-Pfad** (§7) für Voucher, deren `voucherStatus` gewechselt hat und die bereits als Zeile existieren.
+- **Genau ein Voucher, direkt geholt: `get_voucher(resourceId)`. KEIN Poll, kein `list_vouchers`.** Die `resourceId` ist die Voucher-UUID → direkt in `get_voucher`/`extract_voucher_positions` (§3). **Kein `get_invoice`/`invoice.*`** — Voucher- und Invoice-IDs sind disjunkte ID-Räume (live gegengeprüft); die Webhook-`resourceId` ist immer eine Voucher-ID.
+- Danach normal weiter ab §2 (Findung) → §5 (Idempotenz-Read) → §6 Insert **oder** §7 paid-Update.
 
-Beide Pfade teilen sich Schritt §2 (Findung) und den Idempotenz-Read (§5) — der Read entscheidet, ob Insert oder Update dran ist.
+### 1b. Backstop-Poll — kein `resourceId` (Sicherheitsnetz)
+
+Läuft der Agent **ohne** injizierte `resourceId` (monatlicher Scheduled Deployment / Cron), ist es der **Backstop-Poll**: er fängt Belege, deren Event verloren ging (Zustellfehler, Endpoint-Downtime). Er ist **nicht** der Primärpfad — der Event-Pfad ist es.
+
+- **Gefenstert**, nicht voll: `list_vouchers` (`voucherType: salesinvoice`) mit `updatedDateFrom` = **heute − 35 Tage** (Fenster-Untergrenze kommt aus der Cron-Injektion, analog zur `resourceId`-Injektion des Event-Pfads). 35 Tage = Monatskadenz + ~5 Tage Slack; das Fenster **bounded nur den Scan**, es trägt nicht die Korrektheit — die trägt die §5-Idempotenz (jeder bereits eingetragene Beleg wird beim Read übersprungen, auch in der Fenster-Überlappung).
+- Gepollt in **zwei** Calls, weil `overdue` in der Lexware-API **nicht** mit anderen Status kombinierbar ist:
+  - `voucherStatus: open,paid,paidoff`
+  - `voucherStatus: overdue`
+- Pro Voucher aus beiden Ergebnissen normal weiter ab §2 → §5 → §6/§7.
+
+**Beide Modi teilen ab §2 denselben Code** (Findung, Extraktion, Idempotenz-Read, Insert/paid-Update) — die Verzweigung betrifft ausschließlich die Voucher-Beschaffung in diesem Abschnitt. Der Idempotenz-Read (§5) ist in **beiden** Modi der Entscheider zwischen Insert (§2–§6) und paid-Update (§7).
 
 ---
 
