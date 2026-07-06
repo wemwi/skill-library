@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.27.0](https://github.com/wemwi/skill-library/compare/v2.26.5...v2.27.0) (2026-07-06)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** note als Wahrheitsquelle für POS-Partner + Vertriebler ([#100](https://github.com/wemwi/skill-library/issues/100)) ([5e7ff7d](https://github.com/wemwi/skill-library/commit/5e7ff7d5e1b5416981148cf20d216bdc53234f01))
+
 ## [2.26.5](https://github.com/wemwi/skill-library/compare/v2.26.4...v2.26.5) (2026-07-06)
 
 
