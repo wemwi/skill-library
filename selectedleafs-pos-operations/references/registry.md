@@ -60,3 +60,5 @@ Der Drive-Ordner **Provisionsabrechnung** liegt in §2 (Invoice-Wurzel). Pro Ver
 | Christian Schlegel | `1OwQH8AMQYKZtM8KYrLlBjVXF_Y8A1Xbo` | `Provision Schlegel` |
 
 Neuer Vertriebler = neue Zeile hier + Skill-Version-Bump — **kein** Agent-Config-Rebuild (`invoice.md` liest ausschließlich aus dieser Tabelle, kein Vertriebler-Name im Prompt/Config hardcodiert).
+
+**note-Marker-Konvention (Single Source für den Namen).** Derselbe Vertrieblername in Spalte 1 ist zugleich der Wert im `note`-Marker des Lexware-Store-Kontakts: `POS-PARTNER: <Vertriebler>` (gesetzt im Launch, gelesen in `invoice.md` §2). Der Name muss **zeichengenau** zwischen note-Marker und dieser Zeile übereinstimmen — er ist der Lookup-Schlüssel, ein Tippfehler führt zur §9-Rückfrage. ⚠️ Der Marker sitzt auf dem Kontakt-`note`, **nicht** auf `roles.customer.number`: Lexwares eigene Kundennummer weicht systematisch von der JTL-Nummer aus PDF/Sheet ab (die Nummernräume überlappen sogar im Wert), taugt also **nie** als Store-Match-Quelle — dafür bleibt die JTL-Kunden-Nr gegen `Stores!B:B` (`invoice.md` §4).

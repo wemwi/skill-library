@@ -28,14 +28,18 @@ Läuft der Agent **ohne** injizierte `resourceId` (monatlicher Scheduled Deploym
 
 ---
 
-## 2. Partner → Ordner → Datei (Registry-Map, kein Scan)
+## 2. Vertriebler → Ordner → Datei (note-only, kein PDF-Anker)
 
-**Kein Verzeichnis-Scan, kein Raten.** Die Zuordnung Vertriebler → Drive-Ordner → Datei-Präfix steht ausschließlich in `registry.md` §4. Ablauf:
+**Der Vertriebler ist die `note` des Store-Kontakts — die EINE Wahrheitsquelle. Kein PDF-Anker, kein Verzeichnis-Scan, kein Raten.** Ablauf:
 
-1. `partner` aus `extract_voucher_positions` (Anker „Vertrieb und Betreuung:“) → Lookup in `registry.md` §4. Kein Eintrag → **Abbruch + Rückfrage** (§9), niemals raten.
-2. Rechnungsjahr aus `voucherDate` des Vouchers (**nicht** aus dem Verarbeitungsdatum — sonst kippt eine Silvester-Verarbeitung ins Folgejahr).
-3. `list_files(folderId = Ordner-ID aus §4)` → exakter Name-Match `"{Datei-Präfix} {Rechnungsjahr}"` (z. B. `Provision Schlegel 2026`).
-4. **Genau 1 Treffer** → dessen `id` ist die Spreadsheet-ID für alle folgenden Schritte. **≠ 1 Treffer** (0 oder mehrere) → Abbruch + Rückfrage (§9), **kein** Fallback auf „neueste Datei“ oder Teilstring-Match. Ein Ordner enthält typischerweise mehrere Jahres-Dateien (z. B. `Provision Schlegel 2025` **und** `2026`) — ein reiner `contains`-Match auf den Präfix ist deshalb mehrdeutig und **nicht zulässig**.
+1. **Vertriebler aus der `note`.** `get_contact(contactId).note` lesen; `contactId` kommt aus `get_voucher` (§1/§3 — der Beleg trägt nur die contactId-UUID, keine Kundennummer). Die note trägt den Marker `POS-PARTNER: <Vertriebler>`; `<Vertriebler>` = der getrimmte String **nach** `POS-PARTNER:`. **note-Guard, zwei Fälle:**
+   - **Kein Marker** in der note → **STILLER Skip**, kein Post (Normalfall Nicht-Partner-Rechnung). Im Event-Pfad filtert die `agent-bridge` diese Belege ohnehin vorab (note-Gate, kein Session-Start); im **Backstop-Poll** (§1b) ist genau dieser Guard der Filter. **Keine Rückfrage** — ohne ihn löste jede normale Kundenrechnung im Backstop eine Rückfrage aus.
+   - **Marker vorhanden, aber `<Vertriebler>` nicht in `registry.md` §4** → **Abbruch + Rückfrage** (§9). Das ist ein echter Konfigurationsfehler (Tippfehler im Marker oder fehlende registry-Zeile), niemals raten.
+   - ⚠️ `get_contact` wird hier **ausschließlich für `note`** genutzt. **Nie** `roles.customer.number` als Match-Quelle — das ist Lexwares EIGENE Kundennummer und weicht **systematisch** von der JTL-Nummer aus PDF/Sheet ab (live: AR Kiosk PDF/Sheet `10009` vs. contact `10033`). Dagegen gematcht liefe der §4-Match still auf 0 **oder auf den falschen Kontakt** (die Nummernräume überlappen im Wert).
+2. **`<Vertriebler>` → `registry.md` §4** → Drive-Ordner-ID + Datei-Präfix. (Der Marker-Name ist der exakte Lookup-Schlüssel; er muss zeichengenau mit der registry-§4-Zeile übereinstimmen.)
+3. Rechnungsjahr aus `voucherDate` des Vouchers (**nicht** aus dem Verarbeitungsdatum — sonst kippt eine Silvester-Verarbeitung ins Folgejahr).
+4. `list_files(folderId = Ordner-ID aus §4)` → exakter Name-Match `"{Datei-Präfix} {Rechnungsjahr}"` (z. B. `Provision Schlegel 2026`).
+5. **Genau 1 Treffer** → dessen `id` ist die Spreadsheet-ID für alle folgenden Schritte. **≠ 1 Treffer** (0 oder mehrere) → Abbruch + Rückfrage (§9), **kein** Fallback auf „neueste Datei“ oder Teilstring-Match. Ein Ordner enthält typischerweise mehrere Jahres-Dateien (z. B. `Provision Schlegel 2025` **und** `2026`) — ein reiner `contains`-Match auf den Präfix ist deshalb mehrdeutig und **nicht zulässig**.
 
 Neue Jahres-Datei anlegen ist **kein** Teil dieser Kette (Non-Goal, §8) — die Datei muss bereits existieren (Rollover ist Copy-based, manuell/separater Prozess).
 
@@ -43,8 +47,8 @@ Neue Jahres-Datei anlegen ist **kein** Teil dieser Kette (Non-Goal, §8) — die
 
 ## 3. Rechnungsdaten lesen
 
-- `get_voucher(id)` → Netto = `totalGrossAmount − totalTaxAmount`. Der Agent **berechnet nichts selbst**, nur diese eine Subtraktion aus den zwei Voucher-Feldern.
-- `extract_voucher_positions(id)` → `partner` (§2), Kunden-Nr (falls im PDF vorhanden — Fallback ist der Stores-Match in §4, nicht diese Zahl), Menge (kg) und Einheiten (Positionszahl). Das Tool liefert außerdem einen Checksum-Abgleich Positionssumme vs. `totalGrossAmount` — **bei Checksum-Mismatch: Abbruch + Rückfrage (§9)**, nicht stillschweigend weiterrechnen.
+- `get_voucher(id)` → Netto = `totalGrossAmount − totalTaxAmount` (nur diese eine Subtraktion, der Agent **berechnet nichts selbst**) **und** `contactId` (UUID des Store-Kontakts → note-Lookup des Vertrieblers in §2; der Beleg trägt keine Kundennummer).
+- `extract_voucher_positions(id)` → **Kunden-Nr** (die JTL-Nummer aus dem PDF, falls vorhanden → §4-Match gegen `Stores!B:B`), **Menge** (kg) und **Einheiten** (Positionszahl), plus der Checksum-Abgleich Positionssumme vs. `totalGrossAmount` — **bei Checksum-Mismatch: Abbruch + Rückfrage (§9)**, nicht stillschweigend weiterrechnen. Das Tool liefert weiterhin ein `partner`-Feld (PDF-Anker „Vertrieb und Betreuung:“) — das wird **nicht mehr genutzt** (note-only, §2).
 - `voucherDate` (Serial-kompatibel, §6) und `voucherNumber` (Idempotenz-Key, §5) kommen direkt aus `get_voucher`.
 
 ---
@@ -132,8 +136,9 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 |---|---|
 | Insert erfolgreich | „✅ RG-10102-1 — Alero Kiosk: Nettoumsatz 369,77 € in Provision Schlegel 2026 eingetragen (Offen).“ |
 | paid-Update | „✅ RG-10076-1: Status → Bezahlt (Provision Schlegel 2026).“ |
+| Kein note-Marker (§2) | kein Post — stiller Skip (Nicht-Partner-Rechnung ist der Normalfall; keine Rückfrage). |
 | Kein Stores-Match (§4) | kein Post — stiller Skip (Privatverkauf ist der Normalfall, keine Rückfrage nötig). |
-| Partner nicht in Registry (§2) | „⚠️ Partner „<partner>“ aus RG-… nicht in registry.md §4 — Rückfrage nötig.“ |
+| Vertriebler-Marker nicht in Registry (§2) | „⚠️ Vertriebler „<Vertriebler>“ aus dem note-Marker von RG-… nicht in registry.md §4 — Rückfrage nötig.“ |
 | Datei-Findung ≠ 1 Treffer (§2) | „⚠️ RG-…: <0\|N> Treffer für „<Präfix> <Jahr>“ im Ordner — bitte prüfen.“ |
 | Checksum-Mismatch (§3) | „⚠️ RG-…: Positionssumme ≠ Rechnungsbetrag laut Extraktion — bitte manuell prüfen.“ |
 | Backstop-Lauf abgeschlossen (§1b) | „♻️ Backstop-Lauf: {X} geprüft, {Y} nachgetragen, {Z} Status-Updates.“ — **immer** posten, auch bei 0/0/0. |
