@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.26.4](https://github.com/wemwi/skill-library/compare/v2.26.3...v2.26.4) (2026-07-06)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** invoice.md §1 auf Event-Primärpfad verzweigen ([#96](https://github.com/wemwi/skill-library/issues/96)) ([dbb10a1](https://github.com/wemwi/skill-library/commit/dbb10a11a57f2afd93582dd757d153d18f0ad153))
+
 ## [2.26.3](https://github.com/wemwi/skill-library/compare/v2.26.2...v2.26.3) (2026-07-05)
 
 
