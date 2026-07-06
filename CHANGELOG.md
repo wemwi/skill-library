@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.26.5](https://github.com/wemwi/skill-library/compare/v2.26.4...v2.26.5) (2026-07-06)
+
+
+### Bug Fixes
+
+* **pos-operations:** Backstop-Fenster per bash statt Cron-Injektion + Lebenssignal ([#98](https://github.com/wemwi/skill-library/issues/98)) ([1bce764](https://github.com/wemwi/skill-library/commit/1bce76474d15684660ef8fc2b4c7c66b75ad14f8))
+
 ## [2.26.4](https://github.com/wemwi/skill-library/compare/v2.26.3...v2.26.4) (2026-07-06)
 
 
