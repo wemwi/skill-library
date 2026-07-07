@@ -1,26 +1,26 @@
 ---
 name: selectedleafs-pos-operations
 metadata:
-  version: "2.0.0"
-description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Übergabeprotokoll auswerten → Drive ablegen → City-Channel posten), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung POS-Partner), Telegram-Handwerk (Format, Pinned, Launch) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root, Operations-Chat) — plus Stub für Launch. Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-operations, Übergabeprotokoll, Protokoll-Eingang, Kommissionsware, Kommissionär, Lieferschein parsen, Sorten neu vs aufgefüllt, UL-Nummer; telegram post, City-Channel, restock post, neue sorte post, neuer partner post, pinned post, channel setup, channel launch; Bestandsprotokoll, Provisionsabrechnung POS, neuen POS-Partner anlegen."
+  version: "2.1.0"
+description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Übergabeprotokoll auswerten → Drive ablegen → City-Channel posten), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung POS-Partner), Telegram-Handwerk (Format, Pinned) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root) — plus Launch (neuen POS-Partner onboarden). Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-operations, Übergabeprotokoll, Protokoll-Eingang, Kommissionsware, Kommissionär, Lieferschein parsen, Sorten neu vs aufgefüllt, UL-Nummer; telegram post, City-Channel, restock post, neue sorte post, neuer partner post, pinned post, channel setup, channel launch; Bestandsprotokoll, Provisionsabrechnung POS, neuen POS-Partner anlegen."
 ---
 
 # selectedleafs POS-Operations — Router
 
-Landkarte für die POS-Operations-Agenten. Diese Datei **dispatcht** und hält die domänenübergreifenden **Invarianten** — sie trägt **keine** Domänen-Prozedur. Die operative Tiefe steckt in `references/`. Jeder Agent liest **nur die reference(s) seiner Domäne** (Allowlist), plus `registry.md` für statische Werte. `telegram.md` ist nur für die Launch-Domäne Pflicht, nicht generisch fürs Posten — Restock postet direkt mit dem Channel-Lookup aus `registry.md`.
+Landkarte für die POS-Operations-Agenten. Diese Datei **dispatcht** und hält die domänenübergreifenden **Invarianten** — sie trägt **keine** Domänen-Prozedur. Die operative Tiefe steckt in `references/`. Jeder Agent liest **nur die reference(s) seiner Domäne** (Allowlist), plus `registry.md` für statische Werte. `telegram.md` trägt das generische Telegram-Handwerk für die **Channel-Setup-/🎉-Post-Domäne** (Kanal live schalten, „Neuer Partner"-Post) — es ist **kein** Pflicht-Load fürs normale Posten: Restock postet direkt mit dem Channel-Lookup aus `registry.md`, und der `pos-launch`-Agent ist selbsttragend (Bild-Upload + Operations-Status inline in `launch.md`, kein City-Post).
 
 ## Dispatch — welche reference?
 
 | Sub-Task / Auslöser | reference |
 |---|---|
 | Übergabeprotokoll/Lieferschein auswerten, Store/Stadt/Sorten ableiten, neu vs. aufgefüllt, PDF komprimieren + in Drive ablegen, 📦/🌿 in den City-Channel posten (Channel-Ziel aus `registry.md`, kein `telegram.md`-Load nötig) | `references/restock.md` |
-| Generisches Telegram-Handwerk (Launch/Setup-Domäne): Format-System, Emoji-Legende, Pinned/Launch, Posting-Mechanik | `references/telegram.md` |
+| Generisches Telegram-Handwerk (Channel-Setup-/🎉-Post-Domäne): Format-System, Emoji-Legende, Pinned/Launch, Posting-Mechanik | `references/telegram.md` |
 | Statische Werte nachschlagen: City→Channel-Map (direkter Lookup, kein Override-Mechanismus), Drive-Root-`parentFolderId`, Operations-`chat_id`/Topic, (später) Sheet-IDs | `references/registry.md` |
 | Bestandsprotokoll ablegen — Store-Match (Name → Metaobjekt) + Datum lesen, **ohne** Sorten-Parsing/Write-back/Post | `references/inventory.md` |
 | Provisionsabrechnung POS-Partner (Lexware → Vertriebler-Sheet), Rechnung-Insert, paid-Status-Update | `references/invoice.md` |
-| Neuen POS-Partner anlegen (Metaobjekt + 🎉-Post) | `references/launch.md` *(Stub)* |
+| Neuen POS-Partner onboarden (headless One-Shot: Shopify `liftr_store` + ggf. `liftr_district`, Lexware-Kontakt + `POS-PARTNER`-Notiz, Provisionszeile im Vertriebler-Sheet, 2 Drive-Ordner; Teaser-Bild aus Telegram-Upload → Shopify Files; Status/Rückfrage ins Operations-Topic). **Kein** öffentlicher City-Post. | `references/launch.md` |
 
-Die Post-Templates der Restock-Domäne (📦/🌿) liegen **in** `restock.md`, damit diese Kette ohne Sprung in `telegram.md` auskommt. City→Channel ist ein direkter Lookup in `registry.md` — kein Ableitungsmechanismus, kein Override, da Test- und Prod-Agenten getrennte System-Prompts/Configs fahren (`global-agent-framework`), nicht einen geteilten Per-Run-Schalter. references referenzieren einander **nicht** quer — wer eine Domäne fährt, kommt mit seiner reference (+ `registry.md`) aus; `telegram.md` ist nur für die Launch-Domäne Pflicht.
+Die Post-Templates der Restock-Domäne (📦/🌿) liegen **in** `restock.md`, damit diese Kette ohne Sprung in `telegram.md` auskommt. City→Channel ist ein direkter Lookup in `registry.md` — kein Ableitungsmechanismus, kein Override, da Test- und Prod-Agenten getrennte System-Prompts/Configs fahren (`global-agent-framework`), nicht einen geteilten Per-Run-Schalter. references referenzieren einander **nicht** quer — wer eine Domäne fährt, kommt mit seiner reference (+ `registry.md`) aus; `telegram.md` ist nur für die Channel-Setup-/🎉-Post-Domäne Pflicht — der `pos-launch`-Agent lädt es **nicht** (Bild-Upload + Operations-Status stehen inline in `launch.md`).
 
 ## Universelle Invarianten (für alle Domänen)
 

@@ -62,3 +62,11 @@ Der Drive-Ordner **Provisionsabrechnung** liegt in §2 (Invoice-Wurzel). Pro Ver
 Neuer Vertriebler = neue Zeile hier + Skill-Version-Bump — **kein** Agent-Config-Rebuild (`invoice.md` liest ausschließlich aus dieser Tabelle, kein Vertriebler-Name im Prompt/Config hardcodiert).
 
 **note-Marker-Konvention (Single Source für den Namen).** Derselbe Vertrieblername in Spalte 1 ist zugleich der Wert im `note`-Marker des Lexware-Store-Kontakts: `POS-PARTNER: <Vertriebler>` (gesetzt im Launch, gelesen in `invoice.md` §2). Der Name muss **zeichengenau** zwischen note-Marker und dieser Zeile übereinstimmen — er ist der Lookup-Schlüssel, ein Tippfehler führt zur §9-Rückfrage. ℹ️ Der Vertriebler-Name sitzt auf dem Kontakt-`note`; die **Store-Match-Nummer** ist `roles.customer.number` desselben Kontakts (Lexware-Kundennummer). Sheet (`Stores!B`) und Lexware wurden auf **einen** Nummernraum (Lexware) vereinheitlicht — die frühere JTL-Nummer aus PDF/Sheet ist **nicht mehr** die Match-Quelle (`invoice.md` §4). Beide Werte — Vertriebler und Match-Nummer — kommen aus **einem** `get_contact`.
+
+**`POS-SHEET`-Marker (Ziel-Sheet des Vertrieblers).** Auf dem **Vertriebler**-Kontakt in Lexware trägt eine zweite Notiz die aktuelle Spreadsheet-Datei-ID:
+
+```
+POS-SHEET: <spreadsheet-datei-id>
+```
+
+`launch.md` §6 liest daraus direkt die Ziel-Datei-ID für den Provisions-Insert (`Stores`-Zeile) — **kein** `list_files`+Namensmatch. Lexware ist damit die eine Wahrheitsquelle für **beide** Launch-Lookups: Vertrieblername (→ `POS-PARTNER` am Store) und Sheet-Datei-ID (→ `POS-SHEET` am Vertriebler). Der Marker ist ein manueller Pflicht-Eintrag am Vertriebler-Kontakt (für Christian Schlegel bereits gesetzt); bei Jahres-Rollover wird der Wert auf die neue Datei umgesetzt. Die Ordner-/Präfix-Spalten oben bleiben für `invoice.md` §2 (dessen `list_files`-Weg) gültig, bis `pos-invoice` ebenfalls auf den `POS-SHEET`-Weg umzieht.
