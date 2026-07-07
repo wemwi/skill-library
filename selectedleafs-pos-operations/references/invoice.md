@@ -32,10 +32,10 @@ Läuft der Agent **ohne** injizierte `resourceId` (monatlicher Scheduled Deploym
 
 **Der Vertriebler ist die `note` des Store-Kontakts — die EINE Wahrheitsquelle. Kein PDF-Anker, kein Verzeichnis-Scan, kein Raten.** Ablauf:
 
-1. **Vertriebler aus der `note`.** `get_contact(contactId).note` lesen; `contactId` kommt aus `get_voucher` (§1/§3 — der Beleg trägt nur die contactId-UUID, keine Kundennummer). Die note trägt den Marker `POS-PARTNER: <Vertriebler>`; `<Vertriebler>` = der getrimmte String **nach** `POS-PARTNER:`. **note-Guard, zwei Fälle:**
+1. **Ein `get_contact(contactId)` liefert beides: Vertriebler (aus `note`) UND Store-Match-Key (aus `roles.customer.number`).** `contactId` kommt aus `get_voucher` (§1/§3 — der Beleg trägt nur die contactId-UUID, keine Kundennummer). Aus derselben Antwort: `note` trägt den Marker `POS-PARTNER: <Vertriebler>` (`<Vertriebler>` = der getrimmte String **nach** `POS-PARTNER:`); `roles.customer.number` ist die **Lexware-Kundennummer** → der Store-Match-Key gegen `Stores!B5:B` (§4). **note-Guard, zwei Fälle:**
    - **Kein Marker** in der note → **STILLER Skip**, kein Post (Normalfall Nicht-Partner-Rechnung). Im Event-Pfad filtert die `agent-bridge` diese Belege ohnehin vorab (note-Gate, kein Session-Start); im **Backstop-Poll** (§1b) ist genau dieser Guard der Filter. **Keine Rückfrage** — ohne ihn löste jede normale Kundenrechnung im Backstop eine Rückfrage aus.
    - **Marker vorhanden, aber `<Vertriebler>` nicht in `registry.md` §4** → **Abbruch + Rückfrage** (§9). Das ist ein echter Konfigurationsfehler (Tippfehler im Marker oder fehlende registry-Zeile), niemals raten.
-   - ⚠️ `get_contact` wird hier **ausschließlich für `note`** genutzt. **Nie** `roles.customer.number` als Match-Quelle — das ist Lexwares EIGENE Kundennummer und weicht **systematisch** von der JTL-Nummer aus PDF/Sheet ab (live: AR Kiosk PDF/Sheet `10009` vs. contact `10033`). Dagegen gematcht liefe der §4-Match still auf 0 **oder auf den falschen Kontakt** (die Nummernräume überlappen im Wert).
+   - ⚠️ **Der Store-Match-Key ist `roles.customer.number` (Lexwares eigene Kundennummer) — nicht mehr die JTL-Nummer aus dem PDF.** Sheet und Lexware wurden auf **einen** Nummernraum (Lexware) vereinheitlicht; `Stores!B` trägt jetzt die Lexware-Nummern (Migration abgeschlossen). Die frühere JTL-Kunden-Nr aus `extract_voucher_positions` wird als Match-Quelle **nicht mehr gelesen** (§3) — sie und die Lexware-Nummer überlappen im Wert, ein gemischter Betrieb liefe daher still auf den falschen Kontakt. Weil `note` und `roles.customer.number` auf demselben Kontakt sitzen, genügt **ein** `get_contact` für beide.
 2. **`<Vertriebler>` → `registry.md` §4** → Drive-Ordner-ID + Datei-Präfix. (Der Marker-Name ist der exakte Lookup-Schlüssel; er muss zeichengenau mit der registry-§4-Zeile übereinstimmen.)
 3. Rechnungsjahr aus `voucherDate` des Vouchers (**nicht** aus dem Verarbeitungsdatum — sonst kippt eine Silvester-Verarbeitung ins Folgejahr).
 4. `list_files(folderId = Ordner-ID aus §4)` → exakter Name-Match `"{Datei-Präfix} {Rechnungsjahr}"` (z. B. `Provision Schlegel 2026`).
@@ -47,17 +47,17 @@ Neue Jahres-Datei anlegen ist **kein** Teil dieser Kette (Non-Goal, §8) — die
 
 ## 3. Rechnungsdaten lesen
 
-- `get_voucher(id)` → Netto = `totalGrossAmount − totalTaxAmount` (nur diese eine Subtraktion, der Agent **berechnet nichts selbst**) **und** `contactId` (UUID des Store-Kontakts → note-Lookup des Vertrieblers in §2; der Beleg trägt keine Kundennummer).
-- `extract_voucher_positions(id)` → **Kunden-Nr** (die JTL-Nummer aus dem PDF, falls vorhanden → §4-Match gegen `Stores!B:B`), **Menge** (kg) und **Einheiten** (Positionszahl), plus der Checksum-Abgleich Positionssumme vs. `totalGrossAmount` — **bei Checksum-Mismatch: Abbruch + Rückfrage (§9)**, nicht stillschweigend weiterrechnen. Das Tool liefert weiterhin ein `partner`-Feld (PDF-Anker „Vertrieb und Betreuung:“) — das wird **nicht mehr genutzt** (note-only, §2).
+- `get_voucher(id)` → Netto = `totalGrossAmount − totalTaxAmount` (nur diese eine Subtraktion, der Agent **berechnet nichts selbst**) **und** `contactId` (UUID des Store-Kontakts → das eine `get_contact` in §2, das **sowohl** den Vertriebler-`note` **als auch** die Store-Match-Nummer `roles.customer.number` liefert; der Beleg selbst trägt keine Kundennummer).
+- `extract_voucher_positions(id)` → **Menge** (kg) und **Einheiten** (Positionszahl), plus der Checksum-Abgleich Positionssumme vs. `totalGrossAmount` — **bei Checksum-Mismatch: Abbruch + Rückfrage (§9)**, nicht stillschweigend weiterrechnen. Die vom Tool ebenfalls gelieferte **Kunden-Nr** (JTL-Nummer aus dem PDF) wird als Match-Key **nicht mehr gelesen** — der Store-Match läuft über `roles.customer.number` aus §2 (§4). Auch das `partner`-Feld (PDF-Anker „Vertrieb und Betreuung:“) bleibt **ungenutzt** (note-only, §2).
 - `voucherDate` (Serial-kompatibel, §6) und `voucherNumber` (Idempotenz-Key, §5) kommen direkt aus `get_voucher`.
 
 ---
 
 ## 4. Match gegen Stores — einziger Guard
 
-**Kunden-Nr in `Stores!B5:B` (native Table „Partner“, Spalte „Kunden-Nr“) vorhanden → schreiben. Nicht vorhanden → skip.** Das ist der **einzige** Guard — der `Status`-Wert der Store-Zeile (`Aktiv`/`Inaktiv`) ist **kein** Kriterium: Lexware ist die Ground Truth für „es gibt ein Geschäft“, ein veralteter Sheet-Status widerspricht dem nicht. Ein Skip deckt sowohl echten Privatverkauf als auch einen in `Stores` noch nicht angelegten Partner ab (Partner-Anlage ist `launch`-Domäne, kein Teil dieser Kette).
+**Lexware-`roles.customer.number` (aus §2) in `Stores!B5:B` (native Table „Partner“, Spalte „Kunden-Nr“) vorhanden → schreiben. Nicht vorhanden → skip.** Das ist der **einzige** Guard — der `Status`-Wert der Store-Zeile (`Aktiv`/`Inaktiv`) ist **kein** Kriterium: Lexware ist die Ground Truth für „es gibt ein Geschäft“, ein veralteter Sheet-Status widerspricht dem nicht. Ein Skip deckt sowohl echten Privatverkauf als auch einen in `Stores` noch nicht angelegten Partner ab (Partner-Anlage ist `launch`-Domäne, kein Teil dieser Kette).
 
-Kunden-Nr **numerisch** vergleichen (Lexware/PDF liefert ggf. String) — die Zielspalte E ist numerisch (§6), ein String-Wert würde später `SUMIFS` in `Stores` silently auf 0 laufen lassen, ohne dass der Fehler in `Umsatz` selbst sichtbar wird.
+Kunden-Nr **numerisch** vergleichen (`roles.customer.number` kommt als String) — die Zielspalte E ist numerisch (§6), ein String-Wert würde später `SUMIFS` in `Stores` silently auf 0 laufen lassen, ohne dass der Fehler in `Umsatz` selbst sichtbar wird.
 
 ---
 
@@ -82,7 +82,7 @@ Kunden-Nr **numerisch** vergleichen (Lexware/PDF liefert ggf. String) — die Zi
 | Rechnung-Nr | `voucherNumber` | Text |
 | Datum | `voucherDate` | Serial (Datum, nicht String) |
 | Status | `"Offen"` (Insert ist immer eine neue, offene Rechnung) | Text, Dropdown-Wert |
-| Kunden-Nr | Kunden-Nr aus §4 | **Zahl**, nicht String |
+| Kunden-Nr | Lexware-`roles.customer.number` aus §4 | **Zahl**, nicht String |
 | Store | — | **nie schreiben** (Formel `XLOOKUP`) |
 | Menge | Menge (kg) aus §3 | Zahl |
 | Einheiten | Einheiten aus §3 | Zahl |
