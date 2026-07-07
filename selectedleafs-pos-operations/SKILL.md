@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-operations
 metadata:
-  version: "1.5.0"
+  version: "2.0.0"
 description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Übergabeprotokoll auswerten → Drive ablegen → City-Channel posten), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung POS-Partner), Telegram-Handwerk (Format, Pinned, Launch) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root, Operations-Chat) — plus Stub für Launch. Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-operations, Übergabeprotokoll, Protokoll-Eingang, Kommissionsware, Kommissionär, Lieferschein parsen, Sorten neu vs aufgefüllt, UL-Nummer; telegram post, City-Channel, restock post, neue sorte post, neuer partner post, pinned post, channel setup, channel launch; Bestandsprotokoll, Provisionsabrechnung POS, neuen POS-Partner anlegen."
 ---
 
