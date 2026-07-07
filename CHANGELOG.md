@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/wemwi/skill-library/compare/v3.0.0...v3.1.0) (2026-07-07)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** pos-launch-Domäne aktiv ([#107](https://github.com/wemwi/skill-library/issues/107)) ([0e3789d](https://github.com/wemwi/skill-library/commit/0e3789d33d9ac45245dc2089b224b935d4cb20cd))
+
 ## [3.0.0](https://github.com/wemwi/skill-library/compare/v2.27.1...v3.0.0) (2026-07-07)
 
 
