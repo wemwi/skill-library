@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.27.1](https://github.com/wemwi/skill-library/compare/v2.27.0...v2.27.1) (2026-07-07)
+
+
+### Bug Fixes
+
+* **global-mcp-framework:** Secret-Naming um Cross-Consumer-Konsistenz + Nicht-MCP-Scope schärfen ([#103](https://github.com/wemwi/skill-library/issues/103)) ([edd51a1](https://github.com/wemwi/skill-library/commit/edd51a1aa8433650422e8acd845f41817193ccd2))
+
 ## [2.27.0](https://github.com/wemwi/skill-library/compare/v2.26.5...v2.27.0) (2026-07-06)
 
 
