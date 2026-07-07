@@ -47,6 +47,20 @@ Key-Paar). Mechanik: `references/storage.md`.
 Konsistenz-Prinzip (gesamtes Framework): **infra-lesbar (Worker, KV, Secret) →
 Anbieter/Aussteller rein. Modell-lesbar (Tool) → Anbieter raus.**
 
+**Ein Credential = ein Name, über alle Konsumenten hinweg.** Der Env-Name gehört
+zum *Credential* (Aussteller + Typ), nicht zum lesenden Worker. Nutzen mehrere
+Dienste dasselbe Provider-Credential, tragen sie **denselben** Namen — ein neuer
+Konsument übernimmt den etablierten Namen, statt einen eigenen zu erfinden. Diese
+Konvention ist **stack-weit, nicht MCP-only**: auch Nicht-MCP-Worker (Webhook-
+Brücken, Adapter) erben sie, weil sie dasselbe Credential lesen. Ein Lexware-
+API-Key heißt also überall `LEXWARE_API_KEY`, nie `LEXWARE_API_TOKEN` — ein
+API-Key trägt **immer** `_API_KEY` (das Suffix `_TOKEN` ist für Personal Access
+Tokens reserviert, nicht für API-Keys). Warum das strikt sein muss: `env.<falscher
+Name>` ist zur Laufzeit still `undefined` — ein Name-Mismatch scheitert **nicht**
+laut beim Deploy, sondern verändert stumm das Verhalten (z.B. ein fail-open-Gate,
+ein nicht gesetzter Header). Darum beim Mitnutzen eines bestehenden Credentials
+den Namen zeichengenau gegen die Tabelle oben abgleichen, nie neu erfinden.
+
 ## Regeln
 
 - Secrets werden nur im Dashboard bzw. via `wrangler secret` gesetzt — nie im Repo.
