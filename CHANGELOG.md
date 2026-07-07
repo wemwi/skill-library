@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/wemwi/skill-library/compare/v2.27.1...v3.0.0) (2026-07-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* **selectedleafs-pos-operations:** Skill v2.0.0 setzt migrierte Stores!B-Keys (Lexware-Nummern) voraus; gegen ein unmigriertes JTL-Sheet läuft der §4-Match auf 0.
+
+### Features
+
+* **selectedleafs-pos-operations:** Store-Match auf Lexware-Kundennummer umstellen ([ce24936](https://github.com/wemwi/skill-library/commit/ce24936d56be9183cd8f5cae7d69666c4fa54e80))
+
 ## [2.27.1](https://github.com/wemwi/skill-library/compare/v2.27.0...v2.27.1) (2026-07-07)
 
 
