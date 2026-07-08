@@ -2,7 +2,7 @@
 name: global-workflow
 description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
 ---
 
 # Workflow — Universelles Arbeitsprotokoll
@@ -89,12 +89,12 @@ Anker ist der Charakter, nicht das Modell — die Zuordnung nennt die aktuellen 
 | Task-Charakter | Tier |
 |----------------|------|
 | Echte Denkarbeit — Architektur/Design, mehrdeutige Specs mit Abwägung, fiese Multi-System-Bugs, das Planen/Vorausdenken selbst | höchstes (Opus) |
-| Ausführung gegen feststehende Konventionen — Skill-Inhalte, Section/CSS/JS nach LIFTR-Regeln, Commit/PR/Merge über GitHub-MCP, Routine-Refactors, Content-Entwürfe | mittleres (Sonnet) |
+| Ausführung gegen feststehende Konventionen — Skill-Inhalte, Section/CSS/JS nach LIFTR-Regeln, Routine-Refactors, Content-Entwürfe | mittleres (Sonnet) |
 | Mechanisches — kurze Lookups, Statuschecks, Mini-Edits, Datei lesen | schnellstes (Haiku) |
 
 Das Mapping Charakter→Tier ist der einzige Teil, der altern kann. Ändert sich die Tier-Landschaft, hier eine Zeile anpassen — die Logik bleibt.
 
-**Der Self-Check läuft an jeder Phasengrenze neu, nicht nur im ersten Turn.** Der Charakter eines Tasks ist nicht fix — er kippt, wenn die Arbeit von einer Denkphase (Architektur, Recherche, Abwägung) in eine Ausführungsphase (Skill-Inhalt schreiben, Commit/PR/Merge über GitHub-MCP) übergeht. An genau dieser Naht den Charakter neu bewerten; der erste Turn bindet nicht. Beispiel: Upload-/Commit-Zyklus über GitHub-MCP = mittleres Tier (Sonnet), Marker davor — auch wenn die Architektur-Phase davor auf Opus lief.
+**Der Self-Check läuft an jeder Phasengrenze neu, nicht nur im ersten Turn.** Der Charakter eines Tasks ist nicht fix — er kippt, wenn die Arbeit von einer Denkphase (Architektur, Recherche, Abwägung) in eine Ausführungsphase (Skill-Inhalt schreiben, `.skill` packen) übergeht. An genau dieser Naht den Charakter neu bewerten; der erste Turn bindet nicht. Beispiel: der Übergang von der Architektur-/Abwägungsphase (Opus) zum Schreiben der Skill-Inhalte (Sonnet) — an dieser Naht den Charakter neu bewerten, Marker davor, auch wenn davor Opus lief. Der Repo-Commit selbst ist kein Chat-Schritt mehr (siehe Frage 2), er läuft in Claude Code.
 
 **Self-Check** (nach jeder Charakter-Bestimmung): aktives Modell mit nötigem Tier vergleichen. NUR bei echtem Mismatch handeln, sonst still bleiben:
 - Aktives Tier zu HOCH (z.B. Opus für Mechanisches) → kurzer Hinweis, dann normal weiter. Token-Sparen, kein Qualitätsrisiko.
@@ -107,7 +107,11 @@ Das Mapping Charakter→Tier ist der einzige Teil, der altern kann. Ändert sich
 | Wenige Dateien, Denken/Design/Content, plan→approve-Rhythmus | Chat (hier) |
 | Arbeitsform riecht nach Ausführungsschleife — viele Dateien gleichzeitig, Code wirklich ausführen/testen, lange agentische Schleife | Claude Code |
 
-**Harter Mechanik-Trigger (nicht verhandelbar).** Sobald die Ausführung Repo-Dateiinhalte durch den Chat-Kontext routet — GitHub-MCP `get_file_contents` → dekodieren → editieren → `push_files` über **mehr als 1-2 Dateien** — ist das Claude Code, **unabhängig davon, wie trivial der einzelne Edit ist**. Auslöser ist der Byte-Durchlauf durch den Kontext, nicht die Denk-Komplexität — dasselbe Prinzip wie `global-agent-framework` §12 („Bytes nie durch den Kontext routen"), hier als Selbst-Regel. Ein rein subtraktiver Sweep über 6 Dateien fühlt sich denk-trivial an; genau diese Trivialität darf NICHT auf die Werkzeugwahl durchschlagen (das ist der Kollaps von Frage 1 in Frage 2). **Chirurgische Ausnahme:** 1-2 Dateien, gezielter Edit, PR-Merge bleiben im Chat (§5.1) — und die Memory-Regel „GitHub-MCP verbunden → Zyklus selbst" gilt genau für diesen Fall: sie regelt die Commit-*Mechanik* (selbst mergen statt getrennter Blöcke), nicht das *Medium*. Ab dem Sweep gewinnt dieser Trigger, und der Zyklus läuft dann in Claude Code.
+**Harter Mechanik-Trigger (nicht verhandelbar).** Der Chat schreibt **nie** ins Repo. Jeder schreibende Zugriff — Branch, Commit, `push_files`, PR, Merge — läuft **ausschließlich über Claude Code**, egal ob eine Datei oder zwanzig, egal wie trivial der einzelne Edit ist. Es gibt **keine chirurgische Ausnahme** mehr (auch nicht für 1-2 Dateien).
+
+Grund ist ein konkreter Fehlermodus, den der Byte-Durchlauf durch den Chat-Kontext erzeugt: `get_file_contents` liefert den Inhalt (oft base64, ~⅓ aufgebläht), `push_files` schickt den vollen `content` zurück — die Datei liegt damit **doppelt** im Kontext, mal N Dateien, mal N Korrekturschleifen. Und weil **jeder Turn den gesamten Verlauf mitzahlt**, schaukelt sich das auf, bis „maximale Länge erreicht" kommt — der Chat bricht mitten im Zyklus ab. Claude Code arbeitet dagegen auf einem ausgecheckten Repo auf der Platte, in-place, mit git — der Dateiinhalt läuft nie durch einen sich aufsummierenden Chat-Kontext. Dasselbe Prinzip wie `global-agent-framework` §12 („Bytes nie durch den Kontext routen"), hier als harte Selbst-Regel.
+
+**Lesen ≠ Schreiben.** Der Chat darf `get_file_contents` / `read_file` weiter zum *Entwerfen* nutzen (§4). Verboten ist nur der *schreibende* Zyklus. Sobald es „ins Repo" heißt, geht es raus.
 
 Der Wechsel läuft über einen **Migration-Prompt** (→ `references/handover.md`), nicht über einen rohen Kontextbruch — der Prompt IST der Kontexttransfer. Dadurch darf die Schwelle niedriger liegen als bei einem echten Bruch: nicht „lohnt der Aufwand?", sondern „passt die Arbeitsform?". Ehrlich bleibt: billiger als ein Bruch, aber nicht gratis — diese Session endet, Weiter-Iterieren im selben Thread geht nicht.
 
@@ -155,13 +159,15 @@ Lohnt sich nur bei längeren/gemischten Sessions. Bei kurzen Tasks: ein Setup ne
 
 ### 5.1 Skill-Updates token-effizient
 
-Der volle Datei-Inhalt läuft **genau einmal** durch den Kontext (beim Commit) — jeder andere Schritt vermeidet die Voll-Durchquerung:
+**Zweigleisig:** Der Chat baut das `.skill` für den Sofort-Mount; die GitHub-Seite läuft über Claude Code (§3, harter Mechanik-Trigger — kein Repo-Schreibzugriff im Chat). Der volle Datei-Inhalt läuft im Chat **genau einmal** durch den Kontext (beim `.skill`-Packen) — jeder andere Schritt vermeidet die Voll-Durchquerung:
 
 1. **Basis = installierte Version:** `cp /mnt/skills/user/<name>/SKILL.md /home/claude/`. Nie base64 aus der GitHub-API abtippen, nie den Volltext per `curl` in den Kontext laden. Bei Drift-Verdacht nur Byte-Größe/SHA gegen `main` prüfen, nicht den Inhalt.
 2. **Edits via `str_replace`** auf der lokalen Datei (nur die Diffs) — die Datei nie komplett neu schreiben.
 3. **Struktur-Check via `grep`** (Version, Abschnittszahl, Marker) — kein erneutes `cat` der Vollversion zur reinen Kontrolle.
-4. **Commit = ein `push_files`** mit vollem `content` (bei GitHub-MCP unvermeidbar — das ist die *eine* Durchquerung). Danach Byte-Verifikation: `curl` der raw-URL **nach `/tmp`** + `diff` gegen lokal → nur „IDENTISCH" landet im Kontext, nicht der Inhalt.
-5. PR → Squash-Merge (→ `global-git-conventions`), dann `.skill`-Paket bauen und ausliefern.
+4. **`.skill`-Paket bauen** (skill-creator `package_skill`, Skill-Ordner auf Wurzelebene) und ausliefern → Joscha mountet sofort. Das ist die *eine* Voll-Durchquerung im Chat; danach ist die Chat-Seite fertig.
+5. **GitHub-Seite via Claude Code** — kein `push_files` im Chat. Der Handover-Prompt trägt **exakt den final editierten SKILL.md-Inhalt**; Claude Code committet *nur diese Bytes*: Branch → PR → Squash-Merge (→ `global-git-conventions`) → Byte-Verifikation (`diff` gegen den Handover-Stand). Claude Code leitet die Änderung **nicht selbst neu ab**.
+
+**Drift-Kontrakt (zwingend).** Der Chat ist alleiniger *Editor* des Inhalts, Claude Code alleiniger *Committer*. Nur so sind gemountetes `.skill` und Repo-`main` byte-identisch. Zwei unabhängige Editoren (Chat *und* Code) würden genau die Drift erzeugen, die die Byte-Verifikation eigentlich verhindern soll — deshalb: eine Edit-Quelle, ein Committer.
 
 ---
 
