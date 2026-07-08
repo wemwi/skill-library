@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/wemwi/skill-library/compare/v3.2.0...v4.0.0) (2026-07-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* the `launch` domain is renamed to `store` (references/launch.md removed; agent pos-launch → pos-store), breaking the agent allowlist referencing the old path. The v2.x invariant "no public city post" is reversed: the pos-store agent now posts exactly one 🎉 broadcast and requires send_photo on city channels.
+
+### Features
+
+* rename launch domain to store, add city broadcast (v3.0.0) ([#111](https://github.com/wemwi/skill-library/issues/111)) ([8360e1f](https://github.com/wemwi/skill-library/commit/8360e1f807a05f5cfd4c5197c2248366b09457ea))
+
 ## [3.2.0](https://github.com/wemwi/skill-library/compare/v3.1.0...v3.2.0) (2026-07-08)
 
 
