@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/wemwi/skill-library/compare/v3.1.0...v3.2.0) (2026-07-08)
+
+
+### Features
+
+* **global-workflow:** Repo-Writes uniform ueber Claude Code, chirurgische Ausnahme entfernt ([#109](https://github.com/wemwi/skill-library/issues/109)) ([c8827fb](https://github.com/wemwi/skill-library/commit/c8827fb79dbf1e9cbb6b57b2e187b9e142f01442))
+
 ## [3.1.0](https://github.com/wemwi/skill-library/compare/v3.0.0...v3.1.0) (2026-07-07)
 
 
