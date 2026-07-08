@@ -3,7 +3,7 @@
 Generisches Produktions- und Posting-Playbook für die lokalen selectedleafs-Telegram-Channels (Titel-Muster „Kratom [Stadt] | selectedleafs.com"). Diese reference trägt das **Handwerk** — Channel-Lifecycle/Setup, Format-System, Posting-Mechanik, Pinned/Launch. **Domänen-spezifische Post-Templates leben in der jeweiligen Domänen-reference**, nicht hier:
 
 - **📦 Frisch aufgefüllt / 🌿 Neue Sorte** → `references/restock.md` (Sektion „Restock-Post-Templates"). Die Restock-Kette braucht diese reference **nicht** — sie hat ihre Templates lokal.
-- **🎉 Neuer Partner** → gehört zur Launch-Domäne (`references/launch.md`); solange die ein Stub ist, steht das Template übergangsweise unten in §5 (markiert).
+- **🎉 Neuer Partner** → gehört zur Store-Domäne (`references/store.md` §8.5, selbsttragend inkl. Template + Posting-Handwerk). **Nicht** hier.
 
 **Werte (IDs, Maps, chat_ids) stehen nicht hier**, sondern in `references/registry.md` (Channel-Map, Operations-Chat) bzw. kommen lauf-spezifisch aus der Webhook-Injektion. Diese reference beschreibt **Regeln**, nicht Werte.
 
@@ -79,20 +79,12 @@ Alle Typen folgen dem generischen Format (§3): **Headline fett**, `{store_name}
 
 **Template-Verortung:**
 - **📦 Frisch aufgefüllt** und **🌿 Neue Sorte** → vollständige Templates + Restock-Regeln + kanonischer 9-Strain-Index in `references/restock.md` (die Domäne, die sie erzeugt).
-- **🎉 Neuer Partner** → Launch-Domäne (`references/launch.md`, derzeit Stub). Template übergangsweise unten.
+- **🎉 Neuer Partner** → Store-Domäne (`references/store.md` §8.5). Template + Posting-Handwerk liegen dort inline — **nicht** hier.
 - **🕒 Öffnungszeiten** → generisches Store-Update, derzeit ohne eigene Domänen-reference; Template unten.
 
-### 🎉 Neuer Partner (übergangsweise hier — Ziel: launch.md)
+### 🎉 Neuer Partner → `store.md` §8.5
 
-Seltener Milestone; der Store *ist* die News → in der fetten Headline. 🕒-Zeile abgesetzt.
-```
-🎉 **Neuer Partner: {store_name}**
-{stadtteil} · {adresse}
-
-🕒 {oeffnungszeiten}
-
-[Google Maps öffnen]({maps_link})
-```
+Seltener Milestone, den der `pos-store`-Agent bei Neuanlage selbst broadcastet. Template **und** Posting-Handwerk (Bild = Shopify-CDN-URL via `send_photo`, Caption, Maps-CTA, CREATE-Gating) liegen **selbsttragend in `references/store.md` §8.5** — bewusst nicht hier, damit die Store-Kette ohne Sprung in diese reference auskommt (dasselbe Prinzip wie Restocks 📦/🌿-Templates in `restock.md`).
 
 ### 🕒 Öffnungszeiten
 
@@ -170,7 +162,7 @@ Temporäres Pilot-Element, nur während der Launch-/Pilot-Laufzeit gepinnt; dana
 
 ## 8. Launch-Strategie (Channel-Launch)
 
-Betrifft den **Channel-Start einer Stadt** — nicht das Onboarding eines neuen POS-Partners (das ist die Launch-Domäne, `references/launch.md`).
+Betrifft den **Channel-Start einer Stadt** — nicht das Anlegen eines neuen POS-Partners (das ist die Store-Domäne, `references/store.md`).
 
 **Nicht fake-füllen — seeden + Reihenfolge steuern.**
 
@@ -228,7 +220,7 @@ Ab sofort halten wir dich hier bequem auf dem Laufenden. Du erfährst in Echtzei
 - **Auslöser je Stream-Typ** (das *Wie* des Parsens/Postens liegt in der jeweiligen Domänen-reference):
   - 📦 Frisch aufgefüllt → Lieferung/Übergabeprotokoll → `references/restock.md`
   - 🌿 Neue Sorte → neue Sorte auf dem Beleg bzw. `product_list`-Änderung → `references/restock.md`
-  - 🎉 Neuer Partner → neues `liftr_store`-Metaobject (Chat-getrieben) → `references/launch.md`
+  - 🎉 Neuer Partner → Neuanlage eines `liftr_store` durch `pos-store` (§8.5, best-effort, nur CREATE-Zweig) → `references/store.md`
   - 🕒 Öffnungszeiten → Änderung `opening_hours`; spontane manuell
 
 ### 10.1 Privater Rückkanal (DM) — Restock-Input

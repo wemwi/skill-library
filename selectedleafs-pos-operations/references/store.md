@@ -1,6 +1,6 @@
-# Launch — neuen POS-Partner onboarden (pos-launch)
+# Store — neuen POS-Partner anlegen (pos-store)
 
-Onboardet einen neuen POS-Partner-Store in **einem headless One-Shot-Lauf** über die vier Fachsysteme: Shopify (`liftr_store`-Metaobjekt, ggf. `liftr_district`), Lexware (Store-Kontakt + `POS-PARTNER`-Notiz), Google Sheets (Provisionszeile im `Stores`-Tab des Vertriebler-Sheets) und Drive (zwei Ablage-Ordner). Der Agent führt **keinen Dialog** — der komplette Auftrag kommt fertig von der `agent-bridge` als `user.message`. Diese reference ist **selbsttragend** (kein Sprung in `telegram.md`): das minimale Telegram-Handwerk dieser Domäne — Bild holen, Status/Rückfrage posten — steht hier inline. Der öffentliche 🎉-City-Post ist **nicht** Teil dieses Agenten (Non-Goal §10).
+Legt einen neuen POS-Partner-Store in **einem headless One-Shot-Lauf** über die vier Fachsysteme an: Shopify (`liftr_store`-Metaobjekt, ggf. `liftr_district`), Lexware (Store-Kontakt + `POS-PARTNER`-Notiz), Google Sheets (Provisionszeile im `Stores`-Tab des Vertriebler-Sheets) und Drive (zwei Ablage-Ordner). Der Agent führt **keinen Dialog** — der komplette Auftrag kommt fertig von der `agent-bridge` als `user.message`. Diese reference ist **selbsttragend** (kein Sprung in `telegram.md`): das gesamte Telegram-Handwerk dieser Domäne — Bild holen, Status/Rückfrage ins Operations-Topic posten **und** der öffentliche 🎉-„Neuer Partner"-Broadcast in den City-Channel (§8.5) — steht hier inline. Für den Broadcast lädt der Agent zusätzlich `registry.md` (§1, City→Channel). Der 🎉-Post ist **der einzige** öffentliche Post dieses Agenten und feuert nur bei echter Neuanlage (§8.5).
 
 ---
 
@@ -197,11 +197,11 @@ Ziel-Spreadsheet-ID = `POS-SHEET`-Wert aus §6. Geschrieben wird eine neue Zeile
    - DE-Locale: etwaige Dezimalzahlen mit **Komma** (`USER_ENTERED`).
 4. **Read-back:** `get_range` auf die Key-Zelle der neuen Zeile → Kundennummer numerisch bestätigt; `list_tables` erneut → `endRowIndex` um 1 gewachsen.
 
-> Der Key in `Stores!B` ist die **Lexware-Kundennummer** — zum Launch-Zeitpunkt die einzige stabile, sofort verfügbare Kennung (JTL-Nummer existiert noch nicht). Genau diese Nummer prüft `invoice.md` §4 gegen `Stores!B5:B` und schreibt sie in `Umsatz!E`. Kein Fallback: eine Zeile ohne korrekte Nummer fällt beim §4-Match still durch.
+> Der Key in `Stores!B` ist die **Lexware-Kundennummer** — zum Anlage-Zeitpunkt die einzige stabile, sofort verfügbare Kennung (JTL-Nummer existiert noch nicht). Genau diese Nummer prüft `invoice.md` §4 gegen `Stores!B5:B` und schreibt sie in `Umsatz!E`. Kein Fallback: eine Zeile ohne korrekte Nummer fällt beim §4-Match still durch.
 
 ### 8.4 Drive — zwei Ablage-Ordner anlegen
 
-Pro Store je ein Store-Ordner unter der **Übergabeprotokolle-** und der **Bestandsprotokolle-**Wurzel (`registry.md` §2), damit `pos-restock`/`pos-inventory` ihre Zielordner vorfinden. Beide Wurzeln existieren bereits — der Launch legt nur die Stadt/Store-Unterpfade an, **idempotent**:
+Pro Store je ein Store-Ordner unter der **Übergabeprotokolle-** und der **Bestandsprotokolle-**Wurzel (`registry.md` §2), damit `pos-restock`/`pos-inventory` ihre Zielordner vorfinden. Beide Wurzeln existieren bereits — die Store-Anlage legt nur die Stadt/Store-Unterpfade an, **idempotent**:
 
 ```
 <Übergabeprotokolle-Wurzel>/{city.name}/{postal_code} {store.name}/
@@ -212,6 +212,51 @@ Pro Store je ein Store-Ordner unter der **Übergabeprotokolle-** und der **Besta
 - Segmente **1:1 aus den `liftr_store`-Feldern** des in §8.1 angelegten Stores (`city`→`name`, `postal_code`, `name`), **keine** Slugifizierung — identische Namenslogik wie `restock.md` §6 / `inventory.md`, sonst zielen die anderen Agenten auf falsche Ordner.
 - Die Wurzel-IDs stehen in `registry.md` §2 (nicht hardcoden).
 
+### 8.5 🎉-Broadcast in den City-Channel (nur CREATE-Zweig, best-effort, letzter Schritt)
+
+Der einzige **öffentliche** Post dieses Agenten. Läuft als **allerletzter** Schritt, **nach** dem §8.4-Read-back — zu diesem Zeitpunkt sind alle vier Fachsystem-Writes bestätigt, der Store ist **erfolgreich**.
+
+**Gating — nur wenn §8.1 den Store NEU angelegt hat (CREATE-Zweig).** Hat §8.1 einen bestehenden Store gematcht (Heal/Re-Run), wird §8.5 **komplett übersprungen — kein Post**. Das ist die **ganze** Doppel-Post-Sperre: **kein Marker, kein Metafield.** Ein Re-Run trifft zwangsläufig den §8.1-Heal-Zweig und postet nie erneut. Ein 🎉, der bei Abbruch **nach** dem §8.1-Create und **vor/bei** §8.5 verloren geht, ist **bewusst akzeptiert** — er fehlt dann (nicht doppelt) und wird über die Schluss-Statuszeile (§9) im Operations-Topic sichtbar (manueller Nachpost, **kein** Auto-Retry — der Re-Run heilt und schweigt).
+
+**Best-effort — bricht den Store nie.** Ein Fehler **oder** Skip in §8.5 rollt **nichts** zurück und macht den Lauf **nicht** fail-closed. Er annotiert nur die Schluss-Statuszeile (§9). „Store angelegt" bleibt der Ausgang.
+
+**1. Channel auflösen (`registry.md` §1).** City-Name = die in §5.1 gematchte `liftr_city` (`name`). Numerische `chat_id` = **direkter Lookup** in `registry.md` §1 (kein Ableiten, kein Override).
+- **Kein Eintrag für die Stadt** → **Broadcast SKIP**, **kein** fail-closed. Store bleibt erfolgreich; Schluss-Status (§9): „✅ Store angelegt · ℹ️ Broadcast übersprungen (kein Channel für `<Stadt>`)".
+
+**2. Bild = Shopify-CDN-URL, nicht Telegram-`file_id`.** `send_photo(photo=<url>)` mit der **`image.url`** des in §7 angelegten `MediaImage` — nach `fileStatus = READY` via `image { url }` auslesen (die öffentliche `cdn.shopify.com`-URL). Die eingehende Telegram-`file_id` wird **nicht** wiederverwendet: sie ist chat-übergreifend nicht stabil. Der URL-Weg ist im `telegram-operations-mcp` live bestätigt, `send_photo` seit Phase 1 verfügbar.
+
+**3. Caption = 🎉-Template (HTML, selbsttragend — kein Sprung in `telegram.md`).** Der Store *ist* die News → Store **fett** in der Headline, taucht **nicht** zusätzlich in einer Meta-Zeile auf. 🕒-Zeile abgesetzt, dann CTA als Verb-Link:
+
+```
+🎉 <b>Neuer Partner: {store_name}</b>
+{stadtteil} · {adresse}
+
+🕒 {oeffnungszeiten}
+
+<a href="{maps_link}">Google Maps öffnen</a>
+```
+
+- `{store_name}` = `liftr_store.name` (§8.1) · `{stadtteil}` = `district.name` (§5.2) · `{adresse}` = `adress` (§4.3, ein `d`) · `{oeffnungszeiten}` = `opening_hours` (§4.1) lesbar gerendert.
+- `{maps_link}` aus `google_place` (§4.2): `https://www.google.com/maps/search/?api=1&query={name}&query_place_id={place_id}` — in HTML **jedes `&` → `&amp;`**.
+- **CTA:** „Google Maps öffnen" als `<a href>`-**Verb-Link** — kein roher URL, **kein Underline** (native Telegram-Linkfarbe), Leerzeile davor.
+- **Feed-Regeln (inline, wie `telegram.md` §6):** **keine Menge**, **keine Wirkungsangabe**, keine Hashtags, keine „Jetzt"-Urgency. Ton = **lokaler Tipp**, kein Shop-Ton, kein Hard-Sell.
+
+**4. Posten (öffentlicher City-Channel, NICHT das Operations-Topic):**
+
+```
+send_photo(
+  chat_id    = <numerische chat_id aus registry.md §1>,   # City-Channel
+  photo      = <image.url des §7-MediaImage, cdn.shopify.com>,
+  caption    = "<🎉-Caption, HTML>",
+  parse_mode = "HTML"
+)
+```
+
+- **Erfolg** → Schluss-Status (§9): „… · 🎉 Broadcast gepostet".
+- **`send_photo`-Fehler** → Store bleibt erfolgreich; Schluss-Status: „… · ⚠️ Broadcast fehlgeschlagen (Store ist angelegt) — manuell nachposten". **Kein** Rollback, **kein** Auto-Retry.
+
+> **Rest-Verifikationspunkt (Doku, kein Code):** Telegram fetcht die `cdn.shopify.com`-URL server-seitig. Nach dem Cutover einmal an einem realen Store live bestätigen, dass der Staged-Upload-Host bzw. das CDN vom Worker erreichbar ist (analog §7-Egress).
+
 ---
 
 ## 9. fail-closed & Status-Posts ins Operations-Topic
@@ -220,17 +265,19 @@ Ziel jeder Meldung: `chat_id` + `message_thread_id` aus der Injektion (§1) — 
 
 | Ausgang | Status (Beispiel) |
 |---|---|
-| Onboarding erfolgreich | „✅ Store angelegt: **Kratom König** (Mitte, Hannover) — Shopify + Lexware + Provision (Schlegel) + Drive. Metaobjekt `…`." |
-| Re-Run/bereits vorhanden | „ℹ️ Store zu Place-ID `…` existiert bereits — fehlende Teile ergänzt / nichts zu tun." |
-| Fehlendes Pflichtfeld (§1) | „⚠️ Launch abgebrochen: Pflichtfeld `<feld>` fehlt in der Auftrags-Nachricht." |
-| Places-Zug fehlgeschlagen (§3) | „⚠️ Launch abgebrochen: Place Details zu `<place_id>` nicht abrufbar." |
-| Adresse unvollständig (§4.3) | „⚠️ Launch abgebrochen: Straße/Nr oder PLZ fehlt in den Places-Daten." |
-| **City kein Treffer** (§5.1) | „⚠️ Launch abgebrochen: Stadt „<Stadt>" hat keinen `liftr_city`-Eintrag — City zuerst anlegen, dann erneut." |
-| **Bezirk fehlt in Places** (§5.2) | „⚠️ Launch abgebrochen: kein Bezirk in den Places-Daten — bitte Bezirk prüfen." |
-| Vertriebler nicht in Registry (§6) | „⚠️ Launch abgebrochen: Vertriebler „<Name>" nicht in registry.md §4." |
-| Kein `POS-SHEET`-Marker (§6) | „⚠️ Launch abgebrochen: Vertriebler-Kontakt ohne `POS-SHEET`-Notiz — Ziel-Sheet unbekannt." |
-| Bild-Upload fehlgeschlagen (§7) | „⚠️ Launch abgebrochen: Teaser-Bild konnte nicht nach Shopify geladen werden." |
-| Write fehlgeschlagen (§8.x) | „⚠️ Launch abgebrochen nach `<Shopify\|Lexware\|Sheets\|Drive>` — `<konkreter Fehler>`. Re-Run heilt den Rest." |
+| Anlage erfolgreich + Broadcast (§8.5) | „✅ Store angelegt: **Kratom König** (Mitte, Hannover) — Shopify + Lexware + Provision (Schlegel) + Drive. Metaobjekt `…`. · 🎉 Broadcast gepostet." |
+| Anlage erfolgreich, kein Channel (§8.5) | „✅ Store angelegt: **…** — Shopify + Lexware + Provision + Drive. · ℹ️ Broadcast übersprungen (kein Channel für `<Stadt>`)." |
+| Anlage erfolgreich, Broadcast-Fehler (§8.5) | „✅ Store angelegt: **…** — Shopify + Lexware + Provision + Drive. · ⚠️ Broadcast fehlgeschlagen (Store ist angelegt) — manuell nachposten." |
+| Re-Run/bereits vorhanden (Heal-Zweig) | „ℹ️ Store zu Place-ID `…` existiert bereits — fehlende Teile ergänzt / nichts zu tun. **Kein** Broadcast (nur CREATE-Zweig postet)." |
+| Fehlendes Pflichtfeld (§1) | „⚠️ Store-Anlage abgebrochen: Pflichtfeld `<feld>` fehlt in der Auftrags-Nachricht." |
+| Places-Zug fehlgeschlagen (§3) | „⚠️ Store-Anlage abgebrochen: Place Details zu `<place_id>` nicht abrufbar." |
+| Adresse unvollständig (§4.3) | „⚠️ Store-Anlage abgebrochen: Straße/Nr oder PLZ fehlt in den Places-Daten." |
+| **City kein Treffer** (§5.1) | „⚠️ Store-Anlage abgebrochen: Stadt „<Stadt>" hat keinen `liftr_city`-Eintrag — City zuerst anlegen, dann erneut." |
+| **Bezirk fehlt in Places** (§5.2) | „⚠️ Store-Anlage abgebrochen: kein Bezirk in den Places-Daten — bitte Bezirk prüfen." |
+| Vertriebler nicht in Registry (§6) | „⚠️ Store-Anlage abgebrochen: Vertriebler „<Name>" nicht in registry.md §4." |
+| Kein `POS-SHEET`-Marker (§6) | „⚠️ Store-Anlage abgebrochen: Vertriebler-Kontakt ohne `POS-SHEET`-Notiz — Ziel-Sheet unbekannt." |
+| Bild-Upload fehlgeschlagen (§7) | „⚠️ Store-Anlage abgebrochen: Teaser-Bild konnte nicht nach Shopify geladen werden." |
+| Write fehlgeschlagen (§8.x) | „⚠️ Store-Anlage abgebrochen nach `<Shopify\|Lexware\|Sheets\|Drive>` — `<konkreter Fehler>`. Re-Run heilt den Rest." |
 
 ```
 post_message(
@@ -243,11 +290,13 @@ post_message(
 
 Der Agent postet **nichts**, wenn ein Write erfolgreich war, aber ein späterer scheitert, außer der abschließenden ⚠️-Abbruchzeile — **kein** „halb erfolgreich, ignorier den Rest".
 
+Der 🎉-Broadcast (§8.5) ist davon **ausgenommen**: er läuft **nach** allen vier Writes und ist **best-effort** — sein Skip/Fehler ist **kein** Abbruch, sondern nur ein annotierter Zusatz an der Erfolgs-Statuszeile (siehe die drei §8.5-Ausgänge oben).
+
 ---
 
 ## 10. Non-Goals (bewusst außerhalb dieser Kette)
 
-- **Kein öffentlicher City-Post.** Der 🎉-„Neuer Partner"-Post in den City-Channel ist **nicht** Aufgabe dieses Agenten — er hat kein Posting-Recht auf City-Channels (Least-Privilege). Das 🎉-/Channel-Setup-Handwerk bleibt in `telegram.md` (separate Domäne, ggf. manuell/späterer Flow).
+- **Nur der 🎉-Milestone auf City-Channels — kein edit/pin/delete.** Der Agent postet ausschließlich den einmaligen 🎉-„Neuer Partner"-Broadcast (§8.5, `send_photo`) und **nur** im CREATE-Zweig. Er **editiert, pinnt, löscht** oder verwaltet **nichts** auf den City-Channels und postet **keine** anderen Stream-Typen (📦/🌿/🕒 gehören zu `pos-restock` bzw. anderen Flows). Das generische Channel-Setup-/Lifecycle-Handwerk (Pinned, Channel-Launch einer Stadt) bleibt in `telegram.md` (separate Domäne). Least-Privilege: das Posting-Recht auf City-Channels beschränkt sich auf `send_photo`.
 - **Keine City-Anlage.** Der erste Store einer neuen Stadt läuft fail-closed (§5.1) — City-Onboarding (Kanal etc.) ist ein eigener, bewusst menschlicher Schritt.
 - **Kein Produkt-Picking / keine Collection-Ableitung.** `product_list`/`collection_list` kommen fertig injiziert (§1); die Ableitung geschieht upstream (Bridge/Dialog), nicht hier.
 - **Keine USt-ID / Rechtsform.** Bewusst nicht im Flow — manuelle Nachpflege am Lexware-Kontakt.
