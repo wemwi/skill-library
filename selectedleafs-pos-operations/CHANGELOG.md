@@ -2,6 +2,29 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [3.0.0] — `launch.md` → `store.md` (BREAKING)
+
+**BREAKING CHANGE.** Domäne `launch` vollständig zu `store` umbenannt (keine Altlast `launch.md`) und der öffentliche 🎉-Broadcast als Agent-Schritt eingezogen. Major, weil zwei tragende Verträge brechen:
+
+1. **Datei-/Dispatch-Rename:** `references/launch.md` → `references/store.md`; Agent `pos-launch` → `pos-store`. Die Agent-Allowlist (welche reference der Agent laden darf) referenziert den alten Pfad — sie muss beim Cutover mitgezogen werden (Console-Agent-Rename + agent-bridge-Routing sind **nachgelagerte** Schritte, nicht Teil dieser Skill-Phase).
+2. **Invarianten-Umkehr:** Die bisherige `store`-Invariante „**kein** öffentlicher City-Post" (v2.x Non-Goal §10) ist aufgehoben. Der `pos-store`-Agent postet jetzt genau **einen** öffentlichen Post — den 🎉-„Neuer Partner"-Broadcast (§8.5) — und braucht dafür `send_photo`-Recht auf City-Channels (Least-Privilege-Fläche wächst).
+
+**Neu — `store.md` §8.5 (🎉-Broadcast, selbsttragend):**
+- Template **und** Posting-Handwerk inline (kein Sprung in `telegram.md`), Muster wie Restocks 📦/🌿 in `restock.md`.
+- **CREATE-Gating als einzige Doppel-Post-Sperre** — feuert nur, wenn §8.1 den Store neu anlegt; ein Re-Run trifft zwangsläufig den Heal-Zweig und postet nie erneut. **Kein Marker, kein Metafield.** Ein bei Abbruch nach §8.1/vor §8.5 verlorener 🎉 ist bewusst akzeptiert (fehlt, nicht doppelt; über die §9-Statuszeile sichtbar → manueller Nachpost, kein Auto-Retry).
+- **Best-effort:** §8.5 läuft nach dem §8.4-Read-back; ein Skip/Fehler rollt nichts zurück und macht den Lauf nicht fail-closed — er annotiert nur die Erfolgs-Statuszeile.
+- **Bild = `image.url` des §7-`MediaImage` (Shopify-CDN) via `send_photo(photo=url)`** — **nicht** die eingehende Telegram-`file_id` (chat-übergreifend nicht stabil; URL-Weg im `telegram-operations-mcp` live, `send_photo` seit Phase 1).
+- **Channel-Lookup:** numerische `chat_id` aus `registry.md` §1 (City-Name aus §5.1). **Kein Eintrag** → Broadcast-SKIP mit Status-Zeile, **kein** fail-closed (Store bleibt erfolgreich).
+- §9-Status um drei §8.5-Ausgänge erweitert (gepostet / übersprungen / fehlgeschlagen); §10-Non-Goal von „kein öffentlicher Post" auf „nur 🎉-Milestone, kein edit/pin/delete" umgeschrieben. „Keine City-Anlage" bleibt.
+
+**Dispatch/Registry-Folgeänderungen:**
+- `SKILL.md`: Dispatch-Zeile `launch` → `store` (inkl. §8.5-Broadcast + `registry.md` §1-Load); telegram.md-Domäne von „Channel-Setup-/🎉-Post" auf „Channel-Setup-/Lifecycle" umbenannt (der 🎉-Post lebt jetzt in `store.md`); Description + `pos-store`-Trigger.
+- `telegram.md`: §5-🎉-Template + Handwerk entfernt, verweist nur noch auf `store.md` §8.5; „Launch-Domäne" → „Store-Domäne"; **§8 Channel-Launch-Strategie inhaltlich unangetastet** (nur der tote `launch.md`-Datei-Zeiger darin auf `store.md` korrigiert).
+- `registry.md` §4: toter `launch.md` §6-Zeiger → `store.md` §6.
+- `restock.md`: geprüft, unverändert (das dortige „Pinned/Launch" meint `telegram.md` §8, keinen `launch.md`-Zeiger).
+
+**Neu — vier geplante Stub-References** (Status-Header + „fail-closed bei Load", im Dispatch registriert): `city.md`, `salesperson.md`, `rollover.md`, `sync.md`.
+
 ## [1.4.0] — `invoice.md`
 
 - `invoice.md` aus dem Stub migriert: Rechnung-Insert + paid-Update in die Vertriebler-Provisionsliste (Google Sheet), Findung per Registry-Map (`registry.md` §4, neu gefüllt).

@@ -55,7 +55,7 @@ Neue Jahres-Datei anlegen ist **kein** Teil dieser Kette (Non-Goal, §8) — die
 
 ## 4. Match gegen Stores — einziger Guard
 
-**Lexware-`roles.customer.number` (aus §2) in `Stores!B5:B` (native Table „Partner“, Spalte „Kunden-Nr“) vorhanden → schreiben. Nicht vorhanden → skip.** Das ist der **einzige** Guard — der `Status`-Wert der Store-Zeile (`Aktiv`/`Inaktiv`) ist **kein** Kriterium: Lexware ist die Ground Truth für „es gibt ein Geschäft“, ein veralteter Sheet-Status widerspricht dem nicht. Ein Skip deckt sowohl echten Privatverkauf als auch einen in `Stores` noch nicht angelegten Partner ab (Partner-Anlage ist `launch`-Domäne, kein Teil dieser Kette).
+**Lexware-`roles.customer.number` (aus §2) in `Stores!B5:B` (native Table „Partner“, Spalte „Kunden-Nr“) vorhanden → schreiben. Nicht vorhanden → skip.** Das ist der **einzige** Guard — der `Status`-Wert der Store-Zeile (`Aktiv`/`Inaktiv`) ist **kein** Kriterium: Lexware ist die Ground Truth für „es gibt ein Geschäft“, ein veralteter Sheet-Status widerspricht dem nicht. Ein Skip deckt sowohl echten Privatverkauf als auch einen in `Stores` noch nicht angelegten Partner ab (Partner-Anlage ist `store`-Domäne, kein Teil dieser Kette).
 
 Kunden-Nr **numerisch** vergleichen (`roles.customer.number` kommt als String) — die Zielspalte E ist numerisch (§6), ein String-Wert würde später `SUMIFS` in `Stores` silently auf 0 laufen lassen, ohne dass der Fehler in `Umsatz` selbst sichtbar wird.
 
@@ -122,7 +122,7 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 - Keine Anlage neuer Jahres-Dateien (Rollover ist Copy-based, separater/manueller Prozess).
 - Keine Sonderbehandlung von Storno-/Korrektur-Belegen (§5) — läuft naiv als eigene Zeile.
 - Keine Entscheidung über `Stores`-Status (Aktiv/Inaktiv) — reiner Anzeigewert, kein Guard (§4).
-- Kein Anlegen neuer Partner in `Stores` (das ist `launch`-Domäne).
+- Kein Anlegen neuer Partner in `Stores` (das ist `store`-Domäne).
 
 ---
 
