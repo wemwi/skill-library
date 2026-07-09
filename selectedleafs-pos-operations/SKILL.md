@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-operations
 metadata:
-  version: "3.1.0"
+  version: "4.1.0"
 description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Übergabeprotokoll auswerten → Drive ablegen → City-Channel posten), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung POS-Partner), Telegram-Handwerk (Format, Pinned) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root) — plus Store (neuen POS-Partner anlegen + 🎉-Broadcast). Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-store, pos-operations, Übergabeprotokoll, Protokoll-Eingang, Kommissionsware, Kommissionär, Lieferschein parsen, Sorten neu vs aufgefüllt, UL-Nummer; telegram post, City-Channel, restock post, neue sorte post, neuer partner post, pinned post, channel setup, channel launch; Bestandsprotokoll, Provisionsabrechnung POS."
 ---
 
@@ -28,8 +28,9 @@ Die Post-Templates der Restock-Domäne (📦/🌿) liegen **in** `restock.md`, d
 
 ## Universelle Invarianten (für alle Domänen)
 
-Diese drei Grundsätze gelten domänenübergreifend; die Domänen-references konkretisieren sie, widersprechen ihnen aber nie:
+Diese vier Grundsätze gelten domänenübergreifend; die Domänen-references konkretisieren sie, widersprechen ihnen aber nie:
 
 1. **Idempotenz-Grundsatz — jede Einheit genau einmal.** Vor Posten/Ablegen/Schreiben prüfen, ob die Einheit (Protokoll, Beleg, Partner) schon verarbeitet wurde, und bei Treffer abbrechen. Der **Idempotenz-Schlüssel ist deterministisch aus stabiler Quelle** (z. B. Protokollnummer), nie aus volatilem/geratenem Input. Drive/Ziel ist die Quelle der Wahrheit — kein externer State nötig (web-only-tauglich).
 2. **IDs aus Registry oder Webhook — nie raten.** Statische Ziele (Channel, Drive-Root, Operations-Chat) kommen aus `registry.md` bzw. der Agent-Config; lauf-spezifische IDs (`file_id`, per-Lauf `chat_id`) aus der Webhook-Injektion. Ist eine ID nicht eindeutig auflösbar → **nicht öffentlich raten**, sondern still abbrechen + Rückfrage in den Operations-Chat (Mensch-im-Loop-Ersatz).
 3. **Append-only bei kuratierten Listen.** Schreibseitige Mutationen an Sortiments-/Listendaten (`product_list` etc.) **nur anhängen, nie entfernen**, idempotent (kein Doppel-Eintrag, kein Clobbern bestehender Werte). Löschen/Auslisten bleibt manueller Menschen-Job.
+4. **Kein Chip-Spaltentyp auf Spalten, die ein Agent liest oder schreibt.** Eine native Sheets-Table-Spalte mit `columnType` `PLACE_CHIP`, `FILES_CHIP`, `PEOPLE_CHIP` o. ä. liefert über die Values-API einen **leeren Wert** — kein Fehler, kein Hinweis, der Agent liest still Nichts und schreibt still ins Leere. Chips sind ein reines UI-Feature. Jede Spalte, die in einer Agenten-Kette vorkommt (Key, Match-Spalte, Wertespalte), bleibt ein einfacher Typ. Aufgefallen an `Stores!C` (`PLACE_CHIP`); der Duplikat-Check auf `Stores!B` war nie betroffen, jede künftige Logik auf `C` wäre es gewesen.
