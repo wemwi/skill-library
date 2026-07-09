@@ -2,6 +2,28 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [5.0.0](https://github.com/wemwi/selectedleafs-pos-operations) (2026-07-09)
+
+### ⚠ BREAKING CHANGES
+
+* **registry:** Der `POS-PARTNER`-Marker am Store-Kontakt trägt jetzt die **Lexware-Kontakt-UUID** des Vertrieblers statt seines Namens. Bestandsdaten müssen einmalig migriert werden (`update_contact`, `note`). Bis dahin bricht `invoice.md` §2.1 fail-closed am UUID-Format ab.
+* **registry:** `registry.md` §4 ist keine Wert-Tabelle mehr (Ordner-ID + Datei-Präfix entfallen ersatzlos) und dokumentiert nur noch die Marker-Konvention. Ein neuer Vertriebler braucht keinen Skill-Bump.
+* **invoice:** `pos-invoice` löst das Ziel-Sheet nicht mehr per Drive-`list_files` + Namensmatch auf. Der `google-drive`-MCP-Server ist aus der Agent-Config zu entfernen.
+
+### Features
+
+* **invoice:** Ziel-Sheet-Auflösung über zwei `get_contact` (Store → `POS-PARTNER` → Vertriebler → `POS-SHEET`). Kein Drive, kein Namensmatch, kein Registry-Lookup.
+* **invoice:** Neuer Jahres-Guard (§2.3) — das Abrechnungsjahr aus `Allgemein!B:C` (Label `Jahr`) muss zum `voucherDate`-Jahr passen, sonst fail-closed. Fängt den jahresübergreifenden Januar-Backstop und falsch eingetippte `POS-SHEET`-IDs.
+* **store:** §6 Registry-Namensabgleich entfällt; einziger Guard ist die Präsenz des `POS-SHEET`-Markers.
+
+### Bug Fixes
+
+* **invoice:** Behebt die Fehlerklasse „0 Treffer für `<Präfix> <Jahr>`" — das Datei-Präfix in `registry.md` §4 wich zeichenweise vom echten Drive-Dateinamen ab (`Provision Schlegel` vs. `Provision Schlegel, Christian`). Der Namensmatch als Auflösungsmechanismus ist entfallen.
+
+### Documentation
+
+* **registry:** Dokumentiert, dass beide Marker-Präfixe ein Vertrag mit der `agent-bridge` sind (`checkPartnerNote()` prüft `POS-PARTNER:`-Präsenz, `fetchVertriebler()` enumeriert über `POS-SHEET:`-Präsenz). Ein qualifiziertes Präfix wie `POS-SHEET-2026:` würde `includes()` still brechen.
+
 ## [4.1.0] — 🎉-Broadcast läuft über den Broadcast-Bot; §8.3-Spalten spezifiziert; Chip-Invariante
 
 ### Added
