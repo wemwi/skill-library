@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/wemwi/skill-library/compare/v4.0.0...v4.0.1) (2026-07-09)
+
+
+### Bug Fixes
+
+* **pos-operations:** 🎉-Broadcast über telegram-broadcast, §8.3-Spalten spezifiziert ([#114](https://github.com/wemwi/skill-library/issues/114)) ([b2cfe47](https://github.com/wemwi/skill-library/commit/b2cfe4725069aacbecc7fa8d5b0b426e570be608))
+
 ## [4.0.0](https://github.com/wemwi/skill-library/compare/v3.2.0...v4.0.0) (2026-07-08)
 
 
