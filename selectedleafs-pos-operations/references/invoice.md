@@ -28,26 +28,65 @@ Läuft der Agent **ohne** injizierte `resourceId` (monatlicher Scheduled Deploym
 
 ---
 
-## 2. Vertriebler → Ordner → Datei (note-only, kein PDF-Anker)
+## 2. Store-Kontakt → Vertriebler-Kontakt → Ziel-Sheet (Lexware-only)
 
-**Der Vertriebler ist die `note` des Store-Kontakts — die EINE Wahrheitsquelle. Kein PDF-Anker, kein Verzeichnis-Scan, kein Raten.** Ablauf:
+**Lexware ist die EINE Wahrheitsquelle für beide Sprünge.** Kein PDF-Anker, kein Drive-Scan, kein Namensmatch, kein Registry-Lookup. Zwei `get_contact`, fertig.
 
-1. **Ein `get_contact(contactId)` liefert beides: Vertriebler (aus `note`) UND Store-Match-Key (aus `roles.customer.number`).** `contactId` kommt aus `get_voucher` (§1/§3 — der Beleg trägt nur die contactId-UUID, keine Kundennummer). Aus derselben Antwort: `note` trägt den Marker `POS-PARTNER: <Vertriebler>` (`<Vertriebler>` = der getrimmte String **nach** `POS-PARTNER:`); `roles.customer.number` ist die **Lexware-Kundennummer** → der Store-Match-Key gegen `Stores!B5:B` (§4). **note-Guard, zwei Fälle:**
-   - **Kein Marker** in der note → **STILLER Skip**, kein Post (Normalfall Nicht-Partner-Rechnung). Im Event-Pfad filtert die `agent-bridge` diese Belege ohnehin vorab (note-Gate, kein Session-Start); im **Backstop-Poll** (§1b) ist genau dieser Guard der Filter. **Keine Rückfrage** — ohne ihn löste jede normale Kundenrechnung im Backstop eine Rückfrage aus.
-   - **Marker vorhanden, aber `<Vertriebler>` nicht in `registry.md` §4** → **Abbruch + Rückfrage** (§9). Das ist ein echter Konfigurationsfehler (Tippfehler im Marker oder fehlende registry-Zeile), niemals raten.
-   - ⚠️ **Der Store-Match-Key ist `roles.customer.number` (Lexwares eigene Kundennummer) — nicht mehr die JTL-Nummer aus dem PDF.** Sheet und Lexware wurden auf **einen** Nummernraum (Lexware) vereinheitlicht; `Stores!B` trägt jetzt die Lexware-Nummern (Migration abgeschlossen). Die frühere JTL-Kunden-Nr aus `extract_voucher_positions` wird als Match-Quelle **nicht mehr gelesen** (§3) — sie und die Lexware-Nummer überlappen im Wert, ein gemischter Betrieb liefe daher still auf den falschen Kontakt. Weil `note` und `roles.customer.number` auf demselben Kontakt sitzen, genügt **ein** `get_contact` für beide.
-2. **`<Vertriebler>` → `registry.md` §4** → Drive-Ordner-ID + Datei-Präfix. (Der Marker-Name ist der exakte Lookup-Schlüssel; er muss zeichengenau mit der registry-§4-Zeile übereinstimmen.)
-3. Rechnungsjahr aus `voucherDate` des Vouchers (**nicht** aus dem Verarbeitungsdatum — sonst kippt eine Silvester-Verarbeitung ins Folgejahr).
-4. `list_files(folderId = Ordner-ID aus §4)` → exakter Name-Match `"{Datei-Präfix} {Rechnungsjahr}"` (z. B. `Provision Schlegel 2026`).
-5. **Genau 1 Treffer** → dessen `id` ist die Spreadsheet-ID für alle folgenden Schritte. **≠ 1 Treffer** (0 oder mehrere) → Abbruch + Rückfrage (§9), **kein** Fallback auf „neueste Datei“ oder Teilstring-Match. Ein Ordner enthält typischerweise mehrere Jahres-Dateien (z. B. `Provision Schlegel 2025` **und** `2026`) — ein reiner `contains`-Match auf den Präfix ist deshalb mehrdeutig und **nicht zulässig**.
+```
+get_voucher(resourceId) ──► contactId
+        │
+        ├─► get_contact(contactId)        [Store-Kontakt]
+        │      note: POS-PARTNER: <uuid>  ─────┐   Vertriebler-Kontakt-UUID
+        │      roles.customer.number      ─────┼─► Store-Match-Key (§4)
+        │                                      │
+        └─► get_contact(<uuid>)           [Vertriebler-Kontakt]
+               note: POS-SHEET: <id>      ─────┴─► Ziel-Spreadsheet-ID
+               Kontaktname                        (nur für die Status-Zeile, §9)
+```
 
-Neue Jahres-Datei anlegen ist **kein** Teil dieser Kette (Non-Goal, §8) — die Datei muss bereits existieren (Rollover ist Copy-based, manuell/separater Prozess).
+### 2.1 Store-Kontakt lesen (ein Call, zwei Werte)
+
+`contactId` kommt aus `get_voucher` (§1/§3 — der Beleg trägt nur die contactId-UUID, keine Kundennummer). Aus derselben Antwort:
+
+- `note` → Marker `POS-PARTNER: <uuid>` (Konvention → `registry.md` §4). `<uuid>` ist der getrimmte String **nach** dem Doppelpunkt.
+- `roles.customer.number` → **Lexware-Kundennummer** = Store-Match-Key gegen `Stores!B5:B` (§4).
+
+**note-Guard, zwei Fälle:**
+- **Kein Marker** → **STILLER Skip**, kein Post (Normalfall Nicht-Partner-Rechnung). Im Event-Pfad filtert die `agent-bridge` diese Belege ohnehin vorab (note-Gate, kein Session-Start); im **Backstop-Poll** (§1b) ist genau dieser Guard der Filter. **Keine Rückfrage** — ohne ihn löste jede normale Kundenrechnung im Backstop eine Rückfrage aus.
+- **Marker vorhanden, aber Wert ist keine wohlgeformte UUID** → **Abbruch + Rückfrage** (§9). Echter Konfigurationsfehler, niemals raten. Prüfen gegen `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$` (getrimmt, case-insensitiv).
+
+⚠️ **Der Store-Match-Key ist `roles.customer.number` — nicht die JTL-Nummer aus dem PDF.** Beide Nummernräume überlappen im Wert; ein gemischter Betrieb liefe still auf den falschen Kontakt (§3, §4).
+
+### 2.2 Vertriebler-Kontakt lesen (ein Call, Ziel-Sheet + Name)
+
+`get_contact(<uuid>)` auf die UUID aus §2.1:
+
+- `note` → Marker `POS-SHEET: <spreadsheet-id>` → die Ziel-Spreadsheet-ID für **alle** folgenden Schritte.
+- Kontaktname (Firma, sonst `person.firstName person.lastName`) → nur für die Status-Zeile (§9). Er ist **kein** Lookup-Schlüssel mehr; nichts hängt an seiner Schreibweise.
+
+**Guards:**
+- **`get_contact` schlägt fehl** (UUID unauflösbar, Kontakt archiviert/gelöscht) → Abbruch + Rückfrage (§9).
+- **Kein `POS-SHEET`-Marker** auf dem Vertriebler-Kontakt → Abbruch + Rückfrage (§9). Ohne Ziel-Datei kann nichts eingetragen werden.
+- **ID nicht wohlgeformt** (`[A-Za-z0-9_-]{20,}` nach dem Trim) → Abbruch + Rückfrage (§9).
+
+### 2.3 Jahres-Guard — Pflicht, nicht optional
+
+Der `POS-SHEET`-Marker ist **jahresblind**: er zeigt immer auf die aktuelle Datei. Der Beleg aber trägt ein Jahr. Ohne Abgleich liefe der Januar-Backstop (§1b, 35-Tage-Fenster ⇒ Dezember-Belege des Vorjahres) **still** in die neue Jahresdatei — kein Tool-Fehler, keine Abbruchzeile, falsche Summen. Deshalb:
+
+1. Rechnungsjahr = Jahr aus `voucherDate` des Vouchers (**nicht** aus dem Verarbeitungsdatum — sonst kippt eine Silvester-Verarbeitung ins Folgejahr).
+2. `get_range("Allgemein!B:C")` auf der Ziel-Spreadsheet-ID → Zeile mit Label `Jahr` in Spalte B suchen, Wert aus Spalte C nehmen. **Label-basiert, nie `C5` hardcoden** (dieselbe Regel wie bei den Table-Spalten in §6).
+3. **Wert ≠ Rechnungsjahr** → **Abbruch + Rückfrage** (§9), kein Schreiben. **Kein Fallback** auf „dann eben die aktuelle Datei", kein Anlegen einer Jahresdatei.
+4. **Label `Jahr` nicht gefunden** → ebenfalls Abbruch (§9). Ein Sheet ohne Jahres-Anker ist nicht verifizierbar.
+
+Dieser Guard fängt zwei Klassen gleichzeitig: den jahresübergreifenden Backstop-Beleg **und** eine falsch eingetippte ID im `POS-SHEET`-Marker (die zeigt dann fast sicher auf ein Sheet mit anderem Jahr oder ohne Anker).
+
+Neue Jahres-Dateien anlegen und den Marker umsetzen ist **kein** Teil dieser Kette (Non-Goal, §8) — das ist Sache des Rollover-Agenten (→ `rollover.md`).
 
 ---
 
 ## 3. Rechnungsdaten lesen
 
-- `get_voucher(id)` → Netto = `totalGrossAmount − totalTaxAmount` (nur diese eine Subtraktion, der Agent **berechnet nichts selbst**) **und** `contactId` (UUID des Store-Kontakts → das eine `get_contact` in §2, das **sowohl** den Vertriebler-`note` **als auch** die Store-Match-Nummer `roles.customer.number` liefert; der Beleg selbst trägt keine Kundennummer).
+- `get_voucher(id)` → Netto = `totalGrossAmount − totalTaxAmount` (nur diese eine Subtraktion, der Agent **berechnet nichts selbst**) **und** `contactId` (UUID des Store-Kontakts → das erste `get_contact` in §2.1, das **sowohl** den `POS-PARTNER`-Marker **als auch** die Store-Match-Nummer `roles.customer.number` liefert; der Beleg selbst trägt keine Kundennummer).
 - `extract_voucher_positions(id)` → **Menge** (kg) und **Einheiten** (Positionszahl), plus der Checksum-Abgleich Positionssumme vs. `totalGrossAmount` — **bei Checksum-Mismatch: Abbruch + Rückfrage (§9)**, nicht stillschweigend weiterrechnen. Die vom Tool ebenfalls gelieferte **Kunden-Nr** (JTL-Nummer aus dem PDF) wird als Match-Key **nicht mehr gelesen** — der Store-Match läuft über `roles.customer.number` aus §2 (§4). Auch das `partner`-Feld (PDF-Anker „Vertrieb und Betreuung:“) bleibt **ungenutzt** (note-only, §2).
 - `voucherDate` (Serial-kompatibel, §6) und `voucherNumber` (Idempotenz-Key, §5) kommen direkt aus `get_voucher`.
 
@@ -119,7 +158,7 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 ## 8. Non-Goals (bewusst außerhalb dieser Kette)
 
 - Keine Betragsberechnung außer der einen Subtraktion in §3 — Provision/Kosten sind und bleiben Sheet-Formeln.
-- Keine Anlage neuer Jahres-Dateien (Rollover ist Copy-based, separater/manueller Prozess).
+- Keine Anlage neuer Jahres-Dateien und **kein** Umsetzen des `POS-SHEET`-Markers — das ist Sache des Rollover-Agenten (→ `rollover.md`). Diese Kette liest den Marker nur.
 - Keine Sonderbehandlung von Storno-/Korrektur-Belegen (§5) — läuft naiv als eigene Zeile.
 - Keine Entscheidung über `Stores`-Status (Aktiv/Inaktiv) — reiner Anzeigewert, kein Guard (§4).
 - Kein Anlegen neuer Partner in `Stores` (das ist `store`-Domäne).
@@ -134,12 +173,15 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 
 | Ausgang | Status (Beispiel) |
 |---|---|
-| Insert erfolgreich | „✅ RG-10102-1 — Alero Kiosk: Nettoumsatz 369,77 € in Provision Schlegel 2026 eingetragen (Offen).“ |
-| paid-Update | „✅ RG-10076-1: Status → Bezahlt (Provision Schlegel 2026).“ |
+| Insert erfolgreich | „✅ RG-10102-1 — Alero Kiosk: Nettoumsatz 369,77 € bei Christian Schlegel (2026) eingetragen (Offen).“ |
+| paid-Update | „✅ RG-10076-1: Status → Bezahlt (Christian Schlegel, 2026).“ |
 | Kein note-Marker (§2) | kein Post — stiller Skip (Nicht-Partner-Rechnung ist der Normalfall; keine Rückfrage). |
 | Kein Stores-Match (§4) | kein Post — stiller Skip (Privatverkauf ist der Normalfall, keine Rückfrage nötig). |
-| Vertriebler-Marker nicht in Registry (§2) | „⚠️ Vertriebler „<Vertriebler>“ aus dem note-Marker von RG-… nicht in registry.md §4 — Rückfrage nötig.“ |
-| Datei-Findung ≠ 1 Treffer (§2) | „⚠️ RG-…: <0\|N> Treffer für „<Präfix> <Jahr>“ im Ordner — bitte prüfen.“ |
+| `POS-PARTNER`-Wert keine UUID (§2.1) | „⚠️ RG-…: `POS-PARTNER`-Marker am Store-Kontakt ist keine gültige Kontakt-UUID — bitte prüfen.“ |
+| Vertriebler-Kontakt unauflösbar (§2.2) | „⚠️ RG-…: Vertriebler-Kontakt `<uuid>` nicht lesbar — `<konkreter Fehler>`.“ |
+| Kein `POS-SHEET`-Marker (§2.2) | „⚠️ RG-…: Vertriebler-Kontakt „<Name>“ ohne `POS-SHEET`-Notiz — Ziel-Sheet unbekannt.“ |
+| Jahr-Mismatch (§2.3) | „⚠️ RG-… (Beleg {Jahr}): Ziel-Sheet von „<Name>“ trägt Jahr {Sheet-Jahr} — **nichts** eingetragen, bitte manuell nachtragen.“ |
+| Kein `Jahr`-Anker im Sheet (§2.3) | „⚠️ RG-…: Ziel-Sheet ohne Label `Jahr` in `Allgemein!B:C` — nicht verifizierbar.“ |
 | Checksum-Mismatch (§3) | „⚠️ RG-…: Positionssumme ≠ Rechnungsbetrag laut Extraktion — bitte manuell prüfen.“ |
 | Backstop-Lauf abgeschlossen (§1b) | „♻️ Backstop-Lauf: {X} geprüft, {Y} nachgetragen, {Z} Status-Updates.“ — **immer** posten, auch bei 0/0/0. |
 

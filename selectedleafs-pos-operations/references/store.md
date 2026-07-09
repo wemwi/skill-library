@@ -146,12 +146,11 @@ Damit kollabieren `"Linden-Nord"` und `"Linden Nord"` auf denselben Schlüssel. 
 
 **Ein** `get_contact(vertriebler_contact_id)` liefert beides:
 
-1. **Vertrieblername** = der Kontaktname (Firma/Person), der **zeichengenau** einem Eintrag in `registry.md` §4 (Spalte „Vertriebler") entspricht. Dieser Name wird der Wert der `POS-PARTNER`-Notiz auf dem **Store**-Kontakt (§8.2) und ist der Lookup-Schlüssel, den `invoice.md` §2 liest.
-   - **Name nicht in `registry.md` §4** → **fail-closed + Rückfrage** (§9). Echter Konfigurationsfehler (fehlende registry-Zeile / falscher Kontakt), nie raten.
+1. **Vertrieblername** = der Kontaktname (Firma, sonst `person.firstName person.lastName`). Rein **kosmetisch**: er geht in die Status-Zeile (§9) und den 🎉-Broadcast, ist aber **kein** Lookup-Schlüssel. Nichts hängt an seiner Schreibweise. Kein Registry-Abgleich — die `vertriebler_contact_id` kommt bereits aus dem Bridge-Dialog, der Kontakt ist damit gewählt, nicht geraten.
 2. **Ziel-Sheet-Datei-ID** = der getrimmte Wert **nach** dem Notiz-Marker `POS-SHEET:` auf dem Vertriebler-Kontakt (`registry.md` §4 dokumentiert die Konvention). Das ist die Spreadsheet-ID des aktuellen Vertriebler-Sheets für den Stores-Insert (§8.3).
-   - **Kein `POS-SHEET`-Marker** → **fail-closed + Rückfrage** (§9): ohne Ziel-Datei kann die Provisionszeile nicht angelegt werden.
+   - **Kein `POS-SHEET`-Marker** → **fail-closed + Rückfrage** (§9): ohne Ziel-Datei kann die Provisionszeile nicht angelegt werden. Das ist der **einzige** echte Guard dieses Abschnitts.
 
-> Lexware trägt beide Werte auf **einem** Kontakt — der Name (→ `POS-PARTNER` am Store) und die Sheet-ID (→ `POS-SHEET` am Vertriebler). Kein Verzeichnis-Scan, kein `list_files`-Namensmatch: die Datei-ID kommt direkt aus der Notiz. (Wenn `pos-invoice` später ebenfalls auf diesen Lexware-Weg umzieht, teilen beide Domänen denselben Lookup.)
+> **Der Vertriebler-Kontakt ist die Registry.** `POS-SHEET` am Vertriebler ist zugleich das Präsenz-Signal, an dem die `agent-bridge` (`fetchVertriebler()`) alle Vertriebler für die Dialog-Buttons enumeriert — ein neuer Vertriebspartner ist mit gesetzter Notiz sofort sichtbar, ohne Skill-Bump. Die `POS-PARTNER`-Notiz am Store trägt die **Kontakt-UUID** dieses Vertrieblers; `invoice.md` §2 springt darüber zurück auf denselben Kontakt und liest dieselbe Sheet-ID. Beide Domänen teilen damit exakt einen Lookup — kein Verzeichnis-Scan, kein Namensmatch, keine Registry-Tabelle.
 
 ---
 
@@ -224,7 +223,9 @@ Das kollabiert „kein rating" und „rating ohne count" auf denselben Pfad. And
 
 ### 8.2 Lexware Store-Kontakt + `POS-PARTNER`-Notiz
 
-**find:** Store-Kontakt anhand Name + `postal_code` suchen (`list_contacts`/Suche). **Treffer** (Name + PLZ) → bestehenden Kontakt wiederverwenden (Heal); sicherstellen, dass die Notiz `POS-PARTNER: <Vertriebler>` gesetzt ist (sonst `update_contact`, `note` als **einziges** geändertes Feld, volles Objekt + `version` mitsenden). **Kein Treffer** → `create_contact` (Rolle `customer`) mit Adresse aus §4.3/Places und `note` = `POS-PARTNER: <Vertriebler>` (§6, zeichengenau).
+**find:** Store-Kontakt anhand Name + `postal_code` suchen (`list_contacts`/Suche). **Treffer** (Name + PLZ) → bestehenden Kontakt wiederverwenden (Heal); sicherstellen, dass die Notiz `POS-PARTNER: <vertriebler_contact_id>` gesetzt ist (sonst `update_contact`, `note` als **einziges** geändertes Feld, volles Objekt + `version` mitsenden). **Kein Treffer** → `create_contact` (Rolle `customer`) mit Adresse aus §4.3/Places und `note` = `POS-PARTNER: <vertriebler_contact_id>` (§6).
+
+⚠️ Der Marker-Wert ist die **Kontakt-UUID** des Vertrieblers, **nicht** sein Name. Format exakt `POS-PARTNER: <uuid>` — das Präfix inkl. Doppelpunkt ist ein Vertrag mit dem note-Gate der `agent-bridge` (`registry.md` §4).
 
 **Warum die Notiz tragend ist:** Sie ist die **eine** Wahrheitsquelle für „ist POS-Partner" (agent-bridge note-Gate) **und** für den Vertriebler (`invoice.md` §2). Das Design hat **keinen** Fallback — ein Store-Kontakt ohne Marker fällt still durch (kein Event, keine Provision, kein Fehler). Der Marker gehört in **denselben** atomaren Anlage-Schritt wie der Kontakt; schlägt `create_contact`/`update_contact` fehl → fail-closed (§9), **nicht** ohne Marker weiterlaufen.
 
@@ -339,7 +340,6 @@ Ziel jeder Meldung: `chat_id` + `message_thread_id` aus der Injektion (§1) — 
 | Adresse unvollständig (§4.3) | „⚠️ Store-Anlage abgebrochen: Straße/Nr oder PLZ fehlt in den Places-Daten." |
 | **City kein Treffer** (§5.1) | „⚠️ Store-Anlage abgebrochen: Stadt „<Stadt>" hat keinen `liftr_city`-Eintrag — City zuerst anlegen, dann erneut." |
 | **District-Create fehlgeschlagen** (§8.1.0) | „⚠️ Store-Anlage abgebrochen: Bezirk „<Name>" konnte nicht angelegt werden — `<konkreter Fehler>`. **Kein** Store-Write erfolgt." |
-| Vertriebler nicht in Registry (§6) | „⚠️ Store-Anlage abgebrochen: Vertriebler „<Name>" nicht in registry.md §4." |
 | Kein `POS-SHEET`-Marker (§6) | „⚠️ Store-Anlage abgebrochen: Vertriebler-Kontakt ohne `POS-SHEET`-Notiz — Ziel-Sheet unbekannt." |
 | Bild-Upload fehlgeschlagen (§7) | „⚠️ Store-Anlage abgebrochen: Teaser-Bild konnte nicht nach Shopify geladen werden." |
 | Write fehlgeschlagen (§8.x) | „⚠️ Store-Anlage abgebrochen nach `<Shopify\|Lexware\|Sheets\|Drive>` — `<konkreter Fehler>`. Re-Run heilt den Rest." |

@@ -31,7 +31,7 @@ Pfad-Template je Ablage-Domäne (Logik in `restock.md` §6): `<Domänen-Wurzel>/
 |---------------|-------------------------|
 | Restock (Übergabeprotokolle) | `1PL9_bKYMCLN6EH8qy1L_WsaE3p_7vC0g` |
 | Inventory (Bestandsprotokolle) | `1YbYciT2C2NuqsZrX6ghZnOxxHag9hXwW` |
-| Invoice (Provisionsabrechnung) | `1u2e9sd5sXL7wuesl0VeyIiHkKL3UpFvf` |
+| Invoice (Provisionsabrechnung) | `1u2e9sd5sXL7wuesl0VeyIiHkKL3UpFvf` — nur Ablageort der Vertriebler-Sheets; **kein Agent liest diesen Ordner.** `pos-invoice` löst seine Ziel-Datei über den `POS-SHEET`-Marker auf (§4) und hat kein Drive-Tool. |
 
 Pfad-Segmente: `{city.name}` / `{postal_code} {store.name}` (Klartext aus `liftr_store`-Metaobjekt, keine Slugifizierung). Die jeweilige Wurzel-Folder-ID wird build-time in die Agent-Config gesetzt (`restock.md` §6 hardcodet sie bewusst nicht); dieses Verzeichnis ist die **Quelle** dafür.
 
@@ -51,22 +51,25 @@ Hinweis: Dies ist der **interne Operations-Chat**, nicht ein öffentlicher City-
 
 ---
 
-## 4. Sheets (Provisions-/Abrechnungs-Domäne)
+## 4. POS-Marker in Lexware (Vertriebler & Ziel-Sheet)
 
-Der Drive-Ordner **Provisionsabrechnung** liegt in §2 (Invoice-Wurzel). Pro Vertriebler steht hier **nur** sein Unterordner + Datei-Präfix — **keine** Spreadsheet-IDs. Grund: Rollover ist Copy-based (jedes Jahr eine neue Datei `{Präfix} {Jahr}`), eine zentrale ID-Liste würde bei jedem Jahreswechsel von Hand nachgepflegt werden müssen. `invoice.md` §2 löst die aktuelle Spreadsheet-ID stattdessen **pro Lauf** über `list_files` + exakten Namens-Match auf — das hier ist die einzige Registry-Pflicht.
+**Dies ist kein Wert-Verzeichnis, sondern eine Konvention.** Die Wahrheit steht auf den Lexware-Kontakten, nicht hier. Ein neuer Vertriebler braucht **keinen** Skill-Bump und keine Zeile in dieser Datei — er wird angelegt, bekommt seine `POS-SHEET`-Notiz, und ist damit für alle POS-Agenten und die `agent-bridge` sichtbar.
 
-| Vertriebler | Ordner-`parentFolderId` | Datei-Präfix |
-|---|---|---|
-| Christian Schlegel | `1OwQH8AMQYKZtM8KYrLlBjVXF_Y8A1Xbo` | `Provision Schlegel` |
+| Marker | Sitzt auf | Wert | Wer liest |
+|---|---|---|---|
+| `POS-PARTNER: <uuid>` | **Store**-Kontakt | Lexware-**Kontakt-UUID** des zuständigen Vertrieblers | `invoice.md` §2 (Wert) · `agent-bridge` (**nur Präsenz**, note-Gate) |
+| `POS-SHEET: <id>` | **Vertriebler**-Kontakt | Spreadsheet-ID des **aktuellen** Provisions-Sheets | `store.md` §6 · `invoice.md` §2 (Wert) · `agent-bridge` (**nur Präsenz**, Vertriebler-Enumeration) |
 
-Neuer Vertriebler = neue Zeile hier + Skill-Version-Bump — **kein** Agent-Config-Rebuild (`invoice.md` liest ausschließlich aus dieser Tabelle, kein Vertriebler-Name im Prompt/Config hardcodiert).
+**Format (zwingend, beide Marker):** Präfix inkl. Doppelpunkt, dann genau ein Leerzeichen, dann der Wert. Der Wert ist der getrimmte String nach dem Doppelpunkt.
 
-**note-Marker-Konvention (Single Source für den Namen).** Derselbe Vertrieblername in Spalte 1 ist zugleich der Wert im `note`-Marker des Lexware-Store-Kontakts: `POS-PARTNER: <Vertriebler>` (gesetzt bei der Store-Anlage, gelesen in `invoice.md` §2). Der Name muss **zeichengenau** zwischen note-Marker und dieser Zeile übereinstimmen — er ist der Lookup-Schlüssel, ein Tippfehler führt zur §9-Rückfrage. ℹ️ Der Vertriebler-Name sitzt auf dem Kontakt-`note`; die **Store-Match-Nummer** ist `roles.customer.number` desselben Kontakts (Lexware-Kundennummer). Sheet (`Stores!B`) und Lexware wurden auf **einen** Nummernraum (Lexware) vereinheitlicht — die frühere JTL-Nummer aus PDF/Sheet ist **nicht mehr** die Match-Quelle (`invoice.md` §4). Beide Werte — Vertriebler und Match-Nummer — kommen aus **einem** `get_contact`.
+**Die Brücke koppelt an die Präsenz des Präfixes, nicht an den Wert.**
+- `checkPartnerNote()` entscheidet per `note.includes("POS-PARTNER:")`, ob überhaupt eine Session startet. Der Wert dahinter ist ihr egal — deshalb konnte er ohne Bridge-Deploy von Name auf UUID wechseln.
+- `fetchVertriebler()` paginiert **alle** Kontakte und nimmt jeden mit `note.includes("POS-SHEET:")` als Vertriebler-Button in den Onboarding-Dialog auf (`id` = Kontakt-UUID, Label = Kontaktname).
 
-**`POS-SHEET`-Marker (Ziel-Sheet des Vertrieblers).** Auf dem **Vertriebler**-Kontakt in Lexware trägt eine zweite Notiz die aktuelle Spreadsheet-Datei-ID:
+⚠️ **Beide Präfixe sind damit ein Vertrag mit der `agent-bridge`.** Wer sie umbenennt oder qualifiziert (`POS-SHEET-2026:` o. ä.), bricht `includes()` still: `fetchVertriebler()` liefert eine leere Liste, der Onboarding-Dialog meldet „keine Vertriebler auflösbar", `pos-store` startet nicht mehr. Marker-Format ändern = Bridge-Deploy, nie einseitig.
 
-```
-POS-SHEET: <spreadsheet-datei-id>
-```
+**Kein Jahresbezug im Marker.** `POS-SHEET` zeigt immer auf die *aktuelle* Datei; beim Jahres-Rollover wird der Wert umgesetzt (künftig durch einen Rollover-Agent, → `rollover.md`). Weil der Marker damit jahresblind ist, verifiziert `invoice.md` §2 das Jahr **im Sheet selbst** gegen `voucherDate` — ohne diesen Guard liefe ein Januar-Backstop mit Dezember-Belegen still in die falsche Datei.
 
-`store.md` §6 liest daraus direkt die Ziel-Datei-ID für den Provisions-Insert (`Stores`-Zeile) — **kein** `list_files`+Namensmatch. Lexware ist damit die eine Wahrheitsquelle für **beide** Store-Anlage-Lookups: Vertrieblername (→ `POS-PARTNER` am Store) und Sheet-Datei-ID (→ `POS-SHEET` am Vertriebler). Der Marker ist ein manueller Pflicht-Eintrag am Vertriebler-Kontakt (für Christian Schlegel bereits gesetzt); bei Jahres-Rollover wird der Wert auf die neue Datei umgesetzt. Die Ordner-/Präfix-Spalten oben bleiben für `invoice.md` §2 (dessen `list_files`-Weg) gültig, bis `pos-invoice` ebenfalls auf den `POS-SHEET`-Weg umzieht.
+**Ziel-Sheet — Stammdaten-Anker.** Jedes Provisions-Sheet trägt im Tab `Allgemein` eine Label/Wert-Spalte; die Zeile mit Label `Jahr` (Spalte B) hält das Abrechnungsjahr (Spalte C). Label-basiert lesen, **nie** `C5` hardcoden.
+
+**Store-Match-Nummer.** `roles.customer.number` desselben Store-Kontakts (Lexware-Kundennummer) ist der Match-Key gegen `Stores!B` (`invoice.md` §4). Sheet und Lexware sind auf **einen** Nummernraum vereinheitlicht — die frühere JTL-Nummer aus PDF/Sheet ist **nicht mehr** die Match-Quelle. `POS-PARTNER` und `roles.customer.number` sitzen auf demselben Kontakt: **ein** `get_contact` liefert beide.
