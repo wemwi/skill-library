@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.0](https://github.com/wemwi/skill-library/compare/v4.0.1...v5.0.0) (2026-07-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* Der POS-PARTNER-Marker am Store-Kontakt trägt jetzt die Vertriebler-Kontakt-UUID statt des Namens; registry.md §4 ist keine Wert-Tabelle mehr (Ordner-ID + Datei-Präfix entfallen ersatzlos), sondern nur noch die Marker-Konvention; der google-drive-MCP-Server ist aus der pos-invoice-Agent-Config zu entfernen.
+
+### Features
+
+* resolve invoice target sheet via Lexware POS-SHEET marker ([#116](https://github.com/wemwi/skill-library/issues/116)) ([44d507c](https://github.com/wemwi/skill-library/commit/44d507cfd5db5f27a79353e05f77b3a07285a6ad))
+
 ## [4.0.1](https://github.com/wemwi/skill-library/compare/v4.0.0...v4.0.1) (2026-07-09)
 
 
