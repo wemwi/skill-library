@@ -35,14 +35,20 @@ Drei Invarianten, die den ganzen Lauf tragen (Konkretisierung von `SKILL.md` §I
 
 ## 3. Places Place Details ziehen (Vorbedingung)
 
-**Places API (New) — Place Details** mit `place_id` und einer **FieldMask** (nur diese Felder, kein `*` — Kosten/Datensparsamkeit):
+**Places API (New) — Place Details** per **direktem HTTPS-`GET` aus der Sandbox** (kein MCP-Tool — Places ist eine öffentliche, key-authentifizierte API; ein eigener MCP-Worker wäre Overhead ohne Sicherheitsgewinn). Der Aufruf trägt `place_id` im Pfad und eine **FieldMask** im Header (nur diese Felder, kein `*` — Kosten/Datensparsamkeit):
 
-```
-displayName, addressComponents, location, regularOpeningHours,
-rating, userRatingCount, nationalPhoneNumber, timeZone
+```bash
+curl -sS -f "https://places.googleapis.com/v1/places/${PLACE_ID}" \
+  -H "X-Goog-Api-Key: ${GOOGLE_PLACES_API_KEY}" \
+  -H "X-Goog-FieldMask: displayName,addressComponents,location,regularOpeningHours,rating,userRatingCount,nationalPhoneNumber,timeZone"
 ```
 
-Scheitert der Zug (kein Treffer, API-Fehler) → fail-closed (§9). Aus dem Ergebnis werden §4/§5 gespeist. `timeZone` trägt die Über-Mitternacht-Logik der Öffnungszeiten (§4.1); es wird **nicht** ins Metaobjekt geschrieben.
+- **FieldMask ohne Leerzeichen** — Google lehnt Leerzeichen in der Feldliste ab.
+- **Kein FieldMask = Fehler.** Es gibt keine Default-Feldliste; der Header ist Pflicht.
+- **`${GOOGLE_PLACES_API_KEY}` kommt aus dem Vault** (Anmeldedaten-Tresor des Agenten, Typ Umgebungsvariable). Der Wert wird **nie** geloggt, nie in eine Statusmeldung (§9) geschrieben und nie in ein anderes Ziel gesendet: die Zugangsdaten sind auf den Host `places.googleapis.com` und den Injektionsort **Request-Header** beschränkt. Der Variablenname ist Konfiguration und darf im Code stehen — der **Wert** gehört auf keine Skill-/Prompt-/Message-Ebene (`global-agent-framework` §6).
+- **Egress:** `places.googleapis.com` ist über die Host-Bindung der Zugangsdaten freigegeben. Fehlt sie, schlägt der `curl` als Netzwerkfehler fehl → fail-closed (§9), **nicht** auf einen anderen Weg ausweichen (`global-agent-framework` §13).
+
+Antwort ist ein `Place`-JSON; die `place_id` steht darin als `id`, der Name als `displayName.text`. Scheitert der Zug (kein Treffer, HTTP ≠ 2xx, leere Antwort) → fail-closed (§9). Aus dem Ergebnis werden §4/§5 gespeist. `timeZone` trägt die Über-Mitternacht-Logik der Öffnungszeiten (§4.1); es wird **nicht** ins Metaobjekt geschrieben.
 
 ---
 

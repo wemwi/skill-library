@@ -2,6 +2,18 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [3.1.0] — `store.md` §3: Places-Zug konkretisiert
+
+Der `pos-store`-Agent brach an §3 fail-closed ab („Place Details nicht abrufbar"): §3 beschrieb die Places-API semantisch (Endpoint-Felder, FieldMask), aber nicht den **Aufruf** — der Agent kannte weder Transportweg noch Credential-Namen. Kein Bug im Flow (das fail-closed war korrekt), sondern eine Lücke im Skill.
+
+**Neu in §3:**
+- **Konkreter Aufruf** als `curl`-`GET` gegen `https://places.googleapis.com/v1/places/{place_id}` — direkter Sandbox-Call, **kein** MCP-Tool (Places ist eine öffentliche, key-authentifizierte API; ein `google-places-mcp` wäre Overhead ohne Sicherheitsgewinn — bewusst verworfen).
+- **Credential-Kontrakt:** Key als `${GOOGLE_PLACES_API_KEY}` aus dem Vault (Typ Umgebungsvariable), Zugangsdaten host-gebunden an `places.googleapis.com` + Injektionsort Request-Header. Variablenname = Konfiguration (darf im Skill stehen), Wert = Secret (nie in Skill/Prompt/Message/Status).
+- **Zwei Google-Fallen dokumentiert:** FieldMask ist Pflicht (keine Default-Feldliste) und darf **keine Leerzeichen** enthalten.
+- **Egress-Regel:** Host-Freigabe hängt an den Zugangsdaten; fehlt sie → Netzwerkfehler → fail-closed, **kein** Ausweichen auf andere Wege (`global-agent-framework` §13).
+
+Minor, nicht Major: kein Vertrag bricht — §4/§5 lesen dieselben Felder aus derselben Antwort. Nur der Weg dorthin ist jetzt ausgeschrieben.
+
 ## [3.0.0] — `launch.md` → `store.md` (BREAKING)
 
 **BREAKING CHANGE.** Domäne `launch` vollständig zu `store` umbenannt (keine Altlast `launch.md`) und der öffentliche 🎉-Broadcast als Agent-Schritt eingezogen. Major, weil zwei tragende Verträge brechen:
