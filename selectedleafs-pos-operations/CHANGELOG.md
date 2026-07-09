@@ -2,6 +2,60 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [4.1.0] — 🎉-Broadcast läuft über den Broadcast-Bot; §8.3-Spalten spezifiziert; Chip-Invariante
+
+### Added
+
+- **Universelle Invariante 4 (SKILL.md): kein Chip-Spaltentyp auf Agent-Spalten.** Eine native Sheets-Table-Spalte mit `columnType: PLACE_CHIP` (oder `FILES_CHIP`, `PEOPLE_CHIP`, …) liefert über die Values-API einen **leeren Wert** — ohne Fehler. `Stores!C` („Name") trug genau diesen Typ: ein Read hätte den Storenamen nie gesehen, still. Der Duplikat-Check auf `Stores!B` war nie betroffen, jede künftige Logik auf `C` wäre es gewesen. Der Typ ist inzwischen aus allen drei Provisions-Sheets entfernt; die Invariante hält ihn draußen.
+
+### Fixed
+
+- **§8.5 postete über den falschen Bot.** `telegram-operations-mcp` und `telegram-broadcast-mcp` sind zwei Bots mit zwei Tokens: der Operations-Bot sitzt in der Operations-Gruppe, der Broadcast-Bot in den City-Channels. Ein `send_photo` über `telegram-operations` an einen City-Channel scheitert mit `400 chat not found` (verifiziert an `-1004399731658` und am Live-Channel Hannover `-1003904362997`). Der 🎉-Broadcast läuft jetzt explizit über `telegram-broadcast`; der unbelegte Satz „Der URL-Weg ist im `telegram-operations-mcp` live bestätigt" ist entfernt. §9 (Status-Post ins Operations-Topic) bleibt unverändert bei `telegram-operations`.
+- **§8.5 Öffnungszeiten-Template zerriss im Client.** `{oeffnungszeiten}` war als „lesbar gerendert" unspezifiziert; der Agent verkettete die Tage mit `·`, Telegram brach die Caption-Zeile weich um und der letzte Tagesbereich zerfiel. Neues Template: eigener 🕒-Block, ein Tagesbereich pro Zeile, harte Umbrüche, `durchgehend`/`geschlossen` als Sonderfälle. Der Rest von §8.5 (Shopify-CDN-URL als `photo`, HTML-Caption, `&` → `&amp;`, CTA als Verb-Link) ist im Live-Post bestätigt und unverändert.
+- **§8.3 spezifizierte die Provisionszeile unvollständig.** Der Skill verlangte eine Spalte `Status = Aktiv`, die es in der Table „Partner" nicht gibt; die real existierenden Spalten `Akquise`, `Übergabeprotokolle` und `Bestandsprotokolle` kamen gar nicht vor — der Agent hat sie geraten (im Lauf zufällig korrekt, aber ungedeckt). §8.3 führt jetzt die vollständige Spaltentabelle: `Lexware ID` (Zahl), `Name`, `Akquise` (`TT.MM.JJJJ`), `Übergabeprotokolle`/`Bestandsprotokolle` (`{postal_code} {store.name}`, identisch zum Drive-Ordner aus §8.4); Formelspalten bleiben unbeschrieben. `Status = Aktiv` gestrichen.
+
+## [4.0.1] — `store.md` §8.1: Publish-Block raus, `rating`-Skala an die Definition angeglichen
+
+### Fixed
+
+- **§8.1 Publish-Block ersatzlos entfernt.** `store.md` verlangte `capabilities: { publishable: { status: ACTIVE } }` im `metaobjectCreate`. Die `liftr_store`-Definition hat `publishable.enabled = false` (ebenso `renderable`, `onlineStore`; `access.storefront = NONE`) — der `metaobjectCreate` scheiterte am ersten Write. Das Theme liest per Liquid, nicht über die Storefront-API; ein Publish-State ist funktionslos. Shopify-Definition bleibt unangetastet.
+- **§8.1 `rating`-Skala korrigiert.** Die Feld-Tabelle schrieb `scale_min: "0"` / `scale_max: "5"`; die Definition erzwingt `1.0` / `5.0`. Shopify validiert den Rating-Wert gegen die Definition — der erste Store *mit* Google-Bewertung wäre am Write gescheitert. Die §8.1.1-Regel (`rating` nur bei `userRatingCount >= 1`) ist unverändert und schließt den Wert `0` ohnehin aus.
+
+### Changed
+
+- **§8.1.1 Build-Time-Verifikation als erledigt dokumentiert.** `rating`, `testimonial_list`, `product_list` und `collection_list` waren in der `liftr_store`-Definition `required: true`. Ein `required: true`-Listenfeld weist die **leere Liste** ab (`OBJECT_FIELD_REQUIRED`). Alle vier sind jetzt `required: false` — sie beschreiben, was ein Store *erwirbt*, nicht was ihn *konstituiert*. `§1` bleibt damit gültig („leere Liste zulässig"). Die Regel „niemals ersatzweise Werte erfinden" bleibt bindend.
+
+## [4.0.0] — `store.md`: `district` wird Bridge-Vertrag; `rating`- und Write-Ordering-Defekte geschlossen
+
+### ⚠️ BREAKING CHANGE — Input-Kontrakt (§1)
+
+`district` ist **neues Pflichtfeld** der Bridge-Injektion. Eine `user.message` ohne `district` läuft fail-closed vor jedem Read. Die `agent-bridge` muss das Feld liefern, bevor dieser Skill-Stand produktiv geht.
+
+### Warum
+
+Der `pos-store`-Agent brach an §5.2 fail-closed ab: die Annahme „Places kennt den Bezirk" trug nicht. Der Weg zu einer eigenen Quelle im Agenten ist an zwei unabhängigen, verifizierten Wänden gescheitert:
+
+- `nominatim.openstreetmap.org` authentifiziert über die **IP** und limitiert pro IP. Die Agent-Sandbox nutzt einen geteilten Datacenter-Egress → HTTP 429 beim **ersten** Request (`sesn_01ANYcDhXVzH3JTjS3GFBoR5`, 3 Versuche). Ein Cloudflare-Worker-Proxy hilft nicht, sein Egress ist ebenso geteilt.
+- Keybasierte Anbieter (LocationIQ u.a.) authentifizieren über einen **Query-String-Parameter**. Der Anthropic-Vault injiziert Secrets nur in **Request-Header** oder **Request-Body**; ein GET hat keinen Body. Der Platzhalter läuft unsubstituiert durch → HTTP 401 „Invalid key" (`sesn_017ozNT6pzonYi74FdY3N47b`).
+
+Der Geocoder-Zug gehört damit in die `agent-bridge` (Worker-Secret, kein Egress-Proxy). Sie prüft dort die drei Guards (`country_code == "de"`, Geocoder-`city` ≡ Places-`locality`, Stadtteil vorhanden) und liefert **nur den Namen**. Anlegen kann sie nicht — ihr Shopify-Grant ist `read_products`, read-only.
+
+### Geändert
+
+- **§1:** `district` = Pflichtfeld (Stadtteil-Klartext). Der Agent ergänzt, korrigiert und errät hier nichts.
+- **§5.2:** Nur noch Auflösung des injizierten Namens auf eine GID. Normalisierter, city-scoped Match (NFC → casefold → `-`/`–`/Whitespace → ein Leerzeichen → trim). Ohne diese Regel legt ein Bindestrich-Unterschied einen Zwilling an — der Bestand hatte genau diesen Fall (`Linden Nord` vs. `Linden-Nord`). Kein Treffer → GID `null`.
+- **§2 + neuer §8.1.0: Der District-Create ist ein WRITE, keine Vorbedingung.** Das `metaobjectCreate` sitzt jetzt unmittelbar vor dem Store-Create, also **nach** §7. Vorher hätte ein Fehler in §6/§7 einen **verwaisten Bezirk** hinterlassen — ein Metaobjekt ohne Store, das kein Re-Run aufräumt und im Store-Finder als leerer Filter auftaucht. In `sesn_01RSatdZDM95ot7ith69werZ` ist das nur durch Zufall ausgeblieben.
+- **§4.3: `sublocality`/`sublocality_level_1`/`neighborhood` aus Places werden IGNORIERT.** Places liefert die Komponente für DE **inkonsistent** und in **falscher Granularität**: verifiziert an Franz-Nause-Straße 1-3, 30453 Hannover → `sublocality_level_1: "Linden-Limmer"` = Stadt**bezirk**, während `liftr_district` Stadt**teile** führt. Gegengeprüft an Weckenstraße 20 (`suburb: "Linden-Nord"` vs. `city_district: "Linden-Limmer"`). Abbestellen geht nicht — `addressComponents` ist ein einzelnes FieldMask-Feld, §4.3 braucht `route`/`street_number`/`postal_code`. Die Regel ist eine Lese-, keine Anfrage-Regel.
+- **§3: `formattedAddress` in die FieldMask ergänzt.** §4.2 braucht das Feld für das `google_place`-JSON, §3 forderte es nicht an — der Agent zog Places pro Lauf ein **zweites Mal** (verifiziert).
+- **§8.1.1: dritter `rating`-Zustand geregelt.** Places serialisiert Protobuf-JSON und lässt Default-Werte weg — `userRatingCount = 0` fehlt schlicht. Beobachtet wurde `rating: 5` ohne Count. Neue Regel: `rating` **nur** schreiben, wenn `rating` **und** `userRatingCount ≥ 1` vorliegen. Verhindert eine 5-Sterne-Wertung mit null Bewertungen im Store-Finder — wohlgeformt, von keinem fail-closed fangbar, still falsch.
+- **§9:** Erfolgszeile nennt den Bezirk explizit (einziger Detektor für Grenzlagen-Fehler des Geocoders). Neue Abbruchzeile für §8.1.0.
+- **§10 Non-Goals:** keine Bezirks-Ermittlung im Agenten; kein Bezirk aus der PLZ (n:m, keine Funktion — `30167` überspannt Nordstadt und Calenberger Neustadt); kein Bezirk aus Google `addressDescriptor` (außerhalb Indiens pre-GA, `areas` ist ML-geschätztes Containment, Zusatzgebühren).
+
+### Deploy-Voraussetzungen
+
+1. `agent-bridge` liefert `district` in der `user.message` **und** postet bei eigenem Abbruch (Geocoder nicht erreichbar, kein Stadtteil) eine fail-closed-Meldung ins Operations-Topic — sonst endet der Dialog still, weil die Session gar nicht erst startet.
+2. `allowed_hosts` des Agent-Environments: `places.googleapis.com`, `shopify-staged-uploads.storage.googleapis.com`. Kein Wildcard, kein Geocoder-Host mehr. Ein `LOCATIONIQ_API_KEY` im Agent-Vault wird **nicht** benötigt.
+
 ## [3.1.0] — `store.md` §3: Places-Zug konkretisiert
 
 Der `pos-store`-Agent brach an §3 fail-closed ab („Place Details nicht abrufbar"): §3 beschrieb die Places-API semantisch (Endpoint-Felder, FieldMask), aber nicht den **Aufruf** — der Agent kannte weder Transportweg noch Credential-Namen. Kein Bug im Flow (das fail-closed war korrekt), sondern eine Lücke im Skill.
