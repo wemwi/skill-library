@@ -230,7 +230,7 @@ Der Bezirksname kommt **fertig injiziert** aus §1 (`district`). Der Agent ermit
 
 > **Warum der Agent hier nicht geocodiert.** Die Bezirks-Ermittlung braucht einen Reverse-Geocoder auf OSM-Daten. Alle brauchbaren Anbieter authentifizieren über einen **Query-String-Parameter**; der Anthropic-Vault kann Secrets nur in **Request-Header** oder **Request-Body** injizieren (ein GET hat keinen Body). Ein Agent kann einen solchen Dienst deshalb strukturell nicht aufrufen — der Platzhalter läuft unsubstituiert durch und der Dienst antwortet `401`. Die keylose Alternative (`nominatim.openstreetmap.org`) authentifiziert über die IP und weist den geteilten Datacenter-Egress der Sandbox beim ersten Request mit `429` ab. Beides verifiziert (`sesn_01ANYcDhXVzH3JTjS3GFBoR5`, `sesn_017ozNT6pzonYi74FdY3N47b`).
 >
-> Der Geocoder-Aufruf gehört deshalb in die `agent-bridge` (Cloudflare Worker, Worker-Secret, kein Egress-Proxy). Sie führt den Zug aus, prüft die Guards und liefert **nur den Namen**. Sie kann den `liftr_district` **nicht anlegen** — ihr Shopify-Grant ist `read_products`, read-only. Das Anlegen bleibt beim Agenten (§8.1.0).
+> Der Geocoder-Aufruf gehört deshalb in die `agent-bridge` (Cloudflare Worker, Worker-Secret, kein Egress-Proxy). Sie führt den Zug aus, prüft die Guards und liefert **nur den Namen**. Sie kann den `liftr_district` **nicht anlegen** — ihr Shopify-Grant umfasst ausschließlich Lese-Scopes (`read_metaobject_definitions`, `read_metaobjects`, `read_products`). Das Anlegen bleibt beim Agenten (§8.1.0).
 
 **Places ist hier keine Quelle** — auch nicht hilfsweise. Die `sublocality`-Komponente aus §3 wird nicht gelesen (§4.3). Es gibt genau eine Quelle: das injizierte Feld.
 
