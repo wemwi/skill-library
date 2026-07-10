@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/wemwi/skill-library/compare/v5.1.0...v5.1.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* **pos-operations:** Dialog-Pflicht-vs-Kontrakt-Pflicht-Abgrenzung für assortment_list in store.md ausformuliert ([#120](https://github.com/wemwi/skill-library/issues/120)) ([ddd77f1](https://github.com/wemwi/skill-library/commit/ddd77f173146ee332afe70c95c4c66a9bee0e3a3))
+
 ## [5.1.0](https://github.com/wemwi/skill-library/compare/v5.0.0...v5.1.0) (2026-07-10)
 
 
