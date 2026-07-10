@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.0](https://github.com/wemwi/skill-library/compare/v5.0.0...v5.1.0) (2026-07-10)
+
+
+### Features
+
+* **pos-operations:** Feld-Kontrakt für liftr_store in store.md festschreiben ([#118](https://github.com/wemwi/skill-library/issues/118)) ([7e897a0](https://github.com/wemwi/skill-library/commit/7e897a0c5c8fc5771b27d87e4a46c0ab4618eba8))
+
 ## [5.0.0](https://github.com/wemwi/skill-library/compare/v4.0.1...v5.0.0) (2026-07-09)
 
 
