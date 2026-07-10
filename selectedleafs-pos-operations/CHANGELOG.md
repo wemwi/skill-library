@@ -2,6 +2,32 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [5.1.0](https://github.com/wemwi/selectedleafs-pos-operations) (2026-07-10)
+
+### Features
+
+* **store:** Feld-Kontrakt für `liftr_store` festgeschrieben — `pos-store` legt das Metaobjekt jetzt vollständig an ([`references/store.md`](references/store.md))
+* **store:** §1 um vier optionale Dialog-Felder erweitert (`assortment_list`, `service_extra`, `parcel_carriers`, `socials`); Skip erzeugt kein fail-closed. Dialog-Reihenfolge als Bridge-Anforderung notiert (Bridge liefert die Felder noch nicht — Kontrakt ist rückwärtskompatibel)
+* **store:** §3 FieldMask um `websiteUri`, `paymentOptions`, `parkingOptions`, `allowsDogs`, `delivery`, `accessibilityOptions` erweitert, inkl. SKU-/Kostennotiz (Enterprise + Atmosphere, einmal pro Onboarding)
+* **store:** §4.4 neu — `highlights` als drei deterministische Slots (Zahlung / Öffnungszeit-Charakter / Lieferung→Paketshop). Feste Phrasenliste, Carrier-Sortierung `DHL → Hermes → DPD → GLS → UPS`, 2er-Deckel wegen P3-Umbruch in `liftr-card-density`
+* **store:** §4.5 neu — `service_list` aus 10 Places-Feldern (`true`-only) plus 4 Dialog-Handles; Ausschlussregel `delivery` ↔ `lieferung-moeglich`
+* **store:** §5.3 neu — Handle→GID-Auflösung für `liftr_service`/`liftr_assortment` über je einen paginierten Read; unbekannter Handle → fail-closed, nie Create
+* **store:** §8.1 schreibt zusätzlich `highlights`, `service_list`, `assortment_list`, `website`, `new: true` (nur CREATE-Zweig) und die vier Social-Felder
+
+### Documentation
+
+* **store:** §10 um Kontrakt D erweitert — Highlights werden nie generiert, keine Testimonials aus Google-Reviews, keine Social-Suche, kein `priceLevel`, keine Service-/Assortment-Anlage
+* **store:** §8.1 benennt vier Felder, die der Agent nie schreibt (`featured`, `testimonial_list`, `opening_hours_holiday`, `image_mood`) und hält fest, dass `new` bis zum Rollover eine Einbahnstraße ist
+* **store:** §9 um Status-Zeile für unbekannten Handle ergänzt
+
+### Notes
+
+* Der Über-Mitternacht-Wrap (`close <= open`) zählt in Slot 2 immer als „Schluss nach 22:00" — ein naiver String-Vergleich nähme ausgerechnet dem Spätkiosk sein Highlight
+* `acceptsCashOnly` heißt „nur Bargeld", nicht „Bargeld möglich"; ein `acceptsCash` existiert in Places nicht
+* Der Freitext-Slot (`highlight_free`) wurde bewusst verworfen: ein leerer dritter Slot kostet nichts, ein ungeprüfter Satz über einen fremden Laden kostet den Partner
+* Die acht bestehenden Stores tragen manuell gepflegte Highlights — der Kontrakt gilt nur für Neuanlagen, es wird nicht migriert
+* `image_mood` wird aus der Shopify-Definition entfernt; der Theme-Code (`liftr-store`) liest das Feld noch — eigener Auftrag
+
 ## [5.0.0](https://github.com/wemwi/selectedleafs-pos-operations) (2026-07-09)
 
 ### ⚠ BREAKING CHANGES
