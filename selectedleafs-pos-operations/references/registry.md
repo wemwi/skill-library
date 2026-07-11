@@ -33,6 +33,8 @@ Pfad-Template je Ablage-Domäne (Logik in `restock.md` §6): `<Domänen-Wurzel>/
 | Inventory (Bestandsprotokolle) | `1YbYciT2C2NuqsZrX6ghZnOxxHag9hXwW` |
 | Invoice (Provisionsabrechnung) | `1u2e9sd5sXL7wuesl0VeyIiHkKL3UpFvf` — nur Ablageort der Vertriebler-Sheets; **kein Agent liest diesen Ordner.** `pos-invoice` löst seine Ziel-Datei über den `POS-SHEET`-Marker auf (§4) und hat kein Drive-Tool. |
 
+**Provisions-Sheet-Vorlage (leere Datei, kein Ordner):** `1coPnoXdNgjuaNvyS6UriH5vjk8NZMMEPce1bxJzlAyY` — Quelle, aus der `pos-salesperson` (neuer Vertriebler) und `pos-rollover` (Jahreswechsel) je eine Kopie erzeugen; die Kopie landet in der Invoice-Wurzel oben. Als stabile Einzeldatei bewusst per ID hinterlegt (kein Namens-Lookup, der beim Umbenennen bricht).
+
 Pfad-Segmente: `{city.name}` / `{postal_code} {store.name}` (Klartext aus `liftr_store`-Metaobjekt, keine Slugifizierung). Die jeweilige Wurzel-Folder-ID wird build-time in die Agent-Config gesetzt (`restock.md` §6 hardcodet sie bewusst nicht); dieses Verzeichnis ist die **Quelle** dafür.
 
 ---
