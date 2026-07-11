@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.0](https://github.com/wemwi/skill-library/compare/v5.3.0...v5.4.0) (2026-07-11)
+
+
+### Features
+
+* **pos-operations:** Provisions-Sheet-Template-ID in registry §2 hinterlegen ([#127](https://github.com/wemwi/skill-library/issues/127)) ([02c57fa](https://github.com/wemwi/skill-library/commit/02c57faa1a3bc5488b90456328d798a58423e169))
+
 ## [5.3.0](https://github.com/wemwi/skill-library/compare/v5.2.0...v5.3.0) (2026-07-11)
 
 
