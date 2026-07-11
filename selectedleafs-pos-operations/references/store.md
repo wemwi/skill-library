@@ -48,7 +48,7 @@ Drei Invarianten, die den ganzen Lauf tragen (Konkretisierung von `SKILL.md` §I
 
 1. **Erst alle Vorbedingungen, dann Writes.** Sämtliche Reads/Matches (§3–§7: Places-Zug, Ableitungen, City-Match, District-**Match**, Handle-Auflösung, Vertriebler-Auflösung, Bild-Bereitstellung) laufen **vollständig und erfolgreich**, bevor **irgendein** Fachsystem-Write (§8) passiert. Scheitert eine Vorbedingung → fail-closed, kein Write.
 2. **fail-closed statt Improvisation.** Schlägt ein Tool-Aufruf fehl oder liefert Unerwartetes, brichst du **sofort** ab, postest einen konkreten Fehler-Status ins Quell-Topic (§9) und suchst **keine** Wege außerhalb deiner Tool-Oberfläche. Kein halber Store.
-3. **Idempotenz-Wurzel = `place_id`, Durchsetzung per Write (find-or-create).** Die `place_id` ist die Store-Identität. **Jeder** der vier Writes prüft zuerst, ob sein Artefakt schon existiert, und legt nur an, was fehlt — so **heilt ein Re-Run einen Teil-Write**, statt einen Halbzustand einzufrieren. Die Reihenfolge (§8) bleibt Shopify→Lexware→Sheets→Drive; der find-or-create pro Schritt ist der eigentliche Schutz, nicht ein globaler Vorab-Kurzschluss.
+3. **Idempotenz-Wurzel = `place_id`, Durchsetzung per Write (find-or-create).** Die `place_id` ist die Store-Identität. **Jeder** der vier Writes prüft zuerst, ob sein Artefakt schon existiert, und legt nur an, was fehlt — so **heilt ein Re-Run einen Teil-Write**, statt einen Halbzustand einzufrieren. Die Reihenfolge (§8) bleibt Shopify→Lexware→Sheets→Drive; der find-or-create pro Schritt ist der eigentliche Schutz, nicht ein globaler Vorab-Kurzschluss. Die zwei Protokoll-Chips im Sheet (`Übergabeprotokolle`/`Bestandsprotokolle`) sind bewusst der **Schwanz des Drive-Schritts** (§8.4), nicht Teil des Sheets-Writes (§8.3): sie referenzieren die beiden Ordner und lassen sich erst **nach** deren Anlage setzen.
 
 > **Warum find-or-create pro Write, nicht ein globaler `place_id`-Check:** Ein einziger Vorab-Check „existiert der Store in Shopify?" würde bei einem Ausfall **nach** dem Shopify-Write (z. B. Sheets-Fehler) den Re-Run sofort abbrechen lassen — die fehlende Provisionszeile bliebe für immer aus, still. Deshalb re-prüft jeder Write einzeln (§8.1–§8.4).
 
@@ -389,26 +389,28 @@ Ziel-Spreadsheet-ID = `POS-SHEET`-Wert aus §6. Geschrieben wird eine neue Zeile
 
 1. `list_tables(spreadsheetId, sheetId=<Stores-gid>)` → `columnProperties` (Header-Name → Index) **und** aktuelle Table-`range` (`endRowIndex`). Nie Spaltenbuchstaben/Zeilennummern hardcoden.
 2. Hat die Table eine Footer-/Summenzeile: Insert-Index = `endRowIndex − 1` via `insert_dimension` mit `inheritFromBefore: true` (schiebt Footer nach unten, vererbt Formel-Spalten). Ohne Footer: an `endRowIndex` innerhalb der Table einfügen. Pro Run neu lesen (Table wächst).
-3. `batch_update_ranges` (`USER_ENTERED`) für die Werte-Spalten der neuen Zeile. Die Table „Partner" führt genau diese Spalten — Zuordnung über den Header-Namen aus Schritt 1, **nie** über einen Spaltenbuchstaben:
+3. `batch_update_ranges` (`USER_ENTERED`) für die **Text-Wertespalten** der neuen Zeile. Die Table „Partner" führt genau diese Spalten — Zuordnung über den Header-Namen aus Schritt 1, **nie** über einen Spaltenbuchstaben:
 
    | Spalte | Wert |
    |---|---|
    | **Lexware ID** | `roles.customer.number` (§8.2), als **Zahl** — numerischer Vergleich in `invoice.md` §4; ein String liefe `SUMIFS` still auf 0 |
    | **Name** | `liftr_store.name` (§8.1), Klartext |
    | **Akquise** | Datum des Laufs, `USER_ENTERED` als `TT.MM.JJJJ` (DE-Locale → Sheets parst zur Serienzahl) |
-   | **Übergabeprotokolle** | `{postal_code} {store.name}` — **identisch** zum Drive-Ordnernamen (§8.4) |
-   | **Bestandsprotokolle** | `{postal_code} {store.name}` |
    | **Menge / Einheiten / Umsatz / Provision** | Formelspalten — **nie** schreiben (durch `inheritFromBefore` vererbt) |
 
-   - Es gibt **keine** Spalte `Status`. Nichts anderes als die fünf Wertespalten oben wird geschrieben.
+   - **`Übergabeprotokolle`/`Bestandsprotokolle` werden hier NICHT geschrieben.** Sie sind **Rich-Link-Chips** auf die beiden Drive-Ordner und entstehen in §8.4 — **nach** deren Anlage, weil ein Chip einen existierenden Ordner referenzieren muss. Ein Chip lässt sich **nicht** über die Values-API (`batch_update_ranges`) setzen; der Klartext-Ordnername wäre kein Link.
+   - Es gibt **keine** Spalte `Status`. Nichts anderes als die drei Text-Wertespalten oben wird hier geschrieben.
    - DE-Locale: etwaige Dezimalzahlen mit **Komma** (`USER_ENTERED`).
-4. **Read-back:** `get_range` auf die Key-Zelle der neuen Zeile → Kundennummer numerisch bestätigt; `list_tables` erneut → `endRowIndex` um 1 gewachsen.
+   - **Ziel-Zeile merken (0-basiert):** Insert-Index aus Schritt 2 bzw. im Heal-Zweig die Fundzeile aus dem `find` (Position in `Stores!B5:B` → Sheet-Zeile `5 + Offset` → `rowIndex = 4 + Offset`). §8.4 braucht diesen Index für den Chip-Write.
+4. **Read-back:** `get_range` auf die Key-Zelle der neuen Zeile → Kundennummer numerisch bestätigt; `list_tables` erneut → `endRowIndex` um 1 gewachsen. Die beiden Protokoll-Chips (E/F) setzt und verifiziert §8.4 (per `get_range_chips`).
 
 > Der Key in `Stores!B` ist die **Lexware-Kundennummer** — zum Anlage-Zeitpunkt die einzige stabile, sofort verfügbare Kennung (JTL-Nummer existiert noch nicht). Genau diese Nummer prüft `invoice.md` §4 gegen `Stores!B5:B` und schreibt sie in `Umsatz!E`. Kein Fallback: eine Zeile ohne korrekte Nummer fällt beim §4-Match still durch.
 
 > **Kein Chip-Spaltentyp auf Agent-Spalten** (universelle Invariante 4, SKILL.md). `Stores!C` („Name") trug `columnType: PLACE_CHIP` — die Values-API liefert für Chip-Spalten einen **leeren Wert**, still und ohne Fehler. Ein Read auf `C` hätte den Storenamen nie gesehen. Der Typ ist aus allen Provisions-Sheets entfernt; er darf nicht zurückkommen.
+>
+> **Chip-Spaltentyp ≠ Chip-Inhalt.** Invariante 4 verbietet den Spalten*typ* (`PLACE_CHIP` etc.) auf Spalten, die ein Agent per Values-API liest — das bleibt für `B` (Key) und `C` (Name) gesperrt. `Übergabeprotokolle`/`Bestandsprotokolle` (E/F) tragen dagegen Chip-*Inhalt* (Rich-Link) in einer **`TEXT`-Spalte** — **kein** Chip-Spaltentyp, **keine** Schema-Änderung an der Table. Erlaubt ist das, weil **kein Agent E/F liest**: `pos-restock`/`pos-inventory` lösen ihren Zielordner über `ensure_folder_path` selbst auf (`restock.md` §6 / `inventory.md` §8), nicht aus dem Sheet. E/F sind rein menschlich; die einzige Rück-Lesung ist der §8.4-eigene `get_range_chips`-Check.
 
-### 8.4 Drive — zwei Ablage-Ordner anlegen
+### 8.4 Drive — zwei Ablage-Ordner anlegen **+ Protokoll-Chips setzen**
 
 Pro Store je ein Store-Ordner unter der **Übergabeprotokolle-** und der **Bestandsprotokolle-**Wurzel (`registry.md` §2), damit `pos-restock`/`pos-inventory` ihre Zielordner vorfinden. Beide Wurzeln existieren bereits — die Store-Anlage legt nur die Stadt/Store-Unterpfade an, **idempotent**:
 
@@ -420,6 +422,25 @@ Pro Store je ein Store-Ordner unter der **Übergabeprotokolle-** und der **Besta
 - Je ein `ensure_folder_path` mit `parentFolderId` = jeweilige Wurzel (§2) und `segments = [ "{city.name}", "{postal_code} {store.name}" ]`. mkdir-p, serverseitig NFC-normalisiert — nie ein zweiter gleichnamiger Ordner (Heal-sicher).
 - Segmente **1:1 aus den `liftr_store`-Feldern** des in §8.1 angelegten Stores (`city`→`name`, `postal_code`, `name`), **keine** Slugifizierung — identische Namenslogik wie `restock.md` §6 / `inventory.md`, sonst zielen die anderen Agenten auf falsche Ordner.
 - Die Wurzel-IDs stehen in `registry.md` §2 (nicht hardcoden).
+- **Beide `ensure_folder_path`-Antworten liefern `{ id, name, webViewLink }`.** Merke dir den `webViewLink` (oder baue `https://drive.google.com/drive/folders/{id}`) **beider** Ordner — Übergabe **und** Bestand — für den Chip-Write.
+
+**Chip-Write — `Übergabeprotokolle`/`Bestandsprotokolle` als Rich-Link-Chips.** Erst **jetzt** setzbar (die Ordner existieren), letzter Schreibschritt der Fachsystem-Kette:
+
+1. **Zielzellen bestimmen** — aus dem `list_tables` von §8.3: Header `Übergabeprotokolle`/`Bestandsprotokolle` → tabellen-relativer Spaltenindex; **Sheet-absoluter** Index = table-relativ **+** `range.startColumnIndex`. Zeilenindex = die in §8.3 gemerkte Ziel-Zeile (0-basiert). `sheetId` = `Stores`-gid.
+2. **`update_cells_chips`** — **ein** Aufruf, weil beide Spalten nebeneinander liegen:
+   ```
+   start = { sheetId: <Stores-gid>, rowIndex: <Ziel-Zeile>, columnIndex: <Übergabe-Spalte> }
+   rows  = [[
+     { parts: [ { linkChip: { uri: "<webViewLink Übergabe-Ordner>" } } ] },
+     { parts: [ { linkChip: { uri: "<webViewLink Bestand-Ordner>" } } ] }
+   ]]
+   ```
+   Der Chip zeigt automatisch den Ordnernamen (`{postal_code} {store.name}`) als Anzeigetext — **kein** `text`-Segment nötig. `update_cells_chips` **ersetzt den Zellinhalt komplett** → idempotent: ein Re-Run überschreibt eine alt-plain geschriebene Zelle sauber mit dem Chip (heilt Altzeilen).
+3. **Read-back:** `get_range_chips` auf `Stores!<E-Zelle>:<F-Zelle>` → beide Zellen tragen `richLinkProperties` mit der jeweiligen Ordner-URI. **Nie `get_range`/Values-API zum Verifizieren** — die sieht Chip-Zellen je nach Renderer als Klartext-oder-leer.
+
+> **Scope — bereits eingerichtet, nicht neu bauen.** Der Chip-Write lässt Google die Ordner-Daten serverseitig unter dem **`google-sheets-mcp`-Token** nachladen; das braucht `drive.readonly` an diesem Token. Eingerichtet und am 2026-07-09 live grün getestet (Ordner-Chip-Round-Trip, dokumentiert an `google-sheets-mcp` PR #54). `drive.file` reicht **nicht** — die Ordner legt der `google-drive-mcp` (andere OAuth-App) an. Fehlerbilder, falls der Scope je verloren geht: `403 "request scopes are not sufficient"` (keine Drive-Scope) / `400 "Error fetching chip data: Permission denied"` (`drive.file` ohne Ownership) → Re-Consent des Sheets-Refresh-Tokens mit `drive.readonly`.
+
+> **Best-effort — bricht den Store nie.** Der Chip-Write ist rein menschlich (kein Agent liest E/F). Schlägt er fehl, ist der Store trotzdem vollständig (Shopify + Lexware + Zeile + Ordner) — **kein** Rollback, **kein** fail-closed. Nur die Schluss-Statuszeile (§9) wird annotiert; die Chips sind manuell oder per Re-Run nachziehbar. Gleiche Philosophie wie der §8.5-Broadcast.
 
 ### 8.5 🎉-Broadcast in den City-Channel (nur CREATE-Zweig, best-effort, letzter Schritt)
 
@@ -484,6 +505,7 @@ Ziel jeder Meldung: `chat_id` + `message_thread_id` aus der Injektion (§1) — 
 | Anlage erfolgreich + Broadcast (§8.5) | „✅ Store angelegt: **Kratom König** (Mitte, Hannover) — Shopify + Lexware + Provision (Schlegel) + Drive. Metaobjekt `…`. · 🎉 Broadcast gepostet." |
 | Anlage erfolgreich, kein Channel (§8.5) | „✅ Store angelegt: **…** — Shopify + Lexware + Provision + Drive. · ℹ️ Broadcast übersprungen (kein Channel für `<Stadt>`)." |
 | Anlage erfolgreich, Broadcast-Fehler (§8.5) | „✅ Store angelegt: **…** — Shopify + Lexware + Provision + Drive. · ⚠️ Broadcast fehlgeschlagen (Store ist angelegt) — manuell nachposten." |
+| Anlage erfolgreich, Protokoll-Chips-Fehler (§8.4) | „✅ Store angelegt: **…** — Shopify + Lexware + Provision + Drive. · ⚠️ Protokoll-Ordner-Chips nicht gesetzt (`drive.readonly` am `google-sheets-mcp` prüfen) — Ordner existieren, Chips per Re-Run/manuell nachziehbar." |
 | Re-Run/bereits vorhanden (Heal-Zweig) | „ℹ️ Store zu Place-ID `…` existiert bereits — fehlende Teile ergänzt / nichts zu tun. **Kein** Broadcast (nur CREATE-Zweig postet)." |
 | Fehlendes Pflichtfeld (§1) | „⚠️ Store-Anlage abgebrochen: Pflichtfeld `<feld>` fehlt in der Auftrags-Nachricht." |
 | Places-Zug fehlgeschlagen (§3) | „⚠️ Store-Anlage abgebrochen: Place Details zu `<place_id>` nicht abrufbar." |
