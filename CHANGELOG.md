@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.0](https://github.com/wemwi/skill-library/compare/v5.2.0...v5.3.0) (2026-07-11)
+
+
+### Features
+
+* **pos-operations:** §4.1 opening_hours multi-day 24h wrap ([#125](https://github.com/wemwi/skill-library/issues/125)) ([115836a](https://github.com/wemwi/skill-library/commit/115836ad7a4763b667ac25c0afdeb724189df02f))
+
 ## [5.2.0](https://github.com/wemwi/skill-library/compare/v5.1.1...v5.2.0) (2026-07-11)
 
 
