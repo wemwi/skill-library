@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.2.0](https://github.com/wemwi/skill-library/compare/v5.1.1...v5.2.0) (2026-07-11)
+
+
+### Features
+
+* **pos-operations:** write Übergabeprotokolle/Bestandsprotokolle as Drive rich-link chips ([#123](https://github.com/wemwi/skill-library/issues/123)) ([c9f43bb](https://github.com/wemwi/skill-library/commit/c9f43bb3636b21fa4278c4753a0fb14567a44c82))
+
+
+### Bug Fixes
+
+* **pos-operations:** agent-bridge-Grant in store.md §5.2 auf drei Lese-Scopes präzisieren ([#122](https://github.com/wemwi/skill-library/issues/122)) ([f94a337](https://github.com/wemwi/skill-library/commit/f94a3374b1d7665886d28903d282a3c3be72fbce))
+
 ## [5.1.1](https://github.com/wemwi/skill-library/compare/v5.1.0...v5.1.1) (2026-07-10)
 
 
