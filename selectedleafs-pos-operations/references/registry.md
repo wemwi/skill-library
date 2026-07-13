@@ -33,7 +33,9 @@ Pfad-Template je Ablage-Domäne (Logik in `restock.md` §6): `<Domänen-Wurzel>/
 | Inventory (Bestandsprotokolle) | `1YbYciT2C2NuqsZrX6ghZnOxxHag9hXwW` |
 | Invoice (Provisionsabrechnung) | `1u2e9sd5sXL7wuesl0VeyIiHkKL3UpFvf` — nur Ablageort der Vertriebler-Sheets; **kein Agent liest diesen Ordner.** `pos-invoice` löst seine Ziel-Datei über den `POS-SHEET`-Marker auf (§4) und hat kein Drive-Tool. |
 
-**Provisions-Sheet-Vorlage (leere Datei, kein Ordner):** `1coPnoXdNgjuaNvyS6UriH5vjk8NZMMEPce1bxJzlAyY` — Quelle, aus der `pos-salesperson` (neuer Vertriebler) und `pos-rollover` (Jahreswechsel) je eine Kopie erzeugen; die Kopie landet in der Invoice-Wurzel oben. Als stabile Einzeldatei bewusst per ID hinterlegt (kein Namens-Lookup, der beim Umbenennen bricht).
+**Provisions-Sheet-Vorlage (leere Datei, kein Ordner):** `1coPnoXdNgjuaNvyS6UriH5vjk8NZMMEPce1bxJzlAyY` — Quelle, aus der `pos-salesperson` (neuer Vertriebler) und `pos-rollover` (Jahreswechsel) je eine Kopie erzeugen. Als stabile Einzeldatei bewusst per ID hinterlegt (kein Namens-Lookup, der beim Umbenennen bricht).
+
+**Ablage-Konvention Vertriebler-Sheets (`pos-salesperson` §4):** Pro Vertriebler ein eigener Ordner `<Nachname>, <Vorname>` (z. B. `Schlegel, Christian`) direkt unter der Invoice-Wurzel, per `ensure_folder_path` idempotent angelegt/aufgelöst. Darin die Kopie mit Dateiname `Provision · <Nachname> · <Jahr>` (z. B. `Provision · Schlegel · 2026`; Trenner ` · `). Der Ordner wird optional als `reader` an die E-Mail des Vertrieblers freigegeben (Vererbung deckt das Sheet). Der deterministische Dateiname **im Vertriebler-Ordner** ist der Heal-Key des find (`list_files` im Ordner, kein Re-Copy bei Re-Run) — nicht mehr die flache Wurzel.
 
 Pfad-Segmente: `{city.name}` / `{postal_code} {store.name}` (Klartext aus `liftr_store`-Metaobjekt, keine Slugifizierung). Die jeweilige Wurzel-Folder-ID wird build-time in die Agent-Config gesetzt (`restock.md` §6 hardcodet sie bewusst nicht); dieses Verzeichnis ist die **Quelle** dafür.
 
@@ -70,6 +72,8 @@ Hinweis: Dies ist der **interne Operations-Chat**, nicht ein öffentlicher City-
 - `fetchVertriebler()` paginiert **alle** Kontakte und nimmt jeden mit `note.includes("POS-SHEET:")` als Vertriebler-Button in den Onboarding-Dialog auf (`id` = Kontakt-UUID, Label = Kontaktname).
 
 ⚠️ **Beide Präfixe sind damit ein Vertrag mit der `agent-bridge`.** Wer sie umbenennt oder qualifiziert (`POS-SHEET-2026:` o. ä.), bricht `includes()` still: `fetchVertriebler()` liefert eine leere Liste, der Onboarding-Dialog meldet „keine Vertriebler auflösbar", `pos-store` startet nicht mehr. Marker-Format ändern = Bridge-Deploy, nie einseitig.
+
+**Vertriebler-Kontakt = Lieferant.** `pos-salesperson` legt den Vertriebler mit Rolle `vendor` an (Kreditor — er bekommt Provision ausgezahlt). Der **Store** ist der Kunde (`roles.customer.number`, oben). Kein Agent liest die *Rolle* des Vertrieblers (er wird nur über `POS-SHEET` + Name gefunden) — `vendor` hält allein den Kundennummernraum sauber.
 
 **Kein Jahresbezug im Marker.** `POS-SHEET` zeigt immer auf die *aktuelle* Datei; beim Jahres-Rollover wird der Wert umgesetzt (künftig durch einen Rollover-Agent, → `rollover.md`). Weil der Marker damit jahresblind ist, verifiziert `invoice.md` §2 das Jahr **im Sheet selbst** gegen `voucherDate` — ohne diesen Guard liefe ein Januar-Backstop mit Dezember-Belegen still in die falsche Datei.
 
