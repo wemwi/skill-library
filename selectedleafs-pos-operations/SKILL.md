@@ -1,8 +1,8 @@
 ---
 name: selectedleafs-pos-operations
 metadata:
-  version: "5.3.0"
-description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Übergabeprotokoll auswerten → Drive ablegen → City-Channel posten), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung POS-Partner), Telegram-Handwerk (Format, Pinned) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root) — plus Store (neuen POS-Partner anlegen + 🎉-Broadcast). Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-store, pos-operations, Übergabeprotokoll, Protokoll-Eingang, Kommissionsware, Kommissionär, Lieferschein parsen, Sorten neu vs aufgefüllt, UL-Nummer; telegram post, City-Channel, restock post, neue sorte post, neuer partner post, pinned post, channel setup, channel launch; Bestandsprotokoll, Provisionsabrechnung POS."
+  version: "5.4.0"
+description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Protokoll auswerten → Drive → City-Channel), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung), Telegram-Handwerk (Format, Pinned), Store (neuen POS-Partner anlegen + 🎉-Broadcast), Salesperson (neuen Vertriebler anlegen: Lexware-Kontakt + Provisions-Sheet-Kopie + POS-SHEET-Notiz) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root, Topics). Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-store, pos-salesperson, pos-operations, Übergabeprotokoll, Kommissionsware, UL-Nummer; telegram post, City-Channel, restock post, neuer partner post, pinned post; Bestandsprotokoll, Provisionsabrechnung, Vertriebler anlegen, Provisions-Sheet, POS-SHEET."
 ---
 
 # selectedleafs POS-Operations — Router
@@ -20,7 +20,7 @@ Landkarte für die POS-Operations-Agenten. Diese Datei **dispatcht** und hält d
 | Provisionsabrechnung POS-Partner (Lexware → Vertriebler-Sheet), Rechnung-Insert, paid-Status-Update | `references/invoice.md` |
 | Neuen POS-Partner anlegen (headless One-Shot: Shopify `liftr_store` + ggf. `liftr_district`, Lexware-Kontakt + `POS-PARTNER`-Notiz, Provisionszeile im Vertriebler-Sheet, 2 Drive-Ordner; Teaser-Bild aus Telegram-Upload → Shopify Files; Status/Rückfrage ins Operations-Topic) **plus** einmaliger 🎉-„Neuer Partner"-Broadcast in den City-Channel (§8.5, nur CREATE-Zweig, best-effort; Channel-Lookup aus `registry.md` §1) | `references/store.md` |
 | *(geplant)* Neue Stadt onboarden + City-Channel live schalten — heute manueller Schritt (`store.md` §5.1 läuft für die erste Stadt fail-closed) | `references/city.md` — *geplant, nicht implementiert (fail-closed bei Load)* |
-| *(geplant)* Vertriebler onboarden/verwalten (Lexware-Kontakt + `POS-SHEET`-Notiz; damit ohne Skill-Bump für Bridge und alle POS-Agenten sichtbar, `registry.md` §4) | `references/salesperson.md` — *geplant, nicht implementiert (fail-closed bei Load)* |
+| Neuen Vertriebler anlegen (dialog-initiiert: Lexware-Kontakt + Provisions-Sheet-Kopie + `POS-SHEET`-Notiz; damit ohne Skill-Bump für Bridge und alle POS-Agenten sichtbar, `registry.md` §4) | `references/salesperson.md` |
 | *(geplant)* Jahres-Rollover der Vertriebler-Provisions-Sheets (Copy-based, `registry.md` §4) | `references/rollover.md` — *geplant, nicht implementiert (fail-closed bei Load)* |
 | *(geplant)* Fachsystem-Abgleich/Reconciliation (Shopify ↔ Lexware ↔ Sheet) | `references/sync.md` — *geplant, nicht implementiert (fail-closed bei Load)* |
 

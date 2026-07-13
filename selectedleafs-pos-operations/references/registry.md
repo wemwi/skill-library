@@ -48,6 +48,7 @@ Telegram-Gruppe `-1003918922935` mit Topics, in die Belege eingehen und Status-Z
 | General | `1` |
 | Übergabeprotokolle (Restock-Eingang) | `2` |
 | Bestandsprotokolle (Inventory-Eingang) | `34` |
+| Vertriebler anlegen (Salesperson-Onboarding) | `92` |
 
 Hinweis: Dies ist der **interne Operations-Chat**, nicht ein öffentlicher City-Channel (§1). Statusmeldungen bleiben hier; öffentliche Posts gehen in den abgeleiteten City-Channel.
 
