@@ -14,7 +14,7 @@ Die `agent-bridge` injiziert in die `user.message`:
 | `last_name` | ja | Nachname des Vertrieblers | Lexware `person.lastName` (§3), Ordnername `<last_name>, <first_name>` (§4), Dateiname `Provision · <last_name> · <year>` (§4) |
 | `year` | ja | Abrechnungsjahr als Zahl | Dateiname (§4), `Allgemein!Jahr`-Wert (§6) |
 | `taxation` | ja | Besteuerung, zeichengenau `Kleinunternehmer` **oder** `Regelbesteuert` | `Allgemein!Besteuerung`-Wert (§6) |
-| `email` | optional | E-Mail des Vertrieblers, falls erfasst | Ordner-Freigabe als `reader` (§7) |
+| `email` | optional | E-Mail des Vertrieblers, falls erfasst | Lexware-Kontakt `emailAddresses.business` (§3) **und** Ordner-Freigabe als `reader` (§7) |
 | `chat_id` + `message_thread_id` | ja | Quell-Topic des Auftrags | Ziel der Status-/Rückfrage-Posts (§8) |
 
 Fehlt `first_name`, `last_name`, `year` oder `taxation` → fail-closed **vor** jedem Read/Write, Status ins Topic (§8). `email` ist **kein** Pflichtfeld — fehlt es, wird der Kontakt angelegt und das Sheet erstellt, aber der Ordner **nicht** freigegeben (§7, fail-open; manuelle Nachpflege wie `store.md` bei USt-ID/Rechtsform).
@@ -43,7 +43,7 @@ Fünf Schritte, drei Invarianten (Konkretisierung von `SKILL.md` §Invarianten):
 
 | Treffer-Lage | Verhalten |
 |---|---|
-| **Kein Treffer** | `create_contact` mit **Rolle `vendor`** und `person.firstName`/`person.lastName` aus §1. `note` bleibt zunächst leer — der Marker kommt erst in §5, **nicht** in diesem Call (anders als `store.md` §8.2: hier existiert die Sheet-ID zum Anlage-Zeitpunkt noch nicht). |
+| **Kein Treffer** | `create_contact` mit **Rolle `vendor`** und `person.firstName`/`person.lastName` aus §1. Trägt der Auftrag eine `email`, zusätzlich `emailAddresses.business: [<email>]` mitgeben (geschäftliche Adresse des Vertrieblers, Lexware-Schema: Array von Strings). `note` bleibt zunächst leer — der Marker kommt erst in §5, **nicht** in diesem Call (anders als `store.md` §8.2: hier existiert die Sheet-ID zum Anlage-Zeitpunkt noch nicht). |
 | **Genau ein Treffer, `note` trägt bereits `POS-SHEET:`** | **fail-closed + Rückfrage** (§8) — der Vertriebler existiert schon vollständig, ein zweiter Lauf wäre eine Doppelanlage. Kein Adoptieren, keine Änderung. |
 | **Genau ein Treffer, `note` trägt `POS-SHEET:` (noch) nicht** | **Heal-Pfad:** Kontakt wiederverwenden (Schritt 3 muss vor diesem Lauf abgebrochen sein), weiter zu §4 mit dieser UUID. |
 | **Mehr als ein Treffer** | **fail-closed + Rückfrage** (§8) — Namensvetter sind nicht automatisch unterscheidbar; nicht raten (Invariante 2). |
@@ -159,5 +159,6 @@ Der Agent postet **nichts** bei einem Teilerfolg mit späterem Fehlschlag außer
 - **Kein Jahres-Rollover bestehender Vertriebler.** Ein Vertriebler mit **existierendem** `POS-SHEET`-Marker wird nicht auf ein neues Jahr umgehängt (§3, vorhandener Treffer → fail-closed) — das ist `pos-rollover` (→ `rollover.md`, geplant).
 - **Kein Setzen der MwSt-Zelle** — nur `Besteuerung` (§6); die MwSt-Anwendung ist formelgesteuert.
 - **Keine USt-ID/Rechtsform-Anreicherung.** Wie `store.md` — manuelle Nachpflege am Lexware-Kontakt.
+- **Kein email-Nachtrag im Heal.** Die `email` (§3) wird nur beim **CREATE** in `emailAddresses` gesetzt; bei einem markerlosen Bestandskontakt (Heal-Pfad) bleibt der Kontakt unberührt — die `note`-Merge in §5 ist das einzige Schreiben am bestehenden Kontakt. Nachträgliches Ergänzen der E-Mail ist manuell.
 - **Kein Löschen/Archivieren alter Vertriebler.** Reines Onboarding, keine Lifecycle-Verwaltung.
 - **Kein Bridge-/Dialog-Bau.** Der Input-Kontrakt (§1) ist die Schnittstelle; die Bridge, die ihn füllt (Topic `92`-Dialog, Vorname/Nachname/Jahr/Besteuerung/E-Mail), ist ein eigener, downstream Schritt.
