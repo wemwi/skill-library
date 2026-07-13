@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.8.0](https://github.com/wemwi/skill-library/compare/v5.7.0...v5.8.0) (2026-07-13)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** pos-rollover-Prozedur (references/rollover.md) + Dispatch live ([#135](https://github.com/wemwi/skill-library/issues/135)) ([ab09f7d](https://github.com/wemwi/skill-library/commit/ab09f7d5fcbac15c283bd4f285cf8ad7af45a6dc))
+
 ## [5.7.0](https://github.com/wemwi/skill-library/compare/v5.6.0...v5.7.0) (2026-07-13)
 
 
