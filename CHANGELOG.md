@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.5.0](https://github.com/wemwi/skill-library/compare/v5.4.0...v5.5.0) (2026-07-13)
+
+
+### Features
+
+* **pos-operations:** pos-salesperson Agent + Skill v5.4.0 ([#129](https://github.com/wemwi/skill-library/issues/129)) ([c98483d](https://github.com/wemwi/skill-library/commit/c98483dc72b13fe593c6a5e118dfa3619fe0d9b2))
+
 ## [5.4.0](https://github.com/wemwi/skill-library/compare/v5.3.0...v5.4.0) (2026-07-11)
 
 
