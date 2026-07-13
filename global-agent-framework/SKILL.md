@@ -83,6 +83,48 @@ Console/Platform-API akzeptiert YAML. Zwei Vorlagen liegen unter `assets/`:
   `metadata`. Referenz zum Abgucken, **nicht** garantiert deploybar — die Beta kann
   Feldnamen und erlaubte Modelle verschieben.
 
+## 2a. Config-Schema-Wahrheit, Delivery-Kontrakt & Emit-Gate
+
+**Schema-Wahrheit ≠ diese Skill-Prosa ≠ die `assets/`-Templates.** Die exakten Feld-*Shapes*
+der Agent-Config stehen in der autoritativen API-Referenz `anthropics/skills` →
+`skills/claude-api/shared/managed-agents-api-reference.md`. Diese SKILL.md ist die Landkarte,
+die `assets/*.yaml` sind kommentierte Lehr-Vorlagen — beide können bei einem Referenz-Feld
+hinter der API zurückliegen. **Vor jedem Config-Bau die API-Referenz gegenprüfen**, nicht aus
+Erinnerung/Prosa/Template ableiten. Beta `managed-agents-2026-04-01`; bei Abweichung gewinnt
+die API-Referenz.
+
+**Die drei Referenz-Felder, die als „invalid input" beißen — Objektform, NIE bloße Namen:**
+
+| Feld | Falsch (bloßer Name) | Richtig (Objektform) |
+|---|---|---|
+| `skills` | `- mein-skill` | `- {type: anthropic, skill_id: xlsx}` **oder** `- {type: custom, skill_id: skill_*, version: latest}` |
+| `mcp_servers` | `- lexware-mcp` | `- {type: url, name: lexware-mcp, url: https://…/mcp}` |
+| `permission_policy` | `always_allow` (Skalar) | `{type: always_allow}` bzw. `{type: always_ask}` |
+
+- `skill_id` ist **nicht** der Skill-*Name*: Anthropic-Skills = Kurz-ID (`xlsx`), Custom-Skills
+  = die `skill_*`-ID aus dem **API-Workspace-Upload** (`ant beta:skills list --source custom`).
+  Der claude.ai-Mount vergibt keine solche ID — Skills syncen nicht über Surfaces.
+- Limits (API-Referenz): `tools` ≤128, `skills` ≤20, `mcp_servers` ≤20 (eindeutige Namen);
+  `metadata` ≤16 Paare, Keys ≤64 / Values ≤512 Zeichen.
+
+**Delivery-Kontrakt — das ausgelieferte Artefakt ist NICHT die Vorlage.** Die `assets/*.yaml`
+sind absichtlich durchkommentiert (Lehr-Skeleton). Was für einen Deploy geliefert wird, ist
+**sauberes YAML**:
+- **Null Kommentare** (kein `#`), keine Lehr-Prosa.
+- **Nur der kanonische Feld-Satz** des Agent-Objekts: `name`, `description`, `model`, `system`,
+  `mcp_servers`, `tools`, `skills`, `metadata` (+ optional `multiagent`).
+- **Deploy-Settings gehören NICHT ins Config-Objekt:** Scheduled Deployment (Cron), Environment
+  (Netz/Pakete) und `vault_ids` werden pro Session/Deployment gesetzt (Abschnitt 6/8/11) — sie
+  stehen in der Deploy-Notiz/im Handover, nie in der Agent-Config.
+
+**Emit-Gate — vor JEDER Config-Auslieferung, drei Checks (Skript, kein Vorsatz):**
+1. **Parst** — `yaml.safe_load` ohne Fehler.
+2. **Kommentarfrei** — `grep -c '#'` == 0.
+3. **Feld-Set + Shapes** — Top-Keys ⊆ kanonischer Satz; `skills`/`mcp_servers`-Einträge sind
+   Objekte (keine Strings); jede `permission_policy` ist `{type: …}`.
+
+Fällt ein Check, wird nicht ausgeliefert.
+
 ## 3. Drei-Ebenen-Regel (Herzstück)
 
 Jede Information gehört auf **genau eine** Ebene. Falsche Platzierung macht den Agenten

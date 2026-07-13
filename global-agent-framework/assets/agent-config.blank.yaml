@@ -65,6 +65,8 @@ tools:
 
 # EBENE 2 — Wiederverwendbares Domänenwissen, on-demand geladen (Progressive Disclosure).
 # Gilt für eine Aufgabenklasse, aber nicht jeden Lauf. (Abschnitt 3)
+# Objektform, KEINE bloßen Namen: {type: anthropic, skill_id: xlsx} oder
+# {type: custom, skill_id: skill_*, version: latest}. skill_id != Skill-Name.
 skills: []
 
 # Reines Tracking — keine Secrets, keine Logik. SemVer spiegelt den Config-Stand;
