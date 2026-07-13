@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.7.0](https://github.com/wemwi/skill-library/compare/v5.6.0...v5.7.0) (2026-07-13)
+
+
+### Features
+
+* **pos-operations:** pos-salesperson v5.5.1 — email in Lexware-Kontakt ([#133](https://github.com/wemwi/skill-library/issues/133)) ([799cef7](https://github.com/wemwi/skill-library/commit/799cef769bf163188f819d3fa14c276477437706))
+
 ## [5.6.0](https://github.com/wemwi/skill-library/compare/v5.5.0...v5.6.0) (2026-07-13)
 
 
