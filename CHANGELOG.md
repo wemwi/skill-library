@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.9.0](https://github.com/wemwi/skill-library/compare/v5.8.0...v5.9.0) (2026-07-13)
+
+
+### Features
+
+* **global-agent-framework:** Config-Schema-Shapes, Delivery-Kontrakt & Emit-Gate; Templates auf Objektform ([#137](https://github.com/wemwi/skill-library/issues/137)) ([62e4f22](https://github.com/wemwi/skill-library/commit/62e4f22c9c8c91907071a1fafe1196bbfab22026))
+
 ## [5.8.0](https://github.com/wemwi/skill-library/compare/v5.7.0...v5.8.0) (2026-07-13)
 
 
