@@ -25,7 +25,9 @@ system: >-
 # Least-Privilege: nur lexware-mcp. NICHT telegram-mcp, NICHT shopify-mcp. (Abschnitt 5)
 # Die passenden vault_ids werden pro Session gesetzt (Abschnitt 6), nicht hier.
 mcp_servers:
-  - lexware-mcp
+  - type: url
+    name: lexware-mcp
+    url: https://lexware-mcp.example.workers.dev/mcp
 
 tools:
   - type: agent_toolset_20260401
@@ -33,7 +35,11 @@ tools:
 # EBENE 2 — Domänenwissen: Pflichtfelder, USt-Logik, Nummernkreise. Gilt für JEDE
 # Rechnung, aber nicht jeden Lauf — zu groß für den System-Prompt. (Abschnitt 3)
 skills:
-  - lexware-invoicing
+  # Custom-Skill: per skill_*-ID referenzieren (Workspace-Upload), NICHT per Name.
+  # Anthropic-Skill statt custom: {type: anthropic, skill_id: xlsx}.
+  - type: custom
+    skill_id: skill_REPLACE_WITH_WORKSPACE_ID
+    version: latest
 
 metadata:
   version: 1.0.0
