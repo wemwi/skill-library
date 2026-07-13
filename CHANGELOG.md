@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.6.0](https://github.com/wemwi/skill-library/compare/v5.5.0...v5.6.0) (2026-07-13)
+
+
+### Features
+
+* **pos-operations:** pos-salesperson v5.5.0 — getrennte Dialog-Felder, Vertriebler-Ordner, optionale Freigabe ([#131](https://github.com/wemwi/skill-library/issues/131)) ([d17ad07](https://github.com/wemwi/skill-library/commit/d17ad07dfb74c302dac4ac5e72e125fe76214bf5))
+
 ## [5.5.0](https://github.com/wemwi/skill-library/compare/v5.4.0...v5.5.0) (2026-07-13)
 
 
