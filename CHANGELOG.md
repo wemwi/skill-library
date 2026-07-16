@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.9.1](https://github.com/wemwi/skill-library/compare/v5.9.0...v5.9.1) (2026-07-16)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Egress über Allowed-Hosts-Liste beschreiben, nicht über Vault-Host-Bindung ([#139](https://github.com/wemwi/skill-library/issues/139)) ([2c5a233](https://github.com/wemwi/skill-library/commit/2c5a2336754f0a5ea79e87845b775481232bc181))
+
 ## [5.9.0](https://github.com/wemwi/skill-library/compare/v5.8.0...v5.9.0) (2026-07-13)
 
 
