@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.10.0](https://github.com/wemwi/skill-library/compare/v5.9.1...v5.10.0) (2026-07-18)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** v5.6.0 — required-Felder-Korrektur, phone optional, Sync-Ownership + Öffnungszeiten-Migration auf main ([#142](https://github.com/wemwi/skill-library/issues/142)) ([13349ad](https://github.com/wemwi/skill-library/commit/13349ad72797055fba3a1b32d18b9626b871682d))
+
 ## [5.9.1](https://github.com/wemwi/skill-library/compare/v5.9.0...v5.9.1) (2026-07-16)
 
 
