@@ -2,6 +2,12 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [5.7.1](https://github.com/wemwi/skill-library) (2026-07-18)
+
+### Changed
+
+* **Namenskonvention:** Bridge-Var `OPERATOR_TG_IDS` → `TELEGRAM_ADMIN_IDS` (folgt dem `TELEGRAM_*_*`-Schema der übrigen Telegram-Vars in Cloudflare). Der Begriff „Operator" wird für dieses Konzept stack-weit durch „Admin" ersetzt (Skill: `registry.md` §4 „Admin-Ausschluss", `store.md` §1/§8.6; Bridge separat: `isOperator`→`isAdmin`). Rein terminologisch, **kein** Verhaltensbruch — der Wert (`412739246`) und die Logik (Admins nie gebunden, sehen immer den Picker) bleiben identisch. Der Eigenname „Operations-Topic/-Chat" (Telegram-Kanal) bleibt unangetastet. Bridge-Umsetzung: `agent-bridge` (separater PR)
+
 ## [5.7.0](https://github.com/wemwi/skill-library) (2026-07-18)
 
 ### Features

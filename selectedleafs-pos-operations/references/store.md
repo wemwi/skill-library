@@ -20,16 +20,16 @@ Die `agent-bridge` injiziert in die `user.message` (der Agent scannt **kein** To
 | `service_extra` | Array von `liftr_service`-**Handles**, die Places nicht kennt | GID-Auflösung (§5.3) → `service_list` (§4.5) |
 | `parcel_carriers` | Array aus `dhl` `hermes` `dpd` `gls` `ups` `andere` | Paketshop-Highlight (§4.4) + `paketannahme-moeglich` (§4.5) |
 | `socials` | Objekt mit `tiktok` / `facebook` / `instagram` / `whatsapp` | `liftr_store` (§8.1), je einzeln optional |
-| `binder_tg_id` | *(optional)* Numerische Telegram-User-ID des Aufrufers — **nur** von der Bridge injiziert, wenn der Aufrufer **kein** Operator ist | `POS-TG`-Bind am Vertriebler-Kontakt (§8.6) |
+| `binder_tg_id` | *(optional)* Numerische Telegram-User-ID des Aufrufers — **nur** von der Bridge injiziert, wenn der Aufrufer **kein** Admin ist | `POS-TG`-Bind am Vertriebler-Kontakt (§8.6) |
 | `chat_id` + `message_thread_id` | Operations-Quell-Topic (wo der Auftrag/das Bild herkam) | Ziel der Status-/Rückfrage-Posts (§9) |
 
-Fehlt ein **Pflichtfeld** (`place_id`, `vertriebler_contact_id`, `image_file_id`, `district`) → fail-closed **vor** jedem Read/Write, Status ins Topic (§9). `product_list`/`collection_list` sind Pflichtfelder im Schema (`required:true`) und müssen **≥1 Eintrag** tragen — eine leere Liste weist Shopify beim Create ab. Der Bridge-Dialog erzwingt die Produktauswahl (Pflichtauswahl ≥1); kommt die Liste dennoch leer an → **fail-closed** (§8.1/§9), nicht weglassen. `binder_tg_id` ist **optional und kein Pflichtfeld**: fehlt es (Aufrufer war Operator, oder eine ältere Bridge injiziert es noch nicht), wird der `POS-TG`-Bind (§8.6) schlicht übersprungen — kein fail-closed, der Store wird normal angelegt.
+Fehlt ein **Pflichtfeld** (`place_id`, `vertriebler_contact_id`, `image_file_id`, `district`) → fail-closed **vor** jedem Read/Write, Status ins Topic (§9). `product_list`/`collection_list` sind Pflichtfelder im Schema (`required:true`) und müssen **≥1 Eintrag** tragen — eine leere Liste weist Shopify beim Create ab. Der Bridge-Dialog erzwingt die Produktauswahl (Pflichtauswahl ≥1); kommt die Liste dennoch leer an → **fail-closed** (§8.1/§9), nicht weglassen. `binder_tg_id` ist **optional und kein Pflichtfeld**: fehlt es (Aufrufer war Admin, oder eine ältere Bridge injiziert es noch nicht), wird der `POS-TG`-Bind (§8.6) schlicht übersprungen — kein fail-closed, der Store wird normal angelegt.
 
 **Die vier Dialog-Felder sind KEINE Kontrakt-Pflichtfelder.** Fehlt eines oder ist es ein leeres Array/Objekt, wird das entsprechende Metaobjekt-Feld schlicht **nicht geschrieben** — kein fail-closed, keine Rückfrage. Ein *fehlerhafter* Wert ist dagegen kein zulässiger Zustand (§5.3: unbekannter Handle → fail-closed).
 
 > **Zwei Klassen von Feldern, zwei Regeln.**
 >
-> **Pflicht-Listen (`required:true`): `product_list`, `collection_list`, `assortment_list`, `service_list`.** Jede muss ≥1 Eintrag tragen — Shopify weist den Create bei leerer Liste ohnehin ab. Der Agent fail-closed deshalb **vor** dem Write, wenn eine dieser Listen leer ist (§8.1/§9), mit einer **operator-facing** Meldung ins Operations-Topic — nicht mit einer Rückfrage an den Vertriebler (der steht im Laden und kennt das Feld nicht). `product_list` und `assortment_list` erzwingt zusätzlich der Bridge-Dialog (Pflichtauswahl ≥1), damit der Guard praktisch nie feuert; `service_list` speist sich aus Places + Dialog (§4.5) und fällt nur im seltenen Nullfall hinein.
+> **Pflicht-Listen (`required:true`): `product_list`, `collection_list`, `assortment_list`, `service_list`.** Jede muss ≥1 Eintrag tragen — Shopify weist den Create bei leerer Liste ohnehin ab. Der Agent fail-closed deshalb **vor** dem Write, wenn eine dieser Listen leer ist (§8.1/§9), mit einer **admin-facing** Meldung ins Operations-Topic — nicht mit einer Rückfrage an den Vertriebler (der steht im Laden und kennt das Feld nicht). `product_list` und `assortment_list` erzwingt zusätzlich der Bridge-Dialog (Pflichtauswahl ≥1), damit der Guard praktisch nie feuert; `service_list` speist sich aus Places + Dialog (§4.5) und fällt nur im seltenen Nullfall hinein.
 >
 > **Optionale Felder (`required:false`): `service_extra`, `parcel_carriers`, `socials`.** Im Dialog überspringbar — „keiner der drei Services", „kein Paketshop", „kein Social" sind gültige Antworten. Fehlt/leer → Feld schlicht **weglassen**, kein fail-closed. Skip und bewusstes Nein sind ununterscheidbar und führen zum selben Ergebnis.
 
@@ -514,7 +514,7 @@ telegram-broadcast · send_photo(
 
 ### 8.6 `POS-TG`-Bind am Vertriebler-Kontakt (best-effort, letzter Schritt)
 
-Bindet die Telegram-User-ID des Aufrufers an den Vertriebler-Kontakt, damit sein **nächster** `/new store` den Vertriebler-Picker überspringt (`registry.md` §4, Lifecycle). **Nur wenn `binder_tg_id` (§1) injiziert ist** — fehlt es (Aufrufer war Operator, oder ältere Bridge), diesen Schritt **komplett überspringen**, kein Status, kein Fehler.
+Bindet die Telegram-User-ID des Aufrufers an den Vertriebler-Kontakt, damit sein **nächster** `/new store` den Vertriebler-Picker überspringt (`registry.md` §4, Lifecycle). **Nur wenn `binder_tg_id` (§1) injiziert ist** — fehlt es (Aufrufer war Admin, oder ältere Bridge), diesen Schritt **komplett überspringen**, kein Status, kein Fehler.
 
 **Best-effort und wirklich zuletzt** (nach dem 🎉-Broadcast): Ein Fehlschlag hier darf die bereits erfolgreiche Store-Anlage **nicht** kippen — der Store steht, der Vertriebler sieht den Picker beim nächsten Mal eben nochmal (self-healing). Der übergeordnete fail-closed-Pfad (§9) gilt hier **nicht**; Fehler werden gefangen und höchstens als Zusatz-Hinweis an den Schluss-Status gehängt.
 
@@ -524,7 +524,7 @@ Bindet die Telegram-User-ID des Aufrufers an den Vertriebler-Kontakt, damit sein
 3. `update_contact` mit der so ergänzten `note` (**einziges** geändertes Feld, volles Objekt + `version` mitsenden — wie §8.2). Format zwingend (`registry.md` §4): `POS-TG: <tg_id>`, Präfix inkl. Doppelpunkt, genau ein Leerzeichen, dann die getrimmte numerische ID, **kein** Suffix.
 4. **Read-back (leicht):** optional `get_contact` → `note` enthält genau eine `POS-TG:`-Zeile. Bei Fehlschlag von 1–3: fangen, Store bleibt erfolgreich, Schluss-Status ergänzt „⚠️ POS-TG-Bind übersprungen".
 
-> **Warum hier und nicht in der Bridge:** Der `pos-store`-Agent schreibt Lexware ohnehin (§8.2 `POS-PARTNER`) und hält den Vertriebler-Kontakt in der Hand — der Bind ist ein zweites Feld auf einem Write, für den er schon steht. Die Bridge bleibt dadurch read-only auf Lexware. Sie entscheidet allein den **Operator-Ausschluss** (injiziert `binder_tg_id` nur für Nicht-Operatoren); der Agent führt aus, was injiziert wurde — er prüft die Operator-Liste **nicht** selbst (Invariante 2: keine Registry außerhalb der Injektion raten).
+> **Warum hier und nicht in der Bridge:** Der `pos-store`-Agent schreibt Lexware ohnehin (§8.2 `POS-PARTNER`) und hält den Vertriebler-Kontakt in der Hand — der Bind ist ein zweites Feld auf einem Write, für den er schon steht. Die Bridge bleibt dadurch read-only auf Lexware. Sie entscheidet allein den **Admin-Ausschluss** (injiziert `binder_tg_id` nur für Nicht-Admins); der Agent führt aus, was injiziert wurde — er prüft die Admin-Liste **nicht** selbst (Invariante 2: keine Registry außerhalb der Injektion raten).
 
 ---
 
