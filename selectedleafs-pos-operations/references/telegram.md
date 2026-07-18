@@ -204,7 +204,7 @@ Ab sofort halten wir dich hier bequem auf dem Laufenden. Du erfährst in Echtzei
 | `{stadtteil}` | `district` → `.name` (GID auflösen) |
 | `{stadtteile}` | alle `district`-Namen, dedupliziert (für Pinned-Reassurance) |
 | `{adresse}` | `adress` |
-| `{oeffnungszeiten}` | `opening_hours` |
+| `{oeffnungszeiten}` | `opening_hours` → **`.regular.periods`** (Google-Composite; `.current` ist das 7-Tage-Feiertagsfenster und gehört **nicht** in einen Post, der den Dauerzustand beschreibt). Render-Regel: `store.md` §8.5 |
 | `{rating}` / `{rating_count}` | `rating` → `.value` / `rating_count` |
 | `{maps_link}` | `google_place` → Maps-URL: `https://www.google.com/maps/search/?api=1&query={name}&query_place_id={place_id}` (in HTML jedes `&` → `&amp;`) |
 | `{sorte}` / `{vein}` | aus `product_list` / Lieferschein / manuell |

@@ -22,17 +22,15 @@ Die `agent-bridge` injiziert in die `user.message` (der Agent scannt **kein** To
 | `socials` | Objekt mit `tiktok` / `facebook` / `instagram` / `whatsapp` | `liftr_store` (§8.1), je einzeln optional |
 | `chat_id` + `message_thread_id` | Operations-Quell-Topic (wo der Auftrag/das Bild herkam) | Ziel der Status-/Rückfrage-Posts (§9) |
 
-Fehlt ein **Pflichtfeld** (`place_id`, `vertriebler_contact_id`, `image_file_id`, `district`) → fail-closed **vor** jedem Read/Write, Status ins Topic (§9). `product_list`/`collection_list` dürfen leer sein (Store wird ohne Sortiment angelegt), sind aber Pflichtfelder im Schema (§8.1) — leere Liste ist zulässig, fehlendes Feld nicht.
+Fehlt ein **Pflichtfeld** (`place_id`, `vertriebler_contact_id`, `image_file_id`, `district`) → fail-closed **vor** jedem Read/Write, Status ins Topic (§9). `product_list`/`collection_list` sind Pflichtfelder im Schema (`required:true`) und müssen **≥1 Eintrag** tragen — eine leere Liste weist Shopify beim Create ab. Der Bridge-Dialog erzwingt die Produktauswahl (Pflichtauswahl ≥1); kommt die Liste dennoch leer an → **fail-closed** (§8.1/§9), nicht weglassen.
 
 **Die vier Dialog-Felder sind KEINE Kontrakt-Pflichtfelder.** Fehlt eines oder ist es ein leeres Array/Objekt, wird das entsprechende Metaobjekt-Feld schlicht **nicht geschrieben** — kein fail-closed, keine Rückfrage. Ein *fehlerhafter* Wert ist dagegen kein zulässiger Zustand (§5.3: unbekannter Handle → fail-closed).
 
-> **Dialog-Pflicht ≠ Kontrakt-Pflicht.** Zwei verschiedene Wände, und sie stehen an verschiedenen Stellen.
+> **Zwei Klassen von Feldern, zwei Regeln.**
 >
-> `assortment_list` ist im Dialog **Pflicht: mindestens ein Handle.** Die Bridge lässt den Vertriebler nicht weiter, bis er wählt — ein Store ohne Sortiment ist ein leerer Filter im Store-Finder.
+> **Pflicht-Listen (`required:true`): `product_list`, `collection_list`, `assortment_list`, `service_list`.** Jede muss ≥1 Eintrag tragen — Shopify weist den Create bei leerer Liste ohnehin ab. Der Agent fail-closed deshalb **vor** dem Write, wenn eine dieser Listen leer ist (§8.1/§9), mit einer **operator-facing** Meldung ins Operations-Topic — nicht mit einer Rückfrage an den Vertriebler (der steht im Laden und kennt das Feld nicht). `product_list` und `assortment_list` erzwingt zusätzlich der Bridge-Dialog (Pflichtauswahl ≥1), damit der Guard praktisch nie feuert; `service_list` speist sich aus Places + Dialog (§4.5) und fällt nur im seltenen Nullfall hinein.
 >
-> Der **Agent** erzwingt das trotzdem nicht. Fehlt das Feld, hat nicht der Vertriebler etwas ausgelassen, sondern die Bridge es nicht mitgeschickt. Ein fail-closed an dieser Stelle bestraft den falschen Akteur: der Store wird nicht angelegt, der Vertriebler steht im Laden, und die Statusmeldung nennt ihm ein Feld, von dem er nie gehört hat. Eine Regel gehört dorthin, wo ein Mensch sie erfüllen kann.
->
-> `service_extra` und `parcel_carriers` sind auch im Dialog **überspringbar** — „keiner der drei Services" und „kein Paketshop" sind gültige Antworten. Skip und bewusstes Nein sind hier ununterscheidbar und führen zum selben Ergebnis. `socials` ist je Kanal einzeln überspringbar.
+> **Optionale Felder (`required:false`): `service_extra`, `parcel_carriers`, `socials`.** Im Dialog überspringbar — „keiner der drei Services", „kein Paketshop", „kein Social" sind gültige Antworten. Fehlt/leer → Feld schlicht **weglassen**, kein fail-closed. Skip und bewusstes Nein sind ununterscheidbar und führen zum selben Ergebnis.
 
 > **Bridge-Anforderung (noch nicht geliefert).** Die vier Dialog-Felder oben injiziert die heutige `agent-bridge` noch **nicht**. Bis sie es tut, läuft `pos-store` unverändert durch und lässt die Felder aus — der Kontrakt ist rückwärtskompatibel. Für den Bridge-Auftrag ist die Dialog-Reihenfolge festgehalten, damit sie dort nicht neu erfunden wird: **`vertriebler_contact_id` → `place_id` → `image_file_id`** → *`district`* (nur wenn der Geocoder ihn nicht auflöst) → `product_list` → **`assortment_list`** → `service_extra` → `parcel_carriers` → `socials`. Fett = Pflicht im Dialog, kursiv = bedingt, Rest überspringbar. `assortment_list` zeigt die **Namen** der 13 bestehenden `liftr_assortment`-Einträge und sendet deren **Handles** — nicht slugifizieren, mindestens ein Handle weicht vom Namen ab (`tiefkuehlprodukte-eis` = „Eis & Tiefkühlware"). `service_extra` hat genau **drei** Checkboxen (`lgbtq-freundlich`, `frauenfreundlich`, `haltestelle-in-der-naehe-oepnv`); der vierte Nicht-Places-Service `paketannahme-moeglich` kommt aus `parcel_carriers` (§4.5).
 >
@@ -63,17 +61,18 @@ Drei Invarianten, die den ganzen Lauf tragen (Konkretisierung von `SKILL.md` §I
 ```bash
 curl -sS -f "https://places.googleapis.com/v1/places/${PLACE_ID}" \
   -H "X-Goog-Api-Key: ${GOOGLE_PLACES_API_KEY}" \
-  -H "X-Goog-FieldMask: displayName,addressComponents,formattedAddress,location,regularOpeningHours,rating,userRatingCount,nationalPhoneNumber,timeZone,websiteUri,paymentOptions,parkingOptions,allowsDogs,delivery,accessibilityOptions"
+  -H "X-Goog-FieldMask: displayName,addressComponents,formattedAddress,location,regularOpeningHours,currentOpeningHours,rating,userRatingCount,nationalPhoneNumber,timeZone,websiteUri,paymentOptions,parkingOptions,allowsDogs,delivery,accessibilityOptions"
 ```
 
 - **`formattedAddress` gehört in die FieldMask** — §4.2 braucht es für das `google_place`-JSON. Fehlt es, muss der Agent Places ein zweites Mal ziehen (verifiziert in Session `sesn_01ANYcDhXVzH3JTjS3GFBoR5`).
+- **`regularOpeningHours` UND `currentOpeningHours` gehören beide in die FieldMask** — §4.1 schreibt beide roh ins Feld. `regular` trägt die wiederkehrende Woche, `current` die Feiertage. Fehlt `currentOpeningHours`, verliert der Store **still** seine Feiertagszeiten (kein Fehler, siehe „Fehlende Felder sind kein Fehler" unten).
 - **Die hinteren sechs Felder speisen `highlights` (§4.4) und `service_list` (§4.5).** `websiteUri` speist zusätzlich `website` (§8.1).
 - **FieldMask ohne Leerzeichen** — Google lehnt Leerzeichen in der Feldliste ab.
 - **Kein FieldMask = Fehler.** Es gibt keine Default-Feldliste; der Header ist Pflicht.
 - **`${GOOGLE_PLACES_API_KEY}` kommt aus dem Vault** (Anmeldedaten-Tresor des Agenten, Typ Umgebungsvariable). Der Wert wird **nie** geloggt, nie in eine Statusmeldung (§9) geschrieben und nie in ein anderes Ziel gesendet: die Zugangsdaten sind auf den Host `places.googleapis.com` und den Injektionsort **Request-Header** beschränkt. Der Variablenname ist Konfiguration und darf im Code stehen — der **Wert** gehört auf keine Skill-/Prompt-/Message-Ebene (`global-agent-framework` §6).
 - **Egress:** `places.googleapis.com` muss in der **Allowed-Hosts-Liste des Environments** stehen (analog §7, `restock.md` §6, `global-agent-framework` §11). **Die Vault-Host-Bindung oben ersetzt das nicht:** sie bindet das *Credential* an einen Host — sie legt fest, wohin der Schlüssel injiziert werden darf, und öffnet den Egress **nicht**. Es sind zwei unabhängige Gates, beide müssen stimmen. Fehlt der Host in der Allowed-Hosts-Liste, schlägt der `curl` als Netzwerkfehler fehl (`Host not in allowlist`) → fail-closed (§9), **nicht** auf einen anderen Weg ausweichen (`global-agent-framework` §13).
 
-Antwort ist ein `Place`-JSON; die `place_id` steht darin als `id`, der Name als `displayName.text`. Scheitert der Zug (kein Treffer, HTTP ≠ 2xx, leere Antwort) → fail-closed (§9). Aus dem Ergebnis werden §4/§5 gespeist. `timeZone` trägt die Über-Mitternacht-Logik der Öffnungszeiten (§4.1); es wird **nicht** ins Metaobjekt geschrieben.
+Antwort ist ein `Place`-JSON; die `place_id` steht darin als `id`, der Name als `displayName.text`. Scheitert der Zug (kein Treffer, HTTP ≠ 2xx, leere Antwort) → fail-closed (§9). Aus dem Ergebnis werden §4/§5 gespeist. `timeZone` wird **nicht** ins Metaobjekt geschrieben: der Live-Status im Theme rechnet in der **Markt-Zeitzone** (Europe/Berlin), nicht pro Store — alle Stores liegen in derselben Zone. Das Feld bleibt in der FieldMask, damit eine spätere Cross-Zeitzonen-Expansion nicht an einem fehlenden Zug hängt; heute liest es niemand.
 
 > **Kosten — bewusste Entscheidung, einmal pro Onboarding.** `paymentOptions`, `parkingOptions`, `allowsDogs` und `delivery` heben den Zug auf die **Enterprise + Atmosphere**-SKU; `accessibilityOptions` und `websiteUri` liegen auf **Pro**. Der Zug lag vorher unter beiden. Der Aufschlag fällt **einmal pro Store-Anlage** an, nicht pro Seitenaufruf — das ist der Preis dafür, dass Highlights und Services ohne einen Menschen und ohne generierten Text entstehen. Kein Grund, die FieldMask später „aus Sparsamkeit" wieder zu kürzen: ein fehlendes Feld erzeugt keinen Fehler, sondern **still einen ärmeren Store** (§4.5).
 >
@@ -85,23 +84,28 @@ Antwort ist ein `Place`-JSON; die `place_id` steht darin als `id`, der Name als 
 
 ## 4. Ableitungen aus dem Places-Ergebnis (Vorbedingung)
 
-### 4.1 `opening_hours` — Places-`periods` → LIFTR-Format
+### 4.1 `opening_hours` — Googles Antwort roh, keine Transformation
 
-Zielformat (exakt, verifiziert gegen `liftr-store`): Objekt mit Keys `mon tue wed thu fri sat sun`, Wert je ein Array von `[open, close]`-Paaren, Zeiten als `"HH:MM"`.
+**Der Agent transformiert nicht.** Google ist die alleinige Quelle — für reguläre Zeiten **und** Feiertage. Das Feld hält ein Composite aus zwei roh übernommenen Teilen der Places-Antwort (§3):
 
 ```json
-{ "mon": [["09:00","00:00"]], "fri": [["10:00","01:00"]], "sun": [["11:00","23:30"]], "wed": [] }
+{
+  "regular": <regularOpeningHours, unverändert>,
+  "current": <currentOpeningHours, unverändert>
+}
 ```
 
-Konvertierung aus `regularOpeningHours.periods` (jedes `period` = `open{day,hour,minute}` + `close{day,hour,minute}`, `day` 0=So..6=Sa):
+- **`regular`** = `regularOpeningHours` **roh**. Wochentag-basiert (`periods[].open/close` je `{day,hour,minute}`, `day` 0=So..6=Sa), **keine** Kalenderdaten, **keine** Feiertage. Trägt die wiederkehrende Wochen-Anzeige und die Live-Status-Basis.
+- **`current`** = `currentOpeningHours` **roh**. Rollierendes 7-Tage-Fenster ab Mitternacht des Abruftags, **datierte** Periods (`open.date`), Feiertagszeiten sind **in** diesen Periods enthalten. Trägt die Datums-Overrides des Live-Status.
+- Beide Teile stammen aus **einem** Places-Zug. Kein Reshape, kein Umsortieren, kein Auffüllen fehlender Tage, kein Filtern einzelner Unterfelder — **was Google liefert, steht im Feld**.
+- **Fehlt `regularOpeningHours` oder ist `periods` leer → fail-closed (§9).** Das Theme wirft bei fehlendem `regular` hart; ein Store ohne Öffnungszeiten ist kein ratbarer Zustand.
+- **Fehlt `currentOpeningHours` → `"current": null` schreiben, kein fail-closed.** Der Live-Status fällt dann auf `regular` zurück; der Store verliert nur seine Feiertagszeiten (Places liefert das Feld nicht für jeden Ort).
 
-- **Gruppierung nach dem OPEN-Tag.** Jedes Paar landet unter dem Wochentag-Key seines `open.day` (0→`sun`, 1→`mon`, …, 6→`sat`).
-- **Über-Mitternacht-Wrap:** Schließt ein Period am **Folgetag** (`close.day ≠ open.day`), bleibt es **unter dem Open-Tag** stehen; `close` ist die tatsächliche Folgetag-Zeit (z. B. `["10:00","01:00"]` = Fr 10:00 → Sa 01:00). Schluss exakt Mitternacht → `"00:00"`.
-- **Mehrtägiger Wrap (aufeinanderfolgende 24-h-Tage):** Google kodiert mehrere aufeinanderfolgende durchgehende Tage als **ein** Period `open{day:D, 00:00}` … `close{day:D+N, 00:00}` — erkennbar daran, dass `close.day` (mod 7) **mehr als einen Tag** hinter `open.day` liegt und die Open-Zeit `00:00` ist. Ein solches Period deckt die **vollen Tage D bis D+N−1** ab: **jeder** dieser Tage bekommt `[["00:00","00:00"]]`, nicht nur der Open-Tag. Ohne diese Regel greift der einfache Wrap oben, schreibt nur den Open-Tag als 24 h und lässt die Zwischentage fälschlich als Ruhetag `[]` stehen (verifiziert an Callin, `place_id ChIJI6i7rZ10sEcRKkoPWo2Ke0s`: Places meldet Fr **und** Sa „Open 24 hours", der Agent schrieb `sat:[]`). Abgrenzung: Der einfache Wrap (`N = 1`) und der echte 24/7-Fall (ein Period ohne `close`) bleiben unberührt — diese Regel feuert nur bei `N ≥ 2` mit Open-Zeit `00:00`.
-- **Split-Hours:** Mehrere Periods am selben Open-Tag → mehrere Paare im Array desselben Keys (z. B. Mittagspause).
-- **Ruhetag:** Kein Period → leeres Array `[]` für diesen Key (nicht weglassen — alle sieben Keys sind gesetzt).
-- **24 h durchgehend** (Places: ein Period ohne `close` bzw. `open` 00:00 ohne Schluss): als `[["00:00","00:00"]]` abbilden.
-- Zeitformat: zweistellig, führende Null (`"09:00"`, nicht `"9:00"`).
+> **Warum roh statt transformiert.** Die frühere LIFTR-Eigenform (`{mon:[["09:00","00:00"]], …}`) verlangte hier eine Konvertierung, die drei Sonderfälle selbst auflösen musste: einfacher Über-Mitternacht-Wrap, mehrtägiger 24-h-Wrap und die Doppeldeutigkeit von `"00:00"` (hieß je nach Öffnungszeit „24 h" **oder** „Schluss um Mitternacht"). Googles Encoding ist an genau diesen Stellen eindeutiger — 24 h ist ein Period **ohne** `close`, ein Wrap trägt `close.day ≠ open.day`. Die Auflösung liegt jetzt **einmal** im Theme-Parser statt in jedem Schreiber; der Agent hat hier keine Logik mehr. Die alte Regel für den mehrtägigen Wrap (verifiziert an Callin, `ChIJI6i7rZ10sEcRKkoPWo2Ke0s`: Fr **und** Sa „Open 24 hours" als **ein** Period `open{day:5,00:00}` → `close{day:0,00:00}`) ist damit nicht verschwunden, sondern in den Theme-Parser gewandert — **nur dort**, nicht mehr hier.
+
+> **`specialDays` ist kein Stundenlieferant.** `currentOpeningHours.specialDays[]` enthält laut Places-REST-v1-Referenz ausschließlich `{date}` — ein Marker „dieser Tag weicht ab", **keine** Zeiten. Die Feiertagsstunden stehen in den datierten `current.periods`. Kein Sonderpfad nötig: `specialDays` wird mitgeschrieben, weil `current` roh übernommen wird.
+
+> **`openNow` / `nextOpenTime` / `nextCloseTime` sind Momentaufnahmen** und stehen in beiden Teilen. Sie veralten in der Sekunde des Schreibens. Sie werden mitgeschrieben (roh heißt roh), aber **nie gelesen** — weder hier noch im Theme. Der Live-Status rechnet immer aus den Periods.
 
 ### 4.2 `google_place`-JSON bauen
 
@@ -141,7 +145,7 @@ sonst                                                    → "Barzahlung"
 
 Erste zutreffende Regel gewinnt. `acceptsNfc` gehört **nicht** hierher — mobiles Zahlen ist ein Service (§4.5), kein Highlight.
 
-**Slot 2 — Öffnungszeit-Charakter. Vollautomatisch, aus `opening_hours` (§4.1), kein Places-Zug.**
+**Slot 2 — Öffnungszeit-Charakter. Vollautomatisch, aus `regular.periods` (§4.1), kein zweiter Places-Zug.**
 
 ```
 durchgehend UND 7 Tage    → "24/7 geöffnet"
@@ -152,13 +156,19 @@ sonst                     → Slot bleibt leer
 
 Genau eine Phrase; erste zutreffende Regel gewinnt. Die Reihenfolge ist tragend: „24/7" und „Täglich" treffen beide auf einen durchgehend geöffneten Laden zu, und „24/7" ist die stärkere Aussage.
 
-Präzisierung der Begriffe gegen §4.1:
+**Auswertung gegen Googles `regular.periods`.** Da §4.1 nicht mehr transformiert, wertet Slot 2 direkt Googles Encoding aus. Dafür wird — nur zur Auswertung, **nicht** zum Schreiben — die **Tagesabdeckung** bestimmt: welcher Wochentag (0=So..6=Sa) ist wie lange offen?
 
-- **durchgehend** = jeder der sieben Keys trägt genau `[["00:00","00:00"]]`.
-- **7 Tage geöffnet** = kein Key ist ein leeres Array `[]`.
-- **Schluss nach 22:00 Uhr** = an mindestens einem Tag schließt ein Paar später als `"22:00"`.
+- **Ein Period ohne `close`** → der Store ist **durchgehend an allen sieben Tagen** offen (Googles 24/7-Kodierung, `open{day:0,hour:0,minute:0}`). → `"24/7 geöffnet"`, fertig.
+- **Ein Period mit `close.day ≠ open.day`** deckt den Open-Tag ab **plus jeden Tag bis `close.day`**. Bei `N ≥ 2` Tagen Abstand und Open-Zeit `00:00` sind die Zwischentage **volle 24-h-Tage** (Callin-Fall: `open{day:5,00:00}` → `close{day:0,00:00}` deckt Fr **und** Sa). Wer nur nach `open.day` gruppiert, hält Samstag für einen Ruhetag und vergibt fälschlich kein Highlight.
+- **`day` ist das einzige Gruppierungsmerkmal.** Die Reihenfolge des `periods`-Arrays ist laut Places-Referenz **nicht** fix (sie beginnt nicht zwingend mit Sonntag) und unabhängig von `weekdayDescriptions`. Nie über die Array-Position gruppieren.
 
-> **Der Über-Mitternacht-Wrap zählt IMMER als spät.** Bei `["10:00","01:00"]` ist die Schlusszeit als String **kleiner** als die Öffnungszeit — ein naiver Vergleich `close > "22:00"` sagt „nein" und nimmt ausgerechnet dem Spätkiosk sein Highlight. Regel: ist `close <= open`, wrappt das Paar über Mitternacht und gilt ohne weitere Prüfung als Schluss nach 22:00. Ausnahme: `["00:00","00:00"]` (24 h) — das ist kein Wrap, sondern der Durchgehend-Fall.
+Präzisierung der Begriffe gegen diese Abdeckung:
+
+- **durchgehend** = jeder der sieben Tage ist über volle 24 h abgedeckt (via Period ohne `close`, oder lückenlos aneinandergrenzende Periods).
+- **7 Tage geöffnet** = jeder der sieben Tage trägt mindestens ein Period (kein Tag ohne Abdeckung).
+- **Schluss nach 22:00 Uhr** = an mindestens einem Tag liegt ein `close` später als 22:00 — **oder** das Period wrappt über Mitternacht.
+
+> **Der Über-Mitternacht-Wrap zählt IMMER als spät.** In Googles Encoding ist der Wrap an `close.day ≠ open.day` erkennbar — ein Fr 10:00 → Sa 01:00 trägt `open{day:5,hour:10}` / `close{day:6,hour:1}`. Ein naiver Vergleich nur auf `close.hour > 22` sagt „nein" (1 < 22) und nimmt ausgerechnet dem Spätkiosk sein Highlight. Regel: **`close.day ≠ open.day` ⟹ gilt ohne weitere Prüfung als Schluss nach 22:00.** Der Vorteil gegenüber der alten Eigenform: dort musste dieselbe Regel über einen String-Vergleich (`close <= open`) rekonstruiert werden und kollidierte mit dem 24-h-Sonderfall `["00:00","00:00"]`. Hier ist 24 h ein Period **ohne** `close` und fällt gar nicht erst in diesen Zweig.
 
 **Slot 3 — optional, Priorität von oben nach unten.**
 
@@ -327,10 +337,10 @@ Schlägt der District-Create fehl → fail-closed (§9), **kein** Store-Create.
 |---|---|---|
 | `name` | Store-Name | Places `displayName.text` |
 | `image` | Teaser-Bild-GID | §7 (`MediaImage`-GID) |
-| `product_list` | Produkt-GIDs | Input `product_list` (JSON-Liste) |
-| `collection_list` | Collection-GIDs | Input `collection_list` (JSON-Liste) |
-| `assortment_list` | Assortment-GIDs | §5.3; leer/fehlend → **Feld weglassen** |
-| `service_list` | Service-GIDs | §4.5 → §5.3; leer → **Feld weglassen** |
+| `product_list` | Produkt-GIDs | Input `product_list`; **`required:true`** — leer → **fail-closed (§9)** (Bridge-Dialog erzwingt ≥1) |
+| `collection_list` | Collection-GIDs | Input `collection_list`; **`required:true`** — leer → **fail-closed (§9)** |
+| `assortment_list` | Assortment-GIDs | §5.3; **`required:true`** — leer → **fail-closed (§9)**, nie weglassen (Dialog garantiert ≥1) |
+| `service_list` | Service-GIDs | §4.5 → §5.3; **`required:true`** — leer (Places+Dialog ohne Treffer) → **fail-closed (§9)**, nie weglassen |
 | `highlights` | 2–3 Phrasen, feste Reihenfolge | §4.4; nie generiert, nie aufgefüllt |
 | `website` | Website-URL | Places `websiteUri`; **fehlt → Feld weglassen** (Typ `url`, kein Leerstring) |
 | `new` | `true` | **Nur im CREATE-Zweig.** Im Heal-Zweig nicht anfassen |
@@ -341,9 +351,9 @@ Schlägt der District-Create fehl → fail-closed (§9), **kein** Store-Create.
 | `postal_code` | PLZ | §4.3 (Ganzzahl) |
 | `city` | City-GID | §5.1 |
 | `district` | District-GID | §5.2 |
-| `phone` | Telefon | Places `nationalPhoneNumber` |
+| `phone` | Telefon | Places `nationalPhoneNumber`; **`required:false`** — fehlt → **Feld weglassen** (wie `website`) |
 | `google_place` | Place-JSON | §4.2 (JSON-String) |
-| `opening_hours` | Öffnungszeiten | §4.1 (JSON-String) |
+| `opening_hours` | Google-Composite `{regular, current}` | §4.1 (JSON-String, roh — keine Transformation) |
 
 **Read-back:** die zurückgegebene GID via `metaobject(id:)` lesen, `google_place.id == place_id` bestätigen.
 
@@ -351,14 +361,18 @@ Schlägt der District-Create fehl → fail-closed (§9), **kein** Store-Create.
 
 - **`featured`** — Geschäftsentscheidung, welcher Store auf der Startseite steht. Niemals Agent, in keinem Zweig, auch nicht `false`.
 - **`testimonial_list`** — es gibt keine Quelle, aus der ein Agent Testimonials ziehen dürfte (§10).
-- **`opening_hours_holiday`** — Feiertagszeiten pflegt der Mensch; Places' `specialOpeningHours` ist ein rollierendes Fenster, kein Dauerzustand.
+- **`opening_hours_holiday`** — **Feld wird aus der Definition entfernt.** Nicht schreiben, nicht lesen. Feiertage kommen aus Google (`current.periods`, §4.1); ein manuell gepflegtes Zweitfeld wäre eine zweite Quelle neben Google — genau das, was die Umstellung beseitigt. (Verifiziert vor der Entfernung: in allen 8 Bestands-Stores war das Feld `null` — es wurde nie gepflegt.)
 - **`image_mood`** — Feld wird aus der Definition entfernt. Nicht schreiben, nicht lesen.
 
-> **`new: true` ist heute eine Einbahnstraße.** Der Agent setzt das Flag bei der Anlage; **niemand** setzt es zurück. Ein Rollover-Prozess ist entschieden, aber nicht gebaut. Bis dahin trägt jeder angelegte Store das Flag dauerhaft — bewusst in Kauf genommen, kein Bug, den ein späterer Lauf hier reparieren soll.
+> **`new: true` setzt dieser Agent, zurück setzt es der `cron-pos-sync`-Worker.** Der Agent schreibt das Flag nur bei der Anlage (CREATE-Zweig). Das Zurücksetzen übernimmt der externe wöchentliche Sync: er setzt `new:false`, sobald der Store **45 Tage** nach `createdAt` alt ist. Der Agent selbst setzt es nie zurück.
 >
-> **Im Heal-Zweig bleibt `new` unberührt.** Ein Re-Run auf einen Store, dessen Flag ein Mensch bereits entfernt hat, darf es nicht zurücksetzen.
+> **Im Heal-Zweig bleibt `new` unberührt.** Ein Re-Run auf einen Store, dessen Flag der Sync (oder ein Mensch) bereits entfernt hat, darf es nicht zurücksetzen.
 
 > **Schicht-2-Hinweis (Security):** Der Store-Write geht über das generische `graphql_mutation` — Schicht 1 (`enabled:false`) trägt hier nicht (`global-agent-framework` §7-Sonderfall). Die tragende Wand ist der **Credential-Scope** des Shopify-Tokens im Vault (nur Metaobjekt-/File-Writes), plus `always_ask` in der Testphase. Der Agent operiert auf extern injiziertem Input — deshalb Token-Scope minimal halten.
+
+> **Fünf Felder pflegt nach der Anlage extern der `cron-pos-sync`-Worker — Google ist ihre alleinige Quelle.** `opening_hours`, `rating`, `rating_count`, `phone` und `website` gleicht ein wöchentlicher Cloudflare-Cron (`0 3 * * sun`, Dashboard-gesteuert) gegen Google Places ab und schreibt echte Änderungen roh zurück. Konsequenz: eine **manuelle** Korrektur dieser fünf Felder in Shopify hält nicht — der nächste Sync-Lauf überschreibt (oder leert) sie. Korrekturen gehören ins Google-Business-Profil, nicht ins Metaobjekt. Der Agent hier schreibt sie bei der Anlage; danach gehören sie dem Sync.
+>
+> **Feld leeren = leerer String, nie `null`.** `MetaobjectFieldInput.value` ist non-nullable — `null` wirft schema-seitig („Expected value to not be null", am Prod-Store verifiziert). Ein Feld wird geleert, indem man es mit `value: ""` schreibt; der Read-back ist dann `null`. Gilt für jeden Feldtyp (url, text, strukturiertes `rating` — alle drei bestätigt). Das ist das Clear-Idiom für **jeden** Write in dieser Kette, nicht nur den Sync.
 
 #### 8.1.1 `rating`/`rating_count` bei Stores ohne Google-Bewertung
 
@@ -370,7 +384,7 @@ Ein frisch gelisteter Kiosk hat bei Google oft **keine** Bewertung → Places li
 
 Das kollabiert „kein rating" und „rating ohne count" auf denselben Pfad. Andernfalls schriebe der Agent eine 5-Sterne-Wertung mit null Bewertungen in den Store-Finder — die spiegelverkehrte Variante genau des Fehlers, den der Absatz oben vermeidet. Der Zustand ist wohlgeformt und würde von keinem fail-closed gefangen; er wäre still falsch.
 
-**Build-time verifiziert (erledigt).** Die `liftr_store`-Definition führte `rating`, `testimonial_list`, `product_list` und `collection_list` als Pflichtfelder; alle vier sind auf `required: false` gesetzt. Grund: sie beschreiben, was ein Store *erwirbt*, nicht was ihn *konstituiert* — ein frisch gelisteter Kiosk hat weder Bewertung noch Testimonials und ggf. kein Sortiment. Die Regel bleibt: **niemals** ersatzweise eine erfundene Wertung schreiben. Wird die Definition erneut verschärft, bricht §8.1 fail-closed — das ist gewollt.
+**Required-Status der Definition (verifiziert am Live-Schema).** `rating` und `testimonial_list` sind `required:false` — sie beschreiben, was ein Store *erwirbt*, nicht was ihn *konstituiert*; ein frisch gelisteter Kiosk hat weder Bewertung noch Testimonials. **`product_list`, `collection_list`, `assortment_list` und `service_list` sind dagegen `required:true`** (ein Store MUSS Produkte, Sortiment und Services tragen) — eine leere Liste weist Shopify beim Create ab, deshalb **fail-closed statt weglassen** (§8.1, §1-Blockquote). Für `rating` bleibt die Regel: **niemals** ersatzweise eine erfundene Wertung schreiben.
 
 ### 8.2 Lexware Store-Kontakt + `POS-PARTNER`-Notiz
 
@@ -471,7 +485,7 @@ So       09:00–23:30
 ```
 
 - `{store_name}` = `liftr_store.name` (§8.1) · `{stadtteil}` = `district.name` (§5.2) · `{adresse}` = `adress` (§4.3, ein `d`).
-- **Öffnungszeiten = eigener Block, ein Tagesbereich pro Zeile.** Gerendert aus `opening_hours` (§4.1): aufeinanderfolgende Tage mit identischem Intervall werden zu einer Spanne zusammengezogen (`Mo–Do`), 24-Stunden-Tage heißen `durchgehend`, geschlossene Tage `geschlossen`. Die Werte oben sind ein **Beispiel**, kein Default — geschrieben wird, was §4.1 liefert.
+- **Öffnungszeiten = eigener Block, ein Tagesbereich pro Zeile.** Gerendert aus **`opening_hours.regular.periods`** (§4.1 — die wiederkehrende Woche, **nicht** `current`: der Broadcast beschreibt den Dauerzustand des Stores, nicht das Feiertagsfenster der Anlagewoche): aufeinanderfolgende Tage mit identischem Intervall werden zu einer Spanne zusammengezogen (`Mo–Do`), 24-Stunden-Tage heißen `durchgehend`, Tage ohne Period `geschlossen`. Dieselbe Tagesabdeckung wie in §4.4 Slot 2 — insbesondere deckt ein Period mit `close.day ≠ open.day` **jeden** Tag bis `close.day` ab (Callin: Fr **und** Sa `durchgehend` aus **einem** Period), und gruppiert wird ausschließlich über `day`, nie über die Array-Position. Die Werte oben sind ein **Beispiel**, kein Default.
 - **Nie** die Tage mit `·` zu einer Zeile verketten. Telegram bricht lange Caption-Zeilen weich um; die Umbruchstelle liegt dann mitten in einem Tagesbereich und die letzte Zeile zerreißt. Ein harter Zeilenumbruch pro Bereich ist die einzige Form, die auf jeder Client-Breite hält.
 - `{maps_link}` aus `google_place` (§4.2): `https://www.google.com/maps/search/?api=1&query={name}&query_place_id={place_id}` — in HTML **jedes `&` → `&amp;`**.
 - **CTA:** „Google Maps öffnen" als `<a href>`-**Verb-Link** — kein roher URL, **kein Underline** (native Telegram-Linkfarbe), Leerzeile davor.
