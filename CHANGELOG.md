@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.12.0](https://github.com/wemwi/skill-library/compare/v5.11.0...v5.12.0) (2026-07-18)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** v5.7.1 — OPERATOR_TG_IDS zu TELEGRAM_ADMIN_IDS ([#146](https://github.com/wemwi/skill-library/issues/146)) ([f32fddb](https://github.com/wemwi/skill-library/commit/f32fddb69409f840edca00a0c3c288d1d4c83bcf))
+
 ## [5.11.0](https://github.com/wemwi/skill-library/compare/v5.10.0...v5.11.0) (2026-07-18)
 
 
