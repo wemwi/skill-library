@@ -16,7 +16,7 @@ Dieses Verzeichnis hält **statische Werte** (IDs, Maps, Pfade) aus dem Always-o
 |-------|------------------|----------------------|--------|
 | Hannover | `kratom_hannover` | `-1003904362997` | live (Pilot) |
 
-- Jede live geschaltete Stadt braucht hier einen Eintrag (Restock postet ausschließlich gegen diese Tabelle, ohne Fallback-Ableitung). Weitere Städte werden ergänzt, sobald ihr Channel live geht (Aktivierungsschwelle, vgl. `telegram.md` §1).
+- Jede live geschaltete Stadt braucht hier einen Eintrag (Restock postet ausschließlich gegen diese Tabelle, ohne Fallback-Ableitung). Weitere Städte werden ergänzt, sobald ihr Channel live geht (Aktivierungsschwelle, vgl. `city.md` §1).
 - Test-Channel (nicht öffentlich, für Posting-Dry-Runs): `Broadcast Test` = `-1004399731658`.
 
 ---

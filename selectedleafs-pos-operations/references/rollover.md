@@ -124,7 +124,7 @@ Ziel = Lexware-Vertriebler-Kontakt (§2.1), Feld `note`. **Erst ausführen, wenn
 **Genau zwei Posts pro Lauf**, beide am Ende:
 
 1. **Summenzeile (Lebenssignal, immer — auch bei 0/0):**
-   „♻️ Jahres-Rollover {Zieljahr}: {A} Vertriebler gerollt, {B} übersprungen (bereits {Zieljahr}), {C} Fehler. Neue Sheets: {Σ Stores} Store-Zeilen."
+   „✅ **Jahres-Rollover {Zieljahr}** — {A} gerollt, {B} übersprungen (bereits {Zieljahr}), {C} Fehler · {Σ Stores} Store-Zeilen.“ (Kopf-Emoji → ⚠️ sobald {C} > 0; Fehler-Einheiten einzeln **mit Grund** darunter — Batch-Format, Invariante 6.)
    Fehler-Einheiten (§2/§3) einzeln anhängen: „⚠️ {Name}: abgebrochen nach `<Alt-Read|Ordner|Sheet|Stammdaten|Stores|Marker>` — `<konkreter Fehler>`. Re-Run (Manual-Run) heilt."
 2. **Late-Voucher-Hinweis (einmalig, direkt nach dem Rollover):**
    „ℹ️ Marker zeigen jetzt auf {Zieljahr}. Verspätete {Vorjahr}-Belege (voucherDate im Vorjahr) laufen ab jetzt in den Jahres-Guard von `pos-invoice` (§2.3) → sie werden **nicht** automatisch eingetragen und müssen **manuell** ins archivierte {Vorjahr}-Sheet. Die alten Sheets bleiben dafür erhalten."

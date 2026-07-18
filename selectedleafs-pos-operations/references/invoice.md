@@ -1,6 +1,6 @@
 # Invoice — Provisionsabrechnung POS-Partner
 
-Lexware-Rechnung eines Kiosk-Partners in die Provisionsliste (Google Sheet) des zuständigen Vertrieblers eintragen; bei Zahlungseingang dieselbe Zeile aktualisieren. Diese reference ist **selbsttragend** (kein Sprung in `telegram.md`, das nur für die Launch-Domäne Pflicht ist). Der Agent **rechnet keine Beträge** — Netto kommt fertig aus Lexware, Provision/Kosten sind Sheet-Formeln, die der Agent nie überschreibt.
+Lexware-Rechnung eines Kiosk-Partners in die Provisionsliste (Google Sheet) des zuständigen Vertrieblers eintragen; bei Zahlungseingang dieselbe Zeile aktualisieren. Diese reference ist **selbsttragend** (kein Sprung in eine fremde reference). Der Agent **rechnet keine Beträge** — Netto kommt fertig aus Lexware, Provision/Kosten sind Sheet-Formeln, die der Agent nie überschreibt.
 
 ## 1. Trigger & Reihenfolge
 
@@ -183,7 +183,7 @@ Voucher, dessen `voucherStatus` (§5.3 Treffer) sich Richtung bezahlt bewegt hat
 | Jahr-Mismatch (§2.3) | „⚠️ RG-… (Beleg {Jahr}): Ziel-Sheet von „<Name>“ trägt Jahr {Sheet-Jahr} — **nichts** eingetragen, bitte manuell nachtragen.“ |
 | Kein `Jahr`-Anker im Sheet (§2.3) | „⚠️ RG-…: Ziel-Sheet ohne Label `Jahr` in `Allgemein!B:C` — nicht verifizierbar.“ |
 | Checksum-Mismatch (§3) | „⚠️ RG-…: Positionssumme ≠ Rechnungsbetrag laut Extraktion — bitte manuell prüfen.“ |
-| Backstop-Lauf abgeschlossen (§1b) | „♻️ Backstop-Lauf: {X} geprüft, {Y} nachgetragen, {Z} Status-Updates.“ — **immer** posten, auch bei 0/0/0. |
+| Backstop-Lauf abgeschlossen (§1b) | **Batch-Report** (Invariante 6): Kopf „✅ **Backstop** — {Y} nachgetragen, {Z} bezahlt-Updates ({X} geprüft)“; Ausnahme-Belege einzeln **mit Grund** darunter, Kopf-Emoji → ⚠️ sobald Ausnahmen > 0. **Immer** posten, auch bei 0 Ausnahmen (Lebenssignal). |
 
 ```
 post_message(
