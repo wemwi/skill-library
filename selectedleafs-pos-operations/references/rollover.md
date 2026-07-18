@@ -108,7 +108,7 @@ Pro Store aus dem Index **eine** Zeile, Mechanik **identisch** zu `store.md` §8
 Ziel = Lexware-Vertriebler-Kontakt (§2.1), Feld `note`. **Erst ausführen, wenn §5.1 und §5.2 durch sind.**
 
 1. `get_contact(<uuid>)` → aktuelle `note` lesen.
-2. **Nur die `POS-SHEET`-Zeile ändern:** per Regex ausschließlich die bestehende `POS-SHEET:`-Zeile durch `POS-SHEET: <neue-sheet-id>` ersetzen, Rest der `note` (inkl. etwaiger anderer Marker) **unangetastet**. Format zwingend (`registry.md` §4): Präfix inkl. Doppelpunkt, genau ein Leerzeichen, getrimmter Wert, **kein** Jahres-Suffix (der Marker ist jahresblind — Bridge-Vertrag; ein `POS-SHEET-2026:` bräche `agent-bridge.fetchVertriebler()`).
+2. **Nur die `POS-SHEET`-Zeile ändern** (Marker-Invariante `registry.md` §4, zeilen-gebundenes Schreiben): per Regex ausschließlich die bestehende `POS-SHEET:`-Zeile durch `POS-SHEET: <neue-sheet-id>` ersetzen, Rest der `note` (inkl. etwaiger anderer Marker — insb. `POS-TG`, `store.md` §8.6) **unangetastet**. Format zwingend (`registry.md` §4): Präfix inkl. Doppelpunkt, genau ein Leerzeichen, getrimmter Wert, **kein** Jahres-Suffix (der Marker ist jahresblind — Bridge-Vertrag; ein `POS-SHEET-2026:` bräche `agent-bridge.fetchVertriebler()`).
 3. `update_contact` mit der vollständigen, so modifizierten `note` (einziges geändertes Feld, volles Objekt + `version` mitsenden, wie `store.md` §8.2 / `salesperson.md` §5).
 
 **Read-back:** `get_contact` → `note` enthält genau eine `POS-SHEET:`-Zeile mit der neuen Sheet-ID. Ab diesem Read greift Gate A (§4) bei künftigen Läufen.

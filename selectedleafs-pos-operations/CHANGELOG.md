@@ -2,6 +2,28 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [5.7.0](https://github.com/wemwi/skill-library) (2026-07-18)
+
+### Features
+
+* **store:** neues Kontrakt-Feld `binder_tg_id` (optional) — die `agent-bridge` injiziert die Telegram-User-ID des Aufrufers nur für **Nicht-Operatoren**; fehlt es, wird der Bind übersprungen (kein fail-closed) ([`references/store.md`](references/store.md) §1)
+* **store:** §8.6 neu — `POS-TG`-Bind am Vertriebler-Kontakt als **best-effort letzter Schritt** (append-only, Guard: nur wenn noch keine `POS-TG`-Zeile). Bindet die Absender-ID an den Kontakt, damit dessen nächster `/new store` den Vertriebler-Picker überspringt. Ein Fehlschlag kippt die Store-Anlage nicht (self-healing)
+* **registry:** `POS-TG: <tg_id>`-Marker + Lifecycle dokumentiert (Lazy-Bind beim ersten eigenen `/new store`, Operator-Ausschluss, append-only, Reihenfolge-Garantie gegen Clobber) ([`references/registry.md`](references/registry.md) §4)
+
+### Invariants
+
+* **Marker-Zeilen-Invariante (neu, universell §Invarianten 5):** Lexware-`note`-Marker sind zeilen-gebunden — Lesen extrahiert den Wert **der eigenen Zeile** (nie „alles nach dem ersten Doppelpunkt"), Schreiben ändert **nur die eigene Zeile** und lässt andere Marker unangetastet (kein Voll-Neusatz der `note`). Tragend, seit die Vertriebler-`note` mit `POS-SHEET` **und** `POS-TG` zwei Marker trägt; ein Verstoß liefe **still** in die falsche (geld­relevante) Sheet-ID oder löschte `POS-TG`. Gleiche Klasse wie die `PLACE_CHIP`-Invariante
+* **store §6 / invoice §2.2:** `POS-SHEET`-Read auf zeilen-gebundene Extraktion festgezurrt (Vertriebler-`note` trägt jetzt auch `POS-TG`)
+* **invoice §2.1:** `POS-PARTNER`-Read auf dieselbe Invariante verwiesen (Futureproof; Store-Kontakt trägt heute nur einen Marker)
+* **rollover §6 / salesperson §5:** erfüllten das zeilen-gebundene Schreiben bereits — jetzt explizit auf die zentrale Invariante (`registry.md` §4) verwiesen, kein Verhaltensbruch
+
+### Notes
+
+* Rebased auf `main` **nach** PR #142 (Öffnungszeiten-/Store-Schema-Migration, released als 5.6.0): dessen `store.md`-Änderungen (`required:true`, `cron-pos-sync`-Ownership, Öffnungszeiten) bleiben vollständig erhalten — diese 5.7.0 setzt **nur** die POS-TG-Ebene obendrauf
+* Die tg_id → Lexware-Kontakt-Zuordnung ist ein **irreduzibler einmaliger Bind** — Telegram gibt fremde IDs nicht her (keine Mitgliederliste, kein Tag, keine Aktivitäten-API), ein Bot lernt eine ID nur, wenn die Person selbst sendet. Deshalb Lazy-Bind beim ersten eigenen `/new store` statt „beim Anlegen"
+* `POS-TG` bewusst als Line-Marker in `note`, **nicht** als JSON-Blob (JSON bräche bei menschlichem Freitext im selben Feld) und **nicht** als Lexware-Aktivität (die Public API kennt Aktivitäten nicht) — `note` ist das einzige API-schreibbare Freitextfeld am Kontakt
+* Operator-Ausschluss über Bridge-Var `OPERATOR_TG_IDS`; der Agent prüft die Liste **nicht** selbst, er führt nur aus, was injiziert wurde (Invariante 2). Bridge-Umsetzung: `agent-bridge` PR #45 (merged, byte-verifiziert)
+
 ## [5.6.0](https://github.com/wemwi/skill-library) (2026-07-18)
 
 ### Fixed

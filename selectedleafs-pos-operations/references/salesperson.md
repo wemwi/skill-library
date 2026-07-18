@@ -83,7 +83,7 @@ Pro Vertriebler ein eigener Ordner (wie manuell für bestehende Partner), darin 
 Ziel: Lexware-Kontakt aus §3, Feld `note`.
 
 1. `get_contact` → aktuelle `note` lesen.
-2. **Nur die eigene Zeile ändern:** trägt `note` bereits eine `POS-SHEET:`-Zeile (Heal-Fall) → per Regex **ausschließlich** diese eine Zeile ersetzen, Rest der `note` unangetastet lassen. Trägt sie noch keine → Zeile `POS-SHEET: <sheet-id>` anhängen.
+2. **Nur die eigene Zeile ändern** (Marker-Invariante `registry.md` §4, zeilen-gebundenes Schreiben): trägt `note` bereits eine `POS-SHEET:`-Zeile (Heal-Fall) → per Regex **ausschließlich** diese eine Zeile ersetzen, Rest der `note` (inkl. etwaiger anderer Marker) unangetastet lassen. Trägt sie noch keine → Zeile `POS-SHEET: <sheet-id>` anhängen.
 3. `update_contact` mit der vollständigen, so modifizierten `note` (**einziges** geändertes Feld, volles Objekt + `version` mitsenden — wie `store.md` §8.2).
 
 **Format zwingend** (`registry.md` §4): Präfix inkl. Doppelpunkt, genau ein Leerzeichen, dann der getrimmte Wert. **Kein Jahres-Suffix** — der Marker ist jahresblind (Bridge-Vertrag, `registry.md` §4); `pos-rollover` setzt später nur den Wert um, dieser Agent legt ihn erstmalig an.

@@ -48,7 +48,7 @@ get_voucher(resourceId) ──► contactId
 
 `contactId` kommt aus `get_voucher` (§1/§3 — der Beleg trägt nur die contactId-UUID, keine Kundennummer). Aus derselben Antwort:
 
-- `note` → Marker `POS-PARTNER: <uuid>` (Konvention → `registry.md` §4). `<uuid>` ist der getrimmte String **nach** dem Doppelpunkt.
+- `note` → Marker `POS-PARTNER: <uuid>` (Konvention → `registry.md` §4). `<uuid>` ist der getrimmte Rest der **`POS-PARTNER:`-Zeile** (zeilen-gebunden, Marker-Invariante `registry.md` §4 — der Store-Kontakt trägt heute nur diesen einen Marker, die zeilen-gebundene Extraktion hält aber auch, falls je ein zweiter hinzukommt).
 - `roles.customer.number` → **Lexware-Kundennummer** = Store-Match-Key gegen `Stores!B5:B` (§4).
 
 **note-Guard, zwei Fälle:**
@@ -61,7 +61,7 @@ get_voucher(resourceId) ──► contactId
 
 `get_contact(<uuid>)` auf die UUID aus §2.1:
 
-- `note` → Marker `POS-SHEET: <spreadsheet-id>` → die Ziel-Spreadsheet-ID für **alle** folgenden Schritte.
+- `note` → Marker `POS-SHEET: <spreadsheet-id>` → die Ziel-Spreadsheet-ID für **alle** folgenden Schritte. **Zeilen-gebunden extrahieren** (Marker-Invariante `registry.md` §4): nur der getrimmte Rest der **`POS-SHEET:`-Zeile**, **nicht** „alles nach dem ersten Doppelpunkt" — der Vertriebler-Kontakt trägt inzwischen auch `POS-TG` (`store.md` §8.6); ein naives Lesen zöge dessen Zeile mit in die Sheet-ID und der Insert liefe still in die falsche Datei.
 - Kontaktname (Firma, sonst `person.firstName person.lastName`) → nur für die Status-Zeile (§9). Er ist **kein** Lookup-Schlüssel mehr; nichts hängt an seiner Schreibweise.
 
 **Guards:**
