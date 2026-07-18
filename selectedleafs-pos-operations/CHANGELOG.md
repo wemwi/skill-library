@@ -2,12 +2,33 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [5.6.0](https://github.com/wemwi/skill-library) (2026-07-18)
+
+### Fixed
+
+* **store:** §8.1.1 korrigiert — die Behauptung, `product_list`/`collection_list` seien `required:false`, war **falsch**. Am Live-Schema verifiziert: `product_list`, `collection_list`, `assortment_list`, `service_list` sind `required:true`; nur `rating` und `testimonial_list` sind `required:false`
+* **store:** §8.1-Tabelle + §1-Blockquote — die vier Pflicht-Listen dürfen bei leerer Liste **nicht** weggelassen werden (Shopify weist den Create ab), sondern lösen **fail-closed** aus (operator-facing Status). `product_list`/`assortment_list` erzwingt zusätzlich der Bridge-Dialog (≥1); `service_list` fällt nur im seltenen Nullfall in den Guard
+* **store:** §8.1 — `phone` ist jetzt `required:false`; fehlt Places `nationalPhoneNumber` → Feld **weglassen** (wie `website`), kein Guard-Fehler mehr beim Create
+
+### Changed
+
+* **store:** die `new`-Notiz spiegelt jetzt den `cron-pos-sync`-Worker — `new:false` wird 45 Tage nach `createdAt` vom externen Sync gesetzt (keine „Einbahnstraße" mehr); der Agent setzt es weiterhin nie zurück
+
+### Documentation
+
+* **store:** neue Notiz vor §8.1.1 — `opening_hours`, `rating`, `rating_count`, `phone`, `website` pflegt nach der Anlage der externe wöchentliche `cron-pos-sync` (Google = SSoT); manuelle Shopify-Korrekturen dieser Felder überschreibt der Sync. Korrekturen gehören ins Google-Business-Profil
+* **store:** Clear-Idiom festgehalten — Feld leeren = `value: ""` (Read-back `null`), **nie** `value: null` (`MetaobjectFieldInput.value` ist non-nullable, am Prod-Store verifiziert)
+
+### Notes
+
+* Diese Version bringt zugleich die zuvor nur gemountete Öffnungszeiten-Migration (`opening_hours` als rohes `{regular, current}`-Composite, `currentOpeningHours` in der FieldMask, `opening_hours_holiday`-Entfernung) auf `main` — schließt die Drift zwischen gemountetem `.skill` und Repo
+
 ## [5.1.0](https://github.com/wemwi/selectedleafs-pos-operations) (2026-07-10)
 
 ### Features
 
 * **store:** Feld-Kontrakt für `liftr_store` festgeschrieben — `pos-store` legt das Metaobjekt jetzt vollständig an ([`references/store.md`](references/store.md))
-* **store:** §1 um vier optionale Dialog-Felder erweitert (`assortment_list`, `service_extra`, `parcel_carriers`, `socials`); Skip erzeugt kein fail-closed. Dialog-Reihenfolge als Bridge-Anforderung notiert (Bridge liefert die Felder noch nicht — Kontrakt ist rückwärtskompatibel)
+* **store:** §1 um vier optionale Dialog-Felder erweitert (`assortment_list`, `service_extra`, `parcel_carriers`, `socials`); Skip erzeugt kein fail-closed. `assortment_list` ist **Dialog-Pflicht** (≥ 1 Handle, von der Bridge erzwungen), aber bewusst **keine Kontrakt-Pflicht** — ein fehlendes Feld ist ein Bridge-Fehler und darf nicht den Vertriebler vor dem Laden stranden lassen. Dialog-Reihenfolge als Bridge-Anforderung notiert (Bridge liefert die Felder noch nicht — Kontrakt ist rückwärtskompatibel)
 * **store:** §3 FieldMask um `websiteUri`, `paymentOptions`, `parkingOptions`, `allowsDogs`, `delivery`, `accessibilityOptions` erweitert, inkl. SKU-/Kostennotiz (Enterprise + Atmosphere, einmal pro Onboarding)
 * **store:** §4.4 neu — `highlights` als drei deterministische Slots (Zahlung / Öffnungszeit-Charakter / Lieferung→Paketshop). Feste Phrasenliste, Carrier-Sortierung `DHL → Hermes → DPD → GLS → UPS`, 2er-Deckel wegen P3-Umbruch in `liftr-card-density`
 * **store:** §4.5 neu — `service_list` aus 10 Places-Feldern (`true`-only) plus 4 Dialog-Handles; Ausschlussregel `delivery` ↔ `lieferung-moeglich`
@@ -19,6 +40,7 @@ Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Chan
 * **store:** §10 um Kontrakt D erweitert — Highlights werden nie generiert, keine Testimonials aus Google-Reviews, keine Social-Suche, kein `priceLevel`, keine Service-/Assortment-Anlage
 * **store:** §8.1 benennt vier Felder, die der Agent nie schreibt (`featured`, `testimonial_list`, `opening_hours_holiday`, `image_mood`) und hält fest, dass `new` bis zum Rollover eine Einbahnstraße ist
 * **store:** §9 um Status-Zeile für unbekannten Handle ergänzt
+* **store:** §5.2 — Shopify-Grant der `agent-bridge` korrigiert: `read_metaobject_definitions`, `read_metaobjects`, `read_products` (weiterhin ausschließlich Lese-Scopes; die Bridge kann `liftr_district` nach wie vor nicht anlegen)
 
 ### Notes
 
