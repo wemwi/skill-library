@@ -2,6 +2,19 @@
 
 Alle nennenswerten Änderungen an diesem Skill. Format angelehnt an [Keep a Changelog](https://keepachangelog.com/), Versionierung folgt SemVer (`global-git-conventions`).
 
+## [5.8.0](https://github.com/wemwi/skill-library) (2026-07-18)
+
+### Added
+- **Invariante 6 — Telegram-Post-Konventionen** (SKILL.md): geteilte Nachrichten-Grammatik für alle Posts (Status intern + Broadcast). Trennscharfe Emoji-Ausgänge (✅ Erfolg · ℹ️ No-op · ⚠️ Eingriff nötig · ❌ technischer Fehlschlag), Lauf-Typ im Titel statt im Emoji, zwei Format-Klassen (Single-Unit vs. Batch mit report-by-exception + Zähler-Invariante + Kappung), `parse_mode HTML` + Escaping-Pflicht dynamischer Werte.
+- **`references/sync.md`** — `pos-sync` erstmals im Skill verankert (war zuvor nur im Cron-System-Prompt): Batch-Kette + die drei kanonischen Status-Ausgänge. Dispatch-Eintrag ergänzt.
+
+### Changed
+- **`references/city.md`** vom fail-closed-Stub zum **manuellen City-Onboarding-Runbook** (Channel-Setup, Pinned, Launch-Post, Legal-Anker) — konsolidiert aus dem aufgelösten `telegram.md`.
+- **§Status-Sektionen entdriftet** auf Invariante 6: `↩︎`→`ℹ️` (restock), `♻️`→Batch-Kopf mit ✅/⚠️ (invoice-Backstop, rollover). Deutsche Anführungszeichen vereinheitlicht (U+201D → U+201C).
+
+### Removed
+- **`references/telegram.md` aufgelöst** — Channel-Lifecycle → `city.md`, Nachrichten-Konvention → Invariante 6, Broadcast-Templates lagen bereits bei restock/store. Alle Querverweise umgebogen.
+
 ## [5.7.1](https://github.com/wemwi/skill-library) (2026-07-18)
 
 ### Changed

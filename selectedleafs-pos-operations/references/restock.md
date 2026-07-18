@@ -5,7 +5,7 @@ Operative Anleitung **an dich, den Agenten `pos-restock`**, für den Kern deiner
 **Scope:** Schritt 1, 2, 4, 5 deiner Kette. Schritt 3 (Posten) und 6 (Status) führst du laut System-Prompt aus. Auch für Schritt 1 gilt das Muster von §5/§6: der **System-Prompt triggert** (es liegt ein PDF im Topic „Protokoll-Eingang" bereit), dieser Skill liefert nur die **Tiefe des Tool-Calls** (§1.1) — er dupliziert den System-Prompt nicht und entscheidet nicht über den Auslöser.
 
 **Abgrenzung — was NICHT hier steht:**
-- **Restock-Nachrichtenformat** → Sektion „Restock-Post-Templates" am Ende dieser reference (📦/🌿 + kanonischer Index). **City→Channel** → direkter Lookup in `registry.md` §1 (kein Sprung in `telegram.md` nötig). Du lieferst nur Stadt + Sorten-Buckets; das Rendern (lokal) und der Channel-Lookup laufen aus dieser reference + `registry.md`.
+- **Restock-Nachrichtenformat** → Sektion „Restock-Post-Templates" am Ende dieser reference (📦/🌿 + kanonischer Index). **City→Channel** → direkter Lookup in `registry.md` §1. Du lieferst nur Stadt + Sorten-Buckets; das Rendern (lokal) und der Channel-Lookup laufen aus dieser reference + `registry.md`.
 - **Managed-Agents-/Console-Mechanik** (Config, Tools, Deploy) → `global-agent-framework` (build-time).
 - **Store-Daten** → Shopify MCP (`graphql_query`), zweistufig & feldselektiv (§2.5) — nie ein Voll-Dump aller Store-Felder.
 
@@ -315,7 +315,7 @@ Genau **eine** knappe Status-Zeile ins Topic „Protokoll-Eingang" (= Topic „�
 |---|---|
 | Erfolg | „✅ `UL-10033-1` — Spätkauf Hannover (Hannover): 1 aufgefüllt, 0 neu. Gepostet + in Drive abgelegt." |
 | Nichts zu posten | „✅ `UL-10033-1` — nur Werbemittel/POS, keine Sorten. Kein Post, PDF abgelegt." |
-| Bereits verarbeitet | „↩︎ `UL-10033-1` bereits verarbeitet, übersprungen." |
+| Bereits verarbeitet | „ℹ️ `UL-10033-1` bereits verarbeitet, übersprungen." |
 | Mehrdeutig (§3) | „⚠️ `UL-10033-1` — <konkrete Rückfrage>. Verarbeitung pausiert." |
 
 **Adressierung (gilt für Status, Rückfragen §3 und Fehler-Status §1.1/§6):**
@@ -367,7 +367,7 @@ Läuft als **Schritt 5 in §1, direkt nach dem erfolgreichen 🌿-Post** (Schrit
 
 ## Restock-Post-Templates (📦 / 🌿)
 
-Die in §1/§2.7 erwähnte Übergabe an den „Telegram-Schritt" rendert **mit diesen Templates** — sie liegen bewusst hier, damit die Restock-Kette ohne Sprung in eine andere Domänen-reference auskommt (Channel-Ziel kommt als direkter Lookup aus `registry.md` §1, ebenfalls ohne `telegram.md`). Das **generische** Telegram-Handwerk (Format-System, vollständige Emoji-Legende, Posting-Mechanik, Pinned/Launch) steht in `references/telegram.md`; hier nur die zwei Post-Typen, die diese Kette erzeugt.
+Die in §1/§2.7 erwähnte Übergabe an den „Telegram-Schritt" rendert **mit diesen Templates** — sie liegen bewusst hier, damit die Restock-Kette ohne Sprung in eine andere Domänen-reference auskommt (Channel-Ziel kommt als direkter Lookup aus `registry.md` §1). Die geteilte Nachrichten-Grammatik (Emoji-Semantik, `parse_mode`/Escaping) steht in `SKILL.md` Invariante 6, das Channel-Lifecycle (Pinned/Launch) im `city.md`-Runbook; hier nur die zwei Post-Typen, die diese Kette erzeugt.
 
 Du lieferst aus §2.7 **strukturierte Buckets** (`aufgefuellt` → 📦, `neue_sorten` → 🌿). Pro nicht-leerem Bucket genau **ein** Post in den City-Channel der aufgelösten Stadt (§2.5).
 

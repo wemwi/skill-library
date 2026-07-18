@@ -1,6 +1,6 @@
 # Store — neuen POS-Partner anlegen (pos-store)
 
-Legt einen neuen POS-Partner-Store in **einem headless One-Shot-Lauf** über die vier Fachsysteme an: Shopify (`liftr_store`-Metaobjekt, ggf. `liftr_district`), Lexware (Store-Kontakt + `POS-PARTNER`-Notiz), Google Sheets (Provisionszeile im `Stores`-Tab des Vertriebler-Sheets) und Drive (zwei Ablage-Ordner). Der Agent führt **keinen Dialog** — der komplette Auftrag kommt fertig von der `agent-bridge` als `user.message`. Diese reference ist **selbsttragend** (kein Sprung in `telegram.md`): das gesamte Telegram-Handwerk dieser Domäne — Bild holen, Status/Rückfrage ins Operations-Topic posten **und** der öffentliche 🎉-„Neuer Partner"-Broadcast in den City-Channel (§8.5) — steht hier inline. Für den Broadcast lädt der Agent zusätzlich `registry.md` (§1, City→Channel). Der 🎉-Post ist **der einzige** öffentliche Post dieses Agenten und feuert nur bei echter Neuanlage (§8.5).
+Legt einen neuen POS-Partner-Store in **einem headless One-Shot-Lauf** über die vier Fachsysteme an: Shopify (`liftr_store`-Metaobjekt, ggf. `liftr_district`), Lexware (Store-Kontakt + `POS-PARTNER`-Notiz), Google Sheets (Provisionszeile im `Stores`-Tab des Vertriebler-Sheets) und Drive (zwei Ablage-Ordner). Der Agent führt **keinen Dialog** — der komplette Auftrag kommt fertig von der `agent-bridge` als `user.message`. Diese reference ist **selbsttragend** (kein Sprung in eine fremde reference): das gesamte Telegram-Handwerk dieser Domäne — Bild holen, Status/Rückfrage ins Operations-Topic posten **und** der öffentliche 🎉-„Neuer Partner"-Broadcast in den City-Channel (§8.5) — steht hier inline. Für den Broadcast lädt der Agent zusätzlich `registry.md` (§1, City→Channel). Der 🎉-Post ist **der einzige** öffentliche Post dieses Agenten und feuert nur bei echter Neuanlage (§8.5).
 
 ---
 
@@ -471,7 +471,7 @@ Der einzige **öffentliche** Post dieses Agenten. Läuft als **allerletzter** Sc
 
 **2. Bild = Shopify-CDN-URL, nicht Telegram-`file_id`.** `send_photo(photo=<url>)` mit der **`image.url`** des in §7 angelegten `MediaImage` — nach `fileStatus = READY` via `image { url }` auslesen (die öffentliche `cdn.shopify.com`-URL). Die eingehende Telegram-`file_id` wird **nicht** wiederverwendet: sie ist chat-übergreifend nicht stabil (und stammt ohnehin aus einem anderen Bot-Scope, s. Punkt 4).
 
-**3. Caption = 🎉-Template (HTML, selbsttragend — kein Sprung in `telegram.md`).** Der Store *ist* die News → Store **fett** in der Headline, taucht **nicht** zusätzlich in einer Meta-Zeile auf. 🕒-Zeile abgesetzt, dann CTA als Verb-Link:
+**3. Caption = 🎉-Template (HTML, selbsttragend).** Der Store *ist* die News → Store **fett** in der Headline, taucht **nicht** zusätzlich in einer Meta-Zeile auf. 🕒-Zeile abgesetzt, dann CTA als Verb-Link:
 
 ```
 🎉 <b>Neuer Partner: {store_name}</b>
@@ -490,7 +490,7 @@ So       09:00–23:30
 - **Nie** die Tage mit `·` zu einer Zeile verketten. Telegram bricht lange Caption-Zeilen weich um; die Umbruchstelle liegt dann mitten in einem Tagesbereich und die letzte Zeile zerreißt. Ein harter Zeilenumbruch pro Bereich ist die einzige Form, die auf jeder Client-Breite hält.
 - `{maps_link}` aus `google_place` (§4.2): `https://www.google.com/maps/search/?api=1&query={name}&query_place_id={place_id}` — in HTML **jedes `&` → `&amp;`**.
 - **CTA:** „Google Maps öffnen" als `<a href>`-**Verb-Link** — kein roher URL, **kein Underline** (native Telegram-Linkfarbe), Leerzeile davor.
-- **Feed-Regeln (inline, wie `telegram.md` §6):** **keine Menge**, **keine Wirkungsangabe**, keine Hashtags, keine „Jetzt"-Urgency. Ton = **lokaler Tipp**, kein Shop-Ton, kein Hard-Sell.
+- **Feed-Regeln (inline, wie `SKILL.md` Invariante 6):** **keine Menge**, **keine Wirkungsangabe**, keine Hashtags, keine „Jetzt"-Urgency. Ton = **lokaler Tipp**, kein Shop-Ton, kein Hard-Sell.
 
 **4. Posten — `send_photo` des `telegram-broadcast`-Servers (öffentlicher City-Channel, NICHT das Operations-Topic):**
 
@@ -568,7 +568,7 @@ Der 🎉-Broadcast (§8.5) ist davon **ausgenommen**: er läuft **nach** allen v
 
 ## 10. Non-Goals (bewusst außerhalb dieser Kette)
 
-- **Nur der 🎉-Milestone auf City-Channels — kein edit/pin/delete.** Der Agent postet ausschließlich den einmaligen 🎉-„Neuer Partner"-Broadcast (§8.5, `send_photo`) und **nur** im CREATE-Zweig. Er **editiert, pinnt, löscht** oder verwaltet **nichts** auf den City-Channels und postet **keine** anderen Stream-Typen (📦/🌿/🕒 gehören zu `pos-restock` bzw. anderen Flows). Das generische Channel-Setup-/Lifecycle-Handwerk (Pinned, Channel-Launch einer Stadt) bleibt in `telegram.md` (separate Domäne). Least-Privilege: das Posting-Recht auf City-Channels beschränkt sich auf `send_photo`.
+- **Nur der 🎉-Milestone auf City-Channels — kein edit/pin/delete.** Der Agent postet ausschließlich den einmaligen 🎉-„Neuer Partner"-Broadcast (§8.5, `send_photo`) und **nur** im CREATE-Zweig. Er **editiert, pinnt, löscht** oder verwaltet **nichts** auf den City-Channels und postet **keine** anderen Stream-Typen (📦/🌿/🕒 gehören zu `pos-restock` bzw. anderen Flows). Das Channel-Setup-/Lifecycle-Handwerk (Pinned, Channel-Launch einer Stadt) liegt im manuellen `city.md`-Runbook. Least-Privilege: das Posting-Recht auf City-Channels beschränkt sich auf `send_photo`.
 - **Highlights werden NIE generiert.** Nicht aus `reviews`, `editorialSummary`, `generativeSummary`, `reviewSummary`, `neighborhoodSummary`, nicht aus einer Websuche, nicht aus einem Sprachmodell. Zwei Gründe, beide tragend: Places-Freitext unterliegt Speicherverbot und Attributionspflicht, und ein generierter Satz wäre eine **Behauptung über einen fremden Laden**, die niemand gegenliest. Der Agent wählt aus den festen Phrasen in §4.4 aus — mehr nicht. Auch der Freitext-Slot ist bewusst verworfen: ein leerer dritter Slot kostet nichts, ein falscher Satz kostet den Partner.
 - **Keine Testimonials aus Google-Reviews.** Weder kopiert noch umgeschrieben noch zusammengefasst. `testimonial_list` bleibt leer (§8.1).
 - **Keine Social-Media-Suche.** Places liefert keine Social-Links; die Google-Business-Profile-API greift nur auf **eigene** Profile. Kommerzielle Anbieter lösen Domain→Social auf — Kioske haben keine Domain. Eine Websuche liefert Kandidaten ohne Verifikation, also Verwechslungsrisiko unter fremdem Namen. Die Handles kommen aus dem Dialog oder gar nicht; `web_search`/`web_fetch` bleiben in der Agent-Config auf `enabled: false`.
