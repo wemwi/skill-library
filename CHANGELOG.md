@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.11.0](https://github.com/wemwi/skill-library/compare/v5.10.0...v5.11.0) (2026-07-18)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** v5.7.0 — POS-TG-Ebene (§8.6) ([#144](https://github.com/wemwi/skill-library/issues/144)) ([334c666](https://github.com/wemwi/skill-library/commit/334c66638dd06c15841025fa9534ac58a3560a40))
+
 ## [5.10.0](https://github.com/wemwi/skill-library/compare/v5.9.1...v5.10.0) (2026-07-18)
 
 
