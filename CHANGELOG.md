@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.13.0](https://github.com/wemwi/skill-library/compare/v5.12.0...v5.13.0) (2026-07-18)
+
+
+### Features
+
+* **pos-operations:** Telegram-Nachrichten-Konvention (Invariante 6), telegram.md aufgelöst, sync.md ([#148](https://github.com/wemwi/skill-library/issues/148)) ([4914270](https://github.com/wemwi/skill-library/commit/49142704883bf622635d5b9537d157b13ba7269f))
+
 ## [5.12.0](https://github.com/wemwi/skill-library/compare/v5.11.0...v5.12.0) (2026-07-18)
 
 
