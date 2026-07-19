@@ -1,7 +1,7 @@
 ---
 name: selectedleafs-pos-operations
 metadata:
-  version: "5.8.0"
+  version: "5.9.0"
 description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Protokoll auswerten → Drive → City-Channel), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung), Telegram-Handwerk (Format, Pinned), Store (neuen POS-Partner anlegen + 🎉-Broadcast), Salesperson (neuen Vertriebler anlegen: Lexware-Kontakt + Provisions-Sheet-Kopie + POS-SHEET-Notiz) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root, Topics). Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-store, pos-salesperson, pos-operations, Übergabeprotokoll, Kommissionsware, UL-Nummer; telegram post, City-Channel, restock post, neuer partner post, pinned post; Bestandsprotokoll, Provisionsabrechnung, Vertriebler anlegen, Provisions-Sheet, POS-SHEET."
 ---
 
@@ -14,7 +14,6 @@ Landkarte für die POS-Operations-Agenten. Diese Datei **dispatcht** und hält d
 | Sub-Task / Auslöser | reference |
 |---|---|
 | Übergabeprotokoll/Lieferschein auswerten, Store/Stadt/Sorten ableiten, neu vs. aufgefüllt, PDF komprimieren + in Drive ablegen, 📦/🌿 in den City-Channel posten (Channel-Ziel aus `registry.md`, kein `telegram.md`-Load nötig) | `references/restock.md` |
-| Öffnungszeiten-Sync **aller** Stores (cron-getrieben): Google-Places-Öffnungszeiten → `liftr_store.opening_hours`, pro Lauf **ein** Batch-Status-Report ins Ops-Topic (report-by-exception, Invariante 6) | `references/sync.md` |
 | Statische Werte nachschlagen: City→Channel-Map (direkter Lookup, kein Override-Mechanismus), Drive-Root-`parentFolderId`, Operations-`chat_id`/Topic, (später) Sheet-IDs | `references/registry.md` |
 | Bestandsprotokoll ablegen — Store-Match (Name → Metaobjekt) + Datum lesen, **ohne** Sorten-Parsing/Write-back/Post | `references/inventory.md` |
 | Provisionsabrechnung POS-Partner (Lexware → Vertriebler-Sheet), Rechnung-Insert, paid-Status-Update | `references/invoice.md` |
@@ -49,6 +48,6 @@ Diese sechs Grundsätze gelten domänenübergreifend; die Domänen-references ko
 
    **Zwei Format-Klassen:**
    - **Single-Unit** (restock, inventory, invoice-Event, store, salesperson) — genau **eine** Zeile pro Lauf: `{emoji} {Schlüssel} — {Entität}: {Ergebnis}.` Der Schlüssel (`UL-…`, `RG-…`, Datum, Name) steht in `<code>`.
-   - **Batch** (sync, rollover, invoice-Backstop) — **report-by-exception**: fette Kopfzeile mit Aggregat + Zählerzeile (die aufgehen **muss**: Summe = geprüfte Einheiten, das ist der Detektor gegen still fehlgezählte Einheiten), dann **nur** die Ausnahmen (⚠️/❌) einzeln — **je mit Grund**, nie nackt. Erfolge werden **nicht** einzeln gelistet. Kappung bei Masse: erste ~15 Ausnahmen, dann „…und {N} weitere" (Telegram-Limit 4096 Zeichen). Batch-Kopf führt mit ✅ (0 Ausnahmen) bzw. ⚠️ (Ausnahmen > 0) bzw. ❌ (Lauf gar nicht angelaufen).
+   - **Batch** (rollover, invoice-Backstop) — **report-by-exception**: fette Kopfzeile mit Aggregat + Zählerzeile (die aufgehen **muss**: Summe = geprüfte Einheiten, das ist der Detektor gegen still fehlgezählte Einheiten), dann **nur** die Ausnahmen (⚠️/❌) einzeln — **je mit Grund**, nie nackt. Erfolge werden **nicht** einzeln gelistet. Kappung bei Masse: erste ~15 Ausnahmen, dann „…und {N} weitere" (Telegram-Limit 4096 Zeichen). Batch-Kopf führt mit ✅ (0 Ausnahmen) bzw. ⚠️ (Ausnahmen > 0) bzw. ❌ (Lauf gar nicht angelaufen).
 
    **Mechanik (jeder Post):** `parse_mode = HTML`. **Jeder** interpolierte dynamische Wert (Store-/Kontaktname, Adresse, `<konkreter Fehler>`) wird escaped: `&`→`&amp;`, `<`→`&lt;`, `>`→`&gt;` — sonst bricht ein Name mit `&` die Nachricht still. Fett via `<b>…</b>`, Schlüssel/IDs via `<code>…</code>`. Ein **fehlgeschlagener** Status-Post darf den Lauf **nicht** kippen (best-effort). General-Topic wird durch **Weglassen** von `message_thread_id` adressiert (`message_thread_id: 1` wird als „thread not found" abgelehnt).
