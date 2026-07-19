@@ -20,7 +20,7 @@ jobs:
           # zweiten release-please-Run, der nach dem Auto-Merge Tag + Release setzt.
           # Mit GITHUB_TOKEN bliebe der Release ungetaggt (autorelease: pending).
           # Secret: contents:write + pull-requests:write. Siehe references/automation.md.
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          token: ${{ secrets.RELEASE_PLEASE }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
@@ -36,5 +36,5 @@ jobs:
       - name: Release-PR automatisch mergen
         if: ${{ steps.release.outputs.pr }}
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE }}
         run: gh pr merge --squash "${{ fromJson(steps.release.outputs.pr).number }}"

@@ -38,7 +38,7 @@ Bei `simple` greift der Default heute nicht (kein `package.json`-Name als Kompon
 ## Setup-Schritte (web-only, über GitHub Web)
 
 3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests" anhaken. Ohne das kann release-please keinen Release-PR öffnen.
-4. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained — Repo-Zugriff auf alle betroffenen Repos) als Secret `RELEASE_PLEASE_TOKEN` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". **Persönliche Accounts haben keine org-weiten Actions-Secrets**: den Token nur einmal erstellen, den Wert aber als **Repository-Secret in jedem Repo** hinterlegen (*Repo → Settings → Secrets and variables → Actions*). Ein fine-grained PAT deckt mit einem Token mehrere Repos ab; nur der Secret-Eintrag muss je Repo gesetzt werden.
+4. **PAT-Secret hinterlegen:** Einen Personal Access Token (Scopes: `contents:write` + `pull-requests:write`, fine-grained — Repo-Zugriff auf alle betroffenen Repos) als Secret `RELEASE_PLEASE` anlegen. Pflicht, nicht optional — Begründung unter „Stolperfalle 1". **Persönliche Accounts haben keine org-weiten Actions-Secrets**: den Token nur einmal erstellen, den Wert aber als **Repository-Secret in jedem Repo** hinterlegen (*Repo → Settings → Secrets and variables → Actions*). Ein fine-grained PAT deckt mit einem Token mehrere Repos ab; nur der Secret-Eintrag muss je Repo gesetzt werden.
 5. **Branch-Protection:** `main` darf **keine Required Reviews und keine Required Status Checks** erzwingen, sonst kann der Workflow den Release-PR nicht selbst mergen (`gh pr merge --squash` läuft gegen ein Merge-Gate; Solo-Repo: kein Problem). Force-Push-/Deletion-Schutz berührt den regulären PR-Merge dagegen NICHT und ist erwünscht — die vollständige Härtungs-Checkliste (was an, was aus, public vs. private) steht in `protection.md`.
 6. Fertig. Ab dem nächsten releasbaren Merge auf `main` öffnet release-please den Release-PR und mergt ihn automatisch.
 
@@ -57,7 +57,7 @@ einen zweiten Step, der den gerade geöffneten Release-PR sofort mergt:
 - name: Release-PR automatisch mergen
   if: ${{ steps.release.outputs.pr }}
   env:
-    GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+    GH_TOKEN: ${{ secrets.RELEASE_PLEASE }}
   run: gh pr merge --squash "${{ fromJson(steps.release.outputs.pr).number }}"
 ```
 
@@ -79,7 +79,7 @@ Standardmäßig nutzt release-please das eingebaute `GITHUB_TOKEN`. Bekannte Eig
 
 Beim Auto-Merge ist das **fatal**: release-please braucht nach dem Merge des Release-PR einen **zweiten Run**, um Tag + GitHub-Release zu erstellen. Mergt der Workflow den PR mit `GITHUB_TOKEN`, bleibt dieser zweite Run aus → Version wird gebumpt, aber **kein Tag, kein Release** (Label hängt auf `autorelease: pending`). Das Cloudflare-Deploy liefe trotzdem (Branch-Push), aber ohne Tag/Changelog-Abschluss — also ein halbfertiger Release.
 
-Deshalb: **PAT als `RELEASE_PLEASE_TOKEN` ist Pflicht, sobald Auto-Merge aktiv ist** (war früher nur für CI auf PRs nötig). Der PAT-Push triggert den zweiten Run, der Release sauber abschließt.
+Deshalb: **PAT als `RELEASE_PLEASE` ist Pflicht, sobald Auto-Merge aktiv ist** (war früher nur für CI auf PRs nötig). Der PAT-Push triggert den zweiten Run, der Release sauber abschließt.
 
 ## Stolperfalle 2 — Cloudflare-Deploy-Interaktion
 
