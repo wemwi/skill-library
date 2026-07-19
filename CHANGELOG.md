@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.13.1](https://github.com/wemwi/skill-library/compare/v5.13.0...v5.13.1) (2026-07-19)
+
+
+### Bug Fixes
+
+* **global-git-conventions:** Release-Secret auf RELEASE_PLEASE korrigieren ([#151](https://github.com/wemwi/skill-library/issues/151)) ([931f541](https://github.com/wemwi/skill-library/commit/931f54174afee29e9e2c665707807b05e47991b0))
+
 ## [5.13.0](https://github.com/wemwi/skill-library/compare/v5.12.0...v5.13.0) (2026-07-18)
 
 
