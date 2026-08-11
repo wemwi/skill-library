@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.14.0](https://github.com/wemwi/skill-library/compare/v5.13.1...v5.14.0) (2026-08-11)
+
+
+### Features
+
+* **global-make-conventions:** add Make-Szenario-Konventionsskill ([#154](https://github.com/wemwi/skill-library/issues/154)) ([32b6ca5](https://github.com/wemwi/skill-library/commit/32b6ca55a56071486379ad11662c3de2b11e3aa4))
+
 ## [5.13.1](https://github.com/wemwi/skill-library/compare/v5.13.0...v5.13.1) (2026-07-19)
 
 
