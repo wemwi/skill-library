@@ -15,7 +15,7 @@ description: >-
   dedupkey, Error-Handler-Konvention, Blueprint-Hygiene, Szenario-/Modul-
   Naming, native Modul vs. HTTP, Legacy-Modul, Make-Audit.
 metadata:
-  version: "1.0.0"
+  version: "1.1.0"
 ---
 
 # global-make-conventions
@@ -66,9 +66,11 @@ Rationale, Bruchmuster aus der Praxis und Beispiele: `references/architecture.md
 ### A2 — Architektur-Muster
 
 Muster-Katalog mit Wann/Tradeoff/Bruchmodus, plus die zentrale
-Entscheidungsachse **synchron (native Subscenarios) vs. asynchron (Dispatcher/
-Worker über Webhook)** — Details, Beispiele und die Herleitung aus einem
-Dispatcher/Worker-Realfall: `references/architecture.md`.
+Entscheidungsachse **team-intern (Scenarios-App: `Call a scenario`) vs.
+Team-/Org-Grenze oder externer öffentlicher Trigger (Webhook)**. Der
+sync/async-Modus ist dabei kein Konzept-Wechsel, sondern nur ein Toggle
+(„Wait for the scenario to finish") *innerhalb* der Scenarios-App — Details,
+Beispiele und die Herleitung: `references/architecture.md`.
 
 Kurzreferenz der Muster: Linear (Trigger→Transform→Action) · Router-Fan-out ·
 Batch/Aggregate · Dispatcher/Worker · Orchestrator + native Subscenarios ·
@@ -95,6 +97,7 @@ Referenz.
 ### B3 — Modul-Wahl (`references/modules.md`)
 - **MUST** natives App-Modul vor generischem HTTP/API-Call — HTTP nur mit dokumentiertem Grund (fehlende native Funktion, z.B. Formatierungs-Parameter, Batch-Read ohne Aggregator). Check: jeder HTTP-Call im Blueprint hat einen Kommentar/eine Doku-Zeile, warum kein natives Modul reicht.
 - **MUST** kein Legacy-/Deprecated-Modul im Neubau; bestehende Legacy-Module werden beim nächsten Umbau auf die aktuelle Version migriert, nicht kopiert. Check: `app_modules_list` zeigt für jedes verbaute Modul eine aktuelle, nicht als deprecated markierte Version.
+- **MUST** team-interne Datenübergabe zwischen Szenarien läuft über die Scenarios-App (`Scenarios > Call a scenario` + `Start scenario` + `Return output`), nicht über HTTP+Webhook — der native-vor-HTTP-Grundsatz, angewandt auf Szenario-Verkettung. Der sync/async-Modus wird per „Wait for the scenario to finish"-Toggle gewählt, nicht durch die Wahl des Transports (auch entkoppelte, langlebige Worker laufen team-intern über `Call a scenario` im Async-Modus). Check: kein `gateway:CustomWebHook` als Ziel eines team-internen Szenario-zu-Szenario-Aufrufs; Ausnahme nur dokumentiert bei Team-/Org-Grenze oder externem öffentlichem Trigger. Rationale: definierte Inputs/Outputs, kein Credit-Verbrauch, kein öffentlicher Endpunkt.
 
 ### B4 — Trigger-Architektur (`references/triggers.md`)
 - **MUST** Event-Trigger (Gateway-Webhook, Mailhook, natives App-Event) vor Polling, wo die Quelle es anbietet.
