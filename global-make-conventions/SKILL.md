@@ -15,7 +15,7 @@ description: >-
   dedupkey, Error-Handler-Konvention, Blueprint-Hygiene, Szenario-/Modul-
   Naming, native Modul vs. HTTP, Legacy-Modul, Make-Audit.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # global-make-conventions
@@ -84,8 +84,10 @@ Jede Zeile: Regel · Severity · Check. Tiefe je Bereich in der verlinkten
 Referenz.
 
 ### B1 — Naming & Lesbarkeit (`references/naming.md`)
-- **MUST** Szenarien tragen handlungsbasierte, sprechende Namen (`Sync New Gmail Contacts to CRM`, nie eine ID oder ein generischer Platzhalter). Check: Name enthält Aktion + Objekt, nicht nur die App.
-- **MUST** Module tragen sprechende Labels statt Default-Namen, sobald ein Szenario mehr als ~5 Module hat. Check: Blueprint-Diff zeigt keine unveränderten Default-Labels an entscheidenden Stellen (Router, Suche, Write).
+- **MUST** Alle Bezeichner sind englisch und projektweit einheitlich — Szenario-Namen, Modul-Labels, Ordner, Variablennamen (die IML-Referenz) und Doku/Kommentare. Check: kein nicht-englischer oder gemischtsprachiger Bezeichner im Blueprint.
+- **MUST** Szenarien tragen handlungsbasierte Namen: Verb + Objekt (+ Ziel-App, wenn nicht eindeutig), nie eine ID oder ein generischer Platzhalter (`Sync New Gmail Contacts to CRM`, nicht `Scenario 3`). Check: Name enthält Aktion + Objekt, nicht nur die App.
+- **MUST** Modul-Labels tragen nur das Delta zum Default — das Icon (beim Trigger auch die Position) zeigt den Typ bereits, also kein Typ-Wort im Label (kein `Webhook:`/`Watch:`/`Router:`/`Var:`/`Error:`-Präfix). Verb + Objekt ist der Default; Trigger = Event, Router-Zweig = Fall, Filter = Bedingung sind die begründeten Ausnahmen. Je-Typ-Tabelle in der Referenz. Check: kein Typ-Präfix und kein unverändertes Default-Label an den Knoten, die das Delta tragen sollen.
+- **MUST** Trigger, Router-Zweige, Write- und Fehlerrouten werden immer gelabelt, unabhängig von der Modulzahl; alle übrigen Module spätestens ab ~5 Modulen im Szenario. Check: Blueprint-Diff zeigt keine unveränderten Default-Labels an diesen Stellen.
 - **SHOULD** Ordnerstruktur in Make spiegelt Projekt/Teilsystem, nicht Chronologie.
 
 ### B2 — Szenario-Settings (`references/settings.md`)
