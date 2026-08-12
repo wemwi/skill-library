@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.16.0](https://github.com/wemwi/skill-library/compare/v5.15.0...v5.16.0) (2026-08-12)
+
+
+### Features
+
+* add B11 variables & state conventions ([#158](https://github.com/wemwi/skill-library/issues/158)) ([94398bf](https://github.com/wemwi/skill-library/commit/94398bf9ecbb02799c6d2e928c6503c9e0f4c50e))
+
 ## [5.15.0](https://github.com/wemwi/skill-library/compare/v5.14.0...v5.15.0) (2026-08-12)
 
 
