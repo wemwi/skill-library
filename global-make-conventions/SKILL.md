@@ -6,16 +6,18 @@ description: >-
   (Dispatcher/Worker, native Subscenarios, Router-Fan-out u.a.) und eine
   MUST/SHOULD-Regelliste (Naming, Settings, Modul-Wahl, Trigger,
   Schleifenfreiheit, Webhook-Lebenszyklus, Idempotenz, Fehlerbehandlung,
-  Datenlayer, Blueprint-Hygiene). IMMER laden, sobald ein Make-Szenario
+  Datenlayer, Variablen/State, Blueprint-Hygiene). IMMER laden, sobald ein Make-Szenario
   entworfen, gebaut, geprüft oder auditiert wird — auch ohne das Wort Skill.
   Ergänzt make-scenario-building/make-module-configuring (die WIE decken)
   um das WELCHE und dient als Prüfmaßstab für den Gesamt-Audit. Trigger u.a.:
   Szenario-Architektur, Dispatcher-Pattern, Trigger-Wahl, Webhook vs.
   Polling, Schleifenprävention, Watch-Feld, changeTypes, Idempotenz-Gate,
   dedupkey, Error-Handler-Konvention, Blueprint-Hygiene, Szenario-/Modul-
-  Naming, native Modul vs. HTTP, Legacy-Modul, Make-Audit.
+  Naming, native Modul vs. HTTP, Legacy-Modul, Set/Get Variables,
+  Set Multiple Variables, Variablen-Scope, Scenario- vs. Custom-Variable,
+  Data Store, Make-Audit.
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
 # global-make-conventions
@@ -142,6 +144,13 @@ Referenz.
 - **MUST** nach jedem programmatischen Blueprint-Update werden die Connection-Bindings verifiziert, nicht angenommen — das Verhalten ist inkonsistent (mal bleiben sie gebunden, mal nicht).
 - **SHOULD** Blueprint-Bytes laufen nie mehrfach durch einen Chat-/Agent-Kontext (Lesen ≠ wiederholtes Zurückschreiben) — siehe `global-workflow §5` für die Mechanik, hier nur als Prinzip referenziert.
 
+### B11 — Variablen & State (`references/variables.md`)
+- **MUST** ein `Get variable`/`Get multiple variables` liest nur aus einer Set-Quelle, die im selben Ausführungspfad/Cycle tatsächlich vorher lief — ein Get auf eine nicht-nachgelagerte oder nie durchlaufene Set-Quelle liefert still leer. Check: jede Get-Referenz hat eine Set-Quelle auf demselben Pfad/Cycle.
+- **MUST** der Variablen-Scope ist bewusst gewählt: `One cycle` für Pro-Bundle-Werte (Default für laufflüchtige Zwischenwerte), `Whole execution` nur für absichtlich über Cycles hinweg getragene/akkumulierte Werte. Check: kein `Whole execution`-Scope auf einem Pro-Datensatz-Wert — der leckt Werte zwischen Bundles.
+- **MUST** Scenario-Variablen tragen nur laufflüchtigen State (ein Lauf, ein Szenario). Werte, die über Läufe oder Szenarien hinweg leben müssen, gehören in Custom Variables (Konfiguration/Business-Logik) bzw. einen Data Store (State/Dedup/Cache) — nie in eine Scenario-Variable „gemerkt". Check: keine Scenario-Variable, die Persistenz über das Laufende hinaus annimmt.
+- **SHOULD** mehrere Werte an einem Punkt laufen über ein `Set multiple`/`Get multiple` statt einer Kette einzelner `Set variable`/`Get variable` — ein Multiple-Modul ist eine Operation, N Einzelmodule sind N. Ergänzend: Werte, die mehrere Router-Zweige brauchen, werden **vor** dem Router gesetzt und in den Zweigen direkt referenziert, statt sie per `Get variable` über Zweiggrenzen zu holen (spart die Get-Operationen ganz).
+- **SHOULD** ein `Set multiple variables` bündelt opake, tief verschachtelte oder fragile Outputs (Code-/AI-Ergebnisobjekte, Array-Index-Zugriffe, Attachment-URLs) als **benannten Kontrakt**, bevor mehrere nachgelagerte Module sie konsumieren — der fragile IML-Ausdruck steht dann an genau einer Stelle statt dupliziert über jeden Consumer.
+
 ---
 
 ## Referenzen — bei Bedarf lesen
@@ -157,6 +166,7 @@ Referenz.
 - `references/errors.md` — B8 im Detail
 - `references/data-layer.md` — B9 im Detail
 - `references/blueprints.md` — B10 im Detail
+- `references/variables.md` — B11 im Detail, inkl. Picker-Symptomatik, Scope-Mechanik und der Scenario-/Custom-Variable-/Data-Store-Entscheidungsachse
 
 ## Verwandte Skills
 
