@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.15.0](https://github.com/wemwi/skill-library/compare/v5.14.0...v5.15.0) (2026-08-12)
+
+
+### Features
+
+* **global-make-conventions:** v1.2.0 — B1-Naming auf Delta-Prinzip, Englisch-MUST und Je-Typ-Tabelle ([#156](https://github.com/wemwi/skill-library/issues/156)) ([029865a](https://github.com/wemwi/skill-library/commit/029865acd8a73f909ed4a8cec8e8fd8d69dc3389))
+
 ## [5.14.0](https://github.com/wemwi/skill-library/compare/v5.13.1...v5.14.0) (2026-08-11)
 
 
