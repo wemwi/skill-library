@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.17.0](https://github.com/wemwi/skill-library/compare/v5.16.0...v5.17.0) (2026-08-13)
+
+
+### Features
+
+* **conventions:** role-prefix taxonomy, description contract, name-coupling ladder ([#160](https://github.com/wemwi/skill-library/issues/160)) ([df72760](https://github.com/wemwi/skill-library/commit/df727600bda6880977c07a97130d6992a0d7a1ab))
+
 ## [5.16.0](https://github.com/wemwi/skill-library/compare/v5.15.0...v5.16.0) (2026-08-12)
 
 
