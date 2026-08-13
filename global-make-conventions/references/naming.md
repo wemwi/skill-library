@@ -42,6 +42,31 @@ Datenfluss und Impact erkennen lässt, spart jede spätere Nachfrage.
 Notify …) plus ein konkretes Objekt. Reine App-Namen oder IDs sind ein
 Befund.
 
+## Rollen-Präfix (optionale Klammer-Taxonomie)
+
+Ein Szenario-Name darf sein führendes Verb als `[Rolle]`-Präfix in eckige
+Klammern ziehen (`[Sync] Inventory to Shopify` = „Sync Inventory to Shopify"),
+damit die Szenarioliste im UI nach Rolle gruppiert und sortiert. Das Präfix
+*ist* das Verb aus Verb+Objekt, nur vorgezogen — es tritt nie *neben* ein Verb.
+
+Drei Bedingungen, damit die Taxonomie eine Landkarte bleibt und nicht zerfasert:
+
+- **Eine Achse: Rolle, nicht Trigger/Kadenz.** Was das Szenario *tut*, nicht
+  *wann* es läuft. `[Scheduled]`/`[Daily]` ist der klassische Fehler — die Kadenz
+  steht in den Settings, und sie leckt (ein zeitgesteuerter `[Sync]` müsste dann
+  zwei Präfixe tragen). Ein zeitgesteuerter Wartungsjob wird nach seiner Rolle
+  benannt (z.B. `[Maintain]`), nicht nach seinem Trigger.
+- **Geschlossene Menge, im Projekt-Skill definiert.** Die konkreten Labels
+  (`[Sync]`, `[Create]`, `[Process]`, `[Dispatch]`, `[Notify]`, …) mit je einer
+  Definitionszeile gehören in den `<projekt>-operations-*`-Skill, nicht hierher —
+  sie hängen am Portfolio. Hierher gehört nur die Regel, wie die Menge geführt wird.
+- **Kein Präfix ohne lebendes Mitglied.** Eine Rolle wird erst zum Präfix, wenn
+  ein Szenario dieser Rolle existiert und live ist — kein Reservieren „auf Vorrat".
+
+**Check beim Audit:** Präfix-Set einachsig (ein Trigger-/Kadenz-Präfix neben
+Rollen-Präfixen ist ein Befund) · jedes Präfix im Projekt-Skill definiert · jedes
+Präfix hat ≥1 lebendes Szenario · das Präfix ersetzt das Verb, dupliziert es nicht.
+
 ## Modul-Naming je Typ
 
 Das Label trägt das Delta (siehe Leitprinzip) in der für den Typ natürlichen
@@ -117,6 +142,10 @@ Modul-Notes und Szenario-Beschreibung sind englisch und tragen das *Warum*, das
 im Label keinen Platz hat — nicht die Wiederholung des Labels. Gut: „HTTP statt
 nativ, weil das native Modul keinen cellFormat-Parameter reicht." Schlecht:
 „Sucht einen Store." (steht schon im Label).
+
+Die Szenario-Beschreibung trägt zusätzlich den Trigger-Kontrakt in einer Zeile —
+wer/was triggert, welche Inputs, welcher Output; bei `Call a scenario`-Zielen
+(on-demand) ist sie nie leer, dort ist sie die einzige Inline-Doku.
 
 ## Ordnerstruktur
 
