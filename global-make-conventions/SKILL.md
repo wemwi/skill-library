@@ -17,7 +17,7 @@ description: >-
   Set Multiple Variables, Variablen-Scope, Scenario- vs. Custom-Variable,
   Data Store, Make-Audit.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
 ---
 
 # global-make-conventions
@@ -91,6 +91,8 @@ Referenz.
 - **MUST** Modul-Labels tragen nur das Delta zum Default — das Icon (beim Trigger auch die Position) zeigt den Typ bereits, also kein Typ-Wort im Label (kein `Webhook:`/`Watch:`/`Router:`/`Var:`/`Error:`-Präfix). Verb + Objekt ist der Default; Trigger = Event, Router-Zweig = Fall, Filter = Bedingung sind die begründeten Ausnahmen. Je-Typ-Tabelle in der Referenz. Check: kein Typ-Präfix und kein unverändertes Default-Label an den Knoten, die das Delta tragen sollen.
 - **MUST** Trigger, Router-Zweige, Write- und Fehlerrouten werden immer gelabelt, unabhängig von der Modulzahl; alle übrigen Module spätestens ab ~5 Modulen im Szenario. Check: Blueprint-Diff zeigt keine unveränderten Default-Labels an diesen Stellen.
 - **SHOULD** Ordnerstruktur in Make spiegelt Projekt/Teilsystem, nicht Chronologie.
+- **SHOULD** Das führende Verb eines Szenario-Namens darf als `[Rolle]`-Präfix in eckige Klammern gezogen werden, um Szenarien im UI nach Rolle zu gruppieren — aber nur aus einer geschlossenen, **einachsigen** (Rolle, nicht Trigger/Kadenz), projektweit einmal definierten Menge; das Präfix *ersetzt* das Verb, es tritt nicht neben eins (`[Sync] Inventory to Shopify`, nicht `[Scheduled] Sync …`). Ein Präfix wird erst eingeführt, wenn ein Szenario dieser Rolle live existiert; das konkrete Set gehört in den `<projekt>-operations-*`-Skill. Check: kein Präfix-Set mit mehr als einer Achse (ein Trigger-/Kadenz-Präfix wie `[Scheduled]` neben Rollen-Präfixen ist ein Befund), jedes verwendete Präfix ist im Projekt-Skill definiert und hat ≥1 lebendes Mitglied.
+- **SHOULD** Die Szenario-Beschreibung (`description`) trägt den Trigger-Kontrakt in einer Zeile — wer/was triggert, welche Inputs, was zurückgegeben wird —, nicht die Wiederholung des Namens. Check: bei `Call a scenario`-Zielen (on-demand) ist die Beschreibung nicht leer, dort ist der Kontrakt die einzige Inline-Doku.
 
 ### B2 — Szenario-Settings (`references/settings.md`)
 - **MUST** Webhook-getriggerte Szenarien laufen mit Scheduling-Typ `immediately`, nie `indefinitely`.
@@ -136,6 +138,7 @@ Referenz.
 - **MUST** nie auf ein Formelfeld schreiben (führt zu 422) — Formelfelder sind reine Lesequellen.
 - **MUST** `filterByFormula` bindet an Feldnamen, nicht IDs — jede Feldumbenennung ist potenziell eine Szenario-Änderung; vor jeder Umbenennung wird geprüft, welche Szenarien den alten Namen referenzieren.
 - **SHOULD** ein Seitenlimit-Wächter degradiert hart in die Richtung, die keinen falschen Write erzeugen kann (z.B. „unklar" statt eines Treffers bei abgeschnittener Trefferliste).
+- **SHOULD** namensreferenzierende Prädikate gehören nach *innen* (Airtable-Formelfeld/View, beim Feld-Rename automatisch nachgezogen), nicht als `filterByFormula`-String ins Blueprint. Reihenfolge im Blueprint, oberste greifende Sprosse gewinnt: GET-by-Record-ID → Link-Traversal → View → `RECORD_ID()`-Filter → als letzter Fallback eine eingedämmte namensbasierte `filterByFormula`. Check: kein `filterByFormula`/code-gebauter Filter-String mit Feldnamen, wo eine obere Sprosse greift.
 
 ### B10 — Blueprint- & Deploy-Hygiene (`references/blueprints.md`)
 - **MUST** ein Blueprint wird immer als JSON-Datei geliefert/übergeben — nie als inline Text- oder Prosa-Beschreibung.

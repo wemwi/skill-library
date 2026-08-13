@@ -48,6 +48,37 @@ Jede Feldumbenennung ist damit potenziell eine stille Szenario-Änderung —
 vor jeder Umbenennung wird geprüft, welche `filterByFormula`-Ausdrücke in
 aktiven Blueprints den alten Namen referenzieren.
 
+## Namensreferenzierende Prädikate nach innen — die Entscheidungsleiter
+
+Der Feind ist nicht „Formula", sondern eine namensreferenzierende Formel, die
+*außerhalb* Airtables lebt. Airtable speichert Feldreferenzen in Formeln intern
+über die Feld-ID; benennt man ein Feld um, zieht Airtable jedes **Formelfeld** und
+jeden **View-Filter** automatisch nach — die brechen nicht. Ein
+`filterByFormula`-String in einem Make-Modul (oder ein im Code zusammengebauter
+Filter-/Key-String) ist dagegen nur Klartext, den Airtable nie sieht und nie
+umschreibt — der bricht *still*. (Ausnahme auch innen: umbenannte Select-*Optionen*
+werden nicht nachgezogen.)
+
+Daraus die Reihenfolge im Blueprint — oberste greifende Sprosse gewinnt,
+„Formula weglassen" gelingt auf 1–3 fast immer:
+
+1. **Identität in der Hand → GET by Record ID.** Keine Formel.
+2. **Parent→Kinder → Link-Feld traversieren:** die verlinkten Record-IDs am
+   per-ID geladenen Parent ablesen (feld-ID-basiert) und per ID holen, statt zu
+   suchen.
+3. **Statisches Prädikat → Airtable-View:** der Filter lebt in Airtable
+   (rename-safe), gelesen per `view`. Nur für feste Prädikate — ein View lässt
+   sich nicht nach einem Laufzeitwert parametrisieren.
+4. **Dynamischer Attribut-Match unvermeidbar →** `RECORD_ID()`-Filter, wo
+   Identität reicht (Formel, aber ohne Feldname = rename-safe); sonst genau *eine*
+   namensbasierte `filterByFormula`, eingedämmt per Pre-Rename-Check (voriger
+   Abschnitt).
+
+Ein dynamischer Attribut-Match („finde den Record, wo Feld = Laufzeitwert") lässt
+sich nicht formelfrei lösen — Airtable hat keine feld-ID-basierte Query-Sprache,
+`filterByFormula` ist der einzige dynamische Filter der API. Das ist die harte
+Grenze, an der Sprosse 4 unvermeidlich wird — nicht der Normalfall.
+
 ## Seitenlimit-Wächter
 
 Airtable-Listen sind paginiert. Ein Verdikt, das auf einer möglicherweise
