@@ -33,6 +33,23 @@ Auswahloption statt eines Fehlers. Produktive Writes setzen `typecast:
 false` und schreiben ausschließlich Konstanten, die als Option bereits
 existieren.
 
+Zusätzlich wird der Wert eines produktiven Select-Writes als Options-**ID**
+gesetzt (`{ "fld…": { "id": "sel…" } }` im REST-Body bzw. das ID-Objekt im
+nativen Modul), nicht als Options-Name. Options-IDs (`sel…`) sind in
+Airtable permanent — ein Umbenennen der Option lässt den Write unberührt.
+Ein namensbasierter Write bricht bei einem Options-Rename *still*: Airtable
+zieht Select-Optionen, anders als Feld-IDs in Formelfeldern/Views, nicht
+nach. Damit schließt sich die Asymmetrie zur Read-Seite, die Choice-IDs
+bereits nutzt (siehe `airtable-filters`, „Select fields").
+
+Die Entscheidungslogik bleibt in lesbaren Options-Namen; eine einzige
+Name→`sel`-ID-Tabelle (Code-Modul oder Mapping) übersetzt erst unmittelbar
+vor dem Write. So bleibt der Blueprint lesbar und der Write rename-fest.
+Die IDs stammen beim Bau aus dem Feld-Schema (`get_table_schema` →
+`choices[].id`); Airtable akzeptiert beim Schreiben eines SingleSelects ein
+Objekt mit `{id}` oder `{name}` (MultiSelect: Array solcher Objekte),
+`{id}` ist die rename-feste Variante.
+
 ## Nie auf Formelfelder schreiben
 
 Airtable weist einen Write auf ein Formelfeld mit HTTP 422 zurück. Ein
@@ -57,7 +74,8 @@ jeden **View-Filter** automatisch nach — die brechen nicht. Ein
 `filterByFormula`-String in einem Make-Modul (oder ein im Code zusammengebauter
 Filter-/Key-String) ist dagegen nur Klartext, den Airtable nie sieht und nie
 umschreibt — der bricht *still*. (Ausnahme auch innen: umbenannte Select-*Optionen*
-werden nicht nachgezogen.)
+werden nicht nachgezogen → Lösung: Select-Werte per Options-ID schreiben,
+siehe `typecast`-Abschnitt oben.)
 
 Daraus die Reihenfolge im Blueprint — oberste greifende Sprosse gewinnt,
 „Formula weglassen" gelingt auf 1–3 fast immer:
