@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.19.0](https://github.com/wemwi/skill-library/compare/v5.18.0...v5.19.0) (2026-08-14)
+
+
+### Features
+
+* **make-conventions:** write selects by option id ([#164](https://github.com/wemwi/skill-library/issues/164)) ([fc53b02](https://github.com/wemwi/skill-library/commit/fc53b025603a1ed95566d2dbe8faf54eb3dabdc6))
+
 ## [5.18.0](https://github.com/wemwi/skill-library/compare/v5.17.0...v5.18.0) (2026-08-14)
 
 
