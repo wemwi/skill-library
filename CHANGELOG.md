@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.18.0](https://github.com/wemwi/skill-library/compare/v5.17.0...v5.18.0) (2026-08-14)
+
+
+### Features
+
+* **global-make-conventions:** StartSubscenario-Interface-Wipe als B10-Regel + Post-Import-Verifikation ([#162](https://github.com/wemwi/skill-library/issues/162)) ([df77d52](https://github.com/wemwi/skill-library/commit/df77d52ce717296e2b3c4e20f5fbc15a944470df))
+
 ## [5.17.0](https://github.com/wemwi/skill-library/compare/v5.16.0...v5.17.0) (2026-08-13)
 
 
