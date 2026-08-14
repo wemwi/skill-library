@@ -17,7 +17,7 @@ description: >-
   Set Multiple Variables, Variablen-Scope, Scenario- vs. Custom-Variable,
   Data Store, Make-Audit.
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
 ---
 
 # global-make-conventions
@@ -145,6 +145,8 @@ Referenz.
 - **MUST** für ein bestehendes Szenario wird der UI-Export (⋯ → Export Blueprint) angefordert statt eines programmatischen Full-Fetch — kleiner, sauberer, ohne Laufzeit-Rauschen.
 - **MUST** Aggregator-Module werden komplett per Blueprint oder komplett im UI bearbeitet — gemischtes Bearbeiten ist mapper-fragil.
 - **MUST** nach jedem programmatischen Blueprint-Update werden die Connection-Bindings verifiziert, nicht angenommen — das Verhalten ist inkonsistent (mal bleiben sie gebunden, mal nicht).
+- **MUST** ein `Start scenario`-Blueprint (Call-a-scenario-Ziel) behält beim Import seinen top-level `io`-Block (`input_spec`/`output_spec`) — das Interface ist eine eigene Szenario-Einstellung, kein Teil des Flows; ein Import ohne den Block wischt es leer. Nie auf `name`/`flow`/`metadata` reduzieren; Felder zusätzlich in `trigger.metadata.interface`. Nur Call-a-scenario-Ziele betroffen, `CustomWebHook` ist immun. Check: importiertes Blueprint hat einen nicht-leeren top-level `io`-Block.
+- **MUST** nach jedem `Start scenario`-Import wird das Interface aktiv geprüft (`scenarios_interface`) und bei Leerbefund über `validate_scenario_interface` → `scenarios_set-interface` restauriert — nicht annehmen, es sei durchgekommen. Check: Ziel-Interface listet nach dem Import die erwarteten Felder.
 - **SHOULD** Blueprint-Bytes laufen nie mehrfach durch einen Chat-/Agent-Kontext (Lesen ≠ wiederholtes Zurückschreiben) — siehe `global-workflow §5` für die Mechanik, hier nur als Prinzip referenziert.
 
 ### B11 — Variablen & State (`references/variables.md`)

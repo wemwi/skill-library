@@ -49,6 +49,43 @@ Bindings aktiv prüfen (z.B. über die Modul-Konfiguration in der UI oder
 einen Testlauf), statt sich auf ein einmal beobachtetes Verhalten zu
 verlassen und anzunehmen, es gelte für jedes künftige Update gleich.
 
+## StartSubscenario-Interface nach jedem Import verifizieren
+
+Das Interface eines `Start scenario`-Triggers — die typisierten Inputs/Outputs,
+über die ein Call-a-scenario-Ziel angesprochen wird — ist eine **eigene
+Szenario-Einstellung**, kein Teil des Flows. Im UI-Export lebt es als
+top-level `io`-Block (`input_spec`/`output_spec`), getrennt vom `flow`. Ein
+Blueprint-Import, der diesen Block nicht mitträgt, **wischt das Interface leer**,
+ohne einen Fehler zu werfen: das Szenario importiert grün, aber die deklarierten
+Felder sind weg. Betroffen sind nur Call-a-scenario-Ziele (StartSubscenario-
+Trigger) — `CustomWebHook`-Szenarien haben kein Interface und sind gegen diesen
+Fehlermodus immun.
+
+**Bau-Regel.** Jedes StartSub-Blueprint, das zum Import geht, behält seinen
+top-level `io`-Block (`input_spec`/`output_spec`) — nie auf `name`/`flow`/
+`metadata` reduzieren. Die Felder gehören zusätzlich in
+`trigger.metadata.interface`, damit der Trigger-Knoten selbst sie kennt.
+
+**Pflicht-Verifikation nach jedem StartSub-Import.** Direkt nach dem Import das
+Interface aktiv prüfen (`scenarios_interface(id)`). Ist es leer, wird es
+restauriert: `validate_scenario_interface` (Kontrakt bilden) →
+`scenarios_set-interface` (setzen). Nicht annehmen, das Interface sei
+durchgekommen — der Import meldet keinen Fehler, wenn es fehlt.
+
+**MCP-Falle bei der Restauration.** `scenarios_set-interface` lehnt ein
+`help: ""` ab — das Feld braucht ≥1 Zeichen oder muss ganz weggelassen werden.
+Ein Feld-Objekt vom Typ `text` hat die Form
+`{name, type, label, required, multiline}` — `multiline` ist bei `text`
+**Pflicht**, sonst schlägt das Setzen fehl.
+
+**Symptom, wenn es durchrutscht** (Realfall 14.08.): ein Notification-Hub-
+Szenario wurde mit leerem Interface importiert. Alle Referenzen auf die
+Trigger-Bundle-Felder (`{{1.key}}`, `{{1.id}}`, `{{1.ctx}}`) liefen damit ins
+Leere — jede ausgelöste Notification meldete „Unbekannter Schlüssel" und stürzte
+auf den Default-Thread ab, was in `[400] message thread not found` endete. Ein
+leeres Interface ist also kein kosmetischer Defekt, sondern bricht jeden
+nachgelagerten Consumer, der auf die Trigger-Felder mappt.
+
 ## Bytes nie mehrfach durch den Kontext
 
 Ein Blueprint-Inhalt sollte innerhalb eines Chat-/Agent-Kontexts nicht
