@@ -1,0 +1,741 @@
+{
+    "name": "[Process] Payment Reminder (Store)",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomMailHook",
+            "version": 1,
+            "parameters": {
+                "hook": 3505333,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 300,
+                    "name": "Mahnschreiben per Mail"
+                }
+            }
+        },
+        {
+            "id": 2,
+            "module": "code:ExecuteCode",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "input": [
+                    {
+                        "name": "sender_a",
+                        "value": "{{1.sender.address}}"
+                    },
+                    {
+                        "name": "sender_b",
+                        "value": "{{1.from}}"
+                    },
+                    {
+                        "name": "sender_c",
+                        "value": "{{1.headers.from}}"
+                    },
+                    {
+                        "name": "betreff",
+                        "value": "{{1.subject}}"
+                    },
+                    {
+                        "name": "anhang",
+                        "value": "{{1.attachments}}"
+                    }
+                ],
+                "language": "javascript",
+                "inputFormat": "editor",
+                "codeEditorJavascript": "// -- Modul 2 - Betreff lesen ----------------------------------------------\n// Der Betreff ist die alleinige Wahrheit. Das PDF wird bewusst NICHT\n// gegengelesen, deshalb wird hier streng geprueft: exakt drei Segmente,\n// ein erkennbarer Titel, harte Muster fuer Rechnungsnummer und Datum.\n//\n// Das Datum wird rein per String rekomponiert (Date.UTC + Rueckvergleich).\n// Kein parseDate, keine Zeitzone - ein Datum mit Zone wuerde Airtable als\n// UTC lesen und im Zweifel den Vortag speichern.\n\nconst ABSENDER = 'kontakt@selectedleafs.com';\nconst BASE  = 'appiIkOaz1ID1FjfE';\nconst T_UMS = 'tbl0Xqw2eK7KPVVWY';\nconst T_BLG = 'tbld7UQwDBbq9A8Xk';\n\nconst leer = {\n  status: '', hinweis: '', belegtyp: '', rechnung: '', datum: '',\n  betreff: '', dateiname: '', url_umsatz: '', url_dublette: ''\n};\n\n// -- Absender --------------------------------------------------------------\n// Der Mailhook haengt die Absenderadresse je nach Feldform an verschiedene\n// Stellen. Statt einen Pfad zu raten werden mehrere angeboten, der erste\n// brauchbare gewinnt. Aus '<a@b.de>' oder 'Name <a@b.de>' wird 'a@b.de'.\nconst mail = function (v) {\n  let s = '';\n  if (v != null) {\n    s = (typeof v === 'object')\n      ? String(v.address || v.email || v.value || '')\n      : String(v);\n  }\n  const m = s.match(/[^\\s<>,;\"]+@[^\\s<>,;\"]+/);\n  return m ? m[0].trim().toLowerCase() : '';\n};\n\nconst sender = mail(input.sender_a) || mail(input.sender_b) || mail(input.sender_c);\n\n// -- Anhang ----------------------------------------------------------------\nlet anh = input.anhang;\nif (typeof anh === 'string') {\n  try { anh = JSON.parse(anh); } catch (e) { anh = null; }\n}\nif (!Array.isArray(anh)) anh = anh ? [anh] : [];\n\nconst anzahl = anh.length;\nconst a0 = anh[0] || {};\nconst mime = String(a0.contentType || a0.mimeType || a0.type || a0.mime || '').toLowerCase();\n\n// Diagnose fuer den Fall, dass die Bundle-Struktur wieder anders aussieht.\nconst felder = Object.keys(a0).join(', ');\nconst diagnose = 'Felder im Anhang-Bundle: ' + (felder || 'keine.');\n\nconst betreff = String(input.betreff || '').trim();\n\n// Absender nicht lesbar -> laut scheitern. Ein stiller Abbruch saehe hier\n// genauso aus wie \"alles in Ordnung, nichts zu tun\".\nif (!sender) {\n  return Object.assign({}, leer, {\n    status: 'problem',\n    betreff: betreff,\n    hinweis: 'Absender der Mail nicht lesbar - keiner der bekannten Pfade traegt eine Adresse. ' + diagnose\n  });\n}\n\n// Fremde Post an die Hook-Adresse: still verwerfen, keine Meldung.\nif (sender !== ABSENDER) {\n  return Object.assign({}, leer, { status: 'fremd' });\n}\n\nconst probleme = [];\n\nif (anzahl !== 1) {\n  probleme.push('Erwartet wird genau ein Anhang, angekommen sind ' + anzahl + '. ' + diagnose);\n}\nif (mime && mime.indexOf('application/pdf') !== 0) {\n  probleme.push('Der Anhang ist kein PDF (' + mime + ').');\n}\n\nlet belegtyp = '';\nlet rechnung = '';\nlet datum = '';\n\nif (betreff.indexOf('[BELEG] ') !== 0) {\n  probleme.push('Betreff beginnt nicht mit \"[BELEG] \".');\n} else {\n  const teile = betreff.slice(8).split('|').map(function (t) { return t.trim(); });\n\n  if (teile.length !== 3) {\n    probleme.push('Betreff traegt ' + teile.length + ' statt 3 mit \"|\" getrennte Angaben.');\n  } else {\n    // -- Belegtyp per STICHWORT, nicht per exaktem Titel ------------------\n    // Steht \"Mahnung\" im Titel, ist es eine Mahnung - egal welche Stufe:\n    // \"1. Mahnung\", \"2. Mahnung\", \"Letzte Mahnung\", \"Letzte aussergericht-\n    // liche Mahnung\". Airtable kennt nur den einen Belegtyp, die Stufe\n    // spielt dort keine Rolle.\n    //\n    // \"Mahnbescheid\" enthaelt das Wort \"Mahnung\" NICHT und faellt damit\n    // korrekt durch - der gerichtliche Weg gehoert nicht in diese Kette.\n    const titel = teile[0];\n    const t = titel.toLowerCase();\n    const hatErinnerung = t.indexOf('zahlungserinnerung') >= 0;\n    const hatMahnung    = t.indexOf('mahnung') >= 0;\n\n    if (hatErinnerung && hatMahnung) {\n      // Beide Stichworte im Titel: nicht entscheidbar, also nicht entscheiden.\n      probleme.push('Titel \"' + titel + '\" nennt Zahlungserinnerung UND Mahnung - nicht eindeutig.');\n    } else if (hatErinnerung) {\n      belegtyp = 'Zahlungserinnerung';\n    } else if (hatMahnung) {\n      belegtyp = 'Mahnung';\n    } else {\n      probleme.push('Titel \"' + titel + '\" enthaelt weder \"Zahlungserinnerung\" noch \"Mahnung\".');\n    }\n\n    if (/^RG-\\d+-\\d+$/.test(teile[1])) {\n      rechnung = teile[1];\n    } else {\n      probleme.push('Rechnungsnummer \"' + teile[1] + '\" passt nicht auf RG-<n>-<n>.');\n    }\n\n    const d = teile[2];\n    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(d)) {\n      probleme.push('Belegdatum \"' + d + '\" ist nicht als YYYY-MM-DD geschrieben.');\n    } else {\n      const j  = Number(d.slice(0, 4));\n      const m  = Number(d.slice(5, 7));\n      const tg = Number(d.slice(8, 10));\n      const zurueck = new Date(Date.UTC(j, m - 1, tg)).toISOString().slice(0, 10);\n      if (zurueck !== d) {\n        probleme.push('Belegdatum \"' + d + '\" gibt es im Kalender nicht.');\n      } else {\n        datum = d;\n      }\n    }\n  }\n}\n\nif (probleme.length) {\n  return Object.assign({}, leer, {\n    status: 'problem',\n    betreff: betreff,\n    hinweis: probleme.join(' ')\n  });\n}\n\nconst q = function (s) { return String(s).replace(/\"/g, '\\\\\"'); };\n\nconst fUms = '{ID} = \"' + q(rechnung) + '\"';\nconst fBlg = 'AND({Belegtyp} = \"' + q(belegtyp) + '\", ' +\n             'DATETIME_FORMAT({Datum}, \"YYYY-MM-DD\") = \"' + q(datum) + '\", ' +\n             '{Umsatz} = \"' + q(rechnung) + '\")';\n\nreturn {\n  status: 'pruefen',\n  hinweis: '',\n  belegtyp: belegtyp,\n  rechnung: rechnung,\n  datum: datum,\n  betreff: betreff,\n  dateiname: rechnung + '_' + belegtyp + '.pdf',\n  url_umsatz: 'https://api.airtable.com/v0/' + BASE + '/' + T_UMS +\n              '?maxRecords=2&filterByFormula=' + encodeURIComponent(fUms),\n  url_dublette: 'https://api.airtable.com/v0/' + BASE + '/' + T_BLG +\n                '?maxRecords=1&filterByFormula=' + encodeURIComponent(fBlg)\n};\n"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 300,
+                    "name": "Betreff lesen + pruefen (Stichwort)"
+                }
+            }
+        },
+        {
+            "id": 3,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 300,
+                    "name": "Betreff sauber?"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 104,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Betreff unbrauchbar",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{2.result.status}}",
+                                            "b": "problem",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "betreff",
+                                        "value": "{{2.result.betreff}}"
+                                    },
+                                    {
+                                        "name": "hinweis",
+                                        "value": "{{2.result.hinweis}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "codeEditorJavascript": "// ctx als fertiger JSON-Text — ein Mailbetreff kann Anfuehrungszeichen\n// tragen und wuerde den JSON-Body sonst zerlegen.\nreturn { ctx: JSON.stringify({\n  'Betreff': String(input.betreff || ''),\n  'Hinweis': String(input.hinweis || '')\n}) };"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 0,
+                                    "name": "Fehler-ctx bauen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 4,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6862968",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "mapper": {
+                                "data": {
+                                    "ctx": "{{104.result.ctx}}",
+                                    "key": "error.reminder_unreadable"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 0,
+                                    "name": "Call: error.reminder_unreadable"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Dispatch] Telegram Notifications"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "ctx",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 204,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": 0,
+                                            "name": "Klingel-Fehler übergehen"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 5,
+                            "module": "airtable:makeApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Betreff sauber",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{2.result.status}}",
+                                            "b": "pruefen",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "qs": [
+                                    {
+                                        "key": "maxRecords",
+                                        "value": "2"
+                                    },
+                                    {
+                                        "key": "filterByFormula",
+                                        "value": "{ID} = \"{{2.result.rechnung}}\""
+                                    },
+                                    {
+                                        "key": "returnFieldsByFieldId",
+                                        "value": "true"
+                                    }
+                                ],
+                                "url": "/v0/appiIkOaz1ID1FjfE/tbl0Xqw2eK7KPVVWY",
+                                "body": "",
+                                "method": "GET",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 450,
+                                    "name": "Umsatz suchen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 6,
+                            "module": "airtable:makeApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "qs": [
+                                    {
+                                        "key": "maxRecords",
+                                        "value": "1"
+                                    },
+                                    {
+                                        "key": "filterByFormula",
+                                        "value": "AND({Belegtyp} = \"{{2.result.belegtyp}}\", DATETIME_FORMAT({Datum}, \"YYYY-MM-DD\") = \"{{2.result.datum}}\", {Umsatz} = \"{{2.result.rechnung}}\")"
+                                    }
+                                ],
+                                "url": "/v0/appiIkOaz1ID1FjfE/tbld7UQwDBbq9A8Xk",
+                                "body": "",
+                                "method": "GET",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 450,
+                                    "name": "Dublette suchen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 7,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "ums_body",
+                                        "value": "{{5.body}}"
+                                    },
+                                    {
+                                        "name": "ums_status",
+                                        "value": "{{5.statusCode}}"
+                                    },
+                                    {
+                                        "name": "dup_body",
+                                        "value": "{{6.body}}"
+                                    },
+                                    {
+                                        "name": "dup_status",
+                                        "value": "{{6.statusCode}}"
+                                    },
+                                    {
+                                        "name": "rechnung",
+                                        "value": "{{2.result.rechnung}}"
+                                    },
+                                    {
+                                        "name": "belegtyp",
+                                        "value": "{{2.result.belegtyp}}"
+                                    },
+                                    {
+                                        "name": "datum",
+                                        "value": "{{2.result.datum}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "codeEditorJavascript": "// -- Modul 7 - Verdikt ----------------------------------------------------\n// Drei Ausgaenge: anlegen, dublette (still verwerfen), problem (melden).\n// Zusaetzlich wird der Ziel-Status fuer den Umsatz bestimmt (status_ziel):\n//   Zahlungserinnerung -> \"Ueberfaellig\", Mahnung -> \"Angemahnt\".\n// status_set = \"1\" nur, wenn wirklich geschrieben werden soll. Der Guard\n// verhindert JEDES Downgrade: terminale/bezahlte Status bleiben unangetastet,\n// eine Zahlungserinnerung stuft ein bestehendes \"Angemahnt\" nicht zurueck,\n// ein bereits gesetzter Zielwert wird nicht redundant geschrieben.\n\nconst parse = function (v) {\n  return (typeof v === 'string' ? (v ? JSON.parse(v) : null) : v);\n};\n\nconst ums = parse(input.ums_body) || {};\nconst dup = parse(input.dup_body) || {};\nconst stU = String(input.ums_status || '');\nconst stD = String(input.dup_status || '');\n\nconst rechnung = String(input.rechnung || '');\nconst belegtyp = String(input.belegtyp || '');\nconst datum    = String(input.datum || '');\n\nconst leerStatus = { status_ziel: '', status_set: '0' };\n\nconst probleme = [];\n\nif (stU !== '200') probleme.push('Umsatz-Abfrage fehlgeschlagen (HTTP ' + stU + ').');\nif (stD !== '200') probleme.push('Dubletten-Abfrage fehlgeschlagen (HTTP ' + stD + ').');\n\nconst treffer = ums.records || [];\nconst dubl    = dup.records || [];\n\nif (!probleme.length) {\n  if (treffer.length === 0) {\n    probleme.push('Zu ' + rechnung + ' gibt es keinen Umsatz in Airtable.');\n  } else if (treffer.length > 1) {\n    probleme.push('Zu ' + rechnung + ' gibt es mehr als einen Umsatz.');\n  }\n}\n\nif (probleme.length) {\n  return Object.assign({\n    verdikt: 'problem',\n    umsatz_id: '',\n    text: '\\u26a0\\ufe0f <b>' + belegtyp + ' konnte nicht abgelegt werden</b>\\n' +\n          rechnung + ' \\u00b7 ' + datum + '\\n\\n' + probleme.join(' ')\n  }, leerStatus);\n}\n\n// Gleicher Umsatz, gleicher Belegtyp, gleiches Belegdatum: schon abgelegt.\nif (dubl.length > 0) {\n  return Object.assign({ verdikt: 'dublette', umsatz_id: '', text: '' }, leerStatus);\n}\n\n// -- Ziel-Status bestimmen (nur beim tatsaechlichen Anlegen) --------------\n// Modul 5 laeuft mit returnFieldsByFieldId=true, der aktuelle Status steht\n// deshalb unter der Feld-ID (Status = fldBavq4sjk2A1swZ) und als Klartext-Name.\nconst rec     = treffer[0] || {};\nconst felder  = rec.fields || {};\nconst aktuell = String(felder['fldBavq4sjk2A1swZ'] || '');\n\n// Rangordnung: Storniert/Ausgebucht > Bezahlt > Teilgezahlt > Angemahnt >\n// Ueberfaellig > Offen. Die Mahnkette fasst nur Offen/Ueberfaellig an,\n// eine Mahnung zusaetzlich Angemahnt (Selbst-Ersatz). Alles darueber bleibt.\nconst NICHT_ANFASSEN = { 'Bezahlt': 1, 'Teilgezahlt': 1, 'Storniert': 1, 'Ausgebucht': 1 };\n\nlet ziel = '';\nif (!NICHT_ANFASSEN[aktuell]) {\n  if (belegtyp === 'Mahnung') {\n    ziel = 'Angemahnt';\n  } else if (belegtyp === 'Zahlungserinnerung') {\n    ziel = (aktuell === 'Angemahnt') ? '' : '\\u00dcberf\\u00e4llig';\n  }\n}\nif (ziel === aktuell) ziel = '';   // kein redundanter Schreibvorgang\n\nreturn {\n  verdikt: 'anlegen',\n  umsatz_id: String(rec.id || ''),\n  text: '\\ud83d\\udcc4 <b>' + belegtyp + ' abgelegt</b>\\n' +\n        rechnung + ' \\u00b7 ' + datum,\n  status_ziel: ziel,\n  status_set: ziel ? '1' : '0'\n};\n"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 450,
+                                    "name": "Verdikt"
+                                }
+                            }
+                        },
+                        {
+                            "id": 8,
+                            "module": "builtin:BasicRouter",
+                            "version": 1,
+                            "mapper": null,
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 450,
+                                    "name": "Anlegen / melden"
+                                }
+                            },
+                            "routes": [
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 9,
+                                            "module": "scenario-service:CallSubscenario",
+                                            "version": 2,
+                                            "parameters": {
+                                                "scenario": "SCN_6862968",
+                                                "shouldWaitForExecutionEnd": false
+                                            },
+                                            "filter": {
+                                                "name": "Nicht zuordenbar",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{7.result.verdikt}}",
+                                                            "b": "problem",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "data": {
+                                                    "ctx": "{\n    \"Rechnungsnummer\": \"{{2.result.rechnung}}\",\n    \"Belegtyp\": \"{{2.result.belegtyp}}\"\n  }",
+                                                    "key": "error.reminder_unmatched"
+                                                }
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 300,
+                                                    "name": "Call: error.reminder_unmatched"
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "scenario": {
+                                                            "label": "[Dispatch] Telegram Notifications"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "scenario",
+                                                        "type": "scenario",
+                                                        "label": "Scenario",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "shouldWaitForExecutionEnd",
+                                                        "type": "boolean",
+                                                        "label": "Wait for the scenario to finish",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "data",
+                                                        "spec": [
+                                                            {
+                                                                "name": "key",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": true,
+                                                                "multiline": false
+                                                            },
+                                                            {
+                                                                "name": "ctx",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": false,
+                                                                "multiline": true
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Scenario Inputs"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "executionId",
+                                                        "type": "text",
+                                                        "label": "Execution ID"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 209,
+                                                    "module": "builtin:Resume",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "output": ""
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 2400,
+                                                            "y": 300,
+                                                            "name": "Klingel-Fehler übergehen"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 10,
+                                            "module": "airtable:ActionCreateRecord",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Neu anzulegen",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{7.result.verdikt}}",
+                                                            "b": "anlegen",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tbld7UQwDBbq9A8Xk",
+                                                "record": {
+                                                    "fldI5lU4NQ7ymG4d0": [
+                                                        "{{7.result.umsatz_id}}"
+                                                    ],
+                                                    "fldKSqryQHeRzUCMd": "{{2.result.belegtyp}}",
+                                                    "fldPoeEx87w0wF8w9": "{{2.result.datum}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 600,
+                                                    "name": "Beleg anlegen"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "id": 300,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Status zu setzen",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{7.result.status_set}}",
+                                                            "b": "1",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "id": "{{7.result.umsatz_id}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tbl0Xqw2eK7KPVVWY",
+                                                "record": {
+                                                    "fldBavq4sjk2A1swZ": "{{7.result.status_ziel}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2400,
+                                                    "y": 600,
+                                                    "name": "Umsatz-Status setzen"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "id": 11,
+                                            "module": "http:MakeRequest",
+                                            "version": 4,
+                                            "parameters": {
+                                                "tlsType": "",
+                                                "apiKeyKeychain": 204951,
+                                                "authenticationType": "apiKey"
+                                            },
+                                            "mapper": {
+                                                "url": "https://content.airtable.com/v0/appiIkOaz1ID1FjfE/{{10.id}}/fldd3wi6dceGmnppx/uploadAttachment",
+                                                "method": "post",
+                                                "headers": [],
+                                                "timeout": 60,
+                                                "contentType": "json",
+                                                "inputMethod": "jsonString",
+                                                "shareCookies": false,
+                                                "parseResponse": true,
+                                                "allowRedirects": true,
+                                                "queryParameters": [],
+                                                "stopOnHttpError": false,
+                                                "jsonStringBodyContent": "{\n  \"contentType\": \"application/pdf\",\n  \"filename\": \"{{2.result.dateiname}}\",\n  \"file\": \"{{base64(1.attachments[1].data)}}\"\n}",
+                                                "requestCompressedContent": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2700,
+                                                    "y": 600,
+                                                    "name": "PDF an den Beleg haengen"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "id": 12,
+                                            "module": "code:ExecuteCode",
+                                            "version": 1,
+                                            "parameters": {},
+                                            "mapper": {
+                                                "input": [
+                                                    {
+                                                        "name": "status",
+                                                        "value": "{{11.statusCode}}"
+                                                    },
+                                                    {
+                                                        "name": "body",
+                                                        "value": "{{11.data}}"
+                                                    },
+                                                    {
+                                                        "name": "erfolg",
+                                                        "value": "{{7.result.text}}"
+                                                    },
+                                                    {
+                                                        "name": "record",
+                                                        "value": "{{10.id}}"
+                                                    },
+                                                    {
+                                                        "name": "dateiname",
+                                                        "value": "{{2.result.dateiname}}"
+                                                    },
+                                                    {
+                                                        "name": "belegtyp",
+                                                        "value": "{{2.result.belegtyp}}"
+                                                    }
+                                                ],
+                                                "language": "javascript",
+                                                "inputFormat": "editor",
+                                                "codeEditorJavascript": "// -- Modul 12 - Meldung ---------------------------------------------------\n// Der Beleg steht zu diesem Zeitpunkt bereits in Airtable. Scheitert nur\n// der Upload, wird der Datensatz NICHT zurueckgerollt - ein halber Beleg\n// ist auffindbar, ein geloeschter nicht. Die Meldung nennt dann die\n// Record-ID, damit das PDF von Hand nachgezogen werden kann.\n\nconst st = String(input.status || '');\nconst dateiname = String(input.dateiname || '');\n\nconst belegtyp = String(input.belegtyp || '');\nconst klingel = {\n  key: (belegtyp === 'Mahnung') ? 'invoice.dunning_filed' : 'invoice.reminder_filed',\n  ctx: JSON.stringify({ 'Belegtyp': belegtyp })\n};\n\nif (st === '200') {\n  return Object.assign({ text: String(input.erfolg || '') + '\\n' + dateiname }, klingel);\n}\n\nconst parse = function (v) {\n  return (typeof v === 'string' ? (v ? JSON.parse(v) : null) : v);\n};\nconst b = parse(input.body) || {};\n\nreturn Object.assign(klingel, {\n  text: '\\u26a0\\ufe0f <b>Beleg angelegt, PDF fehlt</b>\\n' +\n        String(input.record || '') + '\\n\\n' +\n        'Upload fehlgeschlagen (HTTP ' + st + '): ' +\n        JSON.stringify(b).slice(0, 300) + '\\n\\n' +\n        'Das PDF haengt an der Mail und muss von Hand an den Datensatz.'\n});\n\n\n// ── Klingel-Nutzlast ───────────────────────────────────────────────────\n// Der Belegtyp entscheidet den Schluessel: Teil B Typ 9 gegen Typ 10.\n// Achtung: der Zweig \"Beleg angelegt, PDF fehlt\" hat im Katalog KEINEN\n// eigenen Meldetyp — task.beleg_no_pdf ist reine Digest-Zeile. Bis der\n// Digest steht, faellt dieser Hinweis unter den Tisch.\n// (nicht Teil des Rueckgabewerts oben — siehe zweiten return unten)\n"
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 3000,
+                                                    "y": 600,
+                                                    "name": "Meldung bauen"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "id": 13,
+                                            "module": "scenario-service:CallSubscenario",
+                                            "version": 2,
+                                            "parameters": {
+                                                "scenario": "SCN_6862968",
+                                                "shouldWaitForExecutionEnd": false
+                                            },
+                                            "mapper": {
+                                                "data": {
+                                                    "id": "{{7.result.umsatz_id}}",
+                                                    "ctx": "{{12.result.ctx}}",
+                                                    "key": "{{12.result.key}}"
+                                                }
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 3300,
+                                                    "y": 600,
+                                                    "name": "Call: dispatch"
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "scenario": {
+                                                            "label": "[Dispatch] Telegram Notifications"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "scenario",
+                                                        "type": "scenario",
+                                                        "label": "Scenario",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "shouldWaitForExecutionEnd",
+                                                        "type": "boolean",
+                                                        "label": "Wait for the scenario to finish",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "data",
+                                                        "spec": [
+                                                            {
+                                                                "name": "key",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": true,
+                                                                "multiline": false
+                                                            },
+                                                            {
+                                                                "name": "id",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": false,
+                                                                "multiline": false
+                                                            },
+                                                            {
+                                                                "name": "ctx",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": false,
+                                                                "multiline": true
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Scenario Inputs"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "executionId",
+                                                        "type": "text",
+                                                        "label": "Execution ID"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 113,
+                                                    "module": "builtin:Resume",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "output": ""
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 3600,
+                                                            "y": 600,
+                                                            "name": "Klingel-Fehler übergehen"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": true,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": true,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    }
+}

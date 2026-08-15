@@ -1,0 +1,535 @@
+{
+    "name": "[Dispatch] Lexware Voucher",
+    "flow": [
+        {
+            "id": 1,
+            "module": "lexoffice:watchEvents",
+            "version": 1,
+            "parameters": {
+                "__IMTHOOK__": 3516813
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 300,
+                    "name": "Lexware · Voucher Dispatch"
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTHOOK__": {
+                            "data": {
+                                "editable": "false"
+                            },
+                            "label": "My Lexware Office event webhook"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTHOOK__",
+                        "type": "hook:lexoffice",
+                        "label": "Webhook",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "lexoffice:makeApiCall",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 9627522
+            },
+            "mapper": {
+                "url": "/v1/vouchers/{{1.resourceId}}",
+                "method": "GET",
+                "headers": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 300,
+                    "name": "Beleg holen"
+                },
+                "restore": {
+                    "expect": {
+                        "qs": {
+                            "mode": "chose"
+                        },
+                        "method": {
+                            "mode": "chose",
+                            "label": "GET"
+                        },
+                        "headers": {
+                            "mode": "chose",
+                            "items": [
+                                null
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "lexoffice"
+                            },
+                            "label": "Lexware · Dispatch Voucher"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:lexoffice",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "text",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "GET",
+                                "POST",
+                                "PUT",
+                                "PATCH",
+                                "DELETE"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Headers"
+                    },
+                    {
+                        "name": "qs",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Query String"
+                    },
+                    {
+                        "name": "body",
+                        "type": "any",
+                        "label": "Body"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 20,
+                    "module": "telegram:SendReplyMessage",
+                    "version": 1,
+                    "parameters": {
+                        "__IMTCONN__": 9134912
+                    },
+                    "mapper": {
+                        "text": "🛑 Lexware-Eingang gestört\nBeleg {{1.resourceId}} · Event {{1.eventType}}\n\nGrund: {{2.error.message}}\nFolge: Beleg nicht dispatcht, Lauf geparkt — per DLQ-Replay erneut anstoßen.",
+                        "chatId": "-1003918922935",
+                        "parseMode": "HTML",
+                        "messageThreadId": "584"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 600,
+                            "y": 600,
+                            "name": "Störung → Operations"
+                        }
+                    }
+                },
+                {
+                    "id": 21,
+                    "module": "builtin:Break",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "count": "1",
+                        "retry": false,
+                        "interval": "1"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 900,
+                            "y": 600,
+                            "name": "Lauf parken (Break)"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 150,
+                    "name": "Belegart"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 7,
+                            "module": "airtable:ActionSearchRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Ausgangsrechnung mit Kontakt",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{2.body.type}}",
+                                            "b": "salesinvoice",
+                                            "o": "text:equal"
+                                        },
+                                        {
+                                            "a": "{{2.body.contactId}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "sort": [],
+                                "table": "tblfB5nsTSOXrUK1q",
+                                "formula": "{⚙ Lexware ID} = \"{{2.body.contactId}}\"",
+                                "maxRecords": 1,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 0,
+                                    "name": "Store zum Kontakt"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "airtable3"
+                                            },
+                                            "label": "Airtable"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:airtable3",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 4,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6633991",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "filter": {
+                                "name": "Store gefunden",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{7.id}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "data": {
+                                    "resource_id": "{{1.resourceId}}"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 0,
+                                    "name": "[Process] Invoice (Store)"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Process] Invoice (Store)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "resource_id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 108,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": 0,
+                                            "name": "Skip call error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 5,
+                            "module": "airtable:ActionSearchRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Eingangsrechnung mit Kontakt",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{2.body.type}}",
+                                            "b": "purchaseinvoice",
+                                            "o": "text:equal"
+                                        },
+                                        {
+                                            "a": "{{2.body.contactId}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "sort": [],
+                                "table": "tbl0ijvzkD7LH2XMM",
+                                "formula": "{⚙ Lexware ID} = \"{{2.body.contactId}}\"",
+                                "maxRecords": 1,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 900,
+                                    "y": 300,
+                                    "name": "Vertriebler zum Kontakt"
+                                }
+                            }
+                        },
+                        {
+                            "id": 6,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6872651",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "filter": {
+                                "name": "Vertriebler gefunden",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{5.id}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "data": {
+                                    "resource_id": "{{1.resourceId}}",
+                                    "salesmember_id": "{{5.id}}"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 300,
+                                    "name": "[Process] Invoice (Sales)"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Process] Invoice (Sales)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "resource_id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "salesmember_id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 109,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": 300,
+                                            "name": "Skip call error"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": true,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    }
+}

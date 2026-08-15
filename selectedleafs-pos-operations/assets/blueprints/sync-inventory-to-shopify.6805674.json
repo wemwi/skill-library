@@ -1,0 +1,1473 @@
+{
+    "name": "[Sync] Inventory to Shopify",
+    "flow": [
+        {
+            "id": 1,
+            "module": "scenario-service:StartSubscenario",
+            "version": 2,
+            "parameters": {},
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 2100,
+                    "name": "Push Inventory"
+                },
+                "interface": [
+                    {
+                        "help": "",
+                        "name": "store_id",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": true,
+                        "multiline": false
+                    },
+                    {
+                        "help": "",
+                        "name": "type",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": true,
+                        "multiline": false
+                    },
+                    {
+                        "help": "",
+                        "name": "ref",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "help": "",
+                        "name": "dry_run",
+                        "type": "boolean",
+                        "label": "",
+                        "required": true
+                    },
+                    {
+                        "help": "",
+                        "name": "document_record_id",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": false
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "util:FunctionSleep",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "duration": 15
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 2100,
+                    "name": "Rollup-Propagation abwarten"
+                }
+            }
+        },
+        {
+            "id": 40,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [],
+                "url": "/v0/appiIkOaz1ID1FjfE/tbld7UQwDBbq9A8Xk?maxRecords=1&returnFieldsByFieldId=true&filterByFormula=RECORD_ID()%3D%22{{1.document_record_id}}%22&fields%5B%5D=fldPoeEx87w0wF8w9",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 2100,
+                    "name": "Beleg-Datum lesen (C1)"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 41,
+                    "module": "builtin:Resume",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "output": ""
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 900,
+                            "y": 4200,
+                            "name": "Lesefehler übergehen"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [],
+                "url": "/v0/appiIkOaz1ID1FjfE/tblfB5nsTSOXrUK1q?maxRecords=1&returnFieldsByFieldId=true&cellFormat=string&timeZone=Europe%2FBerlin&userLocale=de&filterByFormula=RECORD_ID()%3D%22{{1.store_id}}%22&fields%5B%5D=fldL1YaDEswIZNnNP&fields%5B%5D=fld7fbRS1BHvrqJrj&fields%5B%5D=fldjVrpQh4LqaxqOk&fields%5B%5D=fldQ6BHP9c9FlVZE1&fields%5B%5D=fldE7ux5MwwvJGJZl&fields%5B%5D=fld09mGXJrafZXyjN",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 1950,
+                    "name": "Store lesen (cellFormat=string)"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 1031,
+                    "module": "code:ExecuteCode",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "input": [
+                            {
+                                "name": "fehler",
+                                "value": "{{3.error.message}}"
+                            },
+                            {
+                                "name": "store",
+                                "value": "{{1.store_id}}"
+                            }
+                        ],
+                        "language": "javascript",
+                        "inputFormat": "editor",
+                        "codeEditorJavascript": "// ctx als fertiger JSON-Text — Fehlermeldungen tragen Anfuehrungszeichen\n// und Zeilenumbrueche und wuerden den JSON-Body sonst zerlegen.\nreturn { ctx: JSON.stringify({\n  'Szenario': '[Sync] Inventory to Shopify',\n  'Stufe': \"Store lesen\",\n  'Fehler': String(input.fehler || 'unbekannt'),\n  'Folge': 'kein Shopify-Write, keine City-Posts für Store ' + String(input.store || '')\n}) };"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 1200,
+                            "y": 3750,
+                            "name": "Fehler-ctx bauen"
+                        }
+                    }
+                },
+                {
+                    "id": 31,
+                    "module": "scenario-service:CallSubscenario",
+                    "version": 2,
+                    "parameters": {
+                        "scenario": "SCN_6862968",
+                        "shouldWaitForExecutionEnd": false
+                    },
+                    "mapper": {
+                        "data": {
+                            "ctx": "{{1031.result.ctx}}",
+                            "key": "error.sync_aborted"
+                        }
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 1500,
+                            "y": 3750,
+                            "name": "Call: error.sync_aborted"
+                        },
+                        "restore": {
+                            "parameters": {
+                                "scenario": {
+                                    "label": "[Dispatch] Telegram Notifications"
+                                }
+                            }
+                        },
+                        "parameters": [
+                            {
+                                "name": "scenario",
+                                "type": "scenario",
+                                "label": "Scenario",
+                                "required": true
+                            },
+                            {
+                                "name": "shouldWaitForExecutionEnd",
+                                "type": "boolean",
+                                "label": "Wait for the scenario to finish",
+                                "required": true
+                            }
+                        ],
+                        "expect": [
+                            {
+                                "name": "data",
+                                "spec": [
+                                    {
+                                        "name": "key",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": true,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "name": "ctx",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": false,
+                                        "multiline": true
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Scenario Inputs"
+                            }
+                        ],
+                        "interface": [
+                            {
+                                "name": "executionId",
+                                "type": "text",
+                                "label": "Execution ID"
+                            }
+                        ]
+                    },
+                    "onerror": [
+                        {
+                            "id": 1131,
+                            "module": "builtin:Resume",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "output": ""
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 3900,
+                                    "name": "Klingel-Fehler übergehen"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": 32,
+                    "module": "builtin:Commit",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {},
+                    "metadata": {
+                        "designer": {
+                            "x": 1800,
+                            "y": 3600,
+                            "name": "Stop"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "base": "appiIkOaz1ID1FjfE",
+                "table": "tblFboBzXrCop4nYt",
+                "formula": "FIND(\"BST-{{ifempty(3.data.records[1].fields.fldL1YaDEswIZNnNP; 3.body.records[1].fields.fldL1YaDEswIZNnNP)}}-\", {ID}) = 1",
+                "maxRecords": 100,
+                "useColumnId": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 1650,
+                    "name": "Bestandszeilen lesen"
+                }
+            }
+        },
+        {
+            "id": 5,
+            "module": "builtin:BasicAggregator",
+            "version": 1,
+            "parameters": {
+                "feeder": 4
+            },
+            "mapper": {
+                "id": "{{4.id}}",
+                "ist": "{{4.fld0lKVZKGZRytGao}}",
+                "soll": "{{4.fld8OepBzfJSL0xyt}}",
+                "verkauft": "{{4.fldXBX7L99gnBo9Tl}}",
+                "produkt_rec": "{{4.fldTJVVXGcFC4JMTg}}",
+                "erstlieferung": "{{4.flddmYNCwH7P0YKmu}}",
+                "letzte_pruefung": "{{4.fldZhiZtRPUuaQR6i}}",
+                "letzte_lieferung": "{{4.fldkKyVPdEVdqRrXT}}"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 1650,
+                    "name": "Bestandszeilen sammeln"
+                }
+            }
+        },
+        {
+            "id": 6,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [],
+                "url": "/v0/appiIkOaz1ID1FjfE/tblzCvZoJSrpbuJ5N?pageSize=100&returnFieldsByFieldId=true&fields%5B%5D=fldglRrcSpfvq4ySR&fields%5B%5D=fldZa1wmLlTenikuC&fields%5B%5D=fldKkreKUYX5WuLoW&fields%5B%5D=fldWyNQ07Mh6Xcpgg&fields%5B%5D=fld2a7MGVts13AEeW",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 1650,
+                    "name": "Produkte lesen (alle)"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 1023,
+                    "module": "code:ExecuteCode",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "input": [
+                            {
+                                "name": "fehler",
+                                "value": "{{6.error.message}}"
+                            },
+                            {
+                                "name": "store",
+                                "value": "{{1.store_id}}"
+                            }
+                        ],
+                        "language": "javascript",
+                        "inputFormat": "editor",
+                        "codeEditorJavascript": "// ctx als fertiger JSON-Text — Fehlermeldungen tragen Anfuehrungszeichen\n// und Zeilenumbrueche und wuerden den JSON-Body sonst zerlegen.\nreturn { ctx: JSON.stringify({\n  'Szenario': '[Sync] Inventory to Shopify',\n  'Stufe': \"Produkte lesen\",\n  'Fehler': String(input.fehler || 'unbekannt'),\n  'Folge': 'kein Shopify-Write, keine City-Posts für Store ' + String(input.store || '')\n}) };"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 2100,
+                            "y": 3150,
+                            "name": "Fehler-ctx bauen"
+                        }
+                    }
+                },
+                {
+                    "id": 23,
+                    "module": "scenario-service:CallSubscenario",
+                    "version": 2,
+                    "parameters": {
+                        "scenario": "SCN_6862968",
+                        "shouldWaitForExecutionEnd": false
+                    },
+                    "mapper": {
+                        "data": {
+                            "ctx": "{{1023.result.ctx}}",
+                            "key": "error.sync_aborted"
+                        }
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 2400,
+                            "y": 3150,
+                            "name": "Call: error.sync_aborted"
+                        },
+                        "restore": {
+                            "parameters": {
+                                "scenario": {
+                                    "label": "[Dispatch] Telegram Notifications"
+                                }
+                            }
+                        },
+                        "parameters": [
+                            {
+                                "name": "scenario",
+                                "type": "scenario",
+                                "label": "Scenario",
+                                "required": true
+                            },
+                            {
+                                "name": "shouldWaitForExecutionEnd",
+                                "type": "boolean",
+                                "label": "Wait for the scenario to finish",
+                                "required": true
+                            }
+                        ],
+                        "expect": [
+                            {
+                                "name": "data",
+                                "spec": [
+                                    {
+                                        "name": "key",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": true,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "name": "ctx",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": false,
+                                        "multiline": true
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Scenario Inputs"
+                            }
+                        ],
+                        "interface": [
+                            {
+                                "name": "executionId",
+                                "type": "text",
+                                "label": "Execution ID"
+                            }
+                        ]
+                    },
+                    "onerror": [
+                        {
+                            "id": 1123,
+                            "module": "builtin:Resume",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "output": ""
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2700,
+                                    "y": 3300,
+                                    "name": "Klingel-Fehler übergehen"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": 24,
+                    "module": "builtin:Commit",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {},
+                    "metadata": {
+                        "designer": {
+                            "x": 2700,
+                            "y": 3000,
+                            "name": "Stop"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 21,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [],
+                "url": "/v0/appiIkOaz1ID1FjfE/tblNQsc69xuDrMBzs?pageSize=100&returnFieldsByFieldId=true&fields%5B%5D=flduzOEUi4iJGmqmw&fields%5B%5D=fld0KMcyfc7pSJupr",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2100,
+                    "y": 1350,
+                    "name": "Produktvarianten lesen (alle)"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 1025,
+                    "module": "code:ExecuteCode",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "input": [
+                            {
+                                "name": "fehler",
+                                "value": "{{21.error.message}}"
+                            },
+                            {
+                                "name": "store",
+                                "value": "{{1.store_id}}"
+                            }
+                        ],
+                        "language": "javascript",
+                        "inputFormat": "editor",
+                        "codeEditorJavascript": "// ctx als fertiger JSON-Text — Fehlermeldungen tragen Anfuehrungszeichen\n// und Zeilenumbrueche und wuerden den JSON-Body sonst zerlegen.\nreturn { ctx: JSON.stringify({\n  'Szenario': '[Sync] Inventory to Shopify',\n  'Stufe': \"Produktvarianten lesen\",\n  'Fehler': String(input.fehler || 'unbekannt'),\n  'Folge': 'kein Shopify-Write, keine City-Posts für Store ' + String(input.store || '')\n}) };"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 2400,
+                            "y": 2550,
+                            "name": "Fehler-ctx bauen"
+                        }
+                    }
+                },
+                {
+                    "id": 25,
+                    "module": "scenario-service:CallSubscenario",
+                    "version": 2,
+                    "parameters": {
+                        "scenario": "SCN_6862968",
+                        "shouldWaitForExecutionEnd": false
+                    },
+                    "mapper": {
+                        "data": {
+                            "ctx": "{{1025.result.ctx}}",
+                            "key": "error.sync_aborted"
+                        }
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 2700,
+                            "y": 2550,
+                            "name": "Call: error.sync_aborted"
+                        },
+                        "restore": {
+                            "parameters": {
+                                "scenario": {
+                                    "label": "[Dispatch] Telegram Notifications"
+                                }
+                            }
+                        },
+                        "parameters": [
+                            {
+                                "name": "scenario",
+                                "type": "scenario",
+                                "label": "Scenario",
+                                "required": true
+                            },
+                            {
+                                "name": "shouldWaitForExecutionEnd",
+                                "type": "boolean",
+                                "label": "Wait for the scenario to finish",
+                                "required": true
+                            }
+                        ],
+                        "expect": [
+                            {
+                                "name": "data",
+                                "spec": [
+                                    {
+                                        "name": "key",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": true,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "name": "ctx",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": false,
+                                        "multiline": true
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Scenario Inputs"
+                            }
+                        ],
+                        "interface": [
+                            {
+                                "name": "executionId",
+                                "type": "text",
+                                "label": "Execution ID"
+                            }
+                        ]
+                    },
+                    "onerror": [
+                        {
+                            "id": 1125,
+                            "module": "builtin:Resume",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "output": ""
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3000,
+                                    "y": 2700,
+                                    "name": "Klingel-Fehler übergehen"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": 26,
+                    "module": "builtin:Commit",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {},
+                    "metadata": {
+                        "designer": {
+                            "x": 3000,
+                            "y": 2400,
+                            "name": "Stop"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 7,
+            "module": "shopify:makeAnApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9461157
+            },
+            "mapper": {
+                "query": "query GetList($id: ID!) {\n  metaobject(id: $id) {\n    id\n    product_list: field(key: \"product_list\") { value }\n  }\n}",
+                "version": "2026-01",
+                "variables": [
+                    {
+                        "key": "id",
+                        "value": "{{ifempty(3.data.records[1].fields.fldE7ux5MwwvJGJZl; 3.body.records[1].fields.fldE7ux5MwwvJGJZl)}}"
+                    }
+                ],
+                "handleErrors": true,
+                "flattenResponse": false,
+                "variablesDataSource": "array"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2400,
+                    "y": 1050,
+                    "name": "Shopify product_list lesen"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 1017,
+                    "module": "code:ExecuteCode",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "input": [
+                            {
+                                "name": "fehler",
+                                "value": "{{7.error.message}}"
+                            },
+                            {
+                                "name": "store",
+                                "value": "{{1.store_id}}"
+                            }
+                        ],
+                        "language": "javascript",
+                        "inputFormat": "editor",
+                        "codeEditorJavascript": "// ctx als fertiger JSON-Text — Fehlermeldungen tragen Anfuehrungszeichen\n// und Zeilenumbrueche und wuerden den JSON-Body sonst zerlegen.\nreturn { ctx: JSON.stringify({\n  'Szenario': '[Sync] Inventory to Shopify',\n  'Stufe': \"Shopify product_list lesen\",\n  'Fehler': String(input.fehler || 'unbekannt'),\n  'Folge': 'kein Shopify-Write, keine City-Posts für Store ' + String(input.store || '')\n}) };"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 2700,
+                            "y": 1950,
+                            "name": "Fehler-ctx bauen"
+                        }
+                    }
+                },
+                {
+                    "id": 17,
+                    "module": "scenario-service:CallSubscenario",
+                    "version": 2,
+                    "parameters": {
+                        "scenario": "SCN_6862968",
+                        "shouldWaitForExecutionEnd": false
+                    },
+                    "mapper": {
+                        "data": {
+                            "ctx": "{{1017.result.ctx}}",
+                            "key": "error.sync_aborted"
+                        }
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 3000,
+                            "y": 1950,
+                            "name": "Call: error.sync_aborted"
+                        },
+                        "restore": {
+                            "parameters": {
+                                "scenario": {
+                                    "label": "[Dispatch] Telegram Notifications"
+                                }
+                            }
+                        },
+                        "parameters": [
+                            {
+                                "name": "scenario",
+                                "type": "scenario",
+                                "label": "Scenario",
+                                "required": true
+                            },
+                            {
+                                "name": "shouldWaitForExecutionEnd",
+                                "type": "boolean",
+                                "label": "Wait for the scenario to finish",
+                                "required": true
+                            }
+                        ],
+                        "expect": [
+                            {
+                                "name": "data",
+                                "spec": [
+                                    {
+                                        "name": "key",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": true,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "name": "ctx",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": false,
+                                        "multiline": true
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Scenario Inputs"
+                            }
+                        ],
+                        "interface": [
+                            {
+                                "name": "executionId",
+                                "type": "text",
+                                "label": "Execution ID"
+                            }
+                        ]
+                    },
+                    "onerror": [
+                        {
+                            "id": 1117,
+                            "module": "builtin:Resume",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "output": ""
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 2100,
+                                    "name": "Klingel-Fehler übergehen"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": 18,
+                    "module": "builtin:Commit",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {},
+                    "metadata": {
+                        "designer": {
+                            "x": 3300,
+                            "y": 1800,
+                            "name": "Stop"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 8,
+            "module": "code:ExecuteCode",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "input": [
+                    {
+                        "name": "storeNummer",
+                        "value": "{{ifempty(3.data.records[1].fields.fldL1YaDEswIZNnNP; 3.body.records[1].fields.fldL1YaDEswIZNnNP)}}"
+                    },
+                    {
+                        "name": "storeName",
+                        "value": "{{ifempty(3.data.records[1].fields.fld7fbRS1BHvrqJrj; 3.body.records[1].fields.fld7fbRS1BHvrqJrj)}}"
+                    },
+                    {
+                        "name": "storeStadtteilRaw",
+                        "value": "{{ifempty(3.data.records[1].fields.fldjVrpQh4LqaxqOk; 3.body.records[1].fields.fldjVrpQh4LqaxqOk)}}"
+                    },
+                    {
+                        "name": "storePlaceId",
+                        "value": "{{ifempty(3.data.records[1].fields.fldQ6BHP9c9FlVZE1; 3.body.records[1].fields.fldQ6BHP9c9FlVZE1)}}"
+                    },
+                    {
+                        "name": "bestand",
+                        "value": "{{5.array}}"
+                    },
+                    {
+                        "name": "produkte",
+                        "value": "{{ifempty(6.data.records; 6.body.records)}}"
+                    },
+                    {
+                        "name": "varianten",
+                        "value": "{{ifempty(21.data.records; 21.body.records)}}"
+                    },
+                    {
+                        "name": "produkteOffset",
+                        "value": "{{ifempty(6.data.offset; 6.body.offset)}}"
+                    },
+                    {
+                        "name": "variantenOffset",
+                        "value": "{{ifempty(21.data.offset; 21.body.offset)}}"
+                    },
+                    {
+                        "name": "belegTyp",
+                        "value": "{{1.type}}"
+                    },
+                    {
+                        "name": "belegdatumRaw",
+                        "value": "{{ifempty(40.body.records[1].fields.fldPoeEx87w0wF8w9; 40.data.records[1].fields.fldPoeEx87w0wF8w9)}}"
+                    },
+                    {
+                        "name": "belegRef",
+                        "value": "{{1.ref}}"
+                    },
+                    {
+                        "name": "dryRun",
+                        "value": "{{1.dry_run}}"
+                    },
+                    {
+                        "name": "currentListRaw",
+                        "value": "{{7.body.data.metaobject.product_list.value}}"
+                    }
+                ],
+                "language": "javascript",
+                "inputFormat": "editor",
+                "dependencies": [],
+                "codeEditorJavascript": "// Abgleich: Store-Bestand (🟣 Bestände) gegen Shopify product_list.\n// Gruppierung ueber ⚙ Produkt (Bestandszeile -> Sorte). Nur Typ \"Kratom\"\n// darf in product_list — POS Display gehoert nie hinein.\n//\n// WICHTIG: 🟣 Bestände.⚙ Produkt verlinkt auf PRODUKTVARIANTEN, nicht auf\n// Produkte (trotz Feldname). Jede Variantenzeile wird deshalb zuerst ueber\n// Produktvarianten.Produkt auf die eigentliche Produkt-Gruppe aufgeloest.\n//\n// GEKAPSELTES MODELL: die Produzenten pingen nur noch. Sie schicken\n// { store_id, type, date, ref, dry_run } — kein geliefert-Array mehr.\n// Welche Sorten betroffen sind, ermittelt dieses Modul selbst ueber\n// 🟣 Bestände.Letzte Lieferung (Rollup MAX auf Lieferpositionen.⚙ Geliefert am).\n//\n// LESE-INTEGRITAETSGATES: Dieses Modul kennt keine Mengen-Sicherung mehr.\n// Eine legitime Grossauslistung muss jederzeit durchgehen. Stattdessen wird\n// jede Lese-Unvollstaendigkeit hart abgebrochen, BEVOR irgendein Write laeuft:\n// abort() wirft, Modul 8 laeuft auf Fehler, der onerror-Zweig postet den\n// Ops-Alert und committet. Router, Shopify-Write und Marker-Write laufen nicht an.\n//\n// STORE-READ: Modul 3 liest mit cellFormat=string. Link-Felder kommen damit als\n// Primaerfeld-Klartext (\"Hannover-Nord\") statt als Record-ID-Array. stadtteilName()\n// bleibt bewusst tolerant fuer beide Formen, damit ein Rueckbau auf cellFormat=json\n// den Post nicht still auf Record-IDs zurueckfallen laesst.\nconst F_P_NAME = 'fldZa1wmLlTenikuC';\nconst F_P_TYP = 'fldKkreKUYX5WuLoW';\nconst F_P_TAGS = 'fldWyNQ07Mh6Xcpgg';\nconst F_P_GID = 'fld2a7MGVts13AEeW';\n\nconst F_V_PRODUKT = 'fld0KMcyfc7pSJupr'; // Produktvarianten.Produkt (Link)\n\nconst VEIN_ORDER = { white: 0, green: 1, red: 2 };\n\n// Typen des Nutzlast-Kontrakts. TYPEN_MIT_BELEG tragen date + ref und\n// unterliegen dem Belegdatums-Gate; die beiden anderen gleichen nur ab.\nconst ALLE_TYPEN = { 'restock': true, 'remove': true, 'inventory-check': true, 'inventory-sale': true };\nconst TYPEN_MIT_BELEG = { 'restock': true, 'remove': true };\n\nfunction num(v) {\n  if (v === null || v === undefined || v === '-' || String(v).trim() === '') return 0;\n  const n = Number(v);\n  return Number.isFinite(n) ? n : 0;\n}\nfunction firstLink(v) {\n  if (Array.isArray(v)) {\n    if (v.length === 0) return null;\n    const f = v[0];\n    return (f && typeof f === 'object') ? f.id : f;\n  }\n  return v === undefined || v === null || v === '' ? null : v;\n}\nfunction stadtteilName(v) {\n  if (Array.isArray(v) && v.length > 0) {\n    const f = v[0];\n    return (f && typeof f === 'object') ? (f.name || '') : String(f);\n  }\n  return typeof v === 'string' ? v : '';\n}\nfunction veinFromTags(tags) {\n  if (typeof tags !== 'string') return '';\n  const parts = tags.split(',').map(function (s) { return s.trim(); });\n  for (let i = 0; i < parts.length; i++) {\n    if (parts[i].indexOf('vein:') === 0) return parts[i].slice(5);\n  }\n  return '';\n}\nfunction escapeHtml(s) {\n  return String(s === null || s === undefined ? '' : s)\n    .replace(/&/g, '&amp;')\n    .replace(/</g, '&lt;')\n    .replace(/>/g, '&gt;');\n}\nfunction veinLabel(vein) {\n  return vein ? vein.charAt(0).toUpperCase() + vein.slice(1) : '';\n}\n// CTA als HTML-Anchor. Der rohe URL darf NIE in den Post — Telegram zieht\n// daraus eine Preview-Karte und die Spec verlangt den Linktext.\n// Reihenfolge zwingend: erst encodeURIComponent auf die Werte, DANACH & -> &amp;\n// fuer den HTML-Kontext. Umgekehrt wuerde das Semikolon der Entity mitkodiert.\nfunction mapsLink(storeName, placeId) {\n  if (!placeId) return '';\n  const url = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(storeName) +\n    '&query_place_id=' + encodeURIComponent(placeId);\n  return '<a href=\"' + url.replace(/&/g, '&amp;') + '\">Google Maps öffnen</a>';\n}\nfunction isBlank(v) {\n  return v === null || v === undefined || String(v).trim() === '';\n}\nfunction str(v) {\n  return v === null || v === undefined ? '' : String(v).trim();\n}\nfunction pad2(n) {\n  return (n < 10 ? '0' : '') + n;\n}\n\n// IST (fld0lKVZKGZRytGao) liefert den String \"-\", solange es fuer die Zeile nie\n// eine Bestandspruefung gab. Das ist der Normalfall und heisst \"nicht gezaehlt\",\n// NICHT \"null\" — dann entscheidet SOLL ueber die Listung.\nfunction istGezaehlt(v) {\n  return !isBlank(v) && String(v).trim() !== '-';\n}\n\n// Datumswerte auf YYYY-MM-DD normalisieren. Airtable liefert je nach Modul\n// einen ISO-String oder ein Date; beide Seiten des Vergleichs laufen hier durch,\n// damit kein Zeitzonen-Offset einen Tagesversatz erzeugt.\nfunction toDay(v) {\n  if (v === null || v === undefined) return '';\n  if (v instanceof Date) {\n    if (isNaN(v.getTime())) return '';\n    return v.getUTCFullYear() + '-' + pad2(v.getUTCMonth() + 1) + '-' + pad2(v.getUTCDate());\n  }\n  const m = String(v).trim().match(/^\\d{4}-\\d{2}-\\d{2}/);\n  return m ? m[0] : '';\n}\n\nconst {\n  storeNummer, storeName, storeStadtteilRaw, storePlaceId,\n  bestand, produkte, varianten, produkteOffset, variantenOffset,\n  belegTyp, belegdatumRaw, belegRef, dryRun, currentListRaw\n} = input;\n\nconst storeStadtteil = stadtteilName(storeStadtteilRaw);\nconst notes = [];\nconst storeLabel = String(storeName || '?') + ' (' + String(storeNummer || '?') + ')';\n\nconst typ = str(belegTyp);\nconst belegdatum = toDay(belegdatumRaw);\nconst ref = str(belegRef);\n\n// Harter Abbruch vor jedem Write. Die Nachricht landet im Ops-Alert.\nfunction abort(reason) {\n  throw new Error('Push Inventory · ' + storeLabel + ' — abgebrochen: ' + reason);\n}\n\n// ---- Gate 0a: Nutzlast-Typ bekannt -------------------------------------\n// Ein unbekannter Typ (Tippfehler im Produzenten-Mapping) liefe sonst still\n// als reiner Abgleich durch: kein Post, kein Belegdatums-Gate, keine Spur.\nif (!ALLE_TYPEN[typ]) {\n  abort('Unbekannter Nutzlast-Typ \"' + typ + '\". Erlaubt sind restock, remove, ' +\n    'inventory-check, inventory-sale.');\n}\n\n// ---- Gate 0b: Belegdatum bei restock/remove verwertbar ------------------\nif (TYPEN_MIT_BELEG[typ] && !belegdatum) {\n  abort('Typ \"' + typ + '\" ohne verwertbares date (erwartet YYYY-MM-DD, erhalten: \"' +\n    str(belegdatumRaw) + '\"). Ohne Belegdatum greift weder Post- noch Gate-Auswertung.');\n}\n\n// ---- Gate 0c: Store aufgeloest -----------------------------------------\n// Modul 3 ist ein API-Call, kein Suchmodul: eine leere Trefferliste stoppt den\n// Flow NICHT mehr, sondern liefert leere Felder. Ohne dieses Gate liefe der\n// Abgleich mit leerem Store weiter und koennte eine fremde product_list leeren.\nif (isBlank(storeNummer) || isBlank(storeName)) {\n  abort('Store aus store_id nicht aufgeloest (Modul 3 lieferte keinen Datensatz). ' +\n    'Kein Abgleich, kein Write, kein Post.');\n}\n\n// ---- Gate 1: Produktstamm vorhanden -----------------------------------\nconst prodList = Array.isArray(produkte) ? produkte : [];\nif (prodList.length === 0) {\n  abort('Produkte-Lesen leer. Ohne Produktstamm ist kein Abgleich moeglich.');\n}\n\n// ---- Gate 2: Produktstamm vollstaendig gelesen -------------------------\nif (!isBlank(produkteOffset)) {\n  abort('Produkte-Lesen liefert ein Airtable-offset — mehr als 100 Produkte. ' +\n    'Die Liste waere still abgeschnitten. Modul 6 auf Paginierung umstellen.');\n}\n\n// ---- Gate 3: Varianten vorhanden --------------------------------------\nconst variantList = Array.isArray(varianten) ? varianten : [];\nif (variantList.length === 0) {\n  abort('Produktvarianten-Lesen leer. Ohne Varianten laesst sich keine Bestandszeile ' +\n    'auf ihre Produkt-Gruppe aufloesen — die SOLL-Liste waere leer und die ' +\n    'product_list wuerde geleert.');\n}\n\n// ---- Gate 4: Varianten vollstaendig gelesen ----------------------------\nif (!isBlank(variantenOffset)) {\n  abort('Produktvarianten-Lesen liefert ein Airtable-offset — mehr als 100 Varianten. ' +\n    'Die Liste waere still abgeschnitten. Modul 21 auf Paginierung umstellen.');\n}\n\nconst prodById = {};\nfor (let i = 0; i < prodList.length; i++) {\n  const f = prodList[i].fields || {};\n  prodById[prodList[i].id] = {\n    name: f[F_P_NAME] || '',\n    typ: f[F_P_TYP] || '',\n    gid: f[F_P_GID] || '',\n    vein: veinFromTags(f[F_P_TAGS])\n  };\n}\n\n// Varianten-ID -> Produkt-ID auflösen\nconst variantToProdId = {};\nfor (let i = 0; i < variantList.length; i++) {\n  const f = variantList[i].fields || {};\n  const prodLink = firstLink(f[F_V_PRODUKT]);\n  if (prodLink) variantToProdId[variantList[i].id] = prodLink;\n}\n\n// Akzeptiert sowohl eine Produkt-ID (Direktlink) als auch eine Varianten-ID\n// (aufgeloest ueber variantToProdId) — robust gegen beide Feldbedeutungen.\nfunction resolveProduktId(rec) {\n  if (!rec) return null;\n  if (prodById[rec]) return rec;\n  if (variantToProdId[rec]) return variantToProdId[rec];\n  return null;\n}\n\n// ---- Gate 5: jede Bestandszeile ist aufloesbar -------------------------\nconst groups = {};\nconst bestandList = Array.isArray(bestand) ? bestand : [];\nlet zeilenMitBelegdatum = 0;\n\nfor (let i = 0; i < bestandList.length; i++) {\n  const row = bestandList[i];\n  const rawRec = firstLink(row.produkt_rec);\n  if (!rawRec) {\n    abort('Bestandszeile ' + row.id + ' traegt kein ⚙ Produkt. Sie wuerde still aus der ' +\n      'SOLL-Liste fallen und die Sorte faelschlich auslisten.');\n  }\n  const prodRec = resolveProduktId(rawRec);\n  if (!prodRec) {\n    abort('Bestandszeile ' + row.id + ': ⚙ Produkt (' + rawRec + ') nicht aufloesbar — ' +\n      'weder Produkt noch Variante gefunden.');\n  }\n\n  // Belegdatums-Zaehlung laeuft ueber ALLE Bestandszeilen, auch Nicht-Kratom:\n  // ein Beleg, der nur POS-Display bewegt, darf nicht in Gate 6 laufen.\n  const letzteLieferung = toDay(row.letzte_lieferung);\n  const trifftBeleg = belegdatum !== '' && letzteLieferung === belegdatum;\n  if (trifftBeleg) zeilenMitBelegdatum++;\n\n  const prod = prodById[prodRec];\n  if (!prod || prod.typ !== 'Kratom') continue;\n\n  if (!groups[prodRec]) groups[prodRec] = { rows: [], gelistet: false, erstlieferung: false, betroffen: false };\n  const g = groups[prodRec];\n  g.rows.push(row);\n\n  // Listing-Regel: gezaehltes IST schlaegt SOLL, sonst entscheidet SOLL.\n  // Rueckholpositionen sind negativ gebucht — SOLL faellt auf 0 und die Sorte\n  // wird ausgelistet, bei Voll- wie Teilrueckholung, ohne Sonderfall.\n  const verfuegbar = istGezaehlt(row.ist) ? num(row.ist) : num(row.soll);\n  if (verfuegbar > 0) g.gelistet = true;\n\n  if (!isBlank(row.erstlieferung)) g.erstlieferung = true;\n  if (trifftBeleg) g.betroffen = true;\n}\n\n// ---- Gate 6 (umgewidmet): Settling-Waechter, KEIN Abbruch --------------\n// Nach C1 stammt belegdatum aus DEMSELBEN Beleg wie der Rollup\n// (Bestaende.Letzte Lieferung <- Lieferpositionen.Geliefert am <-\n// Lieferungen.Datum <- Belege.Datum). Ein Nicht-Treffer kann daher nicht mehr\n// Desync sein, nur Rollup-Verzug. Die Shopify-product_list wird aus\n// verfuegbar>0 gebaut, NICHT aus diesem Abgleich — der Write laeuft also\n// weiter. Einzig die City-Posts entfallen, weil betroffen dann leer bleibt.\n// settlingMiss wird als Flag ausgegeben, aktuell bewusst NICHT verdrahtet\n// (stille Nicht-Aktion, Entscheidung 13.08.2026) — Aufhaenger fuer eine\n// spaetere Stoerungsmeldung, ohne den Shopify-Write je zu blockieren.\nconst settlingMiss = TYPEN_MIT_BELEG[typ] && zeilenMitBelegdatum === 0;\n\nconst sollListe = [];\nconst prodRecKeys = Object.keys(groups);\nfor (let i = 0; i < prodRecKeys.length; i++) {\n  const prodRec = prodRecKeys[i];\n  if (!groups[prodRec].gelistet) continue;\n  const prod = prodById[prodRec];\n  if (!prod.gid) { notes.push('Produkt ' + prodRec + ' (' + prod.name + '): keine ⚙ Shopify GID — bleibt aus product_list.'); continue; }\n  sollListe.push(prod.gid);\n}\n\nlet current = [];\ntry {\n  const parsed = typeof currentListRaw === 'string' ? JSON.parse(currentListRaw) : currentListRaw;\n  if (Array.isArray(parsed)) current = parsed;\n} catch (e) {\n  notes.push('product_list konnte nicht geparst werden — als leer behandelt.');\n}\n\nfunction diff(a, b) {\n  const setB = {};\n  for (let i = 0; i < b.length; i++) setB[b[i]] = true;\n  const out = [];\n  for (let i = 0; i < a.length; i++) if (!setB[a[i]]) out.push(a[i]);\n  return out;\n}\nconst hinzu = diff(sollListe, current);\nconst entfernt = diff(current, sollListe);\nconst changed = hinzu.length > 0 || entfernt.length > 0;\n\n// ---- Post-Regel --------------------------------------------------------\n// Posts entstehen ausschliesslich bei type: restock. remove, inventory-check\n// und inventory-sale gleichen nur ab. Eine Rueckholung kann damit strukturell\n// keinen Post erzeugen.\nconst neueSorten = [];\nconst frischSorten = [];\nconst markRecIds = [];\n\nif (typ === 'restock') {\n  for (let i = 0; i < prodRecKeys.length; i++) {\n    const prodRec = prodRecKeys[i];\n    const g = groups[prodRec];\n    if (!g.betroffen || !g.gelistet) continue;\n    const prod = prodById[prodRec];\n    if (g.erstlieferung) {\n      frischSorten.push({ name: prod.name, vein: prod.vein });\n    } else {\n      neueSorten.push({ name: prod.name, vein: prod.vein });\n      for (let j = 0; j < g.rows.length; j++) {\n        if (g.rows[j].id) markRecIds.push({ recId: g.rows[j].id });\n      }\n    }\n  }\n}\n\nfunction sortVein(list) {\n  return list.slice().sort(function (a, b) {\n    const va = VEIN_ORDER[a.vein] === undefined ? 9 : VEIN_ORDER[a.vein];\n    const vb = VEIN_ORDER[b.vein] === undefined ? 9 : VEIN_ORDER[b.vein];\n    if (va !== vb) return va - vb;\n    return a.name.localeCompare(b.name);\n  });\n}\nconst neueSortenSorted = sortVein(neueSorten);\nconst frischSortenSorted = sortVein(frischSorten);\n\nconst metaLine = escapeHtml(storeName) + ' · ' + escapeHtml(storeStadtteil);\nconst cta = mapsLink(storeName, storePlaceId);\n\nconst neuePosts = [];\nfor (let i = 0; i < neueSortenSorted.length; i++) {\n  const s = neueSortenSorted[i];\n  const title = s.name + (s.vein ? ' (' + veinLabel(s.vein) + ')' : '');\n  let text = '🌿 <b>Neu: ' + escapeHtml(title) + '</b>\\n' + metaLine;\n  if (cta) text += '\\n\\n' + cta;\n  // ctx fuer city.strain_new — ein Post je Sorte, der Feeder klingelt n-mal.\n  neuePosts.push({ text: text, ctx: JSON.stringify({\n    'Sorte': s.name,\n    'Vein': s.vein ? veinLabel(s.vein) : ''\n  }) });\n}\n\nlet frischText = '';\nlet frischCtx = '{}';\nif (frischSortenSorted.length > 0) {\n  const namen = frischSortenSorted.map(function (s) {\n    return escapeHtml(s.name + (s.vein ? ' (' + veinLabel(s.vein) + ')' : ''));\n  }).join(', ');\n  frischText = '📦 <b>Frisch aufgefüllt</b>\\n' + metaLine + '\\n\\n' + namen;\n  // ctx fuer city.restock — nur die Sortenliste; Store, Stadtteil und\n  // Maps-Link baut der Dispatcher aus Airtable.\n  frischCtx = JSON.stringify({ 'Sorten': frischSortenSorted.map(function (s) {\n    return s.name + (s.vein ? ' (' + veinLabel(s.vein) + ')' : '');\n  }).join(', ') });\n  if (cta) frischText += '\\n\\n' + cta;\n}\n\nconst opLines = [];\nconst isDry = String(dryRun) === 'true';\nopLines.push((isDry ? '🧪' : '✅') + ' Push Inventory · ' + storeName + ' (' + storeNummer + ')');\n\nlet kopf = 'Typ: ' + typ;\nif (TYPEN_MIT_BELEG[typ]) {\n  kopf += ' · Beleg: ' + (ref || '—') + ' · Datum: ' + belegdatum +\n    ' (' + zeilenMitBelegdatum + ' Bestandszeilen)';\n}\nif (isDry) kopf += ' · DRY RUN';\nopLines.push(kopf);\n\nopLines.push('', 'product_list: ' + current.length + ' aktuell · ' + hinzu.length + ' hinzu · ' + entfernt.length + ' entfernt');\nif (entfernt.length > 0) {\n  const entfernteNamen = [];\n  for (let i = 0; i < entfernt.length; i++) {\n    let label = entfernt[i];\n    for (let j = 0; j < prodRecKeys.length; j++) {\n      if (prodById[prodRecKeys[j]].gid === entfernt[i]) { label = prodById[prodRecKeys[j]].name; break; }\n    }\n    entfernteNamen.push(label);\n  }\n  opLines.push('Ausgelistet: ' + entfernteNamen.join(', '));\n}\nif (typ === 'restock') {\n  opLines.push('Posts: ' + neuePosts.length + '× 🌿 · ' + (frischText ? 1 : 0) + '× 📦');\n}\nif (isDry) opLines.push('', 'DRY RUN — Shopify-Write und Marker-Write uebersprungen.');\nif (notes.length > 0) {\n  opLines.push('', 'Hinweise:');\n  for (let i = 0; i < notes.length; i++) opLines.push('• ' + notes[i]);\n}\n\nreturn {\n  changedFlag: changed ? '1' : '',\n  settlingMiss: settlingMiss ? '1' : '',\n  sollListeJson: JSON.stringify(sollListe),\n  markRecIds: markRecIds,\n  hasMarkRecIds: markRecIds.length > 0 ? '1' : '',\n  neuePosts: neuePosts,\n  hasNeuePosts: neuePosts.length > 0 ? '1' : '',\n  hasFrisch: frischText ? '1' : '',\n  frischText: frischText,\n  frischCtx: frischCtx,\n  operationsText: opLines.join('\\n')\n};\n"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2700,
+                    "y": 750,
+                    "name": "Code · Abgleich"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 1027,
+                    "module": "code:ExecuteCode",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "input": [
+                            {
+                                "name": "fehler",
+                                "value": "{{8.error.message}}"
+                            },
+                            {
+                                "name": "store",
+                                "value": "{{1.store_id}}"
+                            }
+                        ],
+                        "language": "javascript",
+                        "inputFormat": "editor",
+                        "codeEditorJavascript": "// ctx als fertiger JSON-Text — Fehlermeldungen tragen Anfuehrungszeichen\n// und Zeilenumbrueche und wuerden den JSON-Body sonst zerlegen.\nreturn { ctx: JSON.stringify({\n  'Szenario': '[Sync] Inventory to Shopify',\n  'Stufe': \"Abgleich\",\n  'Fehler': String(input.fehler || 'unbekannt'),\n  'Folge': 'kein Shopify-Write, keine City-Posts für Store ' + String(input.store || '')\n}) };"
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 3000,
+                            "y": 1350,
+                            "name": "Fehler-ctx bauen"
+                        }
+                    }
+                },
+                {
+                    "id": 27,
+                    "module": "scenario-service:CallSubscenario",
+                    "version": 2,
+                    "parameters": {
+                        "scenario": "SCN_6862968",
+                        "shouldWaitForExecutionEnd": false
+                    },
+                    "mapper": {
+                        "data": {
+                            "ctx": "{{1027.result.ctx}}",
+                            "key": "error.sync_aborted"
+                        }
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 3300,
+                            "y": 1350,
+                            "name": "Call: error.sync_aborted"
+                        },
+                        "restore": {
+                            "parameters": {
+                                "scenario": {
+                                    "label": "[Dispatch] Telegram Notifications"
+                                }
+                            }
+                        },
+                        "parameters": [
+                            {
+                                "name": "scenario",
+                                "type": "scenario",
+                                "label": "Scenario",
+                                "required": true
+                            },
+                            {
+                                "name": "shouldWaitForExecutionEnd",
+                                "type": "boolean",
+                                "label": "Wait for the scenario to finish",
+                                "required": true
+                            }
+                        ],
+                        "expect": [
+                            {
+                                "name": "data",
+                                "spec": [
+                                    {
+                                        "name": "key",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": true,
+                                        "multiline": false
+                                    },
+                                    {
+                                        "name": "ctx",
+                                        "type": "text",
+                                        "label": "",
+                                        "required": false,
+                                        "multiline": true
+                                    }
+                                ],
+                                "type": "collection",
+                                "label": "Scenario Inputs"
+                            }
+                        ],
+                        "interface": [
+                            {
+                                "name": "executionId",
+                                "type": "text",
+                                "label": "Execution ID"
+                            }
+                        ]
+                    },
+                    "onerror": [
+                        {
+                            "id": 1127,
+                            "module": "builtin:Resume",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "output": ""
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 1500,
+                                    "name": "Klingel-Fehler übergehen"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": 28,
+                    "module": "builtin:Commit",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {},
+                    "metadata": {
+                        "designer": {
+                            "x": 3600,
+                            "y": 1200,
+                            "name": "Stop"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 9,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 3000,
+                    "y": 450,
+                    "name": "Verteilen"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 10,
+                            "module": "shopify:makeAnApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9461157
+                            },
+                            "filter": {
+                                "name": "Geaendert, kein Dry Run",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{8.result.changedFlag}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        },
+                                        {
+                                            "a": "{{1.dry_run}}",
+                                            "b": "true",
+                                            "o": "text:notequal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "query": "mutation UpdateList($id: ID!, $value: String!) {\n  metaobjectUpdate(id: $id, metaobject: { fields: [{ key: \"product_list\", value: $value }] }) {\n    metaobject { id }\n    userErrors { field message }\n  }\n}",
+                                "version": "2026-01",
+                                "variables": [
+                                    {
+                                        "key": "id",
+                                        "value": "{{ifempty(3.data.records[1].fields.fldE7ux5MwwvJGJZl; 3.body.records[1].fields.fldE7ux5MwwvJGJZl)}}"
+                                    },
+                                    {
+                                        "key": "value",
+                                        "value": "{{8.result.sollListeJson}}"
+                                    }
+                                ],
+                                "handleErrors": true,
+                                "flattenResponse": false,
+                                "variablesDataSource": "array"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 0,
+                                    "name": "Shopify product_list schreiben"
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 11,
+                            "module": "builtin:BasicFeeder",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Neue Sorten zu markieren, kein Dry Run",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{8.result.hasMarkRecIds}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        },
+                                        {
+                                            "a": "{{1.dry_run}}",
+                                            "b": "true",
+                                            "o": "text:notequal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "array": "{{8.result.markRecIds}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 300,
+                                    "name": "Marker-Zeilen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 12,
+                            "module": "airtable:ActionUpdateRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "id": "{{11.recId}}",
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tblFboBzXrCop4nYt",
+                                "record": {
+                                    "flddmYNCwH7P0YKmu": "{{formatDate(now; \"YYYY-MM-DD\")}}"
+                                },
+                                "typecast": false,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 300,
+                                    "name": "⚙ Erstlieferung am setzen"
+                                }
+                            },
+                            "onerror": [
+                                {
+                                    "id": 20,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 3900,
+                                            "y": 300
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 13,
+                            "module": "builtin:BasicFeeder",
+                            "version": 1,
+                            "parameters": {},
+                            "filter": {
+                                "name": "Neue Sorten vorhanden",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{8.result.hasNeuePosts}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "array": "{{8.result.neuePosts}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 600,
+                                    "name": "🌿-Posts"
+                                }
+                            }
+                        },
+                        {
+                            "id": 14,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6862968",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "mapper": {
+                                "data": {
+                                    "id": "{{1.store_id}}",
+                                    "ctx": "{{13.ctx}}",
+                                    "key": "city.strain_new"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 600,
+                                    "name": "Call: city.strain_new"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Dispatch] Telegram Notifications"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "ctx",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 114,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 3900,
+                                            "y": 600,
+                                            "name": "Klingel-Fehler übergehen"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 15,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6862968",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "filter": {
+                                "name": "Frisch aufgefuellte Sorten vorhanden",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{8.result.hasFrisch}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "data": {
+                                    "id": "{{1.store_id}}",
+                                    "ctx": "{{8.result.frischCtx}}",
+                                    "key": "city.restock"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 900,
+                                    "name": "Call: city.restock"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Dispatch] Telegram Notifications"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "ctx",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 115,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 3600,
+                                            "y": 900,
+                                            "name": "Klingel-Fehler übergehen"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": true,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": false,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    },
+    "io": {
+        "input_spec": [
+            {
+                "help": "",
+                "name": "store_id",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": true,
+                "multiline": false
+            },
+            {
+                "help": "",
+                "name": "type",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": true,
+                "multiline": false
+            },
+            {
+                "help": "",
+                "name": "ref",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": false
+            },
+            {
+                "help": "",
+                "name": "dry_run",
+                "type": "boolean",
+                "label": "",
+                "required": true
+            },
+            {
+                "help": "",
+                "name": "document_record_id",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": false
+            }
+        ],
+        "output_spec": []
+    }
+}

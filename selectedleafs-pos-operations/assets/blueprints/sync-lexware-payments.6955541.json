@@ -1,0 +1,2312 @@
+{
+    "name": "[Sync] Lexware Payments",
+    "flow": [
+        {
+            "id": 1,
+            "module": "lexoffice:watchEvents",
+            "version": 1,
+            "parameters": {
+                "__IMTHOOK__": 3551373
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 1350,
+                    "name": "Lexware · payment.changed"
+                },
+                "restore": {
+                    "parameters": {
+                        "__IMTHOOK__": {
+                            "data": {
+                                "editable": "false"
+                            },
+                            "label": "My Lexware Office event webhook"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTHOOK__",
+                        "type": "hook:lexoffice",
+                        "label": "Webhook",
+                        "required": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "lexoffice:makeApiCall",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 9184916
+            },
+            "mapper": {
+                "url": "/v1/vouchers/{{1.resourceId}}",
+                "method": "GET",
+                "headers": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 1350,
+                    "name": "GET voucher"
+                },
+                "restore": {
+                    "expect": {
+                        "qs": {
+                            "mode": "chose"
+                        },
+                        "method": {
+                            "mode": "chose",
+                            "label": "GET"
+                        },
+                        "headers": {
+                            "mode": "chose",
+                            "items": [
+                                null
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "lexoffice"
+                            },
+                            "label": "Lexware · Process Invoice (Store) (joscha@wemwi.de)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:lexoffice",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "text",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "GET",
+                                "POST",
+                                "PUT",
+                                "PATCH",
+                                "DELETE"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Headers"
+                    },
+                    {
+                        "name": "qs",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Query String"
+                    },
+                    {
+                        "name": "body",
+                        "type": "any",
+                        "label": "Body"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 902,
+                    "module": "builtin:Ignore",
+                    "version": 1,
+                    "metadata": {
+                        "designer": {
+                            "x": 600,
+                            "y": 2700
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 3,
+            "module": "lexoffice:makeApiCall",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 9184916
+            },
+            "filter": {
+                "name": "Kein Entwurf",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{2.body.voucherStatus}}",
+                            "b": "draft",
+                            "o": "text:notequal"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "url": "/v1/payments/{{1.resourceId}}",
+                "method": "GET",
+                "headers": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 1200,
+                    "name": "GET payments"
+                },
+                "restore": {
+                    "expect": {
+                        "qs": {
+                            "mode": "chose"
+                        },
+                        "method": {
+                            "mode": "chose",
+                            "label": "GET"
+                        },
+                        "headers": {
+                            "mode": "chose",
+                            "items": [
+                                null
+                            ]
+                        }
+                    },
+                    "parameters": {
+                        "__IMTCONN__": {
+                            "data": {
+                                "scoped": "true",
+                                "connection": "lexoffice"
+                            },
+                            "label": "Lexware · Process Invoice (Store) (joscha@wemwi.de)"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "__IMTCONN__",
+                        "type": "account:lexoffice",
+                        "label": "Connection",
+                        "required": true
+                    }
+                ],
+                "expect": [
+                    {
+                        "name": "url",
+                        "type": "text",
+                        "label": "URL",
+                        "required": true
+                    },
+                    {
+                        "name": "method",
+                        "type": "select",
+                        "label": "Method",
+                        "required": true,
+                        "validate": {
+                            "enum": [
+                                "GET",
+                                "POST",
+                                "PUT",
+                                "PATCH",
+                                "DELETE"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "headers",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Headers"
+                    },
+                    {
+                        "name": "qs",
+                        "spec": [
+                            {
+                                "name": "key",
+                                "type": "text",
+                                "label": "Key"
+                            },
+                            {
+                                "name": "value",
+                                "type": "text",
+                                "label": "Value"
+                            }
+                        ],
+                        "type": "array",
+                        "label": "Query String"
+                    },
+                    {
+                        "name": "body",
+                        "type": "any",
+                        "label": "Body"
+                    }
+                ]
+            },
+            "onerror": [
+                {
+                    "id": 903,
+                    "module": "builtin:Ignore",
+                    "version": 1,
+                    "metadata": {
+                        "designer": {
+                            "x": 900,
+                            "y": 2400
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 4,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 1050,
+                    "name": "Belegart"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 10,
+                            "module": "airtable:makeApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Ausgangsrechnung",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{2.body.type}}",
+                                            "b": "salesinvoice",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "qs": [
+                                    {
+                                        "key": "returnFieldsByFieldId",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "key": "cellFormat",
+                                        "value": "json"
+                                    },
+                                    {
+                                        "key": "maxRecords",
+                                        "value": "1"
+                                    },
+                                    {
+                                        "key": "filterByFormula",
+                                        "value": "{ID} = \"{{2.body.voucherNumber}}\""
+                                    }
+                                ],
+                                "url": "/v0/appiIkOaz1ID1FjfE/tbl0Xqw2eK7KPVVWY",
+                                "method": "GET"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 450,
+                                    "name": "Umsatz suchen (by ID)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "qs": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            ]
+                                        },
+                                        "method": {
+                                            "mode": "chose",
+                                            "label": "GET"
+                                        },
+                                        "headers": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "airtable3"
+                                            },
+                                            "label": "Airtable (User ID: usrDZVTZMIn7kpkdD)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:airtable3,airtable2",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "url",
+                                        "type": "text",
+                                        "label": "URL",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "method",
+                                        "type": "select",
+                                        "label": "Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "PATCH",
+                                                "DELETE"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Headers"
+                                    },
+                                    {
+                                        "name": "qs",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Query String"
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 910,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": 900
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 11,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "records",
+                                        "value": "{{10.body.records}}"
+                                    },
+                                    {
+                                        "name": "voucherStatus",
+                                        "value": "{{2.body.voucherStatus}}"
+                                    },
+                                    {
+                                        "name": "totalGross",
+                                        "value": "{{2.body.totalGrossAmount}}"
+                                    },
+                                    {
+                                        "name": "voucherNumber",
+                                        "value": "{{2.body.voucherNumber}}"
+                                    },
+                                    {
+                                        "name": "resourceId",
+                                        "value": "{{1.resourceId}}"
+                                    },
+                                    {
+                                        "name": "paymentStatus",
+                                        "value": "{{3.body.paymentStatus}}"
+                                    },
+                                    {
+                                        "name": "payItems",
+                                        "value": "{{3.body.paymentItems}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "codeEditorJavascript": "// [Sync] Store-Entscheidung (Umsätze)\nvar arr=function(v){if(Array.isArray(v))return v;if(typeof v==='string'&&v.trim()){try{var p=JSON.parse(v);return Array.isArray(p)?p:[];}catch(e){return[];}}return[];};\nvar num=function(v){var n=parseFloat(v);return isFinite(n)?n:0;};\nvar recs=arr(input.records);\nif(recs.length===0){\n  return {case:'nomatch', ctx: JSON.stringify({resourceId:String(input.resourceId||''), type:'salesinvoice', matchKey:String(input.voucherNumber||'')})};\n}\nvar rec=recs[0]; var recId=rec.id; var flds=rec.fields||{};\nvar netto=num(flds['fld0GMbvW8P8t25Nq']);\nvar current=String(flds['fldBavq4sjk2A1swZ']||'');\nvar vs=String(input.voucherStatus||'');\nvar ps=String(input.paymentStatus||'');\nvar items=arr(input.payItems);\nvar echte=items.filter(function(p){return p&&String(p.paymentItemType||'')!=='irrecoverableReceivable';});\nvar paidGross=echte.reduce(function(s,p){return s+num(p.amount);},0);\nvar partial=echte.length>0;\nvar tg=num(input.totalGross);\nvar frac=tg>0?Math.max(0,Math.min(1,paidGross/tg)):0;\nvar bezahlt=Math.round(netto*frac*100)/100;\nif(vs==='voided'){return {case:'noop'};}\nif(ps==='openRevenue'&&partial&&(current==='Offen'||current==='Überfällig'||current==='Angemahnt'||current==='Teilgezahlt')){\n  return {case:'status_amount', recId:recId, status:'Teilgezahlt', bezahlt:bezahlt};\n}\nif(ps==='openRevenue'&&!partial&&current==='Teilgezahlt'){\n  return {case:'status_amount', recId:recId, status:'Offen', bezahlt:bezahlt};\n}\nreturn {case:'amount', recId:recId, bezahlt:bezahlt};\n"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 300,
+                                    "name": "Store entscheiden"
+                                }
+                            }
+                        },
+                        {
+                            "id": 12,
+                            "module": "builtin:BasicRouter",
+                            "version": 1,
+                            "mapper": null,
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 300,
+                                    "name": "Fall"
+                                }
+                            },
+                            "routes": [
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 13,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Statuswechsel",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{11.result.case}}",
+                                                            "b": "status_amount",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "id": "{{11.result.recId}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tbl0Xqw2eK7KPVVWY",
+                                                "record": {
+                                                    "fldBavq4sjk2A1swZ": "{{11.result.status}}",
+                                                    "fldzRKStpN9Ol5waf": "{{11.result.bezahlt}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 0,
+                                                    "name": "Status + Bezahlt"
+                                                },
+                                                "restore": {
+                                                    "expect": {
+                                                        "base": {
+                                                            "label": "POS Operations"
+                                                        },
+                                                        "table": {
+                                                            "label": "Umsätze"
+                                                        },
+                                                        "record": {
+                                                            "nested": {
+                                                                "fldBavq4sjk2A1swZ": {
+                                                                    "mode": "edit"
+                                                                },
+                                                                "fldL8VZayamrjaTtO": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldNzKOlcz5XPnN4R": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldTobkViXGCZIQeF": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldUQQ1FP5N7pRoX9": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldmJIe1HsS2AbhEq": {
+                                                                    "mode": "chose"
+                                                                }
+                                                            }
+                                                        },
+                                                        "typecast": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "useColumnId": {
+                                                            "mode": "chose"
+                                                        }
+                                                    },
+                                                    "parameters": {
+                                                        "__IMTCONN__": {
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "airtable3"
+                                                            },
+                                                            "label": "Airtable (User ID: usrDZVTZMIn7kpkdD)"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "__IMTCONN__",
+                                                        "type": "account:airtable3,airtable2",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "base",
+                                                        "type": "select",
+                                                        "label": "Base",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "typecast",
+                                                        "type": "boolean",
+                                                        "label": "Smart links",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "useColumnId",
+                                                        "type": "boolean",
+                                                        "label": "Use Column ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "table",
+                                                        "type": "select",
+                                                        "label": "Table",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "Record ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "record",
+                                                        "spec": [
+                                                            {
+                                                                "name": "flda4tTUPnyeuQbDP",
+                                                                "type": "text",
+                                                                "label": "ID"
+                                                            },
+                                                            {
+                                                                "mode": "edit",
+                                                                "name": "fldBavq4sjk2A1swZ",
+                                                                "type": "select",
+                                                                "label": "Status"
+                                                            },
+                                                            {
+                                                                "name": "fldTobkViXGCZIQeF",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Vertriebler"
+                                                            },
+                                                            {
+                                                                "name": "fldUQQ1FP5N7pRoX9",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Store"
+                                                            },
+                                                            {
+                                                                "name": "fldzRKStpN9Ol5waf",
+                                                                "type": "number",
+                                                                "label": "Bezahlt"
+                                                            },
+                                                            {
+                                                                "name": "fldNzKOlcz5XPnN4R",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Belege"
+                                                            },
+                                                            {
+                                                                "name": "fldmJIe1HsS2AbhEq",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Konditionen"
+                                                            },
+                                                            {
+                                                                "name": "fldL8VZayamrjaTtO",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Umsatzpositionen"
+                                                            },
+                                                            {
+                                                                "name": "fldFD4fPdpvi9pVQZ",
+                                                                "type": "text",
+                                                                "label": "⚙ Hinweis"
+                                                            },
+                                                            {
+                                                                "name": "fldj7QHDMWnFxSTZn",
+                                                                "time": false,
+                                                                "type": "date",
+                                                                "label": "⚙ Fällig am"
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Record"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "createdTime",
+                                                        "type": "date",
+                                                        "label": "Created Time"
+                                                    },
+                                                    {
+                                                        "name": "flda4tTUPnyeuQbDP",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "fld0Im1qb7MkoHdpU",
+                                                        "type": "array",
+                                                        "label": "Datum"
+                                                    },
+                                                    {
+                                                        "name": "fldBavq4sjk2A1swZ",
+                                                        "type": "text",
+                                                        "label": "Status"
+                                                    },
+                                                    {
+                                                        "name": "fldTobkViXGCZIQeF",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Vertriebler"
+                                                    },
+                                                    {
+                                                        "name": "fldUQQ1FP5N7pRoX9",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Store"
+                                                    },
+                                                    {
+                                                        "name": "fld0GMbvW8P8t25Nq",
+                                                        "type": "array",
+                                                        "label": "Nettoumsatz"
+                                                    },
+                                                    {
+                                                        "name": "fldzRKStpN9Ol5waf",
+                                                        "type": "number",
+                                                        "label": "Bezahlt"
+                                                    },
+                                                    {
+                                                        "name": "fldR5minFlFXlIQD8",
+                                                        "type": "text",
+                                                        "label": "Offen"
+                                                    },
+                                                    {
+                                                        "name": "fldEEcde4x6hLzUtY",
+                                                        "type": "array",
+                                                        "label": "Menge (Stück)"
+                                                    },
+                                                    {
+                                                        "name": "fldisY72MEBPUnsRc",
+                                                        "type": "array",
+                                                        "label": "Menge (kg)"
+                                                    },
+                                                    {
+                                                        "name": "fldFyNHkSGWdNgSKr",
+                                                        "type": "text",
+                                                        "label": "Provision"
+                                                    },
+                                                    {
+                                                        "name": "fldbQPXY2teAQy3Mb",
+                                                        "type": "text",
+                                                        "label": "Nettoertrag"
+                                                    },
+                                                    {
+                                                        "name": "fldNzKOlcz5XPnN4R",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Belege"
+                                                    },
+                                                    {
+                                                        "name": "fldmJIe1HsS2AbhEq",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Konditionen"
+                                                    },
+                                                    {
+                                                        "name": "fldL8VZayamrjaTtO",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Umsatzpositionen"
+                                                    },
+                                                    {
+                                                        "name": "fldAMjqcnsoThk6Mh",
+                                                        "type": "array",
+                                                        "label": "⚙ Nettoverkaufswert"
+                                                    },
+                                                    {
+                                                        "name": "fld7cBwzN5gapHOsi",
+                                                        "type": "array",
+                                                        "label": "⚙ Provision"
+                                                    },
+                                                    {
+                                                        "name": "fldb9cPCsjUz2jAHe",
+                                                        "type": "array",
+                                                        "label": "⚙ MwSt."
+                                                    },
+                                                    {
+                                                        "name": "fldFD4fPdpvi9pVQZ",
+                                                        "type": "text",
+                                                        "label": "⚙ Hinweis",
+                                                        "multiline": true
+                                                    },
+                                                    {
+                                                        "name": "fldj7QHDMWnFxSTZn",
+                                                        "time": false,
+                                                        "type": "date",
+                                                        "label": "⚙ Fällig am"
+                                                    },
+                                                    {
+                                                        "name": "fldVQODqhEZrbBNDm",
+                                                        "type": "array",
+                                                        "label": "⚙ Zahlungsverlauf"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 913,
+                                                    "module": "builtin:Break",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "count": "3",
+                                                        "retry": true,
+                                                        "interval": "15"
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 2400,
+                                                            "y": 0,
+                                                            "name": "Retry + park"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 14,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Nur Betrag",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{11.result.case}}",
+                                                            "b": "amount",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "id": "{{11.result.recId}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tbl0Xqw2eK7KPVVWY",
+                                                "record": {
+                                                    "fldzRKStpN9Ol5waf": "{{11.result.bezahlt}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 300,
+                                                    "name": "Nur Bezahlt"
+                                                },
+                                                "restore": {
+                                                    "expect": {
+                                                        "base": {
+                                                            "label": "POS Operations"
+                                                        },
+                                                        "table": {
+                                                            "label": "Umsätze"
+                                                        },
+                                                        "record": {
+                                                            "nested": {
+                                                                "fldBavq4sjk2A1swZ": {
+                                                                    "mode": "edit"
+                                                                },
+                                                                "fldL8VZayamrjaTtO": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldNzKOlcz5XPnN4R": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldTobkViXGCZIQeF": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldUQQ1FP5N7pRoX9": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldmJIe1HsS2AbhEq": {
+                                                                    "mode": "chose"
+                                                                }
+                                                            }
+                                                        },
+                                                        "typecast": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "useColumnId": {
+                                                            "mode": "chose"
+                                                        }
+                                                    },
+                                                    "parameters": {
+                                                        "__IMTCONN__": {
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "airtable3"
+                                                            },
+                                                            "label": "Airtable (User ID: usrDZVTZMIn7kpkdD)"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "__IMTCONN__",
+                                                        "type": "account:airtable3,airtable2",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "base",
+                                                        "type": "select",
+                                                        "label": "Base",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "typecast",
+                                                        "type": "boolean",
+                                                        "label": "Smart links",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "useColumnId",
+                                                        "type": "boolean",
+                                                        "label": "Use Column ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "table",
+                                                        "type": "select",
+                                                        "label": "Table",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "Record ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "record",
+                                                        "spec": [
+                                                            {
+                                                                "name": "flda4tTUPnyeuQbDP",
+                                                                "type": "text",
+                                                                "label": "ID"
+                                                            },
+                                                            {
+                                                                "mode": "edit",
+                                                                "name": "fldBavq4sjk2A1swZ",
+                                                                "type": "select",
+                                                                "label": "Status"
+                                                            },
+                                                            {
+                                                                "name": "fldTobkViXGCZIQeF",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Vertriebler"
+                                                            },
+                                                            {
+                                                                "name": "fldUQQ1FP5N7pRoX9",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Store"
+                                                            },
+                                                            {
+                                                                "name": "fldzRKStpN9Ol5waf",
+                                                                "type": "number",
+                                                                "label": "Bezahlt"
+                                                            },
+                                                            {
+                                                                "name": "fldNzKOlcz5XPnN4R",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Belege"
+                                                            },
+                                                            {
+                                                                "name": "fldmJIe1HsS2AbhEq",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Konditionen"
+                                                            },
+                                                            {
+                                                                "name": "fldL8VZayamrjaTtO",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Umsatzpositionen"
+                                                            },
+                                                            {
+                                                                "name": "fldFD4fPdpvi9pVQZ",
+                                                                "type": "text",
+                                                                "label": "⚙ Hinweis"
+                                                            },
+                                                            {
+                                                                "name": "fldj7QHDMWnFxSTZn",
+                                                                "time": false,
+                                                                "type": "date",
+                                                                "label": "⚙ Fällig am"
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Record"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "createdTime",
+                                                        "type": "date",
+                                                        "label": "Created Time"
+                                                    },
+                                                    {
+                                                        "name": "flda4tTUPnyeuQbDP",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "fld0Im1qb7MkoHdpU",
+                                                        "type": "array",
+                                                        "label": "Datum"
+                                                    },
+                                                    {
+                                                        "name": "fldBavq4sjk2A1swZ",
+                                                        "type": "text",
+                                                        "label": "Status"
+                                                    },
+                                                    {
+                                                        "name": "fldTobkViXGCZIQeF",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Vertriebler"
+                                                    },
+                                                    {
+                                                        "name": "fldUQQ1FP5N7pRoX9",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Store"
+                                                    },
+                                                    {
+                                                        "name": "fld0GMbvW8P8t25Nq",
+                                                        "type": "array",
+                                                        "label": "Nettoumsatz"
+                                                    },
+                                                    {
+                                                        "name": "fldzRKStpN9Ol5waf",
+                                                        "type": "number",
+                                                        "label": "Bezahlt"
+                                                    },
+                                                    {
+                                                        "name": "fldR5minFlFXlIQD8",
+                                                        "type": "text",
+                                                        "label": "Offen"
+                                                    },
+                                                    {
+                                                        "name": "fldEEcde4x6hLzUtY",
+                                                        "type": "array",
+                                                        "label": "Menge (Stück)"
+                                                    },
+                                                    {
+                                                        "name": "fldisY72MEBPUnsRc",
+                                                        "type": "array",
+                                                        "label": "Menge (kg)"
+                                                    },
+                                                    {
+                                                        "name": "fldFyNHkSGWdNgSKr",
+                                                        "type": "text",
+                                                        "label": "Provision"
+                                                    },
+                                                    {
+                                                        "name": "fldbQPXY2teAQy3Mb",
+                                                        "type": "text",
+                                                        "label": "Nettoertrag"
+                                                    },
+                                                    {
+                                                        "name": "fldNzKOlcz5XPnN4R",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Belege"
+                                                    },
+                                                    {
+                                                        "name": "fldmJIe1HsS2AbhEq",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Konditionen"
+                                                    },
+                                                    {
+                                                        "name": "fldL8VZayamrjaTtO",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Umsatzpositionen"
+                                                    },
+                                                    {
+                                                        "name": "fldAMjqcnsoThk6Mh",
+                                                        "type": "array",
+                                                        "label": "⚙ Nettoverkaufswert"
+                                                    },
+                                                    {
+                                                        "name": "fld7cBwzN5gapHOsi",
+                                                        "type": "array",
+                                                        "label": "⚙ Provision"
+                                                    },
+                                                    {
+                                                        "name": "fldb9cPCsjUz2jAHe",
+                                                        "type": "array",
+                                                        "label": "⚙ MwSt."
+                                                    },
+                                                    {
+                                                        "name": "fldFD4fPdpvi9pVQZ",
+                                                        "type": "text",
+                                                        "label": "⚙ Hinweis",
+                                                        "multiline": true
+                                                    },
+                                                    {
+                                                        "name": "fldj7QHDMWnFxSTZn",
+                                                        "time": false,
+                                                        "type": "date",
+                                                        "label": "⚙ Fällig am"
+                                                    },
+                                                    {
+                                                        "name": "fldVQODqhEZrbBNDm",
+                                                        "type": "array",
+                                                        "label": "⚙ Zahlungsverlauf"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 914,
+                                                    "module": "builtin:Break",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "count": "3",
+                                                        "retry": true,
+                                                        "interval": "15"
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 2400,
+                                                            "y": 300,
+                                                            "name": "Retry + park"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 15,
+                                            "module": "scenario-service:CallSubscenario",
+                                            "version": 2,
+                                            "parameters": {
+                                                "scenario": "SCN_6862968",
+                                                "shouldWaitForExecutionEnd": false
+                                            },
+                                            "filter": {
+                                                "name": "Kein Treffer",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{11.result.case}}",
+                                                            "b": "nomatch",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "data": {
+                                                    "id": "{{1.resourceId}}",
+                                                    "ctx": "{{11.result.ctx}}",
+                                                    "key": "error.payment_unmatched"
+                                                }
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 600,
+                                                    "name": "Kein Treffer → Notify"
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "scenario": {
+                                                            "label": "[Notify] Telegram"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "scenario",
+                                                        "type": "scenario",
+                                                        "label": "Scenario",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "shouldWaitForExecutionEnd",
+                                                        "type": "boolean",
+                                                        "label": "Wait for the scenario to finish",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "data",
+                                                        "spec": [
+                                                            {
+                                                                "name": "key",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "name": "id",
+                                                                "type": "text",
+                                                                "label": ""
+                                                            },
+                                                            {
+                                                                "name": "ctx",
+                                                                "type": "text",
+                                                                "label": ""
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Scenario Inputs"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "executionId",
+                                                        "type": "text",
+                                                        "label": "Execution ID"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 915,
+                                                    "module": "builtin:Resume",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "output": ""
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 2400,
+                                                            "y": 600
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 20,
+                            "module": "airtable:makeApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Eingangsrechnung",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{2.body.type}}",
+                                            "b": "purchaseinvoice",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "qs": [
+                                    {
+                                        "key": "returnFieldsByFieldId",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "key": "cellFormat",
+                                        "value": "json"
+                                    },
+                                    {
+                                        "key": "maxRecords",
+                                        "value": "1"
+                                    },
+                                    {
+                                        "key": "filterByFormula",
+                                        "value": "{⚙ Lexware ID} = \"{{1.resourceId}}\""
+                                    }
+                                ],
+                                "url": "/v0/appiIkOaz1ID1FjfE/tblUrdeNTiSlerMr3",
+                                "method": "GET",
+                                "headers": [
+                                    {
+                                        "key": "Content-Type",
+                                        "value": "application/json"
+                                    }
+                                ]
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 1650,
+                                    "name": "Auszahlung suchen (by Lexware ID)"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "qs": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            ]
+                                        },
+                                        "method": {
+                                            "mode": "chose",
+                                            "label": "GET"
+                                        },
+                                        "headers": {
+                                            "mode": "chose",
+                                            "items": [
+                                                null
+                                            ]
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "airtable3"
+                                            },
+                                            "label": "Airtable (User ID: usrDZVTZMIn7kpkdD)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:airtable3,airtable2",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "url",
+                                        "type": "text",
+                                        "label": "URL",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "method",
+                                        "type": "select",
+                                        "label": "Method",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "PATCH",
+                                                "DELETE"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "headers",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Headers"
+                                    },
+                                    {
+                                        "name": "qs",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "Key"
+                                            },
+                                            {
+                                                "name": "value",
+                                                "type": "text",
+                                                "label": "Value"
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Query String"
+                                    },
+                                    {
+                                        "name": "body",
+                                        "type": "any",
+                                        "label": "Body"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 920,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1500,
+                                            "y": 2100
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 21,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "records",
+                                        "value": "{{20.body.records}}"
+                                    },
+                                    {
+                                        "name": "voucherStatus",
+                                        "value": "{{2.body.voucherStatus}}"
+                                    },
+                                    {
+                                        "name": "resourceId",
+                                        "value": "{{1.resourceId}}"
+                                    },
+                                    {
+                                        "name": "paymentStatus",
+                                        "value": "{{3.body.paymentStatus}}"
+                                    },
+                                    {
+                                        "name": "payItems",
+                                        "value": "{{3.body.paymentItems}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "codeEditorJavascript": "// [Sync] Sales-Entscheidung (Auszahlungen) - Label + Bezahlt (brutto, anteilig)\nvar arr=function(v){if(Array.isArray(v))return v;if(typeof v==='string'&&v.trim()){try{var p=JSON.parse(v);return Array.isArray(p)?p:[];}catch(e){return[];}}return[];};\nvar num=function(v){var n=parseFloat(v);return isFinite(n)?n:0;};\nvar recs=arr(input.records);\nif(recs.length===0){\n  return {case:'nomatch', ctx: JSON.stringify({resourceId:String(input.resourceId||''), type:'purchaseinvoice', matchKey:String(input.resourceId||'')})};\n}\nvar rec=recs[0]; var recId=rec.id; var flds=rec.fields||{};\nvar current=String(flds['fldd9jOWUYEpcwA4c']||'');\nvar vs=String(input.voucherStatus||'');\nvar ps=String(input.paymentStatus||'');\nvar items=arr(input.payItems);\nvar echte=items.filter(function(p){return p&&String(p.paymentItemType||'')!=='irrecoverableReceivable';});\nvar paidGross=Math.round(echte.reduce(function(s,p){return s+num(p.amount);},0)*100)/100;\nvar partial=echte.length>0;\nif(vs==='voided'){return {case:'noop'};}\nvar status=null;\nif(ps==='openExpense'&&partial&&current==='In Bearbeitung'){status='Teilzahlung';}\nelse if(ps==='openExpense'&&!partial&&current==='Teilzahlung'){status='In Bearbeitung';}\nif(status){return {case:'status_amount', recId:recId, status:status, bezahlt:paidGross};}\nreturn {case:'amount', recId:recId, bezahlt:paidGross};\n"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 1500,
+                                    "name": "Sales entscheiden"
+                                }
+                            }
+                        },
+                        {
+                            "id": 22,
+                            "module": "builtin:BasicRouter",
+                            "version": 1,
+                            "mapper": null,
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 1500,
+                                    "name": "Fall"
+                                }
+                            },
+                            "routes": [
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 23,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Statuswechsel",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{21.result.case}}",
+                                                            "b": "status_amount",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "id": "{{21.result.recId}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tblUrdeNTiSlerMr3",
+                                                "record": {
+                                                    "fld6irHe7OmHkKcep": "{{21.result.bezahlt}}",
+                                                    "fldd9jOWUYEpcwA4c": "{{21.result.status}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 1200,
+                                                    "name": "Status + Bezahlt"
+                                                },
+                                                "restore": {
+                                                    "expect": {
+                                                        "base": {
+                                                            "label": "POS Operations"
+                                                        },
+                                                        "table": {
+                                                            "label": "Auszahlungen"
+                                                        },
+                                                        "record": {
+                                                            "nested": {
+                                                                "fld6re9aNdk0lM1x3": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fld7eIRfIEd1aml1D": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldd9jOWUYEpcwA4c": {
+                                                                    "mode": "edit"
+                                                                }
+                                                            }
+                                                        },
+                                                        "typecast": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "useColumnId": {
+                                                            "mode": "chose"
+                                                        }
+                                                    },
+                                                    "parameters": {
+                                                        "__IMTCONN__": {
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "airtable3"
+                                                            },
+                                                            "label": "Airtable (User ID: usrDZVTZMIn7kpkdD)"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "__IMTCONN__",
+                                                        "type": "account:airtable3,airtable2",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "base",
+                                                        "type": "select",
+                                                        "label": "Base",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "typecast",
+                                                        "type": "boolean",
+                                                        "label": "Smart links",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "useColumnId",
+                                                        "type": "boolean",
+                                                        "label": "Use Column ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "table",
+                                                        "type": "select",
+                                                        "label": "Table",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "Record ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "record",
+                                                        "spec": [
+                                                            {
+                                                                "name": "fldB9IXQtOoZb0M9K",
+                                                                "time": false,
+                                                                "type": "date",
+                                                                "label": "Datum"
+                                                            },
+                                                            {
+                                                                "name": "fld7eIRfIEd1aml1D",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Vertriebler"
+                                                            },
+                                                            {
+                                                                "name": "fld6re9aNdk0lM1x3",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Beleg"
+                                                            },
+                                                            {
+                                                                "mode": "edit",
+                                                                "name": "fldd9jOWUYEpcwA4c",
+                                                                "type": "select",
+                                                                "label": "Status"
+                                                            },
+                                                            {
+                                                                "name": "fld9icyZRghWzi7cp",
+                                                                "type": "number",
+                                                                "label": "Betrag"
+                                                            },
+                                                            {
+                                                                "name": "fldYiJxowFyiCiLDu",
+                                                                "type": "text",
+                                                                "label": "Rechnungsnummer"
+                                                            },
+                                                            {
+                                                                "name": "fldgfj7Wr3OxjY2Zz",
+                                                                "type": "text",
+                                                                "label": "⚙ Lexware ID"
+                                                            },
+                                                            {
+                                                                "name": "fldld4f7Dz1H8vblp",
+                                                                "type": "text",
+                                                                "label": "Belege"
+                                                            },
+                                                            {
+                                                                "name": "fld6irHe7OmHkKcep",
+                                                                "type": "number",
+                                                                "label": "Bezahlt"
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Record"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "createdTime",
+                                                        "type": "date",
+                                                        "label": "Created Time"
+                                                    },
+                                                    {
+                                                        "name": "fldLMw1VpcEyitnVF",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "fldB9IXQtOoZb0M9K",
+                                                        "time": false,
+                                                        "type": "date",
+                                                        "label": "Datum"
+                                                    },
+                                                    {
+                                                        "name": "fld7eIRfIEd1aml1D",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Vertriebler"
+                                                    },
+                                                    {
+                                                        "name": "fld6re9aNdk0lM1x3",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Beleg"
+                                                    },
+                                                    {
+                                                        "name": "fldd9jOWUYEpcwA4c",
+                                                        "type": "text",
+                                                        "label": "Status"
+                                                    },
+                                                    {
+                                                        "name": "fld9icyZRghWzi7cp",
+                                                        "type": "number",
+                                                        "label": "Betrag"
+                                                    },
+                                                    {
+                                                        "name": "fldYiJxowFyiCiLDu",
+                                                        "type": "text",
+                                                        "label": "Rechnungsnummer"
+                                                    },
+                                                    {
+                                                        "name": "fldMK9TjMDXrYPogU",
+                                                        "type": "number",
+                                                        "label": "⚙ Auszahlungsnummer"
+                                                    },
+                                                    {
+                                                        "name": "fldgfj7Wr3OxjY2Zz",
+                                                        "type": "text",
+                                                        "label": "⚙ Lexware ID"
+                                                    },
+                                                    {
+                                                        "name": "fldld4f7Dz1H8vblp",
+                                                        "type": "text",
+                                                        "label": "Belege"
+                                                    },
+                                                    {
+                                                        "name": "fld6irHe7OmHkKcep",
+                                                        "type": "number",
+                                                        "label": "Bezahlt"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 923,
+                                                    "module": "builtin:Break",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "count": "3",
+                                                        "retry": true,
+                                                        "interval": "15"
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 2400,
+                                                            "y": 1200,
+                                                            "name": "Retry + park"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 25,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Nur Betrag",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{21.result.case}}",
+                                                            "b": "amount",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "id": "{{21.result.recId}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tblUrdeNTiSlerMr3",
+                                                "record": {
+                                                    "fld6irHe7OmHkKcep": "{{21.result.bezahlt}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 1500,
+                                                    "name": "Nur Bezahlt"
+                                                },
+                                                "restore": {
+                                                    "expect": {
+                                                        "base": {
+                                                            "label": "POS Operations"
+                                                        },
+                                                        "table": {
+                                                            "label": "Auszahlungen"
+                                                        },
+                                                        "record": {
+                                                            "nested": {
+                                                                "fld6re9aNdk0lM1x3": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fld7eIRfIEd1aml1D": {
+                                                                    "mode": "chose"
+                                                                },
+                                                                "fldd9jOWUYEpcwA4c": {
+                                                                    "mode": "edit"
+                                                                }
+                                                            }
+                                                        },
+                                                        "typecast": {
+                                                            "mode": "chose"
+                                                        },
+                                                        "useColumnId": {
+                                                            "mode": "chose"
+                                                        }
+                                                    },
+                                                    "parameters": {
+                                                        "__IMTCONN__": {
+                                                            "data": {
+                                                                "scoped": "true",
+                                                                "connection": "airtable3"
+                                                            },
+                                                            "label": "Airtable (User ID: usrDZVTZMIn7kpkdD)"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "__IMTCONN__",
+                                                        "type": "account:airtable3,airtable2",
+                                                        "label": "Connection",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "base",
+                                                        "type": "select",
+                                                        "label": "Base",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "typecast",
+                                                        "type": "boolean",
+                                                        "label": "Smart links",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "useColumnId",
+                                                        "type": "boolean",
+                                                        "label": "Use Column ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "table",
+                                                        "type": "select",
+                                                        "label": "Table",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "Record ID",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "record",
+                                                        "spec": [
+                                                            {
+                                                                "name": "fldB9IXQtOoZb0M9K",
+                                                                "time": false,
+                                                                "type": "date",
+                                                                "label": "Datum"
+                                                            },
+                                                            {
+                                                                "name": "fld7eIRfIEd1aml1D",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Vertriebler"
+                                                            },
+                                                            {
+                                                                "name": "fld6re9aNdk0lM1x3",
+                                                                "spec": {
+                                                                    "name": "value",
+                                                                    "label": "Record ID"
+                                                                },
+                                                                "type": "array",
+                                                                "label": "Beleg"
+                                                            },
+                                                            {
+                                                                "mode": "edit",
+                                                                "name": "fldd9jOWUYEpcwA4c",
+                                                                "type": "select",
+                                                                "label": "Status"
+                                                            },
+                                                            {
+                                                                "name": "fld9icyZRghWzi7cp",
+                                                                "type": "number",
+                                                                "label": "Betrag"
+                                                            },
+                                                            {
+                                                                "name": "fldYiJxowFyiCiLDu",
+                                                                "type": "text",
+                                                                "label": "Rechnungsnummer"
+                                                            },
+                                                            {
+                                                                "name": "fldgfj7Wr3OxjY2Zz",
+                                                                "type": "text",
+                                                                "label": "⚙ Lexware ID"
+                                                            },
+                                                            {
+                                                                "name": "fldld4f7Dz1H8vblp",
+                                                                "type": "text",
+                                                                "label": "Belege"
+                                                            },
+                                                            {
+                                                                "name": "fld6irHe7OmHkKcep",
+                                                                "type": "number",
+                                                                "label": "Bezahlt"
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Record"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "createdTime",
+                                                        "type": "date",
+                                                        "label": "Created Time"
+                                                    },
+                                                    {
+                                                        "name": "fldLMw1VpcEyitnVF",
+                                                        "type": "text",
+                                                        "label": "ID"
+                                                    },
+                                                    {
+                                                        "name": "fldB9IXQtOoZb0M9K",
+                                                        "time": false,
+                                                        "type": "date",
+                                                        "label": "Datum"
+                                                    },
+                                                    {
+                                                        "name": "fld7eIRfIEd1aml1D",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Vertriebler"
+                                                    },
+                                                    {
+                                                        "name": "fld6re9aNdk0lM1x3",
+                                                        "spec": {
+                                                            "label": "Record ID"
+                                                        },
+                                                        "type": "array",
+                                                        "label": "Beleg"
+                                                    },
+                                                    {
+                                                        "name": "fldd9jOWUYEpcwA4c",
+                                                        "type": "text",
+                                                        "label": "Status"
+                                                    },
+                                                    {
+                                                        "name": "fld9icyZRghWzi7cp",
+                                                        "type": "number",
+                                                        "label": "Betrag"
+                                                    },
+                                                    {
+                                                        "name": "fldYiJxowFyiCiLDu",
+                                                        "type": "text",
+                                                        "label": "Rechnungsnummer"
+                                                    },
+                                                    {
+                                                        "name": "fldMK9TjMDXrYPogU",
+                                                        "type": "number",
+                                                        "label": "⚙ Auszahlungsnummer"
+                                                    },
+                                                    {
+                                                        "name": "fldgfj7Wr3OxjY2Zz",
+                                                        "type": "text",
+                                                        "label": "⚙ Lexware ID"
+                                                    },
+                                                    {
+                                                        "name": "fldld4f7Dz1H8vblp",
+                                                        "type": "text",
+                                                        "label": "Belege"
+                                                    },
+                                                    {
+                                                        "name": "fld6irHe7OmHkKcep",
+                                                        "type": "number",
+                                                        "label": "Bezahlt"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 925,
+                                                    "module": "builtin:Break",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "count": "3",
+                                                        "retry": true,
+                                                        "interval": "15"
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 2400,
+                                                            "y": 1500,
+                                                            "name": "Retry + park"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "flow": [
+                                        {
+                                            "id": 24,
+                                            "module": "scenario-service:CallSubscenario",
+                                            "version": 2,
+                                            "parameters": {
+                                                "scenario": "SCN_6862968",
+                                                "shouldWaitForExecutionEnd": false
+                                            },
+                                            "filter": {
+                                                "name": "Kein Treffer",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{21.result.case}}",
+                                                            "b": "nomatch",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "data": {
+                                                    "id": "{{1.resourceId}}",
+                                                    "ctx": "{{21.result.ctx}}",
+                                                    "key": "error.payment_unmatched"
+                                                }
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2100,
+                                                    "y": 1800,
+                                                    "name": "Kein Treffer → Notify"
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "scenario": {
+                                                            "label": "[Notify] Telegram"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "scenario",
+                                                        "type": "scenario",
+                                                        "label": "Scenario",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "shouldWaitForExecutionEnd",
+                                                        "type": "boolean",
+                                                        "label": "Wait for the scenario to finish",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "data",
+                                                        "spec": [
+                                                            {
+                                                                "name": "key",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": true
+                                                            },
+                                                            {
+                                                                "name": "id",
+                                                                "type": "text",
+                                                                "label": ""
+                                                            },
+                                                            {
+                                                                "name": "ctx",
+                                                                "type": "text",
+                                                                "label": ""
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Scenario Inputs"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "executionId",
+                                                        "type": "text",
+                                                        "label": "Execution ID"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 924,
+                                                    "module": "builtin:Resume",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "output": ""
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 2400,
+                                                            "y": 1800
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": true,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    }
+}

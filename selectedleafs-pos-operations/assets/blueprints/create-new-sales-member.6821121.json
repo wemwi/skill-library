@@ -1,0 +1,981 @@
+{
+    "name": "[Create] New Sales Member",
+    "flow": [
+        {
+            "id": 1,
+            "module": "gateway:CustomWebHook",
+            "version": 1,
+            "parameters": {
+                "hook": 3500576,
+                "maxResults": 1
+            },
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 450,
+                    "name": "Webhook: Airtable Vertriebler Inbox"
+                }
+            }
+        },
+        {
+            "id": 2,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [
+                    {
+                        "key": "view",
+                        "value": "viwBdLeiPCMzEcQi6"
+                    },
+                    {
+                        "key": "maxRecords",
+                        "value": "1"
+                    },
+                    {
+                        "key": "returnFieldsByFieldId",
+                        "value": "true"
+                    }
+                ],
+                "url": "v0/appiIkOaz1ID1FjfE/tbl0ijvzkD7LH2XMM",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 450,
+                    "name": "Airtable: Inbox-Record lesen"
+                }
+            }
+        },
+        {
+            "id": 3,
+            "module": "code:ExecuteCode",
+            "version": 1,
+            "parameters": {},
+            "filter": {
+                "name": "Record vorhanden und noch nicht angelegt",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{2.body.records[1].id}}",
+                            "o": "exist"
+                        },
+                        {
+                            "a": "{{2.body.records[1].fields.fldIP42qOvkdnnzHH}}",
+                            "o": "notexist"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "input": [
+                    {
+                        "name": "recordId",
+                        "value": "{{2.body.records[1].id}}"
+                    },
+                    {
+                        "name": "name",
+                        "value": "{{2.body.records[1].fields.fldhDp2HHI6BxjlZq}}"
+                    },
+                    {
+                        "name": "strasse",
+                        "value": "{{2.body.records[1].fields.fldnwZ7yZ8A8B5yGt}}"
+                    },
+                    {
+                        "name": "plz",
+                        "value": "{{2.body.records[1].fields.fldvsm8IZnzVQWJae}}"
+                    },
+                    {
+                        "name": "ort",
+                        "value": "{{2.body.records[1].fields.fldTfEX0YglBq8alh}}"
+                    },
+                    {
+                        "name": "besteuerung",
+                        "value": "{{2.body.records[1].fields.fldBcufVGhXAdxJHS}}"
+                    },
+                    {
+                        "name": "regelAb",
+                        "value": "{{2.body.records[1].fields.fldF4idsFUiCgAX1A}}"
+                    },
+                    {
+                        "name": "heute",
+                        "value": "{{formatDate(now; \"YYYY-MM-DD\")}}"
+                    }
+                ],
+                "language": "javascript",
+                "inputFormat": "editor",
+                "codeEditorJavascript": "// ── Modul 3 · Eingangs-Guards ────────────────────────────────────────────\n// Prueft die Pflichtfelder aus dem Vertriebler-Datensatz, bevor irgendein\n// externer Call passiert. Faellt hier etwas durch, geht GATE 1 in den\n// Fehlerpfad und es wird nichts geschrieben — insbesondere entsteht kein\n// Lexware-Kontakt.\n\nconst s = (v) => (v === null || v === undefined) ? '' : String(v).trim();\n\nconst recordId = s(input.recordId);\nconst name     = s(input.name);\nconst strasse  = s(input.strasse);\nconst ort      = s(input.ort);\nconst plzRaw   = s(input.plz);\nconst best     = s(input.besteuerung);\n// Airtable liefert Datumsfelder als ISO-String. Nur der Datumsteil wird\n// gebraucht; die Zeitzone wuerde beim Zurueckschreiben den Vortag erzeugen.\nconst regelAb  = s(input.regelAb).slice(0, 10);\n\n// PLZ: Airtable haelt eine Zahl -> fuehrende Null geht verloren (01067).\n// plz5 ist die Form, die nach Lexware geht, plzInt nur die Plausipruefung.\nconst plzDigits = plzRaw.replace(/[^0-9]/g, '');\nconst plz5      = plzDigits ? plzDigits.padStart(5, '0') : '';\nconst plzInt    = plzDigits ? parseInt(plzDigits, 10) : 0;\n\n// Hausnummer aus \"Musterstrasse 12a\" / \"Musterstr. 12-14\"\nconst hnMatch    = strasse.match(/(\\d+\\s*[a-zA-Z]?(?:\\s*[-\\/]\\s*\\d+\\s*[a-zA-Z]?)?)\\s*$/);\nconst hausnummer = hnMatch ? hnMatch[1].replace(/\\s+/g, '') : '';\n\nconst missing = [];\nif (!name)                        missing.push('Name');\nif (!strasse)                     missing.push('Straße / Nr.');\nif (strasse && !hausnummer)       missing.push('Hausnummer in Straße / Nr.');\nif (!plz5)                        missing.push('Postleitzahl');\nif (plz5 && (plzInt < 1 || plzInt > 99999)) missing.push('Postleitzahl (nicht 1-99999)');\nif (!ort)                         missing.push('Ort');\nif (!best)                        missing.push('Besteuerung');\n\n// Bewusst als Praefix-Test statt zeichengenauem Vergleich: die Option heisst\n// heute \"Regelbesteuerung\", und eine Umbenennung im Select soll hier nur den\n// Hinweis kosten, nicht den Lauf.\nconst istRegel = /^regel/i.test(best);\n\n// ⚙ Regelbesteuerung ab wird bei der Anlage auf das Anlagedatum gesetzt, wenn\n// der Vertriebler regelbesteuert startet UND das Feld noch leer ist. Ein\n// bereits gesetztes Datum bleibt unangetastet — es ist die genauere Angabe,\n// weil der Wechsel nach §19 UStG zum Jahreswechsel greift und damit vor der\n// Anlage liegen kann.\n//\n// heute kommt als fertiger YYYY-MM-DD-String aus Make (Organisations-\n// Zeitzone). Bewusst NICHT new Date(): das rechnet in UTC und schoebe das\n// Datum am Tagesrand um einen Tag — genau der Fallstrick, der am Stichtag\n// die falsche Kondition trifft.\nconst heute        = s(input.heute).slice(0, 10);\nconst regelAbWrite = (istRegel && !regelAb && heute) ? heute : '';\nconst regelAbEff   = regelAb || regelAbWrite;\n\n// Weiche Hinweise: sie blockieren NICHT. Der Vertriebler wird angelegt, die\n// Zeile landet in der Status-Meldung an Operations.\nconst hinweise = [];\nif (regelAbWrite) {\n  hinweise.push('»⚙ Regelbesteuerung ab« war leer und wurde auf das Anlagedatum ' + regelAbWrite +\n                ' gesetzt. Lag der Wechsel früher, bitte korrigieren — Umsätze mit einem ' +\n                'Leistungsdatum davor lösen sonst als Kleinunternehmer auf und rechnen mit 0 %.');\n} else if (istRegel && !regelAbEff) {\n  hinweise.push('Besteuerung steht auf »' + best + '«, »⚙ Regelbesteuerung ab« ist leer und konnte ' +\n                'nicht gesetzt werden (kein Anlagedatum übergeben) — bitte von Hand nachtragen.');\n}\n\nconst ok = missing.length === 0;\n\n// Lexware-Notiz: traegt den Besteuerungsstatus als Klartext mit. Der Status\n// selbst bleibt Airtable-Wahrheit (pos-invoice liest ihn dort) — Lexware\n// kennt am Kontakt keinen §19-Schalter, die Steuer sitzt an der Rechnung.\nconst noteLines = ['POS-Vertriebler · angelegt von Make'];\nnoteLines.push('Besteuerung: ' + (best || '—'));\nif (regelAb) noteLines.push('Regelbesteuerung ab: ' + regelAb);\n\nreturn {\n  ok: ok,\n  gate: ok ? 'go' : 'stop',\n  reason: ok ? '' : 'Pflichtfelder fehlen oder sind unvollständig: ' + missing.join(', ') + '.',\n  recordId: recordId,\n  name: name,\n  strasse: strasse,\n  hausnummer: hausnummer,\n  plz5: plz5,\n  ort: ort,\n  besteuerung: best,\n  regelAb: regelAb,\n  // Nur gefuellt, wenn wirklich geschrieben werden soll — Modul 13 filtert\n  // darauf. Leer heisst: Feld nicht anfassen.\n  regelAbWrite: regelAbWrite,\n  // Der Wert, der nach dem Lauf im Feld steht (bestehend oder neu gesetzt).\n  regelAbEff: regelAbEff,\n  hinweise: hinweise.join(' '),\n  note: noteLines.join(' · ')\n};\n"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 450,
+                    "name": "Code: Eingangs-Guards"
+                }
+            }
+        },
+        {
+            "id": 4,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "parameters": {},
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 450,
+                    "name": "GATE 1 — Eingangs-Guards"
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 5,
+                            "module": "lexoffice:createAContact",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 9548169
+                            },
+                            "filter": {
+                                "name": "GATE 1 — Pflichtfelder vollständig",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{3.result.gate}}",
+                                            "b": "go",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "note": "{{3.result.note}}",
+                                "roles": [
+                                    "vendor"
+                                ],
+                                "select": "company",
+                                "company": {
+                                    "name": "{{3.result.name}}",
+                                    "allowTaxFreeInvoices": false
+                                },
+                                "addresses": [
+                                    {
+                                        "type": "billing",
+                                        "items": [
+                                            {
+                                                "zip": "{{3.result.plz5}}",
+                                                "city": "{{3.result.ort}}",
+                                                "street": "{{3.result.strasse}}",
+                                                "countryCode": "DE"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "xRechnung": {}
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 300,
+                                    "name": "Lexware: Lieferant anlegen"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "roles": {
+                                            "mode": "chose"
+                                        },
+                                        "select": {
+                                            "label": "Company"
+                                        },
+                                        "company": {
+                                            "nested": {
+                                                "contactPersons": {
+                                                    "mode": "chose"
+                                                },
+                                                "allowTaxFreeInvoices": {
+                                                    "mode": "chose"
+                                                }
+                                            }
+                                        },
+                                        "addresses": {
+                                            "mode": "chose",
+                                            "items": [
+                                                {
+                                                    "type": {
+                                                        "mode": "chose",
+                                                        "label": "Billing"
+                                                    },
+                                                    "items": {
+                                                        "mode": "chose",
+                                                        "items": [
+                                                            {
+                                                                "countryCode": {
+                                                                    "mode": "chose",
+                                                                    "label": "Germany"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "phoneNumbers": {
+                                            "mode": "chose"
+                                        },
+                                        "emailAddresses": {
+                                            "mode": "chose"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "lexoffice"
+                                            },
+                                            "label": "Lexware · Create Salesperson (joscha@wemwi.de)"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:lexoffice",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "select",
+                                        "type": "select",
+                                        "label": "Contact Type",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "person",
+                                                "company"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "roles",
+                                        "type": "select",
+                                        "label": "Roles",
+                                        "multiple": true,
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "customer",
+                                                "vendor"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "addresses",
+                                        "spec": [
+                                            {
+                                                "name": "type",
+                                                "type": "select",
+                                                "label": "Type",
+                                                "options": {
+                                                    "store": [
+                                                        {
+                                                            "label": "Billing",
+                                                            "value": "billing",
+                                                            "default": true
+                                                        },
+                                                        {
+                                                            "label": "Shipping",
+                                                            "value": "shipping"
+                                                        }
+                                                    ]
+                                                },
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Addresses"
+                                    },
+                                    {
+                                        "name": "emailAddresses",
+                                        "spec": [
+                                            {
+                                                "name": "type",
+                                                "type": "select",
+                                                "label": "Type",
+                                                "options": {
+                                                    "store": [
+                                                        {
+                                                            "label": "Business",
+                                                            "value": "business",
+                                                            "default": true
+                                                        },
+                                                        {
+                                                            "label": "Office",
+                                                            "value": "office"
+                                                        },
+                                                        {
+                                                            "label": "Private",
+                                                            "value": "private"
+                                                        },
+                                                        {
+                                                            "label": "Other",
+                                                            "value": "other"
+                                                        }
+                                                    ]
+                                                },
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Email Addresses"
+                                    },
+                                    {
+                                        "name": "phoneNumbers",
+                                        "spec": [
+                                            {
+                                                "name": "type",
+                                                "type": "select",
+                                                "label": "Type",
+                                                "options": {
+                                                    "store": [
+                                                        {
+                                                            "label": "Business",
+                                                            "value": "business",
+                                                            "default": true
+                                                        },
+                                                        {
+                                                            "label": "Office",
+                                                            "value": "office"
+                                                        },
+                                                        {
+                                                            "label": "Mobile",
+                                                            "value": "mobile"
+                                                        },
+                                                        {
+                                                            "label": "Private",
+                                                            "value": "private"
+                                                        },
+                                                        {
+                                                            "label": "Fax",
+                                                            "value": "fax"
+                                                        },
+                                                        {
+                                                            "label": "Other",
+                                                            "value": "other"
+                                                        }
+                                                    ]
+                                                },
+                                                "required": true
+                                            }
+                                        ],
+                                        "type": "array",
+                                        "label": "Phone Numbers"
+                                    },
+                                    {
+                                        "name": "xRechnung",
+                                        "spec": [
+                                            {
+                                                "name": "buyerReference",
+                                                "type": "text",
+                                                "label": "Buyer Reference"
+                                            },
+                                            {
+                                                "name": "vendorNumberAtCustomer",
+                                                "type": "text",
+                                                "label": "Vendor Number At Customer"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "XRechnung"
+                                    },
+                                    {
+                                        "name": "note",
+                                        "type": "text",
+                                        "label": "Note"
+                                    },
+                                    {
+                                        "name": "company",
+                                        "spec": [
+                                            {
+                                                "name": "name",
+                                                "type": "text",
+                                                "label": "Name",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "taxNumber",
+                                                "type": "text",
+                                                "label": "Tax Number"
+                                            },
+                                            {
+                                                "name": "allowTaxFreeInvoices",
+                                                "type": "boolean",
+                                                "label": "Allow Tax Free Invoices"
+                                            },
+                                            {
+                                                "name": "vatRegistrationId",
+                                                "type": "text",
+                                                "label": "Vat Registration ID"
+                                            },
+                                            {
+                                                "name": "contactPersons",
+                                                "spec": [
+                                                    {
+                                                        "name": "salutation",
+                                                        "type": "text",
+                                                        "label": "Salutation"
+                                                    },
+                                                    {
+                                                        "name": "firstName",
+                                                        "type": "text",
+                                                        "label": "First Name"
+                                                    },
+                                                    {
+                                                        "name": "lastName",
+                                                        "type": "text",
+                                                        "label": "Last Name",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "primary",
+                                                        "type": "boolean",
+                                                        "label": "Primary"
+                                                    },
+                                                    {
+                                                        "name": "emailAddress",
+                                                        "type": "email",
+                                                        "label": "Email Address"
+                                                    },
+                                                    {
+                                                        "name": "phoneNumber",
+                                                        "type": "text",
+                                                        "label": "Phone Number"
+                                                    }
+                                                ],
+                                                "type": "array",
+                                                "label": "Contact Persons"
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Company"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 6,
+                            "module": "airtable:ActionUpdateRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "id": "{{3.result.recordId}}",
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tbl0ijvzkD7LH2XMM",
+                                "record": {
+                                    "fldIP42qOvkdnnzHH": "{{5.id}}"
+                                },
+                                "typecast": false,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 300,
+                                    "name": "Airtable: Lexware ID"
+                                }
+                            },
+                            "onerror": [
+                                {
+                                    "id": 109,
+                                    "module": "code:ExecuteCode",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "input": [
+                                            {
+                                                "name": "fehler",
+                                                "value": "{{6.error.message}}"
+                                            },
+                                            {
+                                                "name": "lexid",
+                                                "value": "{{5.id}}"
+                                            }
+                                        ],
+                                        "language": "javascript",
+                                        "inputFormat": "editor",
+                                        "codeEditorJavascript": "// ctx als fertiger JSON-Text — eine Fehlermeldung kann Anfuehrungszeichen\n// und Zeilenumbrueche tragen und wuerde den JSON-Body sonst zerlegen.\nreturn { ctx: JSON.stringify({\n  'Fehler': String(input.fehler || 'Rückschreiben nach Airtable fehlgeschlagen'),\n  'Lexware ID': String(input.lexid || '')\n}) };"
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 1800,
+                                            "y": 450,
+                                            "name": "Fehler-ctx bauen"
+                                        }
+                                    }
+                                },
+                                {
+                                    "id": 9,
+                                    "module": "scenario-service:CallSubscenario",
+                                    "version": 2,
+                                    "parameters": {
+                                        "scenario": "SCN_6862968",
+                                        "shouldWaitForExecutionEnd": false
+                                    },
+                                    "mapper": {
+                                        "data": {
+                                            "id": "{{3.result.recordId}}",
+                                            "ctx": "{{109.result.ctx}}",
+                                            "key": "error.lexware_orphan"
+                                        }
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2100,
+                                            "y": 450,
+                                            "name": "Call: error.lexware_orphan"
+                                        },
+                                        "restore": {
+                                            "parameters": {
+                                                "scenario": {
+                                                    "label": "[Dispatch] Telegram Notifications"
+                                                }
+                                            }
+                                        },
+                                        "parameters": [
+                                            {
+                                                "name": "scenario",
+                                                "type": "scenario",
+                                                "label": "Scenario",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "shouldWaitForExecutionEnd",
+                                                "type": "boolean",
+                                                "label": "Wait for the scenario to finish",
+                                                "required": true
+                                            }
+                                        ],
+                                        "expect": [
+                                            {
+                                                "name": "data",
+                                                "spec": [
+                                                    {
+                                                        "name": "key",
+                                                        "type": "text",
+                                                        "label": "",
+                                                        "required": true,
+                                                        "multiline": false
+                                                    },
+                                                    {
+                                                        "name": "id",
+                                                        "type": "text",
+                                                        "label": "",
+                                                        "required": false,
+                                                        "multiline": false
+                                                    },
+                                                    {
+                                                        "name": "ctx",
+                                                        "type": "text",
+                                                        "label": "",
+                                                        "required": false,
+                                                        "multiline": true
+                                                    }
+                                                ],
+                                                "type": "collection",
+                                                "label": "Scenario Inputs"
+                                            }
+                                        ],
+                                        "interface": [
+                                            {
+                                                "name": "executionId",
+                                                "type": "text",
+                                                "label": "Execution ID"
+                                            }
+                                        ]
+                                    },
+                                    "onerror": [
+                                        {
+                                            "id": 209,
+                                            "module": "builtin:Resume",
+                                            "version": 1,
+                                            "parameters": {},
+                                            "mapper": {
+                                                "output": ""
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 2400,
+                                                    "y": 600,
+                                                    "name": "Klingel-Fehler übergehen"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": 10,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2400,
+                                            "y": 300,
+                                            "name": "Lauf beenden"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 13,
+                            "module": "airtable:ActionUpdateRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Nur wenn das Feld leer war und regelbesteuert startet",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{3.result.regelAbWrite}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "id": "{{3.result.recordId}}",
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tbl0ijvzkD7LH2XMM",
+                                "record": {
+                                    "fldF4idsFUiCgAX1A": "{{3.result.regelAbWrite}}"
+                                },
+                                "typecast": false,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 0,
+                                    "name": "Airtable: Regelbesteuerung ab"
+                                }
+                            }
+                        },
+                        {
+                            "id": 7,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "g",
+                                        "value": "{{3.result}}"
+                                    },
+                                    {
+                                        "name": "lexId",
+                                        "value": "{{5.id}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "codeEditorJavascript": "// ── Modul 7 · Statuszeile Operations ─────────────────────────────────────\n// Baut die Meldung fuers Operations-Topic. Kein Broadcast in einen\n// City-Channel: ein Vertriebler ist keine oeffentliche Neuigkeit.\n\nconst parse = (v) => (typeof v === 'string' ? (v ? JSON.parse(v) : null) : v);\n\nconst g     = parse(input.g) || {};\nconst lexId = String(input.lexId || '');\n\nconst esc = (v) => String(v || '')\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nconst status = [\n  '✅ <b>Vertriebler angelegt: ' + esc(g.name) + '</b>',\n  esc(g.plz5 + ' ' + g.ort),\n  'Lexware: ' + (lexId || '—') + ' (Lieferant)',\n  'Besteuerung: ' + esc(g.besteuerung || '—')\n];\n\nif (String(g.regelAbEff || '') !== '') {\n  status.push('Regelbesteuerung ab: ' + esc(g.regelAbEff) +\n              (String(g.regelAbWrite || '') !== '' ? ' (Anlagedatum)' : ''));\n}\n\n// Konditionen haengen NICHT am Vertriebler, sondern werden ueber\n// »Gültig für« gegen die Besteuerung aufgeloest. Ohne passende Version\n// rechnet jeder Umsatz dieses Vertrieblers still mit Null.\nstatus.push('📋 Prüfen, dass eine Konditionen-Version mit »Gültig für« = »' +\n            esc(g.besteuerung || '—') + '« existiert — sonst rechnen die Umsätze mit Null.');\n\nif (String(g.hinweise || '') !== '') {\n  status.push('⚠️ ' + esc(String(g.hinweise)));\n}\n\nreturn { status: status.join('\\n') };\n"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2100,
+                                    "y": 0,
+                                    "name": "Code: Status bauen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 8,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6862968",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "mapper": {
+                                "data": {
+                                    "id": "{{3.result.recordId}}",
+                                    "key": "salesperson.created"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2400,
+                                    "y": 0,
+                                    "name": "Call: salesperson.created"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Dispatch] Telegram Notifications"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": false
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 108,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2700,
+                                            "y": 0,
+                                            "name": "Klingel-Fehler übergehen"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 11,
+                            "module": "airtable:ActionUpdateRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "GATE 1 — Pflichtfelder unvollständig",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{3.result.gate}}",
+                                            "b": "stop",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "id": "{{3.result.recordId}}",
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tbl0ijvzkD7LH2XMM",
+                                "record": {
+                                    "fldr6qhoPrJBK1enZ": "⛔ Eingangs-Guards: {{3.result.reason}}\n\nErneut ausführen: In Airtable im Vertriebler-Datensatz eines der gelauschten Felder korrigieren (Name, Straße / Nr., Postleitzahl, Ort, Besteuerung). Jede Änderung daran stößt das Szenario erneut an."
+                                },
+                                "typecast": false,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1200,
+                                    "y": 900,
+                                    "name": "Fehler → ⚙ Hinweis"
+                                }
+                            }
+                        },
+                        {
+                            "id": 112,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "name",
+                                        "value": "{{3.result.name}}"
+                                    },
+                                    {
+                                        "name": "grund",
+                                        "value": "{{3.result.reason}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "codeEditorJavascript": "return { ctx: JSON.stringify({\n  'Vertriebler': String(input.name || ''),\n  'Stufe': 'Eingangs-Guards',\n  'Fehler': String(input.grund || ''),\n  'Angelegt': '—',\n  'Fehlt': 'Lexware-Kontakt'\n}) };"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1500,
+                                    "y": 900,
+                                    "name": "Fehler-ctx bauen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 12,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6862968",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "mapper": {
+                                "data": {
+                                    "ctx": "{{112.result.ctx}}",
+                                    "key": "error.salesperson_failed"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 1800,
+                                    "y": 900,
+                                    "name": "Call: error.salesperson_failed"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Dispatch] Telegram Notifications"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "ctx",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": true
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 212,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2100,
+                                            "y": 900,
+                                            "name": "Klingel-Fehler übergehen"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": true,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": true,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": true,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    }
+}

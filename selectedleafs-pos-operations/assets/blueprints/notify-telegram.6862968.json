@@ -1,0 +1,1141 @@
+{
+    "name": "[Notify] Telegram",
+    "flow": [
+        {
+            "id": 1,
+            "module": "scenario-service:StartSubscenario",
+            "version": 2,
+            "parameters": {},
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 1050,
+                    "name": "Klingel"
+                },
+                "restore": {},
+                "interface": [
+                    {
+                        "help": "",
+                        "name": "key",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": true,
+                        "multiline": false
+                    },
+                    {
+                        "help": "",
+                        "name": "id",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": false
+                    },
+                    {
+                        "help": "",
+                        "name": "ctx",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": false,
+                        "multiline": true
+                    }
+                ]
+            }
+        },
+        {
+            "id": 2,
+            "module": "code:ExecuteCode",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "input": [
+                    {
+                        "name": "key",
+                        "value": "{{1.key}}"
+                    },
+                    {
+                        "name": "id",
+                        "value": "{{1.id}}"
+                    },
+                    {
+                        "name": "ctx",
+                        "value": "{{1.ctx}}"
+                    }
+                ],
+                "language": "javascript",
+                "inputFormat": "editor",
+                "codeEditorJavascript": "// ────────────────────────────────────────────────────────────────────────\n// Ereignis-Landkarte — DATEN, kein Code.  Stand: Nachrichtenkatalog Runde 22\n//\n// Eine Zeile je Meldetyp. Der Renderer (Modul 6) loest die Token auf:\n//   felder (Fachdatensatz) -> vfelder (Vertriebler) -> sfelder (Store) -> ctx\n//\n// Drei Zieltexte je Zeile, die Anwesenheit entscheidet ueber den Empfaenger:\n//   text   -> Operations-Channel  (Thread aus topic)\n//   vtext  -> Vertriebler-Channel (Chat aus Vertriebler.⚙ Telegram ID)\n//   ctext  -> City-Channel        (Chat aus Stores.⚙ Telegram ID)\n//\n// Navigation:\n//   vertrieblerFeld : Link-Feld auf Vertriebler | '*' = Fachdatensatz IST der Vertriebler\n//   storeFeld       : Link-Feld auf Stores      | '*' = Fachdatensatz IST der Store\n//   foto            : Feld-ID eines Attachments am Fachdatensatz (nur mit storeFeld '*')\n//   saldo           : 'created' | 'settled' — Vergleichsart fuer {Saldoabruf}\n//\n// Zeilen-Modifier im Template (immer am Zeilenanfang):\n//   {leer FELD}...    Zeile nur, wenn das Feld leer ist   (Vorbehaltszeilen)\n//   {gesetzt FELD}... Zeile nur, wenn das Feld gefuellt ist\n// ────────────────────────────────────────────────────────────────────────\n\nconst TOPIC = { vorgaenge: 586, aufgaben: 585, system: 583, stoerungen: 584, unsortiert: 1 };\n\n// Vertriebler tbl0ijvzkD7LH2XMM\nconst V = {\n  'Vertriebler':    'fldhDp2HHI6BxjlZq',\n  'Ort':            'fldTfEX0YglBq8alh',\n  'Besteuerung':    'fldBcufVGhXAdxJHS',\n  'Offen':          'fld3XtirjKm3VUBlw',\n  '⚙ Telegram ID':  'flduydWiRl0ZgGBGM',\n  'Formularlink':   'flddGkcgwdmCvBEXF'\n};\n\n// Stores tblfB5nsTSOXrUK1q\nconst S = {\n  'Store':                'fld7fbRS1BHvrqJrj',\n  'Vertriebler':          'fldMF3vhN0mNklbkb',   // Feld »Akquise durch«\n  'Stadtteil':            'fldjVrpQh4LqaxqOk',\n  'Stadt':                'fldTYy4JUNZuGVOlE',\n  'Postleitzahl':         'fldJzdkest3PwK2y6',\n  'Straße / Nr.':         'fld3qcSSGz8Y6M3zx',\n  '⚙ Google Place ID':    'fldQ6BHP9c9FlVZE1',\n  '⚙ Telegram ID':        'fld09mGXJrafZXyjN'\n};\n\n// Umsätze tbl0Xqw2eK7KPVVWY — gemeinsamer Feldsatz der fuenf invoice.*\n// ACHTUNG: 'Store' steht bewusst NICHT hier. Das Primaerfeld von Stores ist\n// die JTL-Kundennummer (ID), und ein Link-Feld liefert im Klartext den\n// PRIMAERWERT — {Store} haette also \"10009\" gedruckt. Der Token faellt\n// stattdessen auf sfelder durch, wo Modul 11 Stores.Name liest.\n// Gleiches gilt fuer L (Lieferungen) und B (Bestandspruefungen).\nconst U = {\n  'ID':            'flda4tTUPnyeuQbDP',\n  'Vertriebler':   'fldTobkViXGCZIQeF',\n  '⚙ Fällig am':   'fldj7QHDMWnFxSTZn',\n  'Nettoumsatz':   'fld0GMbvW8P8t25Nq',\n  'Provision':     'fldFyNHkSGWdNgSKr',\n  'Nettoertrag':   'fldbQPXY2teAQy3Mb',\n  'Datum':           'fld0Im1qb7MkoHdpU',\n  'Zahlungsverlauf': 'fldVQODqhEZrbBNDm',\n  'Hinweis':         'fldFD4fPdpvi9pVQZ'\n};\nconst U_GELD = ['Nettoumsatz', 'Provision', 'Nettoertrag', 'Offen'];\n\n// Lieferungen tblH3WUD6XchyyMYQ\nconst L = {\n  'Vertriebler':         'fldefhwzZt8hvQsKz',\n  'Datum':               'fldKxC3S6iPZWBPbb',\n  'Positionen':          'fldnR6OkuOcI2AOHC',\n  'Nettoverkaufswert':   'fld9tGKsmBYYRB8JD',\n  'Kosten':              'fldwwJJ06eEEHgqVu',\n  'Kostenanteil':        'fldRwGytS9Aykbyvx',\n  'Unterschrieben':      'fldDL1j7Xi5EXWpkJ'\n};\nconst L_GELD = ['Nettoverkaufswert', 'Kosten', 'Kostenanteil'];\n\n// Bestandsprüfungen tblmuGjaRDYXQzHch\nconst B = {\n  'Vertriebler':            'fldBiml9y1hrdyB5a',\n  'Datum':                  'fldtcCjenPbEVtoUX',\n  'Positionen':             'fldkeRTSxff0AdVIj',\n  '⚙ Differenz (Gesamt)':   'fldu5g1stOUVfgf91',\n  '⚙ Nettoverkaufswert':    'fldIQQ71uz7zfOWN1',\n  'Inventar geprüft':       'fldIkRcJo0tbi3St3',\n  'Unterschrieben':         'fldX8yl4NxZeu2FUb'\n};\n\n// Auszahlungen tblUrdeNTiSlerMr3\nconst A = {\n  'Vertriebler':       'fld7eIRfIEd1aml1D',\n  'Datum':             'fldB9IXQtOoZb0M9K',\n  'Betrag':            'fld9icyZRghWzi7cp',\n  'Rechnungsnummer':   'fldYiJxowFyiCiLDu'\n};\n\nconst MAP = {\n\n// ══════════════════ 📥 Vorgänge ══════════════════\n\n'store.created': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tblfB5nsTSOXrUK1q',\n  vertrieblerFeld: 'fldMF3vhN0mNklbkb',\n  storeFeld: '*',\n  foto: 'fldhtzwUV5qXTs8BY',\n  felder: S,\n  vfelder: V,\n  sfelder: S,\n  text:  '🎉 Neuer Store aktiv\\n' +\n         '{Store} · {Stadtteil}\\n' +\n         '\\n' +\n         'Akquiriert durch {Vertriebler}',\n  vtext: '🎉 Neuer Store erfasst\\n' +\n         '{Store} · {Postleitzahl} {Stadt}\\n' +\n         '\\n' +\n         'Gute Arbeit {Vorname}.',\n  ctext: '🎉 Neuer Partner: {Store}\\n' +\n         '{Stadtteil} · {Straße / Nr.}\\n' +\n         '\\n' +\n         '🕒 <b>Öffnungszeiten</b>\\n' +\n         '{Öffnungszeiten}\\n' +\n         '\\n' +\n         '<a href=\"{Maps-URL}\">Google Maps öffnen</a>'\n},\n\n'salesperson.created': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tbl0ijvzkD7LH2XMM',\n  felder: V,\n  text: '🤝 Neuer Vertriebler aktiv\\n' +\n        '{Vertriebler} · {Ort}\\n' +\n        '\\n' +\n        'Besteuerung: {Besteuerung}'\n},\n\n'salesperson.onboarded': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tbl0ijvzkD7LH2XMM',\n  vertrieblerFeld: '*',\n  felder: V,\n  vfelder: V,\n  vtext: '👋 Willkommen bei selectedleafs, {Vorname}\\n' +\n         '\\n' +\n         '<i>Dieser Chat hält dich ab sofort auf dem Laufenden. Wenn du Fragen hast, melde dich direkt bei Joscha.</i>\\n' +\n         '\\n' +\n         'Deine Konditionen\\n' +\n         '• {Provision} % Provision auf jeden bezahlten Store-Umsatz\\n' +\n         '• fairer {Kostenanteil}-Kostensplit, abgezogen bei Lieferung\\n' +\n         '\\n' +\n         'Deine Auszahlung\\n' +\n         '• jederzeit ab min. {Schwelle} offenem Saldo\\n' +\n         '• Rechnung ausschließlich an invoice@selectedleafs.com\\n' +\n         '\\n' +\n         'Deine einzige Pflicht\\n' +\n         '• mindestens eine Bestandsprüfung alle {Intervall} Tage\\n' +\n         '\\n' +\n         'Dein Store-Formular\\n' +\n         '• <a href=\"{Formularlink}\">neuen Partnerstore anlegen</a>\\n' +\n         '• nur über diesen Link — er trägt deinen Namen\\n' +\n         '\\n' +\n         'Schön, dass du dabei bist.'\n},\n\n'delivery.booked': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tblH3WUD6XchyyMYQ',\n  vertrieblerFeld: 'fldefhwzZt8hvQsKz',\n  storeFeld: 'fldWIfDN3u4yqZdN0',\n  felder: L, vfelder: V, sfelder: S, geld: L_GELD,\n  text:  '📦 Kommissionsware übergeben\\n' +\n         '{Vertriebler} · {Store}\\n' +\n         '\\n' +\n         'Nettowarenwert: {Nettoverkaufswert}\\n' +\n         'Gesamtkosten: {Kosten}\\n' +\n         'Anteil {Vorname}: {Kostenanteil}\\n' +\n         '\\n' +\n         '{leer Unterschrieben}Protokoll ohne Unterschrift.\\n' +\n         '\\n' +\n         '<i>Geliefert am {Datum}</i>',\n  vtext: '📦 Lieferung erfasst\\n' +\n         '{Store} · {Positionen} Sorten\\n' +\n         '\\n' +\n         'Nettowarenwert: {Nettoverkaufswert}\\n' +\n         'Dein Kostenanteil: <b>{Kostenanteil}</b>\\n' +\n         '\\n' +\n         '<i>Geliefert am {Datum}</i>'\n},\n\n'delivery.returned': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tblH3WUD6XchyyMYQ',\n  vertrieblerFeld: 'fldefhwzZt8hvQsKz',\n  storeFeld: 'fldWIfDN3u4yqZdN0',\n  felder: L, vfelder: V, sfelder: S, geld: L_GELD,\n  text:  '📥 Rückholung abgeschlossen\\n' +\n         '{Vertriebler} · {Store}\\n' +\n         '\\n' +\n         'Nettowarenwert: {abs Nettoverkaufswert}\\n' +\n         'Gesamtkosten: {abs Kosten}\\n' +\n         'Anteil {Vorname}: {abs Kostenanteil}\\n' +\n         '\\n' +\n         '{leer Unterschrieben}Protokoll ohne Unterschrift.\\n' +\n         '\\n' +\n         '<i>Zurückgeholt am {Datum}</i>',\n  vtext: '📥 Rückholung erfasst\\n' +\n         '{Store} · {Positionen} Sorten\\n' +\n         '\\n' +\n         'Nettowarenwert: {abs Nettoverkaufswert}\\n' +\n         'Dein Kostenanteil: <b>{abs Kostenanteil}</b>\\n' +\n         '\\n' +\n         'Die Kosten wurden deinem Saldo gutgeschrieben.\\n' +\n         '\\n' +\n         '<i>Zurückgeholt am {Datum}</i>'\n},\n\n'inventory.checked': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tblmuGjaRDYXQzHch',\n  vertrieblerFeld: 'fldBiml9y1hrdyB5a',\n  storeFeld: 'fld31rwYy0IctcTWf',\n  felder: B, vfelder: V, sfelder: S, geld: ['⚙ Nettoverkaufswert'],\n  text:  '📋 Bestandsprüfung abgeschlossen\\n' +\n         '{Vertriebler} · {Store}\\n' +\n         '\\n' +\n         'IST-Differenz: {⚙ Differenz (Gesamt)} Einheiten\\n' +\n         'Differenzwert: {⚙ Nettoverkaufswert}\\n' +\n         '\\n' +\n         '{leer Inventar geprüft}Inventar nicht geprüft.\\n' +\n         '{leer Unterschrieben}Protokoll ohne Unterschrift.\\n' +\n         '\\n' +\n         '<i>Geprüft am {Datum}</i>',\n  vtext: '📋 Bestandsprüfung erfasst\\n' +\n         '{Store} · {Positionen} Sorten\\n' +\n         '\\n' +\n         'IST-Differenz: {⚙ Differenz (Gesamt)} Einheiten\\n' +\n         'Differenzwert: <b>{⚙ Nettoverkaufswert}</b>\\n' +\n         '\\n' +\n         '{leer Inventar geprüft}⚠️ Das Inventar wurde nicht geprüft.\\n' +\n         '{leer Unterschrieben}⚠️ Das Protokoll ist nicht unterschrieben.\\n' +\n         '\\n' +\n         '<i>Geprüft am {Datum}</i>'\n},\n\n'inventory.due': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tblmuGjaRDYXQzHch',\n  vertrieblerFeld: 'fldBiml9y1hrdyB5a',\n  storeFeld: 'fld31rwYy0IctcTWf',\n  felder: B, vfelder: V, sfelder: S,\n  text:  '⏳ Erinnerung zur Bestandsprüfung\\n' +\n         '{Vertriebler} · {Store}\\n' +\n         '\\n' +\n         'Zuletzt geprüft am {Datum}',\n  vtext: '⏳ Bestandsprüfung fällig\\n' +\n         '{Store} · Zuletzt geprüft am {Datum}\\n' +\n         '\\n' +\n         'Zeit für einen Besuch — <a href=\"{Maps-URL}\">Route öffnen</a>'\n},\n\n// ── die fünf invoice.* ──────────────────────────────────────────────────\n\n'invoice.created': {\n  topic: TOPIC.vorgaenge, tabelle: 'tbl0Xqw2eK7KPVVWY',\n  vertrieblerFeld: 'fldTobkViXGCZIQeF', storeFeld: 'fldUQQ1FP5N7pRoX9',\n  felder: U, vfelder: V, sfelder: S, geld: U_GELD,\n  text:  '🧾 Rechnung {ID} erstellt\\n' +\n         '{Store} · Fällig am {⚙ Fällig am}\\n' +\n         '\\n' +\n         '\\n' +\n         '{gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.',\n  vtext: '🧾 Neue Rechnung {ID}\\n' +\n         '{Store} · Fällig am {⚙ Fällig am}\\n' +\n         '\\n' +\n         '\\n' +\n         'Bitte leite die Rechnung an den Store weiter.'\n},\n\n'invoice.paid': {\n  topic: TOPIC.vorgaenge, tabelle: 'tbl0Xqw2eK7KPVVWY',\n  vertrieblerFeld: 'fldTobkViXGCZIQeF', storeFeld: 'fldUQQ1FP5N7pRoX9',\n  felder: U, vfelder: V, sfelder: S, geld: U_GELD,\n  text:  '✅ Zahlungseingang {ID}\\n' +\n         '{Store} · {Zahlungsverlauf}\\n' +\n         '\\n' +\n         'Saldo {Vorname} (offen): {Offen}\\n' +\n         '\\n' +\n         '{gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.',\n  vtext: '✅ Zahlung für {ID}\\n' +\n         '{Store} · {Zahlungsverlauf}\\n' +\n         '\\n' +\n         'Deine Provision: +{Provision}\\n' +\n         'Dein Saldo (offen): <b>{Offen}</b>\\n' +\n         '\\n' +\n         'Sauber. Genau so weiter.'\n},\n\n'invoice.overdue': {\n  topic: TOPIC.vorgaenge, tabelle: 'tbl0Xqw2eK7KPVVWY',\n  vertrieblerFeld: 'fldTobkViXGCZIQeF', storeFeld: 'fldUQQ1FP5N7pRoX9',\n  felder: U, vfelder: V, sfelder: S, geld: U_GELD,\n  text:  '⏰ {ID} noch nicht bezahlt\\n' +\n         '{Store} · Fällig seit {⚙ Fällig am}\\n' +\n         '\\n' +\n         'Nettoumsatz: {Nettoumsatz}'\n},\n\n'invoice.reminder_filed': {\n  topic: TOPIC.vorgaenge, tabelle: 'tbl0Xqw2eK7KPVVWY',\n  vertrieblerFeld: 'fldTobkViXGCZIQeF', storeFeld: 'fldUQQ1FP5N7pRoX9',\n  felder: U, vfelder: V, sfelder: S, geld: U_GELD,\n  text:  '📄 Mahnstufe erreicht\\n' +\n         '{Store} · {Belegtyp}\\n' +\n         '\\n' +\n         '<i>{ID} vom {Datum}</i>',\n  vtext: '⏰ {ID} noch nicht bezahlt\\n' +\n         '{Store} · Fällig seit {⚙ Fällig am}\\n' +\n         '\\n' +\n         'Nettoumsatz: {Nettoumsatz}\\n' +\n         'Deine Provision: <b>{Provision}</b>\\n' +\n         '\\n' +\n         'Bitte leite die Zahlungserinnerung weiter, um deine Provision zu sichern.'\n},\n\n'invoice.dunning_filed': {\n  topic: TOPIC.vorgaenge, tabelle: 'tbl0Xqw2eK7KPVVWY',\n  vertrieblerFeld: 'fldTobkViXGCZIQeF', storeFeld: 'fldUQQ1FP5N7pRoX9',\n  felder: U, vfelder: V, sfelder: S, geld: U_GELD,\n  text:  '📄 Mahnstufe erreicht\\n' +\n         '{Store} · {Belegtyp}\\n' +\n         '\\n' +\n         '<i>{ID} vom {Datum}</i>',\n  vtext: '📮 {ID} im Mahnlauf\\n' +\n         '{Store} · Fällig seit {⚙ Fällig am}\\n' +\n         '\\n' +\n         'Nettoumsatz: {Nettoumsatz}\\n' +\n         'Deine Provision: <b>{Provision}</b>\\n' +\n         '\\n' +\n         'Die Mahnung geht per Post raus. Ein Besuch bringt trotzdem meist mehr.'\n},\n\n'invoice.voided': {\n  topic: TOPIC.vorgaenge, tabelle: 'tbl0Xqw2eK7KPVVWY',\n  vertrieblerFeld: 'fldTobkViXGCZIQeF', storeFeld: 'fldUQQ1FP5N7pRoX9',\n  felder: U, vfelder: V, sfelder: S, geld: U_GELD,\n  text:  '↩️ {ID} wurde storniert\\n' +\n         '{Store} · Rechnung vom {Datum}\\n' +\n         '\\n' +\n         'Nettoumsatz: {Nettoumsatz}\\n' +\n         'Entgangener Ertrag: {Nettoertrag}\\n' +\n         '\\n' +\n         '{gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.',\n  vtext: '↩️ {ID} wurde storniert\\n' +\n         '{Store} · Rechnung vom {Datum}\\n' +\n         '\\n' +\n         'Entfallene Provision: <b>−{Provision}</b>'\n},\n\n'invoice.written_off': {\n  topic: TOPIC.vorgaenge, tabelle: 'tbl0Xqw2eK7KPVVWY',\n  vertrieblerFeld: 'fldTobkViXGCZIQeF', storeFeld: 'fldUQQ1FP5N7pRoX9',\n  felder: U, vfelder: V, sfelder: S, geld: U_GELD,\n  text:  '❌ {ID} wurde ausgebucht\\n' +\n         '{Store} · Fällig seit {⚙ Fällig am}\\n' +\n         '\\n' +\n         'Nettoumsatz: {Nettoumsatz}\\n' +\n         'Entgangener Ertrag: {Nettoertrag}\\n' +\n         '\\n' +\n         '{gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.',\n  vtext: '❌ {ID} wurde ausgebucht\\n' +\n         '{Store} · Fällig seit {⚙ Fällig am}\\n' +\n         '\\n' +\n         'Entfallene Provision: <b>−{Provision}</b>\\n' +\n         '\\n' +\n         'Der Betrag konnte leider nicht eingetrieben werden.'\n},\n\n// ── payout.* — Eingangsrechnung des Vertrieblers ────────────────────────\n\n'payout.created': {\n  topic: TOPIC.vorgaenge, tabelle: 'tblUrdeNTiSlerMr3',\n  vertrieblerFeld: 'fld7eIRfIEd1aml1D',\n  felder: A, vfelder: V, geld: ['Betrag', 'Offen'], saldo: 'created',\n  text:  '🧾 Auszahlung beantragt\\n' +\n         '{Vertriebler} · {Saldoabruf}\\n' +\n         '\\n' +\n         'Betrag: {Betrag}\\n' +\n         '\\n' +\n         '<i>Rechnung {Rechnungsnummer} vom {Datum}</i>',\n  vtext: '🧾 Rechnung {Rechnungsnummer} erfasst\\n' +\n         '\\n' +\n         'Betrag: <b>{Betrag}</b>\\n' +\n         '\\n' +\n         'Auszahlung erfolgt in Kürze.'\n},\n\n'payout.settled': {\n  topic: TOPIC.vorgaenge, tabelle: 'tblUrdeNTiSlerMr3',\n  vertrieblerFeld: 'fld7eIRfIEd1aml1D',\n  felder: A, vfelder: V, geld: ['Betrag', 'Offen'], saldo: 'settled',\n  text:  '💶 Auszahlung abgeschlossen\\n' +\n         '{Vertriebler} · {Saldoabruf}\\n' +\n         '\\n' +\n         'Betrag: {Betrag}\\n' +\n         '\\n' +\n         'Saldo {Vorname} (offen): {Offen}\\n' +\n         '\\n' +\n         '<i>Rechnung {Rechnungsnummer} vom {Datum}</i>',\n  vtext: '💶 Auszahlung unterwegs\\n' +\n         'Rechnung {Rechnungsnummer} vom {Datum}\\n' +\n         '\\n' +\n         'Betrag: {Betrag}\\n' +\n         'Dein Saldo (offen): <b>{Offen}</b>\\n' +\n         '\\n' +\n         'Danke für deine Arbeit! :)'\n},\n\n// ══════════════════ 👉 Aufgaben ══════════════════\n// Form: Betreff (Imperativ) → Infozeile mit genau ZWEI Werten → Liste mit •\n// task.invoice_unlinked und task.beleg_no_pdf haben BEWUSST keine Zeile:\n// sie erscheinen nur als Zeile im 07:00-Digest (task.digest).\n\n'task.doctype_unclear': {\n  topic: TOPIC.aufgaben, tabelle: 'tbld7UQwDBbq9A8Xk',\n  felder: { 'ID': 'fld7DgKiRjGPJitvf', 'Hinweis': 'fldW8Gk8tDwDoJoJ8' },\n  text: '👉 Belegtyp korrigieren\\n' +\n        '{ID} · Belegdatum: {Datum}\\n' +\n        '\\n' +\n        '• Grund prüfen: {Hinweis}\\n' +\n        '• Belegtyp in Airtable setzen — danach läuft der Prozess weiter'\n},\n\n'task.terms_missing': {\n  topic: TOPIC.aufgaben,\n  text: '👉 Konditionen prüfen\\n' +\n        '{Vertriebler} · {Store}\\n' +\n        '\\n' +\n        '• Leistungsdatum {Leistungsdatum} an der Rechnung prüfen\\n' +\n        '• Konditionen-Version mit »Gültig ab« ≤ Leistungsdatum anlegen\\n' +\n        '\\n' +\n        '<i>{ID} vom {Rechnungsdatum}</i>'\n},\n\n'task.jtl_missing': {\n  topic: TOPIC.aufgaben, tabelle: 'tblfB5nsTSOXrUK1q',\n  vertrieblerFeld: 'fldMF3vhN0mNklbkb', storeFeld: '*',\n  felder: S, vfelder: V, sfelder: S,\n  text: '👉 JTL-Kunde und Lager anlegen\\n' +\n        '{Vertriebler} · {Store}\\n' +\n        '\\n' +\n        '• Kunden anlegen, {Vertriebler} als Erstkontakt\\n' +\n        '• Lager mit gleichem Namen und gleicher Adresse anlegen\\n' +\n        '• Kundennummer in Airtable unter »ID« eintragen'\n},\n\n'task.telegram_missing': {\n  topic: TOPIC.aufgaben, tabelle: 'tbl0ijvzkD7LH2XMM',\n  felder: V,\n  text: '👉 Telegram-Channel anlegen\\n' +\n        '{Vertriebler} · {Ort}\\n' +\n        '\\n' +\n        '• Channel anlegen: „selectedleafs.com · {Vertriebler}\"\\n' +\n        '• {Vorname} und „selectedleafs_sales_bot\" einladen\\n' +\n        '• Chat-ID in »⚙ Telegram ID« eintragen'\n},\n\n'task.digest': {\n  topic: TOPIC.aufgaben,\n  text: '🗒 Offene Aufgaben ({n})\\n' +\n        '\\n' +\n        '{Zeilen}'\n},\n\n// ══════════════════ 🛑 Störungen ══════════════════\n\n'error.reminder_unreadable': {\n  topic: TOPIC.stoerungen,\n  text: '🛑 Mahnschreiben nicht verarbeitbar\\n' +\n        'Betreff: {Betreff}\\n' +\n        '\\n' +\n        'Grund: {Hinweis}\\n' +\n        'Folge: kein Beleg angelegt, keine Meldung an den Vertriebler'\n},\n\n'error.reminder_unmatched': {\n  topic: TOPIC.stoerungen,\n  text: '🛑 Mahnschreiben nicht zuordenbar\\n' +\n        'Rechnung {Rechnungsnummer} · {Belegtyp}\\n' +\n        '\\n' +\n        'Grund: kein Umsatz mit dieser Nummer in Airtable\\n' +\n        'Folge: Beleg nicht abgelegt, keine Meldung an den Vertriebler'\n},\n\n'error.lexware_orphan': {\n  topic: TOPIC.stoerungen, tabelle: 'tbl0ijvzkD7LH2XMM',\n  felder: V,\n  text: '🛑 Lexware-ID nicht zurückgeschrieben\\n' +\n        '{Vertriebler} · {Ort}\\n' +\n        '\\n' +\n        'Grund: {Fehler}\\n' +\n        'Folge: der nächste Lauf legt eine Dublette an\\n' +\n        '\\n' +\n        '{Lexware ID} von Hand in »⚙ Lexware ID« eintragen.'\n},\n\n'error.sync_aborted': {\n  topic: TOPIC.stoerungen,\n  text: '🛑 Sync abgebrochen\\n' +\n        '{Szenario} · Abbruch bei: {Stufe}\\n' +\n        '\\n' +\n        'Grund: {Fehler}\\n' +\n        'Folge: {Folge}'\n},\n\n'error.store_failed': {\n  topic: TOPIC.stoerungen,\n  text: '🛑 Store konnte nicht angelegt werden\\n' +\n        '{Store} · Abbruch bei: {Stufe}\\n' +\n        '\\n' +\n        'Grund: {Fehler}\\n' +\n        'Folge: kein Metaobjekt, kein Lexware-Kontakt, kein Broadcast\\n' +\n        '\\n' +\n        'Hinweis steht im Airtable-Datensatz.'\n},\n\n'error.store_partial': {\n  topic: TOPIC.stoerungen,\n  text: '🛑 Store nur teilweise angelegt\\n' +\n        '{Store} · Abbruch bei: {Stufe}\\n' +\n        '\\n' +\n        'Grund: {Fehler}\\n' +\n        'Angelegt: {Angelegt}\\n' +\n        'Fehlt: {Fehlt}'\n},\n\n'error.salesperson_failed': {\n  topic: TOPIC.stoerungen,\n  text: '🛑 Vertriebler konnte nicht angelegt werden\\n' +\n        '{Vertriebler} · Abbruch bei: {Stufe}\\n' +\n        '\\n' +\n        'Grund: {Fehler}\\n' +\n        'Angelegt: {Angelegt}\\n' +\n        'Fehlt: {Fehlt}'\n},\n\n// ══════════════════ ⚙️ System ══════════════════\n// Alle Token ctx. Wo die Vorlage im Katalog wiederholte Zeilen zeigt\n// ({Store}: …, mehrfach), liefert der Emitter den fertigen Block als {Zeilen} —\n// ein Token kann nicht mehrfach mit verschiedenen Werten belegt werden.\n\n'sync.products': {\n  topic: TOPIC.system,\n  text: '⚙️ Produkt-Sync abgeschlossen\\n' +\n        '{n} Produkte · {m} Varianten\\n' +\n        '\\n' +\n        'Produkte: {a} angelegt · {b} geändert\\n' +\n        'Varianten: {c} angelegt · {d} geändert\\n' +\n        'Preise: {e} korrigiert'\n},\n\n'sync.stores': {\n  topic: TOPIC.system,\n  text: '⚙️ Store-Sync abgeschlossen\\n' +\n        '{n} Stores · {m} aktualisiert\\n' +\n        '\\n' +\n        '{Zeilen}'\n},\n\n'system.heartbeat': {\n  topic: TOPIC.system,\n  text: '☀️ Systemcheck\\n' +\n        'Stand {Datum} · {n} Szenarien aktiv\\n' +\n        '\\n' +\n        '{Zeilen}'\n},\n\n// ══════════════════ 📣 City-Channel ══════════════════\n// Kein Ops-, kein Vertriebler-Text. Geklingelt wird mit der Record-ID des\n// STORES — daraus kommen Name, Stadtteil, Place ID und Channel aus Airtable.\n// Die Sortenauswahl selbst entsteht im Emitter aus 🟣 Bestände und kommt\n// als ctx: {Sorten} (Liste) bzw. {Sorte} + {Vein} (ein Post je Sorte).\n\n'city.restock': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tblfB5nsTSOXrUK1q', storeFeld: '*',\n  felder: S, sfelder: S,\n  ctext: '📦 Frisch aufgefüllt\\n' +\n         '{Store} · {Stadtteil}\\n' +\n         '\\n' +\n         '{Sorten}\\n' +\n         '\\n' +\n         '<a href=\"{Maps-URL}\">Google Maps öffnen</a>'\n},\n\n'city.strain_new': {\n  topic: TOPIC.vorgaenge,\n  tabelle: 'tblfB5nsTSOXrUK1q', storeFeld: '*',\n  felder: S, sfelder: S,\n  ctext: '🌿 Neu: {Sorte} ({Vein})\\n' +\n         '{Store} · {Stadtteil}\\n' +\n         '\\n' +\n         '<a href=\"{Maps-URL}\">Google Maps öffnen</a>'\n}\n\n};\n\n// ────────────────────────────────────────────────────────────────────────\nconst key = String(input.key || '').trim();\nconst row = MAP[key];\n\nconst ctxObj = (typeof input.ctx === 'string' && input.ctx) ? JSON.parse(input.ctx) : (input.ctx || {});\n\nif (!row) {\n  // Unbekannter Schlüssel: nichts verwerfen, roh nach ⁉️ Unsortiert.\n  return {\n    ctxObj: ctxObj,\n    gefunden: false, datensatz: false, topic: TOPIC.unsortiert,\n    tabelle: '', vertrieblerFeld: '', storeFeld: '', foto: '', saldo: '',\n    felder: {}, vfelder: {}, sfelder: {}, geld: [],\n    text: '⁉️ Unbekannter Schlüssel\\n' + (key || '(leer)') +\n          '\\n\\nid: ' + (input.id || '—') + '\\nctx: ' + JSON.stringify(input.ctx || {}),\n    vtext: '', ctext: ''\n  };\n}\n\nreturn {\n  ctxObj: ctxObj,\n  gefunden: true,\n  datensatz: Boolean(row.tabelle) && Boolean(input.id),\n  topic: row.topic || TOPIC.unsortiert,\n  tabelle: row.tabelle || '',\n  vertrieblerFeld: row.vertrieblerFeld || '',\n  storeFeld: row.storeFeld || '',\n  foto: row.foto || '',\n  saldo: row.saldo || '',\n  felder: row.felder || {},\n  vfelder: row.vfelder || {},\n  sfelder: row.sfelder || {},\n  geld: row.geld || [],\n  text: row.text || '',\n  vtext: row.vtext || '',\n  ctext: row.ctext || ''\n};\n"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 1050,
+                    "name": "Ereignis-Landkarte"
+                }
+            }
+        },
+        {
+            "id": 4,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [
+                    {
+                        "key": "filterByFormula",
+                        "value": "RECORD_ID()=\"{{1.id}}\""
+                    },
+                    {
+                        "key": "maxRecords",
+                        "value": "1"
+                    },
+                    {
+                        "key": "returnFieldsByFieldId",
+                        "value": "true"
+                    }
+                ],
+                "url": "/v0/appiIkOaz1ID1FjfE/{{ifempty(2.result.tabelle; \"tbld7UQwDBbq9A8Xk\")}}",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 1050,
+                    "name": "Fachdatensatz lesen · JSON"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 104,
+                    "module": "builtin:Resume",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "output": ""
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 900,
+                            "y": 2100,
+                            "name": "Lesefehler übergehen"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 10,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [
+                    {
+                        "key": "filterByFormula",
+                        "value": "RECORD_ID()=\"{{1.id}}\""
+                    },
+                    {
+                        "key": "maxRecords",
+                        "value": "1"
+                    },
+                    {
+                        "key": "returnFieldsByFieldId",
+                        "value": "true"
+                    },
+                    {
+                        "key": "cellFormat",
+                        "value": "string"
+                    },
+                    {
+                        "key": "timeZone",
+                        "value": "Europe/Berlin"
+                    },
+                    {
+                        "key": "userLocale",
+                        "value": "en-us"
+                    }
+                ],
+                "url": "/v0/appiIkOaz1ID1FjfE/{{ifempty(2.result.tabelle; \"tbld7UQwDBbq9A8Xk\")}}",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 900,
+                    "name": "Fachdatensatz lesen · Klartext"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 110,
+                    "module": "builtin:Resume",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "output": ""
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 1200,
+                            "y": 1800,
+                            "name": "Lesefehler übergehen"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 5,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [
+                    {
+                        "key": "filterByFormula",
+                        "value": "RECORD_ID()=\"{{ifempty(first(get(ifempty(4.data.records[1].fields; 4.body.records[1].fields); 2.result.vertrieblerFeld)); 2.result.ctxObj.vertriebler_id)}}\""
+                    },
+                    {
+                        "key": "maxRecords",
+                        "value": "1"
+                    },
+                    {
+                        "key": "returnFieldsByFieldId",
+                        "value": "true"
+                    }
+                ],
+                "url": "/v0/appiIkOaz1ID1FjfE/tbl0ijvzkD7LH2XMM",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 750,
+                    "name": "Vertriebler nachlesen"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 105,
+                    "module": "builtin:Resume",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "output": ""
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 1500,
+                            "y": 1500,
+                            "name": "Lesefehler übergehen"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 11,
+            "module": "airtable:makeApiCall",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "qs": [
+                    {
+                        "key": "filterByFormula",
+                        "value": "RECORD_ID()=\"{{first(get(ifempty(4.data.records[1].fields; 4.body.records[1].fields); 2.result.storeFeld))}}\""
+                    },
+                    {
+                        "key": "maxRecords",
+                        "value": "1"
+                    },
+                    {
+                        "key": "returnFieldsByFieldId",
+                        "value": "true"
+                    },
+                    {
+                        "key": "cellFormat",
+                        "value": "string"
+                    },
+                    {
+                        "key": "timeZone",
+                        "value": "Europe/Berlin"
+                    },
+                    {
+                        "key": "userLocale",
+                        "value": "en-us"
+                    }
+                ],
+                "url": "/v0/appiIkOaz1ID1FjfE/tblfB5nsTSOXrUK1q",
+                "body": "",
+                "method": "GET",
+                "headers": []
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 600,
+                    "name": "Store nachlesen · Klartext"
+                }
+            },
+            "onerror": [
+                {
+                    "id": 111,
+                    "module": "builtin:Resume",
+                    "version": 1,
+                    "parameters": {},
+                    "mapper": {
+                        "output": ""
+                    },
+                    "metadata": {
+                        "designer": {
+                            "x": 1800,
+                            "y": 1200,
+                            "name": "Lesefehler übergehen"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "id": 6,
+            "module": "code:ExecuteCode",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "input": [
+                    {
+                        "name": "vorlage",
+                        "value": "{{2.result.text}}"
+                    },
+                    {
+                        "name": "vvorlage",
+                        "value": "{{2.result.vtext}}"
+                    },
+                    {
+                        "name": "cvorlage",
+                        "value": "{{2.result.ctext}}"
+                    },
+                    {
+                        "name": "felder",
+                        "value": "{{2.result.felder}}"
+                    },
+                    {
+                        "name": "vfelder",
+                        "value": "{{2.result.vfelder}}"
+                    },
+                    {
+                        "name": "sfelder",
+                        "value": "{{2.result.sfelder}}"
+                    },
+                    {
+                        "name": "geld",
+                        "value": "{{2.result.geld}}"
+                    },
+                    {
+                        "name": "vertrieblerFeld",
+                        "value": "{{2.result.vertrieblerFeld}}"
+                    },
+                    {
+                        "name": "storeFeld",
+                        "value": "{{2.result.storeFeld}}"
+                    },
+                    {
+                        "name": "saldo",
+                        "value": "{{2.result.saldo}}"
+                    },
+                    {
+                        "name": "foto",
+                        "value": "{{2.result.foto}}"
+                    },
+                    {
+                        "name": "record",
+                        "value": "{{ifempty(4.data.records[1].fields; 4.body.records[1].fields)}}"
+                    },
+                    {
+                        "name": "recordText",
+                        "value": "{{ifempty(10.data.records[1].fields; 10.body.records[1].fields)}}"
+                    },
+                    {
+                        "name": "vertriebler",
+                        "value": "{{ifempty(5.data.records[1].fields; 5.body.records[1].fields)}}"
+                    },
+                    {
+                        "name": "store",
+                        "value": "{{ifempty(11.data.records[1].fields; 11.body.records[1].fields)}}"
+                    },
+                    {
+                        "name": "ctx",
+                        "value": "{{2.result.ctxObj}}"
+                    }
+                ],
+                "language": "javascript",
+                "inputFormat": "editor",
+                "codeEditorJavascript": "// ────────────────────────────────────────────────────────────────────────\n// Textbau — EIN generischer Renderer für alle drei Register.\n// Baut aus den Vorlagen der Landkarte: text (Ops) · vtext (Vertriebler) ·\n// ctext (City) und liefert dazu die beiden dynamischen Chat-IDs und die\n// Foto-URL. Geldwerte werden nur FORMATIERT, nie gerechnet.\n//\n// Token-Auflösung: felder (Fachdatensatz) → vfelder → sfelder → ctx\n//   {abs Token}      Betrag ohne Vorzeichen (Rückholungen buchen negativ)\n//   {Vorname}        erstes Wort aus {Vertriebler}\n//   {Saldoabruf}     Vergleich Betrag ggü. Offen, siehe unten\n//   {Maps-URL}       aus Store-Name + ⚙ Google Place ID gebaut\n//   {leer FELD}…     Zeilen-Modifier, wird vor der Ersetzung ausgewertet\n//\n// Warum zwei Lesungen desselben Datensatzes: mit returnFieldsByFieldId\n// liefern LINK-Felder Record-IDs (rec…), mit cellFormat=string liefern sie\n// den Klartext — dafür kommen Geld und Datum dort formatiert statt roh.\n// Deshalb: Zahlen/Daten aus der JSON-Lesung, Links aus der Klartext-Lesung.\n// ────────────────────────────────────────────────────────────────────────\n\nconst felder  = input.felder  || {};\nconst vfelder = input.vfelder || {};\nconst sfelder = input.sfelder || {};\nconst geld    = input.geld    || [];\nconst ctx     = input.ctx     || {};\n\nconst recJ  = input.record      || {};   // Fachdatensatz, JSON\nconst recT  = input.recordText  || {};   // Fachdatensatz, Klartext\nconst vertJ = input.vertriebler || {};   // Vertriebler, JSON\nconst stoT  = input.store       || {};   // Store, Klartext\n\nconst vQuelle = String(input.vertrieblerFeld || '');\nconst sQuelle = String(input.storeFeld || '');\nconst saldoModus = String(input.saldo || '');\n\n// Ist der Fachdatensatz selbst der Vertriebler bzw. der Store, sind die\n// Nachlese-Module leer — dann zeigt die Ebene auf den Fachdatensatz.\nconst vertriebler = (vQuelle === '*') ? recJ : vertJ;\nconst storeJ      = (sQuelle === '*') ? recJ : {};\nconst storeT      = (sQuelle === '*') ? recT : stoT;\n\nconst RECID = /^rec[A-Za-z0-9]{14}$/;\n\nfunction istRecIds(v) {\n  if (!Array.isArray(v) || v.length === 0) return false;\n  for (let i = 0; i < v.length; i++) {\n    if (typeof v[i] !== 'string' || !RECID.test(v[i])) return false;\n  }\n  return true;\n}\n\nfunction flach(v) {\n  if (v === null || v === undefined) return '';\n  if (Array.isArray(v)) {\n    return v.map(flach).filter(function (x) { return x !== ''; }).join(', ');\n  }\n  if (typeof v === 'object') return v.name || v.text || v.filename || '';\n  if (typeof v === 'boolean') return v ? 'ja' : '';\n  return v;\n}\n\n// Rohwert einer Ebene: JSON bevorzugt, bei Link-Feldern der Klartext.\nfunction ausEbene(fid, json, text) {\n  const j = json ? json[fid] : undefined;\n  if (istRecIds(j)) {\n    const t = text ? text[fid] : undefined;\n    return (t === undefined || t === null || t === '') ? '' : t;\n  }\n  if (j === undefined && text) return text[fid];\n  return j;\n}\n\nfunction roh(token) {\n  if (Object.prototype.hasOwnProperty.call(felder, token)) {\n    return ausEbene(felder[token], recJ, recT);\n  }\n  if (Object.prototype.hasOwnProperty.call(vfelder, token)) {\n    return ausEbene(vfelder[token], vertriebler, {});\n  }\n  if (Object.prototype.hasOwnProperty.call(sfelder, token)) {\n    return ausEbene(sfelder[token], storeJ, storeT);\n  }\n  if (Object.prototype.hasOwnProperty.call(ctx, token)) return ctx[token];\n  return undefined;\n}\n\nfunction istLeer(v) {\n  if (v === null || v === undefined || v === false) return true;\n  if (Array.isArray(v)) return v.length === 0;\n  return String(v).trim() === '';\n}\n\nfunction zahl(v) {\n  const n = Number(flach(v));\n  return isNaN(n) ? null : n;\n}\n\nfunction euro(n) {\n  const s = Math.abs(Number(n)).toFixed(2).split('.');\n  const t = s[0].replace(/\\B(?=(\\d{3})+(?!\\d))/g, '.');\n  return (Number(n) < 0 ? '−' : '') + t + ',' + s[1] + ' €';\n}\n\nfunction esc(s) {\n  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n}\n\n// ── abgeleitete Werte ───────────────────────────────────────────────────\n\nconst vertrieblerName = String(flach(roh('Vertriebler')) || '');\nconst vorname = vertrieblerName.split(' ')[0] || '';\n\nconst storeName  = String(flach(ausEbene(sfelder['Store'], storeJ, storeT)) || '');\nconst placeId    = String(flach(ausEbene(sfelder['⚙ Google Place ID'], storeJ, storeT)) || '');\nconst mapsUrl = placeId || storeName\n  ? ('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(storeName) +\n     '&query_place_id=' + encodeURIComponent(placeId)).replace(/&/g, '&amp;')\n  : '';\n\n// {Saldoabruf}: kein neuer Geldwert, nur der Vergleich zweier gelesener.\n// created  → die Auszahlung steckt noch nicht in »Ausgezahlt«  → Betrag ≥ Offen\n// settled  → sie ist bereits abgezogen                          → Betrag ≥ Offen + Betrag\nlet saldoabruf = '';\nif (saldoModus) {\n  const betrag = zahl(roh('Betrag'));\n  const offen  = zahl(roh('Offen'));\n  if (betrag !== null && offen !== null) {\n    const grenze = (saldoModus === 'settled') ? (offen + betrag) : offen;\n    saldoabruf = (betrag >= grenze - 0.005) ? 'Voller Saldo' : 'Teilbetrag';\n  }\n}\n\nfunction wert(token) {\n  if (token === 'Vorname')    return vorname;\n  if (token === 'Maps-URL')   return mapsUrl;\n  if (token === 'Saldoabruf') return saldoabruf;\n  return flach(roh(token));\n}\n\n// ── Rendern einer Vorlage ───────────────────────────────────────────────\n\nfunction render(vorlage) {\n  if (!vorlage) return '';\n\n  // 1. Zeilen-Modifier {leer FELD} / {gesetzt FELD}\n  const zeilen = String(vorlage).split('\\n');\n  const behalten = [];\n  for (let i = 0; i < zeilen.length; i++) {\n    const m = zeilen[i].match(/^\\{(leer|gesetzt) ([^{}\\n]+)\\}/);\n    if (m) {\n      const leer = istLeer(roh(m[2].trim()));\n      const ok = (m[1] === 'leer') ? leer : !leer;\n      if (!ok) continue;\n      behalten.push(zeilen[i].slice(m[0].length));\n    } else {\n      behalten.push(zeilen[i]);\n    }\n  }\n\n  // 2. Token ersetzen\n  let text = behalten.join('\\n').replace(/\\{([^{}\"\\n]+)\\}/g, function (_, rohToken) {\n    const absolut = rohToken.indexOf('abs ') === 0;\n    const token = absolut ? rohToken.slice(4).trim() : rohToken.trim();\n    let v = wert(token);\n    if (v === '' || v === null || v === undefined) return '';\n    if (token === 'Maps-URL') return v;               // bereits escaped\n    if (geld.indexOf(token) !== -1) {\n      const n = zahl(v);\n      if (n !== null) return esc(euro(absolut ? Math.abs(n) : n));\n    } else if (absolut) {\n      const n = zahl(v);\n      if (n !== null) v = Math.abs(n);\n    }\n    if (/^\\d{4}-\\d{2}-\\d{2}$/.test(String(v))) {\n      const t = String(v).split('-');\n      v = t[2] + '.' + t[1] + '.' + t[0];\n    }\n    return esc(v);\n  });\n\n  // 3. Zeile, die Token trug und deren Token alle leer blieben, faellt weg\n  text = text.split('\\n').filter(function (z, i) {\n    const roh = behalten[i];\n    if (roh === undefined) return true;\n    const hatte = /\\{[^{}\"\\n]+\\}/.test(roh);\n    if (!hatte) return true;\n    return z.replace(/[^\\wÄÖÜäöüß]/g, '') !== roh.replace(/\\{[^{}\"\\n]+\\}/g, '').replace(/[^\\wÄÖÜäöüß]/g, '');\n  }).join('\\n');\n\n  // 4. Leeres Segment entfernt sich samt ' · '\n  text = text.split('\\n').map(function (z) {\n    if (z.indexOf(' · ') === -1) return z;\n    return z.split(' · ').filter(function (s) { return s.trim() !== ''; }).join(' · ');\n  }).join('\\n');\n\n  // 5. Leerzeilen glätten, die durch weggefallene Zeilen entstanden sind\n  text = text.replace(/[ \\t]+$/gm, '').replace(/\\n{3,}/g, '\\n\\n').replace(/^\\n+|\\n+$/g, '');\n\n  // 6. Betreffzeile generell fett — kein Template trägt <b> in Zeile 1\n  const z = text.split('\\n');\n  z[0] = '<b>' + z[0] + '</b>';\n  return z.join('\\n');\n}\n\n// ── Zielangaben ─────────────────────────────────────────────────────────\n\nconst vchat = String(flach(ausEbene(vfelder['⚙ Telegram ID'], vertriebler, {})) || '');\nconst cchat = String(flach(ausEbene(sfelder['⚙ Telegram ID'], storeJ, storeT)) || '');\n\nlet foto = '';\nif (input.foto) {\n  const anhang = recJ[input.foto];\n  if (Array.isArray(anhang) && anhang.length && anhang[0] && anhang[0].url) foto = anhang[0].url;\n}\n\nconst text  = render(input.vorlage);\nconst vtext = render(input.vvorlage);\nconst ctext = render(input.cvorlage);\n\n// Explizite Schaltflaggen statt Leerstring-Vergleichen in den Router-Filtern.\nreturn {\n  text: text, vtext: vtext, ctext: ctext,\n  vchat: vchat, cchat: cchat, foto: foto,\n  ops:        text  ? '1' : '0',\n  vtrb:      (vtext && vchat) ? '1' : '0',\n  city_foto: (ctext && cchat && foto) ? '1' : '0',\n  city_text: (ctext && cchat && !foto) ? '1' : '0'\n};\n"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 450,
+                    "name": "Text bauen"
+                }
+            }
+        },
+        {
+            "id": 3,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 2100,
+                    "y": 450
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 7,
+                            "module": "telegram:SendReplyMessage",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 9134912
+                            },
+                            "filter": {
+                                "name": "Schaltflagge",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{6.result.ops}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "text": "{{6.result.text}}",
+                                "chatId": "-1003918922935",
+                                "parseMode": "HTML",
+                                "replyMarkup": "",
+                                "messageThreadId": "{{2.result.topic}}",
+                                "replyToMessageId": "",
+                                "replyMarkupAssembleType": "reply_markup_enter"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2400,
+                                    "y": 0,
+                                    "name": "→ Operations"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "parseMode": {
+                                            "label": "HTML"
+                                        },
+                                        "disableNotification": {
+                                            "mode": "chose"
+                                        },
+                                        "replyMarkupAssembleType": {
+                                            "label": "Enter the Reply Markup"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            },
+                                            "label": "Telegram Bot · Operations"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "chatId",
+                                        "type": "text",
+                                        "label": "Chat ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "text",
+                                        "type": "text",
+                                        "label": "Text",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "messageThreadId",
+                                        "type": "number",
+                                        "label": "Message Thread ID"
+                                    },
+                                    {
+                                        "name": "parseMode",
+                                        "type": "select",
+                                        "label": "Parse Mode",
+                                        "validate": {
+                                            "enum": [
+                                                "Markdown",
+                                                "HTML"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "disableNotification",
+                                        "type": "boolean",
+                                        "label": "Disable Notifications"
+                                    },
+                                    {
+                                        "name": "disableWebPagePreview",
+                                        "type": "boolean",
+                                        "label": "Disable Link Previews"
+                                    },
+                                    {
+                                        "name": "replyToMessageId",
+                                        "type": "number",
+                                        "label": "Original Message ID"
+                                    },
+                                    {
+                                        "name": "replyMarkupAssembleType",
+                                        "type": "select",
+                                        "label": "Enter/Assemble the Reply Markup Field",
+                                        "validate": {
+                                            "enum": [
+                                                "reply_markup_enter",
+                                                "reply_markup_assemble"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "replyMarkup",
+                                        "type": "text",
+                                        "label": "Reply Markup"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 107,
+                                    "module": "builtin:Break",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "count": "3",
+                                        "retry": true,
+                                        "interval": "15"
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2700,
+                                            "y": 0,
+                                            "name": "Fehler parken (Break)"
+                                        },
+                                        "restore": {
+                                            "retry": {
+                                                "mode": "chose"
+                                            }
+                                        },
+                                        "expect": [
+                                            {
+                                                "name": "retry",
+                                                "type": "boolean",
+                                                "label": "Automatically complete execution",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "count",
+                                                "type": "uinteger",
+                                                "label": "Number of attempts",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "interval",
+                                                "type": "uinteger",
+                                                "label": "Interval between attempts",
+                                                "required": true
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 12,
+                            "module": "telegram:SendReplyMessage",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 9664308
+                            },
+                            "filter": {
+                                "name": "Schaltflagge",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{6.result.vtrb}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "text": "{{6.result.vtext}}",
+                                "chatId": "{{6.result.vchat}}",
+                                "parseMode": "HTML",
+                                "replyMarkup": "",
+                                "messageThreadId": "",
+                                "replyToMessageId": "",
+                                "replyMarkupAssembleType": "reply_markup_enter"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2400,
+                                    "y": 300,
+                                    "name": "→ Vertriebler"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "parseMode": {
+                                            "label": "HTML"
+                                        },
+                                        "disableNotification": {
+                                            "mode": "chose"
+                                        },
+                                        "replyMarkupAssembleType": {
+                                            "label": "Enter the Reply Markup"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            },
+                                            "label": "Telegram Bot · Sales"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "chatId",
+                                        "type": "text",
+                                        "label": "Chat ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "text",
+                                        "type": "text",
+                                        "label": "Text",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "messageThreadId",
+                                        "type": "number",
+                                        "label": "Message Thread ID"
+                                    },
+                                    {
+                                        "name": "parseMode",
+                                        "type": "select",
+                                        "label": "Parse Mode",
+                                        "validate": {
+                                            "enum": [
+                                                "Markdown",
+                                                "HTML"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "disableNotification",
+                                        "type": "boolean",
+                                        "label": "Disable Notifications"
+                                    },
+                                    {
+                                        "name": "disableWebPagePreview",
+                                        "type": "boolean",
+                                        "label": "Disable Link Previews"
+                                    },
+                                    {
+                                        "name": "replyToMessageId",
+                                        "type": "number",
+                                        "label": "Original Message ID"
+                                    },
+                                    {
+                                        "name": "replyMarkupAssembleType",
+                                        "type": "select",
+                                        "label": "Enter/Assemble the Reply Markup Field",
+                                        "validate": {
+                                            "enum": [
+                                                "reply_markup_enter",
+                                                "reply_markup_assemble"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "replyMarkup",
+                                        "type": "text",
+                                        "label": "Reply Markup"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 112,
+                                    "module": "builtin:Break",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "count": "3",
+                                        "retry": true,
+                                        "interval": "15"
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2700,
+                                            "y": 300,
+                                            "name": "Fehler parken (Break)"
+                                        },
+                                        "restore": {
+                                            "retry": {
+                                                "mode": "chose"
+                                            }
+                                        },
+                                        "expect": [
+                                            {
+                                                "name": "retry",
+                                                "type": "boolean",
+                                                "label": "Automatically complete execution",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "count",
+                                                "type": "uinteger",
+                                                "label": "Number of attempts",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "interval",
+                                                "type": "uinteger",
+                                                "label": "Interval between attempts",
+                                                "required": true
+                                            }
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 13,
+                            "module": "telegram:SendPhoto",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 9307335
+                            },
+                            "filter": {
+                                "name": "Schaltflagge",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{6.result.city_foto}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "chatId": "{{6.result.cchat}}",
+                                "caption": "{{6.result.ctext}}",
+                                "httpUrl": "{{6.result.foto}}",
+                                "sendType": "send_byurl",
+                                "parseMode": "HTML",
+                                "contentType": "",
+                                "replyMarkup": "",
+                                "messageThreadId": "",
+                                "replyToMessageId": "",
+                                "disableNotification": false,
+                                "replyMarkupAssembleType": "reply_markup_enter"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2400,
+                                    "y": 600,
+                                    "name": "→ City · Foto"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "sendType": {
+                                            "label": "HTTP URL"
+                                        },
+                                        "parseMode": {
+                                            "label": "HTML"
+                                        },
+                                        "contentType": {
+                                            "mode": "chose",
+                                            "label": "Empty"
+                                        },
+                                        "replyMarkupAssembleType": {
+                                            "label": "Enter the Reply Markup"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            },
+                                            "label": "Telegram Bot · Broadcast"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "chatId",
+                                        "type": "text",
+                                        "label": "Chat ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "messageThreadId",
+                                        "type": "number",
+                                        "label": "Message Thread ID"
+                                    },
+                                    {
+                                        "name": "caption",
+                                        "type": "text",
+                                        "label": "Caption"
+                                    },
+                                    {
+                                        "name": "sendType",
+                                        "type": "select",
+                                        "label": "Send by",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "send_bydata",
+                                                "send_byurl",
+                                                "send_byid"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "parseMode",
+                                        "type": "select",
+                                        "label": "Parse Mode",
+                                        "validate": {
+                                            "enum": [
+                                                "Markdown",
+                                                "HTML"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "disableNotification",
+                                        "type": "boolean",
+                                        "label": "Disable Notifications"
+                                    },
+                                    {
+                                        "name": "replyToMessageId",
+                                        "type": "number",
+                                        "label": "Original Message ID"
+                                    },
+                                    {
+                                        "name": "replyMarkupAssembleType",
+                                        "type": "select",
+                                        "label": "Enter/Assemble the Reply Markup Field",
+                                        "validate": {
+                                            "enum": [
+                                                "reply_markup_enter",
+                                                "reply_markup_assemble"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "contentType",
+                                        "type": "select",
+                                        "label": "Content Type"
+                                    },
+                                    {
+                                        "name": "httpUrl",
+                                        "type": "url",
+                                        "label": "URL",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "replyMarkup",
+                                        "type": "text",
+                                        "label": "Reply Markup"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 113,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2700,
+                                            "y": 600,
+                                            "name": "Broadcast-Fehler ignorieren"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 14,
+                            "module": "telegram:SendReplyMessage",
+                            "version": 1,
+                            "parameters": {
+                                "__IMTCONN__": 9307335
+                            },
+                            "filter": {
+                                "name": "Schaltflagge",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{6.result.city_text}}",
+                                            "b": "1",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "text": "{{6.result.ctext}}",
+                                "chatId": "{{6.result.cchat}}",
+                                "parseMode": "HTML",
+                                "replyMarkup": "",
+                                "messageThreadId": "",
+                                "replyToMessageId": "",
+                                "disableWebPagePreview": true,
+                                "replyMarkupAssembleType": "reply_markup_enter"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 2400,
+                                    "y": 900,
+                                    "name": "→ City · Text"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "parseMode": {
+                                            "label": "HTML"
+                                        },
+                                        "disableNotification": {
+                                            "mode": "chose"
+                                        },
+                                        "replyMarkupAssembleType": {
+                                            "label": "Enter the Reply Markup"
+                                        }
+                                    },
+                                    "parameters": {
+                                        "__IMTCONN__": {
+                                            "data": {
+                                                "scoped": "true",
+                                                "connection": "telegram"
+                                            },
+                                            "label": "Telegram Bot · Broadcast"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "__IMTCONN__",
+                                        "type": "account:telegram",
+                                        "label": "Connection",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "chatId",
+                                        "type": "text",
+                                        "label": "Chat ID",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "text",
+                                        "type": "text",
+                                        "label": "Text",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "messageThreadId",
+                                        "type": "number",
+                                        "label": "Message Thread ID"
+                                    },
+                                    {
+                                        "name": "parseMode",
+                                        "type": "select",
+                                        "label": "Parse Mode",
+                                        "validate": {
+                                            "enum": [
+                                                "Markdown",
+                                                "HTML"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "disableNotification",
+                                        "type": "boolean",
+                                        "label": "Disable Notifications"
+                                    },
+                                    {
+                                        "name": "disableWebPagePreview",
+                                        "type": "boolean",
+                                        "label": "Disable Link Previews"
+                                    },
+                                    {
+                                        "name": "replyToMessageId",
+                                        "type": "number",
+                                        "label": "Original Message ID"
+                                    },
+                                    {
+                                        "name": "replyMarkupAssembleType",
+                                        "type": "select",
+                                        "label": "Enter/Assemble the Reply Markup Field",
+                                        "validate": {
+                                            "enum": [
+                                                "reply_markup_enter",
+                                                "reply_markup_assemble"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "replyMarkup",
+                                        "type": "text",
+                                        "label": "Reply Markup"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 114,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {},
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 2700,
+                                            "y": 900,
+                                            "name": "Broadcast-Fehler ignorieren"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": true,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    },
+    "io": {
+        "input_spec": [
+            {
+                "help": "",
+                "name": "key",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": true,
+                "multiline": false
+            },
+            {
+                "help": "",
+                "name": "id",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": false
+            },
+            {
+                "help": "",
+                "name": "ctx",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": false,
+                "multiline": true
+            }
+        ],
+        "output_spec": []
+    }
+}

@@ -1,53 +1,140 @@
 ---
 name: selectedleafs-pos-operations
+description: >-
+  Mentales Modell und Betriebsmethoden der selectedleafs POS-Operations auf Make + Airtable
+  (Kommissionsware an Kiosk-Partner-Stores). IMMER laden, sobald an POS-Operations gearbeitet
+  wird — Airtable-Base gelesen oder geändert, ein Make-Szenario gebaut/gemappt/gedebuggt, ein
+  Feld oder eine Formel angefasst, eine neue Konditionen-/Kalkulations-Version angelegt, eine
+  Auszahlung oder ein Saldo geprüft. Auch bei reinen Fragen ("warum ist der Saldo so hoch",
+  "rechnet das richtig", "darf ich das Feld umbenennen"). Trigger u.a.: POS Operations,
+  appiIkOaz1ID1FjfE, Umsätze, Lieferungen, Bestandsprüfungen, Auszahlungen, Konditionen,
+  Kalkulationen, Vertriebler, Saldo, Provision, Kostenanteil, Leistungsdatum, Regelbesteuerung,
+  Kleinunternehmer, Belegeingang, Lexware-Sync nach Airtable, 🟣, [Sync]/[Create]/[Process]/
+  [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
+  selectedleafs-pos-operations-v2.
 metadata:
-  version: "5.9.0"
-description: "Konsolidierter Runtime-Skill für die selectedleafs POS-Operations-Agenten (Kommissionsware an Kiosk-Partner-Stores). Bündelt Restock (Protokoll auswerten → Drive → City-Channel), Inventory (Bestandsprotokoll ablegen), Invoice (Provisionsabrechnung), Telegram-Handwerk (Format, Pinned), Store (neuen POS-Partner anlegen + 🎉-Broadcast), Salesperson (neuen Vertriebler anlegen: Lexware-Kontakt + Provisions-Sheet-Kopie + POS-SHEET-Notiz) und ein Werte-Verzeichnis (City→Channel-Map, Drive-Root, Topics). Jeder Agent liest nur seine reference(s); diese SKILL.md ist die Landkarte (Dispatch + Invarianten), die Tiefe steckt in references/. IMMER laden, sobald ein POS-Operations-Agent eine Aufgabe verarbeitet — auch ohne das Wort Skill. Triggers on: pos-restock, pos-store, pos-salesperson, pos-operations, Übergabeprotokoll, Kommissionsware, UL-Nummer; telegram post, City-Channel, restock post, neuer partner post, pinned post; Bestandsprotokoll, Provisionsabrechnung, Vertriebler anlegen, Provisions-Sheet, POS-SHEET."
+  version: "1.1.0"
 ---
 
-# selectedleafs POS-Operations — Router
+# selectedleafs · POS Operations
 
-Landkarte für die POS-Operations-Agenten. Diese Datei **dispatcht** und hält die domänenübergreifenden **Invarianten** — sie trägt **keine** Domänen-Prozedur. Die operative Tiefe steckt in `references/`. Jeder Agent liest **nur die reference(s) seiner Domäne** (Allowlist), plus `registry.md` für statische Werte. Das **Telegram-Post-Handwerk** ist nach seiner Natur aufgeteilt: die geteilte **Nachrichten-Konvention** (Emoji-Semantik, Format-Klassen, `parse_mode`/Escaping) steht als **Invariante 6** unten — sie gilt für jeden Post und lebt deshalb nicht bei einem einzelnen Agenten; die konkreten **Post-Templates** liegen bei der erzeugenden Domäne (📦/🌿 in `restock.md`, 🎉 in `store.md`); das **Channel-Lifecycle** (Kanal live schalten, Pinned, Launch, Legal — ein rein manueller Schritt) liegt als Runbook in `city.md`. Ein separates `telegram.md` gibt es nicht mehr (in 5.8.0 aufgelöst).
+Das Betriebssystem hinter der **Kommissionsware an Kiosk-Partner-Stores**: Vertriebler beliefern Stores, selectedleafs rechnet ab, alles läuft über **Make + Airtable**. Diese Datei ist die **Landkarte** — sie reicht für die meisten Fragen allein. Tiefe steckt in `references/`, exakte Feld-/Szenario-Fakten in den generierten Assets.
 
-## Dispatch — welche reference?
+> **Leitplanken (gelten überall):**
+> 1. **Drift-Firewall.** Diese Datei und die references tragen **Muster + „wo live nachsehen"**, nie eine `fld…`-ID oder Formel **als Fakt**. Volatile Fakten leben in datierten, generierten Blöcken (`airtable/…`-Feld-Block, `blueprints/`) mit „verify-live"-Kopf. **Im Zweifel gewinnt die Base / das Live-Szenario.**
+> 2. **Ein Fakt, ein Zuhause.** Rechenformel nur in der Tabellen-Datei, hier nur das Muster · Szenario-Innereien nur in `blueprints/` · Meldetexte nur im Nachrichtenkatalog.
+> 3. **Vertrag statt Innereien.** Szenarien über Aufgabe/Trigger/r-w-Felder/Notify-Keys, nicht Modul-für-Modul.
 
-| Sub-Task / Auslöser | reference |
+---
+
+## Die sechs Layer — wer schreibt was
+
+Ein Beleg wandert von der Post bis zum Saldo durch sechs Systeme. Jedes hat **eine** Rolle:
+
+| Layer | Rolle | schreibt |
+|---|---|---|
+| **JTL** | Warenwirtschaft (Quelle der Ausgangsrechnung) | — (Quelle) |
+| **Mail-Ingress** (Proton / JTL) | Belege kommen per Mail herein | — (Transport) |
+| **Lexware** | Buchhaltung, Belege, Zahlstatus; Vertriebler = **Kreditor/Lieferant** | Belege, Zahlungen |
+| **Shopify** | Store-/Produkt-Layer (`liftr_store`-Metaobjekt) | Store-/Produktstamm |
+| **Airtable** `appiIkOaz1ID1FjfE` | **Single Source of Truth** | — (Formeln rechnen hier) |
+| **Make** (Team 2174024) | **Orchestrierung** | **nur Rohdaten + Links**, nie berechnete Geldwerte |
+| **Telegram** | Ausgabe an Operations / Vertriebler / Öffentlichkeit | — (Ausgabe) |
+
+Merksatz: **Airtable ist die Wahrheit, Make ist der Schreiber, die Formeln sind der Rechner.** Wer diese Trennung verletzt (Make schreibt einen Geldwert), bricht das Modell. → `references/model.md`
+
+---
+
+## Die drei Freeze-Invarianten
+
+Der Grund, warum Historie verlässlich bleibt. **Strukturell nicht erzwungen** — getragen von Disziplin und Wächter-Views:
+
+1. **Versionen sind append-only.** `Konditionen` und `Kalkulationen` werden nie editiert, nur neu versioniert (`Gültig ab`). Wer eine alte Version ändert, verschiebt rückwirkend Geld — spurlos.
+2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Auszahlungen` nur ein, ändert nie. **Einziger definierter Sonderfall:** der Zahlungseingang setzt einen Status (jetzt über `[Sync] Lexware Payments`).
+3. **🟣-Felder sind unantastbar.** Alles mit 🟣 gehört Make/den Formeln, nicht der Hand.
+
+→ `references/operations.md` (Wächter-Views, ein Bearbeiter, keine Testbase)
+
+---
+
+## Wie Geld entsteht
+
+Zwei Geldwerte, an **zwei verschiedenen** Tabellen — das ist die Stelle, an der man sich am leichtesten irrt:
+
+- **Kostenanteil** sitzt auf **`Lieferungen`** und wird **bei der Lieferung** abgezogen (der Vertriebler trägt seinen fairen Anteil an den Warenkosten).
+- **Provision** sitzt auf **`Umsätzen`** und wird **bei der Zahlung** gutgeschrieben (Provision auf den bezahlten Store-Umsatz).
+- Daraus: **`Saldo = ⚙ Realprovision − Kostenanteil`**, **`Offen = Saldo − Ausgezahlt`**. Der Saldo nutzt **Realprovision** (Provision auf den *bezahlten* Betrag), nicht die nominale Provision; `Ausgezahlt` = Σ `Auszahlungen.Bezahlt`.
+- Alles **brutto gegen brutto** (0 % bei Kleinunternehmern, sonst latente Fehler).
+- **250 € ist Betriebs-Policy, kein System-Gate.** Es gibt keine „Auszahlung möglich"-Meldung; die Schwelle steht nur in der Onboarding-Kommunikation.
+
+Die konkreten Formeln stehen **nicht hier**, sondern in der jeweiligen Tabellen-Datei (`references/airtable/lieferungen.md`, `…/umsaetze.md`, `…/vertriebler.md`) — dort live geprüft.
+
+---
+
+## Ereignis → Positionen, und die 🟣-Konvention
+
+Jede Geschäftshandlung ist eine **Haupttabelle mit Positions-Kindtabelle**. Die Ereignis-Trias:
+
+**`Lieferungen` · `Bestandsprüfungen` · `Umsätze`** (+ `Auszahlungen`) — je mit Positionszeilen darunter.
+
+**🟣** markiert Felder/Tabellen, die Make auflöst oder per Name matched. Drei Bruchmodi, nach Sichtbarkeit:
+
+| Änderung | Symptom |
 |---|---|
-| Übergabeprotokoll/Lieferschein auswerten, Store/Stadt/Sorten ableiten, neu vs. aufgefüllt, PDF komprimieren + in Drive ablegen, 📦/🌿 in den City-Channel posten (Channel-Ziel aus `registry.md`, kein `telegram.md`-Load nötig) | `references/restock.md` |
-| Statische Werte nachschlagen: City→Channel-Map (direkter Lookup, kein Override-Mechanismus), Drive-Root-`parentFolderId`, Operations-`chat_id`/Topic, (später) Sheet-IDs | `references/registry.md` |
-| Bestandsprotokoll ablegen — Store-Match (Name → Metaobjekt) + Datum lesen, **ohne** Sorten-Parsing/Write-back/Post | `references/inventory.md` |
-| Provisionsabrechnung POS-Partner (Lexware → Vertriebler-Sheet), Rechnung-Insert, paid-Status-Update | `references/invoice.md` |
-| Neuen POS-Partner anlegen (headless One-Shot: Shopify `liftr_store` + ggf. `liftr_district`, Lexware-Kontakt + `POS-PARTNER`-Notiz, Provisionszeile im Vertriebler-Sheet, 2 Drive-Ordner; Teaser-Bild aus Telegram-Upload → Shopify Files; Status/Rückfrage ins Operations-Topic) **plus** einmaliger 🎉-„Neuer Partner"-Broadcast in den City-Channel (§8.5, nur CREATE-Zweig, best-effort; Channel-Lookup aus `registry.md` §1) | `references/store.md` |
-| Neue Stadt onboarden + City-Channel live schalten — **manuelles Runbook** (kein Agent; `store.md` §5.1 läuft für die erste Stadt fail-closed): Channel-Setup, Pinned, Launch-Post, Legal-Anker | `references/city.md` |
-| Neuen Vertriebler anlegen (dialog-initiiert: Lexware-Kontakt als **Lieferant** + eigener Vertriebler-Ordner `<Nachname>, <Vorname>` mit Sheet-Kopie `Provision · <Nachname> · <Jahr>` + `POS-SHEET`-Notiz + Stammdaten Name/Jahr/Besteuerung + optionale Ordner-Freigabe an die E-Mail; damit ohne Skill-Bump für Bridge und alle POS-Agenten sichtbar, `registry.md` §4) | `references/salesperson.md` |
-| Jahres-Rollover **aller** Vertriebler (cron-getrieben, Jahreswechsel): pro Vertriebler leere Vorlage kopieren → Stammdaten (`Name`/`Jahr`/`Besteuerung`, letztere aus dem Alt-Sheet) + aktuelle Stores (Lexware-`POS-PARTNER`-Enumeration → `Stores!B`) befüllen → `POS-SHEET`-Marker zuletzt umsetzen; altes Sheet bleibt Archiv (`registry.md` §2/§4) | `references/rollover.md` |
+| Feld/Tabelle **umbenannt** | **laut** — 422, `filterByFormula`/Token brechen sofort |
+| **Wert/Option** einer Auswahl geändert | **still** — Match schlägt fehl, kein Fehler |
+| **Bedeutung** eines Feldes gewandert | **unsichtbar** — rechnet falsch weiter |
 
-Die Post-Templates der Restock-Domäne (📦/🌿) liegen **in** `restock.md`, der 🎉-Broadcast **in** `store.md` — jede Kette kommt ohne Sprung in eine fremde reference aus; die geteilte Nachrichten-Grammatik dafür steht in Invariante 6. City→Channel ist ein direkter Lookup in `registry.md` — kein Ableitungsmechanismus, kein Override, da Test- und Prod-Agenten getrennte System-Prompts/Configs fahren (`global-agent-framework`), nicht einen geteilten Per-Run-Schalter. references referenzieren einander **nicht** quer — wer eine Domäne fährt, kommt mit seiner reference (+ `registry.md`) aus. `city.md` ist die Ausnahme im Sinne von: es ist ein **manuelles** Runbook, das kein laufender Agent lädt, sondern ein Mensch beim City-Onboarding.
+→ `references/model.md` (Tabellenrollen, 🟣 im Detail) · `references/tools.md` (die Fallen der Werkzeuge)
 
-## Universelle Invarianten (für alle Domänen)
+---
 
-Diese sechs Grundsätze gelten domänenübergreifend; die Domänen-references konkretisieren sie, widersprechen ihnen aber nie:
+## Datum ist money-critical
 
-1. **Idempotenz-Grundsatz — jede Einheit genau einmal.** Vor Posten/Ablegen/Schreiben prüfen, ob die Einheit (Protokoll, Beleg, Partner) schon verarbeitet wurde, und bei Treffer abbrechen. Der **Idempotenz-Schlüssel ist deterministisch aus stabiler Quelle** (z. B. Protokollnummer), nie aus volatilem/geratenem Input. Drive/Ziel ist die Quelle der Wahrheit — kein externer State nötig (web-only-tauglich).
-2. **IDs aus Registry oder Webhook — nie raten.** Statische Ziele (Channel, Drive-Root, Operations-Chat) kommen aus `registry.md` bzw. der Agent-Config; lauf-spezifische IDs (`file_id`, per-Lauf `chat_id`) aus der Webhook-Injektion. Ist eine ID nicht eindeutig auflösbar → **nicht öffentlich raten**, sondern still abbrechen + Rückfrage in den Operations-Chat (Mensch-im-Loop-Ersatz).
-3. **Append-only bei kuratierten Listen.** Schreibseitige Mutationen an Sortiments-/Listendaten (`product_list` etc.) **nur anhängen, nie entfernen**, idempotent (kein Doppel-Eintrag, kein Clobbern bestehender Werte). Löschen/Auslisten bleibt manueller Menschen-Job.
-4. **Kein Chip-Spaltentyp auf Spalten, die ein Agent liest oder schreibt.** Eine native Sheets-Table-Spalte mit `columnType` `PLACE_CHIP`, `FILES_CHIP`, `PEOPLE_CHIP` o. ä. liefert über die Values-API einen **leeren Wert** — kein Fehler, kein Hinweis, der Agent liest still Nichts und schreibt still ins Leere. Chips sind ein reines UI-Feature. Jede Spalte, die in einer Agenten-Kette vorkommt (Key, Match-Spalte, Wertespalte), bleibt ein einfacher Typ. Aufgefallen an `Stores!C` (`PLACE_CHIP`); der Duplikat-Check auf `Stores!B` war nie betroffen, jede künftige Logik auf `C` wäre es gewesen. **Chip-*Inhalt* ≠ Chip-*Spaltentyp*:** einen Rich-Link-Chip per `update_cells_chips` in eine **Nicht-Chip-Spalte** zu schreiben ist erlaubt, solange **kein** Agent die Zelle per Values-API liest und die Rück-Lesung über `get_range_chips` läuft — so setzt `store.md` §8.4 die Protokoll-Ordner-Chips (E/F, rein menschlich). Verboten bleibt allein der Chip-Spalten*typ* auf Lese-/Match-/Key-Spalten.
-5. **Lexware-`note`-Marker sind zeilen-gebunden — eine Zeile je Marker, so lesen UND schreiben.** Die `note` eines Kontakts ist **ein** menschlich sichtbares Freitextfeld und trägt seit `POS-TG` **mehrere** Marker gleichzeitig (Vertriebler-Kontakt: `POS-SHEET` **und** `POS-TG`). **Lesen** extrahiert den Wert der eigenen Marker-Zeile (getrimmter Rest **dieser** Zeile, nie „alles nach dem ersten Doppelpunkt"); **Schreiben** ändert nur die eigene Zeile und lässt jeden anderen Marker unangetastet (read-modify-write, zeilen-gebundene Regex, kein Dotall, nie die ganze `note` neu setzen). Ein Verstoß läuft **still** in die falsche (geld­relevante) Sheet-ID oder löscht `POS-TG` — gleiche Klasse wie Invariante 4. Vollständige Definition + Lifecycle: `registry.md` §4.
+Versioniert wird **ereignisbasiert**: die jüngste Version mit `Gültig ab ≤ Leistungsdatum` gewinnt. Das **Leistungsdatum ≠ Run-Zeitpunkt** — bei rückdatierten Rechnungen fallen sie auseinander, und genau dann muss die richtige (alte) Kondition greifen. Datum-Fallstricke (ISO+Zeitzone = Vortag · EU-`D/M/JJJJ`-Lesefalle · `cellFormat=string`) → `references/model.md`.
 
-6. **Telegram-Posts folgen einer geteilten Konvention — Emoji trägt den Ausgang, nicht den Typ.** Jeder Post (interner Status **und** öffentlicher Broadcast) folgt derselben Grammatik; die konkreten Zeilen leben in der §Status-Sektion der jeweiligen Domänen-reference, die **Regeln** hier.
+---
 
-   **Emoji-Präfix = Ausgang, genau vier, trennscharf:**
-   | Emoji | Bedeutung | Regel |
-   |---|---|---|
-   | ✅ | Erfolg | Einheit verarbeitet / Batch ohne Ausnahmen |
-   | ℹ️ | No-op | Idempotenz-Treffer, nichts zu tun, **kein** Problem |
-   | ⚠️ | Aufmerksamkeit nötig | Lauf lief, aber ein **Mensch muss ran** (Mehrdeutigkeit, Jahr-Mismatch, Dublette prüfen, fehlendes Pflicht-/Input-Feld) |
-   | ❌ | Technischer Fehlschlag | Tool/Netz/Upload kaputt, **Re-Run/Wiederholung** ist die Antwort (kein Datenproblem) |
+## Die Szenario-Achse
 
-   Der **Lauf-Typ** (Backstop, Rollover, Sync, Restock …) steht im **Titel-Text**, nie im Emoji — deshalb kein Sonder-Emoji wie `♻️`/`↩︎` mehr. Broadcast-Anker sind separat und typ-tragend: 📦 Restock · 🌿 Neue Sorte · 🎉 Neuer Partner · 🕒 Öffnungszeiten (diese stehen in der Broadcast-Zeile, nicht als Status-Ausgang).
+Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach dem Auslöser):
 
-   **Zwei Format-Klassen:**
-   - **Single-Unit** (restock, inventory, invoice-Event, store, salesperson) — genau **eine** Zeile pro Lauf: `{emoji} {Schlüssel} — {Entität}: {Ergebnis}.` Der Schlüssel (`UL-…`, `RG-…`, Datum, Name) steht in `<code>`.
-   - **Batch** (rollover, invoice-Backstop) — **report-by-exception**: fette Kopfzeile mit Aggregat + Zählerzeile (die aufgehen **muss**: Summe = geprüfte Einheiten, das ist der Detektor gegen still fehlgezählte Einheiten), dann **nur** die Ausnahmen (⚠️/❌) einzeln — **je mit Grund**, nie nackt. Erfolge werden **nicht** einzeln gelistet. Kappung bei Masse: erste ~15 Ausnahmen, dann „…und {N} weitere" (Telegram-Limit 4096 Zeichen). Batch-Kopf führt mit ✅ (0 Ausnahmen) bzw. ⚠️ (Ausnahmen > 0) bzw. ❌ (Lauf gar nicht angelaufen).
+`[Sync]` · `[Create]` · `[Process]` · `[Dispatch]` · `[Notify]` · `[Maintain]` — `[Report]` reserviert, `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
 
-   **Mechanik (jeder Post):** `parse_mode = HTML`. **Jeder** interpolierte dynamische Wert (Store-/Kontaktname, Adresse, `<konkreter Fehler>`) wird escaped: `&`→`&amp;`, `<`→`&lt;`, `>`→`&gt;` — sonst bricht ein Name mit `&` die Nachricht still. Fett via `<b>…</b>`, Schlüssel/IDs via `<code>…</code>`. Ein **fehlgeschlagener** Status-Post darf den Lauf **nicht** kippen (best-effort). General-Topic wird durch **Weglassen** von `message_thread_id` adressiert (`message_thread_id: 1` wird als „thread not found" abgelehnt).
+**Dispatch — welche reference wofür:**
+
+| Wenn du … | lies |
+|---|---|
+| die Base liest/änderst, ein Feld/eine Formel anfasst | `references/model.md` + die passende `references/airtable/<tabelle>.md` |
+| ein Szenario baust/mappst/debuggst | `references/scenarios.md` (Vertrag) + `assets/blueprints/<szenario>.json` |
+| eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) |
+| an Airtable-/Make-MCP-Eigenheiten scheiterst | `references/tools.md` |
+| Idempotenz, Fehlerpfad, Registry, Wächter brauchst | `references/operations.md` |
+
+---
+
+## Annahmen (falsifizierbar — Signal, wann sie kippen)
+
+- **Airtable = SSoT, Live gewinnt.** *Bricht, wenn* ein Szenario einen Geldwert schreibt, der nicht aus einer Airtable-Formel/einem Rollup kommt.
+- **Der Nachrichtenkatalog ist die Text-SSoT.** *Bricht, wenn* ein Notify-Modul einen Inline-Text trägt, der nicht im Katalog steht.
+- **Ein menschlicher Bearbeiter.** Die Freeze-Invarianten sind nur disziplin-getragen. *Bricht, wenn* ein zweiter Schreiber Zugriff auf Versions-/Ereignistabellen bekommt.
+
+---
+
+## Harte Verbote
+
+- **Make schreibt nie einen berechneten Geldwert** — nur Rohdaten + Links.
+- **🟣-Felder nie von Hand anfassen.**
+- **Keine Testbase.** Es gibt nur die Produktivbase.
+- **Altstand-Base `appAFFDgesKLltBtd` nie anfassen** (eingefroren).
+- **Keine volatile `fld…`-ID/Formel als Fakt in Prosa** (Drift-Firewall).
+
+---
+
+## Verzeichnis
+
+**`references/`** — `model.md` (Datenmodell, Geld, Versionierung, Datum, Steuer) · `scenarios.md` (Szenario-Verträge + Topologie) · `notify.md` (Telegram-Grammatik, drei Channels, Renderer-Kontrakt, City-Anker) · `tools.md` (Airtable-/Make-MCP-Fallen; Generisches → `global-make-conventions`) · `operations.md` (Idempotenz, Fehlerkonvention, Registry, Wächter-Views) · **`airtable/<tabelle>.md`** (je Tabelle: Zweck · Beziehungen · tragende Felder + datierter Feld-Block).
+
+**`assets/`** — `catalog.md` (Nachrichtenkatalog) · `blueprints/` (JSON je Szenario) · `diagrams/` (`messages.html`, `er.html`, `topology.html` — datierte Review-Artefakte) · `examples/` (echte Belege).
+
+**Abgrenzung:** Shopify-Theme → `liftr-*` · City-Marketing/Brand → `selectedleafs-city-content`/`-brand` · generische Make-Mechanik → `global-make-conventions` · Build-Time-Agenten → `global-agent-framework`.
