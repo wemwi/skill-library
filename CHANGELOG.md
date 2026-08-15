@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.20.0](https://github.com/wemwi/skill-library/compare/v5.19.0...v5.20.0) (2026-08-15)
+
+
+### Features
+
+* **pos-operations:** Make+Airtable-Generation mit 16 Blueprint-Assets ([#166](https://github.com/wemwi/skill-library/issues/166)) ([f83b72d](https://github.com/wemwi/skill-library/commit/f83b72df41fa985a928e79b8e298fa322cba010e))
+
 ## [5.19.0](https://github.com/wemwi/skill-library/compare/v5.18.0...v5.19.0) (2026-08-14)
 
 
