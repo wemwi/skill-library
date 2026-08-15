@@ -1,0 +1,2494 @@
+{
+    "name": "[Process] Invoice (Store)",
+    "flow": [
+        {
+            "id": 5,
+            "module": "scenario-service:StartSubscenario",
+            "version": 2,
+            "parameters": {},
+            "mapper": {},
+            "metadata": {
+                "designer": {
+                    "x": 0,
+                    "y": 1650,
+                    "name": "Dispatcher call"
+                },
+                "interface": [
+                    {
+                        "help": "",
+                        "name": "resource_id",
+                        "type": "text",
+                        "label": "",
+                        "default": "",
+                        "required": true,
+                        "multiline": false
+                    }
+                ]
+            }
+        },
+        {
+            "id": 6,
+            "module": "lexoffice:makeApiCall",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 9184916
+            },
+            "mapper": {
+                "url": "/v1/vouchers/{{5.resource_id}}",
+                "method": "GET",
+                "headers": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 300,
+                    "y": 1650,
+                    "name": "GET voucher"
+                }
+            }
+        },
+        {
+            "id": 101,
+            "module": "util:FunctionSleep",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "duration": "2"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 600,
+                    "y": 1650
+                },
+                "restore": {},
+                "expect": [
+                    {
+                        "name": "duration",
+                        "type": "uinteger",
+                        "label": "Delay",
+                        "required": true,
+                        "validate": {
+                            "max": 300,
+                            "min": 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": 12,
+            "module": "mcp-client:CallTool",
+            "version": 1,
+            "parameters": {
+                "account": 9157872
+            },
+            "filter": {
+                "name": "Kein Entwurf",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{6.body.voucherStatus}}",
+                            "b": "draft",
+                            "o": "text:notequal"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "toolName": "extract_voucher_positions",
+                "arguments": {
+                    "id": "{{5.resource_id}}"
+                }
+            },
+            "metadata": {
+                "designer": {
+                    "x": 900,
+                    "y": 1650,
+                    "name": "extract_voucher_positions"
+                }
+            }
+        },
+        {
+            "id": 103,
+            "module": "util:FunctionSleep",
+            "version": 1,
+            "parameters": {},
+            "mapper": {
+                "duration": "2"
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1200,
+                    "y": 1650
+                },
+                "restore": {},
+                "expect": [
+                    {
+                        "name": "duration",
+                        "type": "uinteger",
+                        "label": "Delay",
+                        "required": true,
+                        "validate": {
+                            "max": 300,
+                            "min": 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": 100,
+            "module": "lexoffice:makeApiCall",
+            "version": 1,
+            "parameters": {
+                "__IMTCONN__": 9184916
+            },
+            "mapper": {
+                "url": "/v1/payments/{{5.resource_id}}",
+                "method": "GET",
+                "headers": [
+                    {
+                        "key": "Accept",
+                        "value": "application/json"
+                    }
+                ]
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1500,
+                    "y": 1650,
+                    "name": "GET payments (Ausbuchung erkennen)"
+                }
+            }
+        },
+        {
+            "id": 7,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "mapper": {
+                "base": "appiIkOaz1ID1FjfE",
+                "table": "tblfB5nsTSOXrUK1q",
+                "formula": "{⚙ Lexware ID} = \"{{6.body.contactId}}\"",
+                "maxRecords": 1,
+                "useColumnId": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 1800,
+                    "y": 1650,
+                    "name": "Store (by Lexware ID)"
+                }
+            }
+        },
+        {
+            "id": 50,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "filter": {
+                "name": "Store-Treffer",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{7.id}}",
+                            "o": "exist"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "base": "appiIkOaz1ID1FjfE",
+                "table": "tbl0ijvzkD7LH2XMM",
+                "formula": "LOWER(TRIM({Name})) = LOWER(TRIM(\"{{12.parsedResult.partner}}\"))",
+                "maxRecords": 1,
+                "useColumnId": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2100,
+                    "y": 1650,
+                    "name": "Vertriebler (by Name)"
+                }
+            }
+        },
+        {
+            "id": 8,
+            "module": "airtable:ActionSearchRecords",
+            "version": 3,
+            "parameters": {
+                "__IMTCONN__": 9136634
+            },
+            "filter": {
+                "name": "Vertriebler-Treffer",
+                "conditions": [
+                    [
+                        {
+                            "a": "{{50.id}}",
+                            "o": "exist"
+                        }
+                    ]
+                ]
+            },
+            "mapper": {
+                "base": "appiIkOaz1ID1FjfE",
+                "table": "tbl0Xqw2eK7KPVVWY",
+                "formula": "{ID} = \"{{6.body.voucherNumber}}\"",
+                "maxRecords": 1,
+                "useColumnId": true
+            },
+            "metadata": {
+                "designer": {
+                    "x": 2400,
+                    "y": 1650,
+                    "name": "Umsatz existiert?"
+                }
+            }
+        },
+        {
+            "id": 90,
+            "module": "builtin:BasicRouter",
+            "version": 1,
+            "mapper": null,
+            "metadata": {
+                "designer": {
+                    "x": 2700,
+                    "y": 1650
+                }
+            },
+            "routes": [
+                {
+                    "flow": [
+                        {
+                            "id": 40,
+                            "module": "builtin:BasicIfElse",
+                            "version": 1,
+                            "mapper": null,
+                            "metadata": {
+                                "designer": {
+                                    "x": 3000,
+                                    "y": 750
+                                }
+                            },
+                            "branches": [
+                                {
+                                    "merge": false,
+                                    "label": "Neu (Insert)",
+                                    "type": "condition",
+                                    "flow": [
+                                        {
+                                            "id": 11,
+                                            "module": "airtable:ActionSearchRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "mapper": {
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "sort": [
+                                                    {
+                                                        "field": "Gültig ab",
+                                                        "direction": "desc"
+                                                    }
+                                                ],
+                                                "table": "tblFDfn7qyO8criBa",
+                                                "formula": "AND({Gültig für} = \"{{if(length(ifempty(50.fldF4idsFUiCgAX1A; emptystring)) = 0; \"Kleinunternehmer\"; if(parseNumber(replace(substring(6.body.voucherDate; 0; 10); \"/-/g\"; \"\")) >= parseNumber(formatDate(50.fldF4idsFUiCgAX1A; \"YYYYMMDD\")); \"Regelbesteuerung\"; \"Kleinunternehmer\"))}}\", {Gültig ab} <= \"{{substring(6.body.voucherDate; 0; 10)}}\")",
+                                                "maxRecords": 1,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 3300,
+                                                    "y": 600,
+                                                    "name": "Konditionen (Besteuerung + eff-dated)"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "id": 18,
+                                            "module": "builtin:BasicIfElse",
+                                            "version": 1,
+                                            "mapper": null,
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 3600,
+                                                    "y": 600
+                                                }
+                                            },
+                                            "branches": [
+                                                {
+                                                    "merge": false,
+                                                    "label": "Konditionen gefunden",
+                                                    "type": "condition",
+                                                    "flow": [
+                                                        {
+                                                            "id": 13,
+                                                            "module": "airtable:ActionCreateRecord",
+                                                            "version": 3,
+                                                            "parameters": {
+                                                                "__IMTCONN__": 9136634
+                                                            },
+                                                            "mapper": {
+                                                                "base": "appiIkOaz1ID1FjfE",
+                                                                "table": "tbl0Xqw2eK7KPVVWY",
+                                                                "record": {
+                                                                    "fldBavq4sjk2A1swZ": "{{if(6.body.voucherStatus = \"voided\"; \"Storniert\"; if(6.body.voucherStatus = \"paid\"; if(contains(map(100.body.paymentItems; \"paymentItemType\"); \"irrecoverableReceivable\"); \"Ausgebucht\"; \"Bezahlt\"); if(6.body.voucherStatus = \"paidoff\"; if(contains(map(100.body.paymentItems; \"paymentItemType\"); \"irrecoverableReceivable\"); \"Ausgebucht\"; \"Bezahlt\"); \"Offen\")))}}",
+                                                                    "fldTobkViXGCZIQeF": [
+                                                                        "{{50.id}}"
+                                                                    ],
+                                                                    "fldUQQ1FP5N7pRoX9": [
+                                                                        "{{7.id}}"
+                                                                    ],
+                                                                    "flda4tTUPnyeuQbDP": "{{6.body.voucherNumber}}",
+                                                                    "fldj7QHDMWnFxSTZn": "{{ifempty(substring(6.body.dueDate; 0; 10); substring(6.body.voucherDate; 0; 10))}}",
+                                                                    "fldmJIe1HsS2AbhEq": [
+                                                                        "{{11.id}}"
+                                                                    ]
+                                                                },
+                                                                "typecast": false,
+                                                                "useColumnId": true
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 3900,
+                                                                    "y": 450,
+                                                                    "name": "Umsatz anlegen"
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": 201,
+                                                            "module": "scenario-service:CallSubscenario",
+                                                            "version": 2,
+                                                            "parameters": {
+                                                                "scenario": "SCN_6862968",
+                                                                "shouldWaitForExecutionEnd": false
+                                                            },
+                                                            "mapper": {
+                                                                "data": {
+                                                                    "id": "{{13.id}}",
+                                                                    "key": "invoice.created"
+                                                                }
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 4200,
+                                                                    "y": 450,
+                                                                    "name": "Call: invoice.created"
+                                                                },
+                                                                "restore": {
+                                                                    "parameters": {
+                                                                        "scenario": {
+                                                                            "label": "[Dispatch] Telegram Notifications"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "parameters": [
+                                                                    {
+                                                                        "name": "scenario",
+                                                                        "type": "scenario",
+                                                                        "label": "Scenario",
+                                                                        "required": true
+                                                                    },
+                                                                    {
+                                                                        "name": "shouldWaitForExecutionEnd",
+                                                                        "type": "boolean",
+                                                                        "label": "Wait for the scenario to finish",
+                                                                        "required": true
+                                                                    }
+                                                                ],
+                                                                "expect": [
+                                                                    {
+                                                                        "name": "data",
+                                                                        "spec": [
+                                                                            {
+                                                                                "name": "key",
+                                                                                "type": "text",
+                                                                                "label": "",
+                                                                                "required": true,
+                                                                                "multiline": false
+                                                                            },
+                                                                            {
+                                                                                "name": "id",
+                                                                                "type": "text",
+                                                                                "label": "",
+                                                                                "required": false,
+                                                                                "multiline": false
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Scenario Inputs"
+                                                                    }
+                                                                ],
+                                                                "interface": [
+                                                                    {
+                                                                        "name": "executionId",
+                                                                        "type": "text",
+                                                                        "label": "Execution ID"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "onerror": [
+                                                                {
+                                                                    "id": 209,
+                                                                    "module": "builtin:Resume",
+                                                                    "version": 1,
+                                                                    "parameters": {},
+                                                                    "mapper": {
+                                                                        "output": ""
+                                                                    },
+                                                                    "metadata": {
+                                                                        "designer": {
+                                                                            "x": 4500,
+                                                                            "y": 900,
+                                                                            "name": "Fehler übergehen"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "id": 64,
+                                                            "module": "airtable:ActionCreateRecord",
+                                                            "version": 3,
+                                                            "parameters": {
+                                                                "__IMTCONN__": 9136634
+                                                            },
+                                                            "mapper": {
+                                                                "base": "appiIkOaz1ID1FjfE",
+                                                                "table": "tbld7UQwDBbq9A8Xk",
+                                                                "record": {
+                                                                    "fldI5lU4NQ7ymG4d0": [
+                                                                        "{{13.id}}"
+                                                                    ],
+                                                                    "fldKSqryQHeRzUCMd": "Ausgangsrechnung",
+                                                                    "fldPoeEx87w0wF8w9": "{{substring(6.body.voucherDate; 0; 10)}}"
+                                                                },
+                                                                "typecast": false,
+                                                                "useColumnId": true
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 4500,
+                                                                    "y": 300,
+                                                                    "name": "Beleg anlegen"
+                                                                },
+                                                                "restore": {
+                                                                    "expect": {
+                                                                        "base": {
+                                                                            "label": "POS Operations"
+                                                                        },
+                                                                        "table": {
+                                                                            "label": "Belege",
+                                                                            "nested": [
+                                                                                {
+                                                                                    "name": "record",
+                                                                                    "spec": [
+                                                                                        {
+                                                                                            "name": "fldPoeEx87w0wF8w9",
+                                                                                            "time": false,
+                                                                                            "type": "date",
+                                                                                            "label": "Datum"
+                                                                                        },
+                                                                                        {
+                                                                                            "mode": "edit",
+                                                                                            "name": "fldKSqryQHeRzUCMd",
+                                                                                            "type": "select",
+                                                                                            "label": "Belegtyp",
+                                                                                            "dynamic": true,
+                                                                                            "options": [
+                                                                                                {
+                                                                                                    "label": "Unbekannt",
+                                                                                                    "value": "Unbekannt"
+                                                                                                },
+                                                                                                {
+                                                                                                    "label": "Bestandsprotokoll",
+                                                                                                    "value": "Bestandsprotokoll"
+                                                                                                },
+                                                                                                {
+                                                                                                    "label": "Rückholprotokoll",
+                                                                                                    "value": "Rückholprotokoll"
+                                                                                                },
+                                                                                                {
+                                                                                                    "label": "Übergabeprotokoll",
+                                                                                                    "value": "Übergabeprotokoll"
+                                                                                                },
+                                                                                                {
+                                                                                                    "label": "Eingangsrechnung",
+                                                                                                    "value": "Eingangsrechnung"
+                                                                                                },
+                                                                                                {
+                                                                                                    "label": "Ausgangsrechnung",
+                                                                                                    "value": "Ausgangsrechnung"
+                                                                                                },
+                                                                                                {
+                                                                                                    "label": "Zahlungserinnerung",
+                                                                                                    "value": "Zahlungserinnerung"
+                                                                                                },
+                                                                                                {
+                                                                                                    "label": "Mahnung",
+                                                                                                    "value": "Mahnung"
+                                                                                                }
+                                                                                            ],
+                                                                                            "validate": false
+                                                                                        },
+                                                                                        {
+                                                                                            "name": "fldd3wi6dceGmnppx",
+                                                                                            "spec": [
+                                                                                                {
+                                                                                                    "help": "Airtable will download the file at the given url and keep its own copy of it.",
+                                                                                                    "name": "url",
+                                                                                                    "type": "text",
+                                                                                                    "label": "File URL"
+                                                                                                },
+                                                                                                {
+                                                                                                    "help": "If empty, Airtable will generate the name automatically.",
+                                                                                                    "name": "filename",
+                                                                                                    "type": "filename",
+                                                                                                    "label": "File name"
+                                                                                                }
+                                                                                            ],
+                                                                                            "type": "array",
+                                                                                            "label": "Anhang",
+                                                                                            "editable": true
+                                                                                        },
+                                                                                        {
+                                                                                            "name": "fldI5lU4NQ7ymG4d0",
+                                                                                            "spec": {
+                                                                                                "label": "Record ID"
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": "Umsatz"
+                                                                                        },
+                                                                                        {
+                                                                                            "name": "fld3Ca5ejPbG2DVYb",
+                                                                                            "spec": {
+                                                                                                "label": "Record ID"
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": "Lieferung"
+                                                                                        },
+                                                                                        {
+                                                                                            "name": "fldbzOIOSaNcwdNAL",
+                                                                                            "spec": {
+                                                                                                "label": "Record ID"
+                                                                                            },
+                                                                                            "type": "array",
+                                                                                            "label": "Bestandsprüfung"
+                                                                                        },
+                                                                                        {
+                                                                                            "name": "fldW8Gk8tDwDoJoJ8",
+                                                                                            "type": "text",
+                                                                                            "label": "⚙ Hinweis",
+                                                                                            "multiline": true
+                                                                                        }
+                                                                                    ],
+                                                                                    "type": "collection",
+                                                                                    "label": "Record"
+                                                                                }
+                                                                            ]
+                                                                        },
+                                                                        "record": {
+                                                                            "nested": {
+                                                                                "fld3Ca5ejPbG2DVYb": {
+                                                                                    "mode": "chose"
+                                                                                },
+                                                                                "fldI5lU4NQ7ymG4d0": {
+                                                                                    "mode": "chose",
+                                                                                    "items": [
+                                                                                        null
+                                                                                    ]
+                                                                                },
+                                                                                "fldKSqryQHeRzUCMd": {
+                                                                                    "mode": "edit"
+                                                                                },
+                                                                                "fldbzOIOSaNcwdNAL": {
+                                                                                    "mode": "chose"
+                                                                                },
+                                                                                "fldd3wi6dceGmnppx": {
+                                                                                    "mode": "chose"
+                                                                                }
+                                                                            }
+                                                                        },
+                                                                        "typecast": {
+                                                                            "mode": "chose"
+                                                                        },
+                                                                        "useColumnId": {
+                                                                            "mode": "chose"
+                                                                        }
+                                                                    },
+                                                                    "parameters": {
+                                                                        "__IMTCONN__": {
+                                                                            "data": {
+                                                                                "scoped": "true",
+                                                                                "connection": "airtable3"
+                                                                            },
+                                                                            "label": "Airtable (User ID: usrDZVTZMIn7kpkdD)"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "parameters": [
+                                                                    {
+                                                                        "name": "__IMTCONN__",
+                                                                        "type": "account:airtable3,airtable2",
+                                                                        "label": "Connection",
+                                                                        "required": true
+                                                                    }
+                                                                ],
+                                                                "expect": [
+                                                                    {
+                                                                        "name": "base",
+                                                                        "type": "select",
+                                                                        "label": "Base",
+                                                                        "required": true
+                                                                    },
+                                                                    {
+                                                                        "name": "typecast",
+                                                                        "type": "boolean",
+                                                                        "label": "Smart links",
+                                                                        "required": true
+                                                                    },
+                                                                    {
+                                                                        "name": "useColumnId",
+                                                                        "type": "boolean",
+                                                                        "label": "Use Column ID",
+                                                                        "required": true
+                                                                    },
+                                                                    {
+                                                                        "name": "table",
+                                                                        "type": "select",
+                                                                        "label": "Table",
+                                                                        "required": true
+                                                                    },
+                                                                    {
+                                                                        "name": "record",
+                                                                        "spec": [
+                                                                            {
+                                                                                "name": "fldPoeEx87w0wF8w9",
+                                                                                "time": false,
+                                                                                "type": "date",
+                                                                                "label": "Datum"
+                                                                            },
+                                                                            {
+                                                                                "mode": "edit",
+                                                                                "name": "fldKSqryQHeRzUCMd",
+                                                                                "type": "select",
+                                                                                "label": "Belegtyp"
+                                                                            },
+                                                                            {
+                                                                                "name": "fldd3wi6dceGmnppx",
+                                                                                "spec": [
+                                                                                    {
+                                                                                        "name": "url",
+                                                                                        "type": "text",
+                                                                                        "label": "File URL"
+                                                                                    },
+                                                                                    {
+                                                                                        "name": "filename",
+                                                                                        "type": "filename",
+                                                                                        "label": "File name"
+                                                                                    }
+                                                                                ],
+                                                                                "type": "array",
+                                                                                "label": "Anhang"
+                                                                            },
+                                                                            {
+                                                                                "name": "fldI5lU4NQ7ymG4d0",
+                                                                                "spec": {
+                                                                                    "name": "value",
+                                                                                    "label": "Record ID"
+                                                                                },
+                                                                                "type": "array",
+                                                                                "label": "Umsatz"
+                                                                            },
+                                                                            {
+                                                                                "name": "fld3Ca5ejPbG2DVYb",
+                                                                                "spec": {
+                                                                                    "name": "value",
+                                                                                    "label": "Record ID"
+                                                                                },
+                                                                                "type": "array",
+                                                                                "label": "Lieferung"
+                                                                            },
+                                                                            {
+                                                                                "name": "fldbzOIOSaNcwdNAL",
+                                                                                "spec": {
+                                                                                    "name": "value",
+                                                                                    "label": "Record ID"
+                                                                                },
+                                                                                "type": "array",
+                                                                                "label": "Bestandsprüfung"
+                                                                            },
+                                                                            {
+                                                                                "name": "fldW8Gk8tDwDoJoJ8",
+                                                                                "type": "text",
+                                                                                "label": "⚙ Hinweis"
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Record"
+                                                                    }
+                                                                ],
+                                                                "interface": [
+                                                                    {
+                                                                        "name": "id",
+                                                                        "type": "text",
+                                                                        "label": "ID"
+                                                                    },
+                                                                    {
+                                                                        "name": "createdTime",
+                                                                        "type": "date",
+                                                                        "label": "Created Time"
+                                                                    },
+                                                                    {
+                                                                        "name": "fld7DgKiRjGPJitvf",
+                                                                        "type": "text",
+                                                                        "label": "ID"
+                                                                    },
+                                                                    {
+                                                                        "name": "fldPoeEx87w0wF8w9",
+                                                                        "time": false,
+                                                                        "type": "date",
+                                                                        "label": "Datum"
+                                                                    },
+                                                                    {
+                                                                        "name": "fldKSqryQHeRzUCMd",
+                                                                        "type": "text",
+                                                                        "label": "Belegtyp"
+                                                                    },
+                                                                    {
+                                                                        "name": "fldd3wi6dceGmnppx",
+                                                                        "spec": [
+                                                                            {
+                                                                                "name": "id",
+                                                                                "type": "text",
+                                                                                "label": "ID"
+                                                                            },
+                                                                            {
+                                                                                "name": "width",
+                                                                                "type": "uinteger",
+                                                                                "label": "Width"
+                                                                            },
+                                                                            {
+                                                                                "name": "height",
+                                                                                "type": "uinteger",
+                                                                                "label": "Height"
+                                                                            },
+                                                                            {
+                                                                                "name": "url",
+                                                                                "type": "url",
+                                                                                "label": "URL"
+                                                                            },
+                                                                            {
+                                                                                "name": "filename",
+                                                                                "type": "filename",
+                                                                                "label": "File name"
+                                                                            },
+                                                                            {
+                                                                                "name": "size",
+                                                                                "type": "uinteger",
+                                                                                "label": "Size"
+                                                                            },
+                                                                            {
+                                                                                "name": "type",
+                                                                                "type": "text",
+                                                                                "label": "MIME type"
+                                                                            },
+                                                                            {
+                                                                                "name": "thumbnails",
+                                                                                "spec": [
+                                                                                    {
+                                                                                        "name": "small",
+                                                                                        "spec": [
+                                                                                            {
+                                                                                                "name": "url",
+                                                                                                "type": "url",
+                                                                                                "label": "URL"
+                                                                                            },
+                                                                                            {
+                                                                                                "name": "width",
+                                                                                                "type": "uinteger",
+                                                                                                "label": "Width"
+                                                                                            },
+                                                                                            {
+                                                                                                "name": "height",
+                                                                                                "type": "uinteger",
+                                                                                                "label": "Height"
+                                                                                            }
+                                                                                        ],
+                                                                                        "type": "collection",
+                                                                                        "label": "Small"
+                                                                                    },
+                                                                                    {
+                                                                                        "name": "large",
+                                                                                        "spec": [
+                                                                                            {
+                                                                                                "name": "url",
+                                                                                                "type": "url",
+                                                                                                "label": "URL"
+                                                                                            },
+                                                                                            {
+                                                                                                "name": "width",
+                                                                                                "type": "uinteger",
+                                                                                                "label": "Width"
+                                                                                            },
+                                                                                            {
+                                                                                                "name": "height",
+                                                                                                "type": "uinteger",
+                                                                                                "label": "Height"
+                                                                                            }
+                                                                                        ],
+                                                                                        "type": "collection",
+                                                                                        "label": "Large"
+                                                                                    },
+                                                                                    {
+                                                                                        "name": "full",
+                                                                                        "spec": [
+                                                                                            {
+                                                                                                "name": "url",
+                                                                                                "type": "url",
+                                                                                                "label": "URL"
+                                                                                            },
+                                                                                            {
+                                                                                                "name": "width",
+                                                                                                "type": "uinteger",
+                                                                                                "label": "Width"
+                                                                                            },
+                                                                                            {
+                                                                                                "name": "height",
+                                                                                                "type": "uinteger",
+                                                                                                "label": "Height"
+                                                                                            }
+                                                                                        ],
+                                                                                        "type": "collection",
+                                                                                        "label": "Full"
+                                                                                    }
+                                                                                ],
+                                                                                "type": "collection",
+                                                                                "label": "Thumbnails"
+                                                                            }
+                                                                        ],
+                                                                        "type": "array",
+                                                                        "label": "Anhang"
+                                                                    },
+                                                                    {
+                                                                        "name": "fldI5lU4NQ7ymG4d0",
+                                                                        "spec": {
+                                                                            "label": "Record ID"
+                                                                        },
+                                                                        "type": "array",
+                                                                        "label": "Umsatz"
+                                                                    },
+                                                                    {
+                                                                        "name": "fld3Ca5ejPbG2DVYb",
+                                                                        "spec": {
+                                                                            "label": "Record ID"
+                                                                        },
+                                                                        "type": "array",
+                                                                        "label": "Lieferung"
+                                                                    },
+                                                                    {
+                                                                        "name": "fldbzOIOSaNcwdNAL",
+                                                                        "spec": {
+                                                                            "label": "Record ID"
+                                                                        },
+                                                                        "type": "array",
+                                                                        "label": "Bestandsprüfung"
+                                                                    },
+                                                                    {
+                                                                        "name": "fldW8Gk8tDwDoJoJ8",
+                                                                        "type": "text",
+                                                                        "label": "⚙ Hinweis",
+                                                                        "multiline": true
+                                                                    },
+                                                                    {
+                                                                        "name": "fldQSocd4aoQS8X6M",
+                                                                        "type": "date",
+                                                                        "label": "⚙ Geändert am"
+                                                                    },
+                                                                    {
+                                                                        "name": "fldZQ306r9gcWEjnX",
+                                                                        "type": "number",
+                                                                        "label": "⚙ Belegnummer"
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": 60,
+                                                            "module": "lexoffice:downloadADocument",
+                                                            "version": 1,
+                                                            "parameters": {
+                                                                "__IMTCONN__": 9184916
+                                                            },
+                                                            "filter": {
+                                                                "name": "Beleg vorhanden",
+                                                                "conditions": [
+                                                                    [
+                                                                        {
+                                                                            "a": "{{first(6.body.files)}}",
+                                                                            "o": "exist"
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                            },
+                                                            "mapper": {
+                                                                "document": "{{first(6.body.files)}}"
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 4800,
+                                                                    "y": 300,
+                                                                    "name": "Download a Document"
+                                                                }
+                                                            },
+                                                            "onerror": [
+                                                                {
+                                                                    "id": 62,
+                                                                    "module": "builtin:Ignore",
+                                                                    "version": 1,
+                                                                    "metadata": {
+                                                                        "designer": {
+                                                                            "x": 5100,
+                                                                            "y": 600
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "id": 61,
+                                                            "module": "http:MakeRequest",
+                                                            "version": 4,
+                                                            "parameters": {
+                                                                "apiKeyKeychain": 204951,
+                                                                "authenticationType": "apiKey"
+                                                            },
+                                                            "mapper": {
+                                                                "url": "https://content.airtable.com/v0/appiIkOaz1ID1FjfE/{{64.id}}/fldd3wi6dceGmnppx/uploadAttachment",
+                                                                "method": "post",
+                                                                "headers": [],
+                                                                "contentType": "json",
+                                                                "inputMethod": "jsonString",
+                                                                "shareCookies": false,
+                                                                "parseResponse": true,
+                                                                "allowRedirects": true,
+                                                                "queryParameters": [],
+                                                                "stopOnHttpError": true,
+                                                                "jsonStringBodyContent": "{\"contentType\":\"application/pdf\",\"filename\":\"{{6.body.voucherNumber}}.pdf\",\"file\":\"{{base64(60.data)}}\"}",
+                                                                "requestCompressedContent": false
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 5100,
+                                                                    "y": 150,
+                                                                    "name": "Airtable: Beleg anhängen"
+                                                                }
+                                                            },
+                                                            "onerror": [
+                                                                {
+                                                                    "id": 63,
+                                                                    "module": "builtin:Ignore",
+                                                                    "version": 1,
+                                                                    "metadata": {
+                                                                        "designer": {
+                                                                            "x": 5400,
+                                                                            "y": 300
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        },
+                                                        {
+                                                            "id": 202,
+                                                            "module": "scenario-service:CallSubscenario",
+                                                            "version": 2,
+                                                            "parameters": {
+                                                                "scenario": "SCN_6862968",
+                                                                "shouldWaitForExecutionEnd": false
+                                                            },
+                                                            "filter": {
+                                                                "name": "Nur bei Abschluss",
+                                                                "conditions": [
+                                                                    [
+                                                                        {
+                                                                            "a": "{{6.body.voucherStatus}}",
+                                                                            "b": "voided",
+                                                                            "o": "text:equal"
+                                                                        }
+                                                                    ],
+                                                                    [
+                                                                        {
+                                                                            "a": "{{6.body.voucherStatus}}",
+                                                                            "b": "paid",
+                                                                            "o": "text:equal"
+                                                                        }
+                                                                    ],
+                                                                    [
+                                                                        {
+                                                                            "a": "{{6.body.voucherStatus}}",
+                                                                            "b": "paidoff",
+                                                                            "o": "text:equal"
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                            },
+                                                            "mapper": {
+                                                                "data": {
+                                                                    "id": "{{13.id}}",
+                                                                    "key": "{{if(6.body.voucherStatus = \"voided\"; \"invoice.voided\"; if(contains(map(100.body.paymentItems; \"paymentItemType\"); \"irrecoverableReceivable\"); \"invoice.written_off\"; \"invoice.paid\"))}}"
+                                                                }
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 5400,
+                                                                    "y": 0,
+                                                                    "name": "Call: dispatch"
+                                                                },
+                                                                "restore": {
+                                                                    "parameters": {
+                                                                        "scenario": {
+                                                                            "label": "[Dispatch] Telegram Notifications"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "parameters": [
+                                                                    {
+                                                                        "name": "scenario",
+                                                                        "type": "scenario",
+                                                                        "label": "Scenario",
+                                                                        "required": true
+                                                                    },
+                                                                    {
+                                                                        "name": "shouldWaitForExecutionEnd",
+                                                                        "type": "boolean",
+                                                                        "label": "Wait for the scenario to finish",
+                                                                        "required": true
+                                                                    }
+                                                                ],
+                                                                "expect": [
+                                                                    {
+                                                                        "name": "data",
+                                                                        "spec": [
+                                                                            {
+                                                                                "name": "key",
+                                                                                "type": "text",
+                                                                                "label": "",
+                                                                                "required": true,
+                                                                                "multiline": false
+                                                                            },
+                                                                            {
+                                                                                "name": "id",
+                                                                                "type": "text",
+                                                                                "label": "",
+                                                                                "required": false,
+                                                                                "multiline": false
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Scenario Inputs"
+                                                                    }
+                                                                ],
+                                                                "interface": [
+                                                                    {
+                                                                        "name": "executionId",
+                                                                        "type": "text",
+                                                                        "label": "Execution ID"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "onerror": [
+                                                                {
+                                                                    "id": 203,
+                                                                    "module": "builtin:Resume",
+                                                                    "version": 1,
+                                                                    "parameters": {},
+                                                                    "mapper": {
+                                                                        "output": ""
+                                                                    },
+                                                                    "metadata": {
+                                                                        "designer": {
+                                                                            "x": 5700,
+                                                                            "y": 0,
+                                                                            "name": "Fehler übergehen"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    ],
+                                                    "conditions": [
+                                                        [
+                                                            {
+                                                                "a": "{{11.__IMTLENGTH__}}",
+                                                                "b": "0",
+                                                                "o": "number:greater"
+                                                            }
+                                                        ]
+                                                    ]
+                                                },
+                                                {
+                                                    "merge": false,
+                                                    "disabled": false,
+                                                    "label": "",
+                                                    "type": "else",
+                                                    "flow": [
+                                                        {
+                                                            "id": 206,
+                                                            "module": "code:ExecuteCode",
+                                                            "version": 1,
+                                                            "parameters": {},
+                                                            "mapper": {
+                                                                "input": [
+                                                                    {
+                                                                        "name": "vertriebler",
+                                                                        "value": "{{12.parsedResult.partner}}"
+                                                                    },
+                                                                    {
+                                                                        "name": "store",
+                                                                        "value": "{{7.fld7fbRS1BHvrqJrj}}"
+                                                                    },
+                                                                    {
+                                                                        "name": "id",
+                                                                        "value": "{{6.body.voucherNumber}}"
+                                                                    },
+                                                                    {
+                                                                        "name": "datum",
+                                                                        "value": "{{substring(6.body.voucherDate; 0; 10)}}"
+                                                                    }
+                                                                ],
+                                                                "language": "javascript",
+                                                                "inputFormat": "editor",
+                                                                "codeEditorJavascript": "return { ctx: JSON.stringify({ \"Vertriebler\": String(input.vertriebler||\"\"), \"Store\": String(input.store||\"\"), \"Leistungsdatum\": String(input.datum||\"\"), \"ID\": String(input.id||\"\"), \"Rechnungsdatum\": String(input.datum||\"\") }) };"
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 3900,
+                                                                    "y": 1200,
+                                                                    "name": "ctx bauen"
+                                                                }
+                                                            }
+                                                        },
+                                                        {
+                                                            "id": 207,
+                                                            "module": "scenario-service:CallSubscenario",
+                                                            "version": 2,
+                                                            "parameters": {
+                                                                "scenario": "SCN_6862968",
+                                                                "shouldWaitForExecutionEnd": false
+                                                            },
+                                                            "mapper": {
+                                                                "data": {
+                                                                    "ctx": "{{206.result.ctx}}",
+                                                                    "key": "task.terms_missing"
+                                                                }
+                                                            },
+                                                            "metadata": {
+                                                                "designer": {
+                                                                    "x": 4200,
+                                                                    "y": 1200,
+                                                                    "name": "Call: task.terms_missing"
+                                                                },
+                                                                "restore": {
+                                                                    "parameters": {
+                                                                        "scenario": {
+                                                                            "label": "[Dispatch] Telegram Notifications"
+                                                                        }
+                                                                    }
+                                                                },
+                                                                "parameters": [
+                                                                    {
+                                                                        "name": "scenario",
+                                                                        "type": "scenario",
+                                                                        "label": "Scenario",
+                                                                        "required": true
+                                                                    },
+                                                                    {
+                                                                        "name": "shouldWaitForExecutionEnd",
+                                                                        "type": "boolean",
+                                                                        "label": "Wait for the scenario to finish",
+                                                                        "required": true
+                                                                    }
+                                                                ],
+                                                                "expect": [
+                                                                    {
+                                                                        "name": "data",
+                                                                        "spec": [
+                                                                            {
+                                                                                "name": "key",
+                                                                                "type": "text",
+                                                                                "label": "",
+                                                                                "required": true,
+                                                                                "multiline": false
+                                                                            },
+                                                                            {
+                                                                                "name": "ctx",
+                                                                                "type": "text",
+                                                                                "label": "",
+                                                                                "required": false,
+                                                                                "multiline": true
+                                                                            }
+                                                                        ],
+                                                                        "type": "collection",
+                                                                        "label": "Scenario Inputs"
+                                                                    }
+                                                                ],
+                                                                "interface": [
+                                                                    {
+                                                                        "name": "executionId",
+                                                                        "type": "text",
+                                                                        "label": "Execution ID"
+                                                                    }
+                                                                ]
+                                                            },
+                                                            "onerror": [
+                                                                {
+                                                                    "id": 208,
+                                                                    "module": "builtin:Resume",
+                                                                    "version": 1,
+                                                                    "parameters": {},
+                                                                    "mapper": {
+                                                                        "output": ""
+                                                                    },
+                                                                    "metadata": {
+                                                                        "designer": {
+                                                                            "x": 4500,
+                                                                            "y": 1200,
+                                                                            "name": "Fehler übergehen"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "conditions": [
+                                        [
+                                            {
+                                                "a": "{{8.id}}",
+                                                "o": "notexist"
+                                            }
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "merge": false,
+                                    "disabled": false,
+                                    "label": "",
+                                    "type": "else",
+                                    "flow": [
+                                        {
+                                            "id": 30,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Kein terminaler Status",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{8.fldBavq4sjk2A1swZ}}",
+                                                            "b": "Storniert",
+                                                            "o": "text:notequal"
+                                                        },
+                                                        {
+                                                            "a": "{{8.fldBavq4sjk2A1swZ}}",
+                                                            "b": "Ausgebucht",
+                                                            "o": "text:notequal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "id": "{{8.id}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tbl0Xqw2eK7KPVVWY",
+                                                "record": {
+                                                    "fldBavq4sjk2A1swZ": "{{if(6.body.voucherStatus = \"voided\"; \"Storniert\"; if(6.body.voucherStatus = \"paid\"; if(contains(map(100.body.paymentItems; \"paymentItemType\"); \"irrecoverableReceivable\"); \"Ausgebucht\"; \"Bezahlt\"); if(6.body.voucherStatus = \"paidoff\"; if(contains(map(100.body.paymentItems; \"paymentItemType\"); \"irrecoverableReceivable\"); \"Ausgebucht\"; \"Bezahlt\"); if(8.fldBavq4sjk2A1swZ = \"Teilgezahlt\"; \"Teilgezahlt\"; if(8.fldBavq4sjk2A1swZ = \"Angemahnt\"; \"Angemahnt\"; if(8.fldBavq4sjk2A1swZ = \"Überfällig\"; \"Überfällig\"; \"Offen\"))))))}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 3300,
+                                                    "y": 1500,
+                                                    "name": "Status updaten"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "id": 204,
+                                            "module": "scenario-service:CallSubscenario",
+                                            "version": 2,
+                                            "parameters": {
+                                                "scenario": "SCN_6862968",
+                                                "shouldWaitForExecutionEnd": false
+                                            },
+                                            "filter": {
+                                                "name": "Nur bei Abschluss",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{6.body.voucherStatus}}",
+                                                            "b": "voided",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ],
+                                                    [
+                                                        {
+                                                            "a": "{{6.body.voucherStatus}}",
+                                                            "b": "paid",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ],
+                                                    [
+                                                        {
+                                                            "a": "{{6.body.voucherStatus}}",
+                                                            "b": "paidoff",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "data": {
+                                                    "id": "{{8.id}}",
+                                                    "key": "{{if(6.body.voucherStatus = \"voided\"; \"invoice.voided\"; if(contains(map(100.body.paymentItems; \"paymentItemType\"); \"irrecoverableReceivable\"); \"invoice.written_off\"; \"invoice.paid\"))}}"
+                                                }
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 3600,
+                                                    "y": 1500,
+                                                    "name": "Call: dispatch"
+                                                },
+                                                "restore": {
+                                                    "parameters": {
+                                                        "scenario": {
+                                                            "label": "[Dispatch] Telegram Notifications"
+                                                        }
+                                                    }
+                                                },
+                                                "parameters": [
+                                                    {
+                                                        "name": "scenario",
+                                                        "type": "scenario",
+                                                        "label": "Scenario",
+                                                        "required": true
+                                                    },
+                                                    {
+                                                        "name": "shouldWaitForExecutionEnd",
+                                                        "type": "boolean",
+                                                        "label": "Wait for the scenario to finish",
+                                                        "required": true
+                                                    }
+                                                ],
+                                                "expect": [
+                                                    {
+                                                        "name": "data",
+                                                        "spec": [
+                                                            {
+                                                                "name": "key",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": true,
+                                                                "multiline": false
+                                                            },
+                                                            {
+                                                                "name": "id",
+                                                                "type": "text",
+                                                                "label": "",
+                                                                "required": false,
+                                                                "multiline": false
+                                                            }
+                                                        ],
+                                                        "type": "collection",
+                                                        "label": "Scenario Inputs"
+                                                    }
+                                                ],
+                                                "interface": [
+                                                    {
+                                                        "name": "executionId",
+                                                        "type": "text",
+                                                        "label": "Execution ID"
+                                                    }
+                                                ]
+                                            },
+                                            "onerror": [
+                                                {
+                                                    "id": 205,
+                                                    "module": "builtin:Resume",
+                                                    "version": 1,
+                                                    "parameters": {},
+                                                    "mapper": {
+                                                        "output": ""
+                                                    },
+                                                    "metadata": {
+                                                        "designer": {
+                                                            "x": 3900,
+                                                            "y": 1500,
+                                                            "name": "Fehler übergehen"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 72,
+                            "module": "airtable:ActionSearchRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tbl0Xqw2eK7KPVVWY",
+                                "formula": "{ID} = \"{{6.body.voucherNumber}}\"",
+                                "maxRecords": 1,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3000,
+                                    "y": 1800,
+                                    "name": "Umsatz auflösen (Gate)"
+                                }
+                            }
+                        },
+                        {
+                            "id": 73,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "filter": {
+                                "name": "Umsatz da, Checksum ok, noch keine Positionen",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{72.id}}",
+                                            "o": "exist"
+                                        },
+                                        {
+                                            "a": "{{length(72.fldL8VZayamrjaTtO)}}",
+                                            "b": "0",
+                                            "o": "number:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "positionen",
+                                        "value": "{{12.parsedResult.positions}}"
+                                    },
+                                    {
+                                        "name": "voucherDate",
+                                        "value": "{{6.body.voucherDate}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "dependencies": [],
+                                "codeEditorJavascript": "// pos-invoice - Positionen aufbereiten.\n// Input:  positionen  = 12.parsedResult.positions (Extraktion aus dem Beleg)\n//         voucherDate = roher Lexware-Zeitstempel mit Zeitzone\n// Output: alle[] {pos, nr, stueck, kg, netto} + anzahl + datum + summe + fehlertext\n//         + notiz   -> stille Skips, nur fuers Make-Log\n//         + warnung -> echte Datenluecken, gehen nach ⚙ Hinweis\n//\n// Reihenfolge ist bewusst: Lueckenlos-Pruefung laeuft VOR dem Filtern der\n// Zeilen ohne Artikelnummer, sonst bricht sie an der uebersprungenen Zeile.\n//\n// Die Abstimmung Positionssumme <-> Belegbetrag findet hier NICHT statt.\n// Der Lexware-MCP liefert sie fertig als checksum.positionSumReconciled /\n// checksum.matches und wertet dabei amountBasis aus. Eine Zweitimplementierung\n// haette diese Unterscheidung nicht und wuerde Belege der alten Druckvorlage\n// (Zeilenbetraege netto) gegen den Bruttobetrag pruefen - dauerhaft falsch.\n// Die Checksum haengt stattdessen als Filterbedingung vor diesem Modul.\n\nvar arr = function (v) {\n  if (Array.isArray(v)) return v;\n  if (typeof v === \"string\" && v.trim()) {\n    try { var p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch (e) { return []; }\n  }\n  return [];\n};\n\nvar fehler = [];\nvar hinweise = [];   // stille Skips - erwartetes Normalverhalten\nvar warnungen = [];  // Hilfsannahmen, die ein Ergebnis unsicher machen\n\n// Datum als reiner YYYY-MM-DD-String. formatDate() wuerde den Zeitstempel als\n// UTC lesen und bei +02:00 den Vortag liefern - genau der Fallstrick, der die\n// Preis-Aufloesung am Stichtag auf die falsche Version schickt.\nvar datum = String(input.voucherDate == null ? \"\" : input.voucherDate).slice(0, 10);\nif (!/^\\d{4}-\\d{2}-\\d{2}$/.test(datum)) fehler.push(\"Leistungsdatum unlesbar: \" + input.voucherDate);\n\nvar roh = arr(input.positionen);\nif (roh.length === 0) fehler.push(\"keine Positionen extrahiert\");\n\nvar sortiert = roh.slice().sort(function (a, b) { return Number(a.pos) - Number(b.pos); });\nsortiert.forEach(function (p, i) {\n  if (Number(p.pos) !== i + 1)\n    fehler.push(\"Position \" + p.pos + \" an Stelle \" + (i + 1) + \" - Zeile fehlt oder Reihenfolge gestoert\");\n});\n\nvar alle = [];\nvar summe = 0;\nsortiert.forEach(function (p) {\n  var nr = String(p.articleNumber == null ? \"\" : p.articleNumber).trim();\n  // Zeilen ohne Artikelnummer (z.B. \"Abholung vor Ort\") sind ein STILLER Skip:\n  // kein Fehler und keine Warnung, denn sie tragen keine Ware und haben kein\n  // Produkt in der Base. Sie duerfen ⚙ Hinweis nicht belegen, sonst geht das\n  // echte Problem im Rauschen unter.\n  if (!nr) {\n    hinweise.push(\"Pos \" + p.pos + \" (\" + String(p.name == null ? \"\" : p.name) + \") ohne Artikelnummer - uebersprungen\");\n    return;\n  }\n  var stueck = Number(p.quantity);\n  if (!isFinite(stueck)) { fehler.push(\"Pos \" + p.pos + \" (\" + nr + \"): Menge fehlt\"); return; }\n\n  // Nettobetrag der Zeile IMMER aus lineAmountNet. Der MCP stellt das Feld\n  // vorlagenunabhaengig bereit; lineAmount ist bei der neuen Belegvorlage\n  // brutto und darf nicht in ein Nettofeld. Kein Umrechnen, kein Steuersatz.\n  var netto = Number(p.lineAmountNet);\n  if (!isFinite(netto)) { fehler.push(\"Pos \" + p.pos + \" (\" + nr + \"): Nettobetrag fehlt in der Extraktion\"); return; }\n  netto = Math.round(netto * 100) / 100;\n\n  // Rechnungen fuehren keine Gewichtsspalte; die Grammatur steckt in der\n  // Artikelbezeichnung und kommt als gramsPerUnit aus der Extraktion.\n  var gramm = Number(p.gramsPerUnit);\n  if ((!isFinite(gramm) || gramm <= 0) && stueck > 0) {\n    var g = Number(p.grams);\n    if (isFinite(g) && g > 0) {\n      gramm = g / stueck;\n      // Das ist eine Hilfsannahme: die kg-Ableitung steht danach auf einer\n      // Division statt auf einem gelesenen Wert -> sichtbar machen.\n      warnungen.push(\"Pos \" + p.pos + \" (\" + nr + \"): gramsPerUnit fehlt, aus grams abgeleitet = \" + gramm + \" g\");\n    }\n  }\n  if (!isFinite(gramm) || gramm <= 0) { fehler.push(\"Pos \" + p.pos + \" (\" + nr + \"): Grammatur nicht ermittelbar\"); return; }\n\n  summe += netto;\n  alle.push({ pos: Number(p.pos), nr: nr, stueck: stueck, kg: Math.round(stueck * gramm) / 1000, netto: netto });\n});\n\nif (alle.length === 0 && fehler.length === 0) fehler.push(\"keine buchbaren Positionen nach Filterung\");\n\nreturn {\n  ok: fehler.length === 0,\n  datum: datum,\n  alle: alle,\n  anzahl: alle.length,\n  summe: Math.round(summe * 100) / 100,\n  fehlertext: fehler.join(\" \\u00b7 \"),\n  notiz: hinweise.join(\" \\u00b7 \"),\n  warnung: warnungen.join(\" \\u00b7 \")\n};\n"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 1800,
+                                    "name": "Positionen aufbereiten"
+                                }
+                            }
+                        },
+                        {
+                            "id": 74,
+                            "module": "builtin:BasicFeeder",
+                            "version": 1,
+                            "mapper": {
+                                "array": "{{73.result.alle}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 1800,
+                                    "name": "Iterator über Positionen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 75,
+                            "module": "airtable:ActionSearchRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tblNQsc69xuDrMBzs",
+                                "formula": "{ID} = \"{{74.nr}}\"",
+                                "maxRecords": 1,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3900,
+                                    "y": 1800,
+                                    "name": "Produktvariante auflösen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 76,
+                            "module": "airtable:ActionSearchRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "sort": [
+                                    {
+                                        "field": "Gültig ab",
+                                        "direction": "desc"
+                                    }
+                                ],
+                                "table": "tblfwOn3HUmWqpIsv",
+                                "formula": "AND(ARRAYJOIN({Produkt}) = \"{{74.nr}}\", NOT(IS_AFTER({Gültig ab}, DATETIME_PARSE(\"{{73.result.datum}}\", 'YYYY-MM-DD'))))",
+                                "maxRecords": 1,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 4200,
+                                    "y": 1800,
+                                    "name": "Preis am Leistungsdatum"
+                                }
+                            }
+                        },
+                        {
+                            "id": 77,
+                            "module": "airtable:ActionSearchRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tblFboBzXrCop4nYt",
+                                "formula": "{ID} = \"BST-{{7.fldL1YaDEswIZNnNP}}-{{74.nr}}\"",
+                                "maxRecords": 1,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 4500,
+                                    "y": 1800,
+                                    "name": "Bestand suchen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 78,
+                            "module": "builtin:BasicAggregator",
+                            "version": 1,
+                            "parameters": {
+                                "feeder": 74
+                            },
+                            "filter": {
+                                "name": "Zeile vollständig aufgelöst",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{75.id}}",
+                                            "o": "exist"
+                                        },
+                                        {
+                                            "a": "{{76.id}}",
+                                            "o": "exist"
+                                        },
+                                        {
+                                            "a": "{{77.id}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "kg": "{{74.kg}}",
+                                "nr": "{{74.nr}}",
+                                "pos": "{{74.pos}}",
+                                "netto": "{{74.netto}}",
+                                "preis": "{{76.id}}",
+                                "stueck": "{{74.stueck}}",
+                                "bestand": "{{77.id}}",
+                                "produkt": "{{75.id}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 4800,
+                                    "y": 1800,
+                                    "name": "Zeilen bündeln"
+                                }
+                            }
+                        },
+                        {
+                            "id": 79,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "parser_ok",
+                                        "value": "{{73.result.ok}}"
+                                    },
+                                    {
+                                        "name": "fehlertext",
+                                        "value": "{{73.result.fehlertext}}"
+                                    },
+                                    {
+                                        "name": "warnung",
+                                        "value": "{{73.result.warnung}}"
+                                    },
+                                    {
+                                        "name": "erwartet",
+                                        "value": "{{73.result.anzahl}}"
+                                    },
+                                    {
+                                        "name": "alle",
+                                        "value": "{{73.result.alle}}"
+                                    },
+                                    {
+                                        "name": "aufgeloest",
+                                        "value": "{{78.array}}"
+                                    },
+                                    {
+                                        "name": "net_ok",
+                                        "value": "{{12.parsedResult.checksum.netReconciled}}"
+                                    },
+                                    {
+                                        "name": "pos_netto",
+                                        "value": "{{12.parsedResult.totals.netSum}}"
+                                    },
+                                    {
+                                        "name": "pdf_netto",
+                                        "value": "{{12.parsedResult.totals.pdfNetTotal}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "dependencies": [],
+                                "codeEditorJavascript": "// Verdikt + fertiger Hinweistext fuer Umsaetze.\"⚙ Hinweis\".\n// Kaskade: Netto-Rekonstruktion -> Parser-Fehler -> Aufloesungs-Luecke -> Warnungen.\n// Laeuft IMMER (auch bei 0 aufgeloesten Zeilen), damit der Hinweis geschrieben\n// wird; nur der nachgelagerte Schreib-Iterator haengt an ok.\n//\n// Stille Skips (73.result.notiz) landen hier BEWUSST nicht: ⚙ Hinweis ist ein\n// Waechterfeld, kein Protokoll. Steht dort Text, soll das etwas bedeuten.\n\nvar arr = function (v) {\n  if (Array.isArray(v)) return v;\n  if (typeof v === \"string\" && v.trim()) {\n    try { var p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch (e) { return []; }\n  }\n  return [];\n};\nvar truthy = function (v) { return v === true || v === \"true\"; };\nvar fmt = function (v) { var n = Number(v); return isFinite(n) ? n.toFixed(2) : \"?\"; };\n\nvar gemappt = arr(input.aufgeloest);\nvar erwartet = Number(input.erwartet) || 0;\nvar teile = [];\nvar parserOk = truthy(input.parser_ok);\nvar ok = parserOk;\n\n// Netto zuerst - das ist die teuerste Fehlerart.\n// Umsaetze.Nettoumsatz ist ein Rollup ueber die Positionsnettos, und\n// Provision = Nettoumsatz x Satz. Trifft die Summe der rekonstruierten\n// lineAmountNet das gedruckte Gesamt-Netto nicht, ist JEDE einzelne Zeile\n// unsicher - dann lieber gar keine Positionen als plausibel aussehende\n// falsche. netReconciled kann null sein (keine Nettofelder ableitbar),\n// deshalb !== true statt === false.\nif (!truthy(input.net_ok)) {\n  ok = false;\n  teile.push(\"Nettosumme nicht rekonstruierbar: Positionen \" + fmt(input.pos_netto) +\n             \" EUR vs. Beleg \" + fmt(input.pdf_netto) +\n             \" EUR - keine Positionen geschrieben\");\n}\n\nif (!parserOk && input.fehlertext) teile.push(String(input.fehlertext));\n\nif (parserOk && gemappt.length !== erwartet) {\n  ok = false;\n  var da = {};\n  gemappt.forEach(function (r) { da[String(Number(r.pos))] = true; });\n  var fehlend = arr(input.alle)\n    .map(function (p) { return Number(p.pos); })\n    .filter(function (p) { return !da[String(p)]; });\n  teile.push(\"Nicht aufloesbar (Produkt/Preis/Bestand fehlt): Pos \" +\n             (fehlend.length ? fehlend.join(\", \") : \"unbekannt\"));\n}\n\nif (input.warnung) teile.push(String(input.warnung));\n\nreturn { ok: ok, anzahl: gemappt.length, hinweis: teile.join(\" \\u00b7 \") };"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 5100,
+                                    "y": 1800,
+                                    "name": "Abgleich + Hinweistext"
+                                },
+                                "restore": {
+                                    "expect": {
+                                        "input": {
+                                            "items": [
+                                                {
+                                                    "name": {
+                                                        "collapsed": true
+                                                    },
+                                                    "value": {
+                                                        "collapsed": true
+                                                    }
+                                                },
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null,
+                                                null
+                                            ]
+                                        },
+                                        "language": {
+                                            "mode": "chose",
+                                            "label": "JavaScript"
+                                        },
+                                        "inputFormat": {
+                                            "label": "Code editor"
+                                        }
+                                    }
+                                },
+                                "expect": [
+                                    {
+                                        "name": "language",
+                                        "type": "select",
+                                        "label": "Language",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "javascript",
+                                                "python"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "input",
+                                        "spec": {
+                                            "name": "value",
+                                            "spec": [
+                                                {
+                                                    "name": "name",
+                                                    "type": "text",
+                                                    "label": "Name",
+                                                    "required": true,
+                                                    "validate": {
+                                                        "max": 32,
+                                                        "min": 1,
+                                                        "pattern": "^[a-zA-Z0-9_]{1,32}$"
+                                                    }
+                                                },
+                                                {
+                                                    "name": "value",
+                                                    "type": "any",
+                                                    "label": "Value"
+                                                }
+                                            ],
+                                            "type": "collection",
+                                            "label": "Variable"
+                                        },
+                                        "type": "array",
+                                        "label": "Input"
+                                    },
+                                    {
+                                        "name": "dependencies",
+                                        "spec": {
+                                            "name": "value",
+                                            "type": "text",
+                                            "label": "Dependency",
+                                            "required": true,
+                                            "validate": {
+                                                "max": 214,
+                                                "min": 1,
+                                                "pattern": "^[A-Za-z0-9_@\\./<>=!~\\^+-]{1,214}$"
+                                            }
+                                        },
+                                        "type": "array",
+                                        "label": "Additional dependencies (Enterprise plans only)"
+                                    },
+                                    {
+                                        "name": "inputFormat",
+                                        "type": "select",
+                                        "label": "Input format",
+                                        "required": true,
+                                        "validate": {
+                                            "enum": [
+                                                "editor",
+                                                "string"
+                                            ]
+                                        }
+                                    },
+                                    {
+                                        "name": "codeEditorJavascript",
+                                        "type": "editor",
+                                        "label": "Code",
+                                        "required": true
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 80,
+                            "module": "airtable:ActionUpdateRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "id": "{{72.id}}",
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tbl0Xqw2eK7KPVVWY",
+                                "record": {
+                                    "fldFD4fPdpvi9pVQZ": "{{79.result.hinweis}}"
+                                },
+                                "typecast": false,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 5400,
+                                    "y": 1800,
+                                    "name": "⚙ Hinweis schreiben"
+                                }
+                            }
+                        },
+                        {
+                            "id": 81,
+                            "module": "builtin:BasicFeeder",
+                            "version": 1,
+                            "filter": {
+                                "name": "Alle Zeilen aufgelöst",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{79.result.ok}}",
+                                            "b": "true",
+                                            "o": "boolean:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "array": "{{78.array}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 5700,
+                                    "y": 1800,
+                                    "name": "Iterator zum Schreiben"
+                                }
+                            }
+                        },
+                        {
+                            "id": 82,
+                            "module": "airtable:ActionCreateRecord",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tbl1fA7Ih6RseHfNk",
+                                "record": {
+                                    "fld3c913AqpjDU93P": [
+                                        "{{81.preis}}"
+                                    ],
+                                    "fld5XP3ejidcHedf3": "{{81.netto}}",
+                                    "fldO2Pb1HqqnwNXz6": "{{81.kg}}",
+                                    "fldQ78oQsJxrEssGH": [
+                                        "{{81.bestand}}"
+                                    ],
+                                    "fldW0MfIBLe7XYsOT": [
+                                        "{{72.id}}"
+                                    ],
+                                    "fldbx0pWARAoWJ0AG": "{{81.pos}}",
+                                    "fldng3YPm9pXrROiU": [
+                                        "{{81.produkt}}"
+                                    ],
+                                    "flduCHcnm4ajMRUO3": "{{81.stueck}}"
+                                },
+                                "typecast": false,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 6000,
+                                    "y": 1800,
+                                    "name": "Umsatzposition anlegen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 104,
+                            "module": "builtin:BasicAggregator",
+                            "version": 1,
+                            "parameters": {
+                                "feeder": 81
+                            },
+                            "mapper": {
+                                "pos": "{{81.pos}}"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 6300,
+                                    "y": 1800,
+                                    "name": "Schreib-Schleife schließen"
+                                },
+                                "restore": {
+                                    "extra": {
+                                        "feeder": {
+                                            "label": "Iterator zum Schreiben [81]"
+                                        },
+                                        "target": {
+                                            "label": "Custom"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "id": 105,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6805674",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "filter": {
+                                "name": "Alle Zeilen aufgelöst",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{79.result.ok}}",
+                                            "b": "true",
+                                            "o": "boolean:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "data": {
+                                    "type": "inventory-sale",
+                                    "dry_run": false,
+                                    "store_id": "{{7.id}}"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 6600,
+                                    "y": 1800,
+                                    "name": "Push Inventory (→ 6805674)"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Sync] Inventory to Shopify"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "store_id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "type",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "ref",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "dry_run",
+                                                "type": "boolean",
+                                                "label": "",
+                                                "required": true
+                                            },
+                                            {
+                                                "name": "document_record_id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": false
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 1,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 6900,
+                                            "y": 1800,
+                                            "name": "Klingel-Fehler übergehen"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "flow": [
+                        {
+                            "id": 110,
+                            "module": "airtable:ActionSearchRecords",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Kommission + Checksum",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{7.fld8C3tgNKcDqBgdP}}",
+                                            "b": "Kommission",
+                                            "o": "text:equal"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "base": "appiIkOaz1ID1FjfE",
+                                "table": "tbl0Xqw2eK7KPVVWY",
+                                "formula": "{ID} = \"{{6.body.voucherNumber}}\"",
+                                "maxRecords": 1,
+                                "useColumnId": true
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3000,
+                                    "y": 2700,
+                                    "name": "Umsatz auflösen (Gate)"
+                                }
+                            }
+                        },
+                        {
+                            "id": 111,
+                            "module": "airtable:makeApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "filter": {
+                                "name": "Umsatz vorhanden",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{110.id}}",
+                                            "o": "exist"
+                                        }
+                                    ]
+                                ]
+                            },
+                            "mapper": {
+                                "qs": [
+                                    {
+                                        "key": "returnFieldsByFieldId",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "key": "cellFormat",
+                                        "value": "string"
+                                    },
+                                    {
+                                        "key": "timeZone",
+                                        "value": "Europe/Berlin"
+                                    },
+                                    {
+                                        "key": "userLocale",
+                                        "value": "en-us"
+                                    },
+                                    {
+                                        "key": "pageSize",
+                                        "value": "100"
+                                    },
+                                    {
+                                        "key": "filterByFormula",
+                                        "value": "AND(FIND(\"BSP-{{7.fldL1YaDEswIZNnNP}}-\", {ID}) = 1, {Status} != \"Ungültig\")"
+                                    }
+                                ],
+                                "url": "/v0/appiIkOaz1ID1FjfE/tblmuGjaRDYXQzHch",
+                                "body": "",
+                                "method": "GET",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3300,
+                                    "y": 2700,
+                                    "name": "Bestandsprüfungen des Stores"
+                                }
+                            },
+                            "onerror": [
+                                {
+                                    "id": 121,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 3600,
+                                            "y": 3300
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 112,
+                            "module": "airtable:makeApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "qs": [
+                                    {
+                                        "key": "returnFieldsByFieldId",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "key": "cellFormat",
+                                        "value": "string"
+                                    },
+                                    {
+                                        "key": "timeZone",
+                                        "value": "Europe/Berlin"
+                                    },
+                                    {
+                                        "key": "userLocale",
+                                        "value": "en-us"
+                                    },
+                                    {
+                                        "key": "pageSize",
+                                        "value": "100"
+                                    },
+                                    {
+                                        "key": "filterByFormula",
+                                        "value": "FIND(\"BSP-{{7.fldL1YaDEswIZNnNP}}-\", {ID}) = 1"
+                                    },
+                                    {
+                                        "key": "sort[0][field]",
+                                        "value": "ID"
+                                    },
+                                    {
+                                        "key": "sort[0][direction]",
+                                        "value": "desc"
+                                    }
+                                ],
+                                "url": "/v0/appiIkOaz1ID1FjfE/tbllbej3aFEnxRobH",
+                                "body": "",
+                                "method": "GET",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3600,
+                                    "y": 2550,
+                                    "name": "Positionen der Bestandsprüfungen"
+                                }
+                            },
+                            "onerror": [
+                                {
+                                    "id": 122,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 3900,
+                                            "y": 3000
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 113,
+                            "module": "airtable:makeApiCall",
+                            "version": 3,
+                            "parameters": {
+                                "__IMTCONN__": 9136634
+                            },
+                            "mapper": {
+                                "qs": [
+                                    {
+                                        "key": "returnFieldsByFieldId",
+                                        "value": "true"
+                                    },
+                                    {
+                                        "key": "cellFormat",
+                                        "value": "string"
+                                    },
+                                    {
+                                        "key": "timeZone",
+                                        "value": "Europe/Berlin"
+                                    },
+                                    {
+                                        "key": "userLocale",
+                                        "value": "en-us"
+                                    },
+                                    {
+                                        "key": "pageSize",
+                                        "value": "100"
+                                    },
+                                    {
+                                        "key": "filterByFormula",
+                                        "value": "{Belegtyp} = \"Bestandsprotokoll\""
+                                    },
+                                    {
+                                        "key": "sort[0][field]",
+                                        "value": "Datum"
+                                    },
+                                    {
+                                        "key": "sort[0][direction]",
+                                        "value": "desc"
+                                    }
+                                ],
+                                "url": "/v0/appiIkOaz1ID1FjfE/tbld7UQwDBbq9A8Xk",
+                                "body": "",
+                                "method": "GET",
+                                "headers": []
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 3900,
+                                    "y": 2400,
+                                    "name": "Belege · Bestandsprotokolle (Vergabeliste)"
+                                }
+                            },
+                            "onerror": [
+                                {
+                                    "id": 123,
+                                    "module": "builtin:Ignore",
+                                    "version": 1,
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 4200,
+                                            "y": 2700
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": 114,
+                            "module": "code:ExecuteCode",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "input": [
+                                    {
+                                        "name": "rechnung",
+                                        "value": "{{12.parsedResult.positions}}"
+                                    },
+                                    {
+                                        "name": "pruefungen",
+                                        "value": "{{111.body.records}}"
+                                    },
+                                    {
+                                        "name": "bspPositionen",
+                                        "value": "{{112.body.records}}"
+                                    },
+                                    {
+                                        "name": "belege",
+                                        "value": "{{113.body.records}}"
+                                    },
+                                    {
+                                        "name": "rgNummer",
+                                        "value": "{{6.body.voucherNumber}}"
+                                    },
+                                    {
+                                        "name": "belegdatum",
+                                        "value": "{{substring(6.body.voucherDate; 0; 10)}}"
+                                    }
+                                ],
+                                "language": "javascript",
+                                "inputFormat": "editor",
+                                "dependencies": [],
+                                "codeEditorJavascript": "// pos-invoice - Bestandspruefung zur Rechnung zuordnen.\n//\n// Input:  rechnung      = 12.parsedResult.positions\n//         pruefungen    = 111.data.records  (Bestandspruefungen des Stores, ohne Ungueltig)\n//         bspPositionen = 112.data.records  (Positionen aller BP des Stores)\n//         belege        = 113.data.records  (Belege vom Typ Bestandsprotokoll)\n//         rgNummer      = 6.body.voucherNumber\n//         belegdatum    = YYYY-MM-DD des Belegs\n//\n// Alle drei REST-Reads laufen mit cellFormat=string. Link-Felder kommen dadurch\n// als Primaerwert im Klartext (\"10001-002\", \"BSP-10009-2026-08-03\", \"RG-10113-1\")\n// statt als Record-ID. Genau deshalb braucht die Zuordnung KEINE Lookup-Felder\n// in Airtable - Belege traegt Bestandspruefung und Umsatz nebeneinander, und\n// beide sind hier als Name lesbar.\n//\n// Zugeordnet wird ueber die Positionen, nicht ueber das Datum: die Menge auf der\n// Rechnung ist exakt die positive Differenz (SOLL - IST) der Bestandspruefung.\n// Das Datum aus der PDF-Zeile \"geprueft am\" ist nachweislich unzuverlaessig und\n// wird bewusst nicht ausgewertet.\n//\n// Output: verdikt \"treffer\" | \"unklar\" | \"uebersprungen\"\n\nvar F = {\n  BSP_ID:     \"fld24GCd9UoMFtIW6\",\n  BSP_STATUS: \"fldVx19XWUNiag4yJ\",\n  POS_ID:     \"fldVekCJcYqoCakJw\",\n  POS_PRODUKT:\"fldHcHaafIcSK1XGh\",\n  POS_DIFF:   \"fldFxKTS4YK7pI2Xr\",\n  BLG_ID:     \"fld7DgKiRjGPJitvf\",\n  BLG_BSP:    \"fldbzOIOSaNcwdNAL\",\n  BLG_UMS:    \"fldI5lU4NQ7ymG4d0\"\n};\n\nvar SEITENGROESSE = 100;\n\nvar arr = function (v) {\n  if (Array.isArray(v)) return v;\n  if (typeof v === \"string\" && v.trim()) {\n    try { var p = JSON.parse(v); return Array.isArray(p) ? p : []; } catch (e) { return []; }\n  }\n  return [];\n};\nvar txt = function (v) { return String(v == null ? \"\" : v).trim(); };\nvar feld = function (rec, id) { return txt((rec && rec.fields ? rec.fields[id] : \"\")); };\n\nvar rgNummer   = txt(input.rgNummer);\nvar belegdatum = txt(input.belegdatum);\n\nvar raus = function (verdikt, hinweis, belegId, bspName) {\n  return {\n    verdikt:  verdikt,\n    beleg_id: belegId || \"\",\n    bsp_name: bspName || \"\",\n    hinweis:  hinweis || \"\"\n  };\n};\n\n// ---------------------------------------------------------------- Rechnung\n// Zeilen ohne Artikelnummer (\"Abholung vor Ort\") tragen keine Ware und fallen\n// raus - dieselbe Regel wie im Positions-Parser der Route 1.\nvar rgMenge = {};\nvar rgSkus  = [];\narr(input.rechnung).forEach(function (p) {\n  var nr = txt(p.articleNumber);\n  var m  = Number(p.quantity);\n  if (!nr || !isFinite(m)) return;\n  rgMenge[nr] = (rgMenge[nr] || 0) + m;\n  if (rgSkus.indexOf(nr) === -1) rgSkus.push(nr);\n});\nif (rgSkus.length === 0) {\n  return raus(\"unklar\", \"Keine Bestandspruefung zugeordnet: die Rechnung fuehrt keine Warenposition.\");\n}\n\n// ------------------------------------------------------------------ Belege\n// Ein Beleg vom Typ Bestandsprotokoll traegt die BP und - sobald vergeben -\n// den Umsatz. Das ist die Vergabeliste.\nvar belege = arr(input.belege);\nvar belegZurBsp = {};\nvar vergebenAn  = {};\nvar schonAmEigenenUmsatz = \"\";\n\nbelege.forEach(function (b) {\n  var bsp = feld(b, F.BLG_BSP);\n  if (!bsp) return;\n  belegZurBsp[bsp] = { id: b.id, nummer: feld(b, F.BLG_ID) };\n  var ums = feld(b, F.BLG_UMS);\n  if (!ums) return;\n  if (ums === rgNummer) schonAmEigenenUmsatz = bsp;\n  else vergebenAn[bsp] = ums;\n});\n\n// Idempotenz: laeuft die Rechnung ein zweites Mal durch (voucher.status.changed\n// feuert je Statuswechsel), ist die Verknuepfung schon da. Still aussteigen -\n// kein Write, keine Meldung.\nif (schonAmEigenenUmsatz) {\n  return raus(\"uebersprungen\", \"\", \"\", schonAmEigenenUmsatz);\n}\n\n// Harte Kante: die Vergabeliste ist auf eine Seite begrenzt. Laeuft sie voll,\n// koennte eine bereits vergebene BP unsichtbar und damit ein zweites Mal\n// zugeordnet werden - das ist die einzige Richtung, in der ein falscher Link\n// entstehen kann. Deshalb hier Stopp statt Rueckfall auf \"sieht frei aus\".\nif (belege.length >= SEITENGROESSE) {\n  return raus(\"unklar\",\n    \"Keine Bestandspruefung zugeordnet: die Belegliste hat die Seitengrenze von \"\n    + SEITENGROESSE + \" erreicht, eine bereits vergebene Pruefung waere hier nicht sichtbar. \"\n    + \"Filter in Modul 113 nachruesten (Zeitfenster oder Store).\");\n}\n\n// -------------------------------------------------------------- Positionen\n// Gruppiert wird ueber die Positions-ID (\"BSP-10009-2026-08-03 #3\"), nicht ueber\n// den Link - der Name steht so direkt im Text.\nvar gruppen = {};\nvar positionen = arr(input.bspPositionen);\npositionen.forEach(function (p) {\n  var pid = feld(p, F.POS_ID);\n  var i = pid.indexOf(\" #\");\n  if (i <= 0) return;\n  var bsp = pid.slice(0, i);\n  var sku = feld(p, F.POS_PRODUKT);\n  if (!sku) return;\n  var diff = Number(feld(p, F.POS_DIFF));\n  if (!isFinite(diff)) diff = 0;\n  if (!gruppen[bsp]) gruppen[bsp] = {};\n  gruppen[bsp][sku] = (gruppen[bsp][sku] || 0) + Math.max(diff, 0);\n});\n\nvar positionenAmLimit = positionen.length >= SEITENGROESSE;\n\n// --------------------------------------------------------------- Kandidaten\nvar gueltig = [];\nvar protokoll = [];\n\narr(input.pruefungen).forEach(function (bp) {\n  var name = feld(bp, F.BSP_ID);\n  if (!name) return;\n\n  if (vergebenAn[name]) {\n    protokoll.push(name + \" (bereits an \" + vergebenAn[name] + \" vergeben)\");\n    return;\n  }\n  var beleg = belegZurBsp[name];\n  if (!beleg) {\n    protokoll.push(name + \" (kein Beleg vorhanden)\");\n    return;\n  }\n  var gruppe = gruppen[name];\n  if (!gruppe) {\n    protokoll.push(name + \" (keine Positionen gefunden)\");\n    return;\n  }\n\n  var treffer = 0;\n  var widerspruch = [];\n  var luecke = [];\n\n  rgSkus.forEach(function (sku) {\n    if (Object.prototype.hasOwnProperty.call(gruppe, sku)) {\n      if (gruppe[sku] === rgMenge[sku]) treffer++;\n      else widerspruch.push(sku + \" Rechnung \" + rgMenge[sku] + \" / Pruefung \" + gruppe[sku]);\n    } else {\n      // Nicht gebuchte Position: in der Pruefung existiert die Zeile gar nicht.\n      // Das ist die Signatur einer teilgebuchten Pruefung und disqualifiziert\n      // nicht - ein Mengenwiderspruch schon.\n      luecke.push(sku);\n    }\n  });\n\n  Object.keys(gruppe).forEach(function (sku) {\n    if (gruppe[sku] > 0 && rgSkus.indexOf(sku) === -1)\n      widerspruch.push(sku + \" Pruefung \" + gruppe[sku] + \" fehlt auf der Rechnung\");\n  });\n\n  var eintrag = {\n    name: name,\n    belegId: beleg.id,\n    belegNummer: beleg.nummer,\n    treffer: treffer,\n    luecke: luecke,\n    widerspruch: widerspruch,\n    status: feld(bp, F.BSP_STATUS)\n  };\n\n  // Untergrenze: ohne sie passt eine Rechnung aus lauter Luecken auf jede\n  // beliebige Pruefung.\n  if (widerspruch.length === 0 && treffer >= 2 && treffer > rgSkus.length / 2) {\n    gueltig.push(eintrag);\n  } else if (widerspruch.length > 0) {\n    protokoll.push(name + \" (\" + widerspruch.length + \" Widerspruch\"\n      + (widerspruch.length === 1 ? \"\" : \"e\") + \": \" + widerspruch.join(\", \") + \")\");\n  } else {\n    protokoll.push(name + \" (nur \" + treffer + \" von \" + rgSkus.length + \" Positionen belegt)\");\n  }\n});\n\n// ------------------------------------------------------------------ Verdikt\nif (gueltig.length === 1) {\n  var t = gueltig[0];\n  var zeilen = [];\n  if (t.luecke.length)\n    zeilen.push(\"Nicht gebucht in der Pruefung, auf der Rechnung gefuehrt: \" + t.luecke.join(\", \"));\n  if (t.status && t.status !== \"Abgeschlossen\")\n    zeilen.push(\"Pruefung hat Status \" + t.status + \".\");\n  if (positionenAmLimit)\n    zeilen.push(\"Positionsliste am Seitenlimit (\" + SEITENGROESSE + \") - Filter in Modul 112 pruefen.\");\n  // Das Pruefdatum steckt als Text in der BSP-ID, es muss nicht geparst werden.\n  var pruefdatum = t.name.slice(-10);\n  if (belegdatum && /^\\d{4}-\\d{2}-\\d{2}$/.test(pruefdatum) && pruefdatum !== belegdatum)\n    zeilen.push(\"Belegdatum \" + belegdatum + \" weicht vom Pruefdatum \" + pruefdatum + \" ab.\");\n\n  var kopf = \"Bestandspruefung \" + t.name + \" ueber Beleg \" + t.belegNummer\n           + \" verknuepft (\" + t.treffer + \" von \" + rgSkus.length + \" Positionen exakt).\";\n\n  return raus(\"treffer\", zeilen.length ? kopf + \"\\n\" + zeilen.join(\"\\n\") : \"\", t.belegId, t.name);\n}\n\nvar grund = gueltig.length > 1\n  ? \"mehrere passende Pruefungen (\" + gueltig.map(function (g) { return g.name; }).join(\", \") + \")\"\n  : \"keine eindeutige Pruefung\";\n\nvar meldung = [\"Bestandspruefung nicht verknuepft - \" + grund + \".\"];\nif (rgSkus.length < 2)\n  meldung.push(\"Die Rechnung fuehrt nur \" + rgSkus.length + \" Warenposition - die Mindestschwelle von 2 Treffern ist damit nicht erreichbar.\");\nif (protokoll.length)\n  meldung.push(\"Geprueft: \" + protokoll.join(\" \\u00b7 \"));\nelse\n  meldung.push(\"Fuer diesen Store existiert keine gueltige Bestandspruefung.\");\nif (positionenAmLimit)\n  meldung.push(\"Positionsliste am Seitenlimit (\" + SEITENGROESSE + \") - moeglicherweise fehlen Zeilen, Filter in Modul 112 pruefen.\");\n\nreturn raus(\"unklar\", meldung.join(\"\\n\"));\n"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 4200,
+                                    "y": 2250,
+                                    "name": "Bestandsprüfung zuordnen"
+                                }
+                            }
+                        },
+                        {
+                            "id": 115,
+                            "module": "builtin:BasicIfElse",
+                            "version": 1,
+                            "mapper": null,
+                            "metadata": {
+                                "designer": {
+                                    "x": 4500,
+                                    "y": 2250
+                                }
+                            },
+                            "branches": [
+                                {
+                                    "merge": false,
+                                    "label": "Treffer",
+                                    "type": "condition",
+                                    "flow": [
+                                        {
+                                            "id": 2,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "mapper": {
+                                                "id": "{{114.result.beleg_id}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tbld7UQwDBbq9A8Xk",
+                                                "record": {
+                                                    "fldI5lU4NQ7ymG4d0": [
+                                                        "{{110.id}}"
+                                                    ]
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 4800,
+                                                    "y": 2100,
+                                                    "name": "Beleg an Umsatz hängen"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "conditions": [
+                                        [
+                                            {
+                                                "a": "{{114.result.verdikt}}",
+                                                "b": "treffer",
+                                                "o": "text:equal"
+                                            }
+                                        ]
+                                    ]
+                                },
+                                {
+                                    "merge": false,
+                                    "disabled": false,
+                                    "label": "",
+                                    "type": "else",
+                                    "flow": [
+                                        {
+                                            "id": 118,
+                                            "module": "airtable:ActionUpdateRecords",
+                                            "version": 3,
+                                            "parameters": {
+                                                "__IMTCONN__": 9136634
+                                            },
+                                            "filter": {
+                                                "name": "Nur bei unklar",
+                                                "conditions": [
+                                                    [
+                                                        {
+                                                            "a": "{{114.result.verdikt}}",
+                                                            "b": "unklar",
+                                                            "o": "text:equal"
+                                                        }
+                                                    ]
+                                                ]
+                                            },
+                                            "mapper": {
+                                                "id": "{{110.id}}",
+                                                "base": "appiIkOaz1ID1FjfE",
+                                                "table": "tbl0Xqw2eK7KPVVWY",
+                                                "record": {
+                                                    "fldFD4fPdpvi9pVQZ": "{{ifempty(110.fldFD4fPdpvi9pVQZ; emptystring)}}{{newline}}{{114.result.hinweis}}"
+                                                },
+                                                "typecast": false,
+                                                "useColumnId": true
+                                            },
+                                            "metadata": {
+                                                "designer": {
+                                                    "x": 4800,
+                                                    "y": 2400,
+                                                    "name": "⚙ Hinweis ergänzen"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "metadata": {
+        "instant": false,
+        "version": 1,
+        "scenario": {
+            "roundtrips": 1,
+            "maxErrors": 3,
+            "autoCommit": true,
+            "autoCommitTriggerLast": true,
+            "sequential": false,
+            "slots": null,
+            "confidential": false,
+            "dataloss": false,
+            "dlq": true,
+            "freshVariables": false
+        },
+        "designer": {
+            "orphans": []
+        },
+        "zone": "eu1.make.com",
+        "notes": []
+    },
+    "io": {
+        "input_spec": [
+            {
+                "help": "",
+                "name": "resource_id",
+                "type": "text",
+                "label": "",
+                "default": "",
+                "required": true,
+                "multiline": false
+            }
+        ],
+        "output_spec": []
+    }
+}
