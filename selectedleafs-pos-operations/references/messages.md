@@ -1,6 +1,6 @@
 # Nachrichten-Übersicht
 
-> Lesbarer Zwilling von `assets/diagrams/messages.html` (**Runde 22**). Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token, damit man die tatsächliche Nachricht sieht. Emitter & Status aus Live-Inventar und Audit-Remediation, **Stand 15.08.2026**.
+> Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token, damit man die tatsächliche Nachricht sieht. Abgeleitet aus dem Live-Hub `[Notify] Telegram` (6862968); Emitter & Status aus Live-Inventar und Audit-Remediation, **Stand 15.08.2026**.
 >
 > Die **Wortlaut-Templates** (mit Token) sind die Text-SSoT in [[catalog]]; die **Mechanik** (Renderer, Token-Regeln, Channels, Empfänger-Logik) steht in [[notify]]. Hier steht keine Wahrheit, sondern die *Ansicht* — bei Textänderung: erst Modul 2 im `[Notify] Telegram`-Szenario, dann [[catalog]], dann bei Bedarf diese Datei.
 
