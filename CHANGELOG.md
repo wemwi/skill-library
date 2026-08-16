@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.22.0](https://github.com/wemwi/skill-library/compare/v5.21.0...v5.22.0) (2026-08-16)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Nachrichten-Übersicht als messages.md (ersetzt messages.html) ([#172](https://github.com/wemwi/skill-library/issues/172)) ([254f17b](https://github.com/wemwi/skill-library/commit/254f17b509a87ce3f0ec68ecfb494e3b909f5269))
+
 ## [5.21.0](https://github.com/wemwi/skill-library/compare/v5.20.0...v5.21.0) (2026-08-16)
 
 
