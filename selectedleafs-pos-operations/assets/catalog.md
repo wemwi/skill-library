@@ -351,28 +351,6 @@ Danke für deine Arbeit! :)
 <a href="{Maps-URL}">Google Maps öffnen</a>
 ```
 
-### `city.hours` · City · ⚠️ NEU (C6 — noch nicht im Hub)
-> **Entwurf, provisorisch.** Copy gegen `selectedleafs-city-content` (Voice + Compliance) prüfen. Key im Hub Modul 2 noch anzulegen.
-```
-🕒 {Store} · Öffnungszeiten
-{Stadtteil}
-
-{Öffnungszeiten}
-
-<a href="{Maps-URL}">Google Maps öffnen</a>
-```
-
-### `city.teach` · City · ⚠️ NEU (C7 „Lücke melden" — noch nicht im Hub)
-> **Entwurf, provisorisch.** Intent des Teach-Posts mit dir schärfen; Copy gegen `selectedleafs-city-content` prüfen. Key im Hub Modul 2 noch anzulegen.
-```
-📣 {Store} · Deine Sorte fehlt?
-{Stadtteil}
-
-Sag dem Team vor Ort Bescheid — wir füllen zeitnah nach.
-
-<a href="{Maps-URL}">Google Maps öffnen</a>
-```
-
 ---
 
 ## 👉 Aufgaben · Topic 585
