@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.21.0](https://github.com/wemwi/skill-library/compare/v5.20.0...v5.21.0) (2026-08-16)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** ausgefüllte Nachrichten-Übersicht (references/messages.md) ([#170](https://github.com/wemwi/skill-library/issues/170)) ([7c6da75](https://github.com/wemwi/skill-library/commit/7c6da75b1aecfaccdb94da41a6869a8406a465ce))
+
 ## [5.20.0](https://github.com/wemwi/skill-library/compare/v5.19.0...v5.20.0) (2026-08-15)
 
 
