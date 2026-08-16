@@ -13,7 +13,7 @@ description: >-
   [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.1.1"
+  version: "1.2.0"
 ---
 
 # selectedleafs · POS Operations
@@ -107,7 +107,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 |---|---|
 | die Base liest/änderst, ein Feld/eine Formel anfasst | `references/model.md` + die passende `references/airtable/<tabelle>.md` |
 | ein Szenario baust/mappst/debuggst | `references/scenarios.md` (Vertrag) + `assets/blueprints/<szenario>.json` |
-| eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) |
+| eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) + `references/messages.md` (ausgefüllte Übersicht) |
 | an Airtable-/Make-MCP-Eigenheiten scheiterst | `references/tools.md` |
 | Idempotenz, Fehlerpfad, Registry, Wächter brauchst | `references/operations.md` |
 
@@ -133,7 +133,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 
 ## Verzeichnis
 
-**`references/`** — `model.md` (Datenmodell, Geld, Versionierung, Datum, Steuer) · `scenarios.md` (Szenario-Verträge + Topologie) · `notify.md` (Telegram-Grammatik, drei Channels, Renderer-Kontrakt, City-Anker) · `tools.md` (Airtable-/Make-MCP-Fallen; Generisches → `global-make-conventions`) · `operations.md` (Idempotenz, Fehlerkonvention, Registry, Wächter-Views) · **`airtable/<tabelle>.md`** (je Tabelle: Zweck · Beziehungen · tragende Felder + datierter Feld-Block).
+**`references/`** — `model.md` (Datenmodell, Geld, Versionierung, Datum, Steuer) · `scenarios.md` (Szenario-Verträge + Topologie) · `notify.md` (Telegram-Grammatik, drei Channels, Renderer-Kontrakt, City-Anker) · `messages.md` (ausgefüllte Nachrichten-Übersicht — Ansicht; Text-SSoT bleibt `assets/catalog.md`) · `tools.md` (Airtable-/Make-MCP-Fallen; Generisches → `global-make-conventions`) · `operations.md` (Idempotenz, Fehlerkonvention, Registry, Wächter-Views) · **`airtable/<tabelle>.md`** (je Tabelle: Zweck · Beziehungen · tragende Felder + datierter Feld-Block).
 
 **`assets/`** — `catalog.md` (Nachrichtenkatalog) · `blueprints/` (JSON je Szenario) · `diagrams/` (`messages.html`, `er.html`, `topology.html` — datierte Review-Artefakte) · `examples/` (echte Belege).
 
