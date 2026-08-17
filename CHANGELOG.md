@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.23.1](https://github.com/wemwi/skill-library/compare/v5.23.0...v5.23.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** invoice.created hinter die Positionsschreibung verschoben ([#176](https://github.com/wemwi/skill-library/issues/176)) ([aecfef7](https://github.com/wemwi/skill-library/commit/aecfef7a956f111b0c85fa43a3b9146d69551332))
+
 ## [5.23.0](https://github.com/wemwi/skill-library/compare/v5.22.0...v5.23.0) (2026-08-17)
 
 
