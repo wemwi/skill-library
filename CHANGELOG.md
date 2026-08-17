@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.24.0](https://github.com/wemwi/skill-library/compare/v5.23.1...v5.24.0) (2026-08-17)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Nachrichtenkatalog Runde 25 — Hub-Blueprint auf Transform ([#178](https://github.com/wemwi/skill-library/issues/178)) ([5e7f34d](https://github.com/wemwi/skill-library/commit/5e7f34de97e8d28a279066277fa1291842093c27))
+
 ## [5.23.1](https://github.com/wemwi/skill-library/compare/v5.23.0...v5.23.1) (2026-08-17)
 
 
