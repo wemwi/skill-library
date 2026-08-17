@@ -365,97 +365,6 @@
                                                             }
                                                         },
                                                         {
-                                                            "id": 201,
-                                                            "module": "scenario-service:CallSubscenario",
-                                                            "version": 2,
-                                                            "parameters": {
-                                                                "scenario": "SCN_6862968",
-                                                                "shouldWaitForExecutionEnd": false
-                                                            },
-                                                            "mapper": {
-                                                                "data": {
-                                                                    "id": "{{13.id}}",
-                                                                    "key": "invoice.created"
-                                                                }
-                                                            },
-                                                            "metadata": {
-                                                                "designer": {
-                                                                    "x": 4200,
-                                                                    "y": 450,
-                                                                    "name": "Call: invoice.created"
-                                                                },
-                                                                "restore": {
-                                                                    "parameters": {
-                                                                        "scenario": {
-                                                                            "label": "[Dispatch] Telegram Notifications"
-                                                                        }
-                                                                    }
-                                                                },
-                                                                "parameters": [
-                                                                    {
-                                                                        "name": "scenario",
-                                                                        "type": "scenario",
-                                                                        "label": "Scenario",
-                                                                        "required": true
-                                                                    },
-                                                                    {
-                                                                        "name": "shouldWaitForExecutionEnd",
-                                                                        "type": "boolean",
-                                                                        "label": "Wait for the scenario to finish",
-                                                                        "required": true
-                                                                    }
-                                                                ],
-                                                                "expect": [
-                                                                    {
-                                                                        "name": "data",
-                                                                        "spec": [
-                                                                            {
-                                                                                "name": "key",
-                                                                                "type": "text",
-                                                                                "label": "",
-                                                                                "required": true,
-                                                                                "multiline": false
-                                                                            },
-                                                                            {
-                                                                                "name": "id",
-                                                                                "type": "text",
-                                                                                "label": "",
-                                                                                "required": false,
-                                                                                "multiline": false
-                                                                            }
-                                                                        ],
-                                                                        "type": "collection",
-                                                                        "label": "Scenario Inputs"
-                                                                    }
-                                                                ],
-                                                                "interface": [
-                                                                    {
-                                                                        "name": "executionId",
-                                                                        "type": "text",
-                                                                        "label": "Execution ID"
-                                                                    }
-                                                                ]
-                                                            },
-                                                            "onerror": [
-                                                                {
-                                                                    "id": 209,
-                                                                    "module": "builtin:Resume",
-                                                                    "version": 1,
-                                                                    "parameters": {},
-                                                                    "mapper": {
-                                                                        "output": ""
-                                                                    },
-                                                                    "metadata": {
-                                                                        "designer": {
-                                                                            "x": 4500,
-                                                                            "y": 900,
-                                                                            "name": "Fehler übergehen"
-                                                                        }
-                                                                    }
-                                                                }
-                                                            ]
-                                                        },
-                                                        {
                                                             "id": 64,
                                                             "module": "airtable:ActionCreateRecord",
                                                             "version": 3,
@@ -1936,6 +1845,137 @@
                             }
                         },
                         {
+                            "id": 210,
+                            "module": "util:FunctionSleep",
+                            "version": 1,
+                            "parameters": {},
+                            "mapper": {
+                                "duration": "2"
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 6600,
+                                    "y": 1800,
+                                    "name": "Rollup abwarten"
+                                },
+                                "restore": {},
+                                "expect": [
+                                    {
+                                        "name": "duration",
+                                        "type": "uinteger",
+                                        "label": "Delay",
+                                        "required": true,
+                                        "validate": {
+                                            "max": 300,
+                                            "min": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "id": 201,
+                            "module": "scenario-service:CallSubscenario",
+                            "version": 2,
+                            "parameters": {
+                                "scenario": "SCN_6862968",
+                                "shouldWaitForExecutionEnd": false
+                            },
+                            "mapper": {
+                                "data": {
+                                    "id": "{{72.id}}",
+                                    "key": "invoice.created"
+                                }
+                            },
+                            "metadata": {
+                                "designer": {
+                                    "x": 6900,
+                                    "y": 1800,
+                                    "name": "Call: invoice.created"
+                                },
+                                "restore": {
+                                    "parameters": {
+                                        "scenario": {
+                                            "label": "[Dispatch] Telegram Notifications"
+                                        }
+                                    }
+                                },
+                                "parameters": [
+                                    {
+                                        "name": "scenario",
+                                        "type": "scenario",
+                                        "label": "Scenario",
+                                        "required": true
+                                    },
+                                    {
+                                        "name": "shouldWaitForExecutionEnd",
+                                        "type": "boolean",
+                                        "label": "Wait for the scenario to finish",
+                                        "required": true
+                                    }
+                                ],
+                                "expect": [
+                                    {
+                                        "name": "data",
+                                        "spec": [
+                                            {
+                                                "name": "key",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": true,
+                                                "multiline": false
+                                            },
+                                            {
+                                                "name": "id",
+                                                "type": "text",
+                                                "label": "",
+                                                "required": false,
+                                                "multiline": false
+                                            }
+                                        ],
+                                        "type": "collection",
+                                        "label": "Scenario Inputs"
+                                    }
+                                ],
+                                "interface": [
+                                    {
+                                        "name": "executionId",
+                                        "type": "text",
+                                        "label": "Execution ID"
+                                    }
+                                ]
+                            },
+                            "onerror": [
+                                {
+                                    "id": 209,
+                                    "module": "builtin:Resume",
+                                    "version": 1,
+                                    "parameters": {},
+                                    "mapper": {
+                                        "output": ""
+                                    },
+                                    "metadata": {
+                                        "designer": {
+                                            "x": 4500,
+                                            "y": 900,
+                                            "name": "Fehler übergehen"
+                                        }
+                                    }
+                                }
+                            ],
+                            "filter": {
+                                "name": "Nur Insert (created)",
+                                "conditions": [
+                                    [
+                                        {
+                                            "a": "{{8.id}}",
+                                            "o": "notexist"
+                                        }
+                                    ]
+                                ]
+                            }
+                        },
+                        {
                             "id": 105,
                             "module": "scenario-service:CallSubscenario",
                             "version": 2,
@@ -1964,7 +2004,7 @@
                             },
                             "metadata": {
                                 "designer": {
-                                    "x": 6600,
+                                    "x": 7200,
                                     "y": 1800,
                                     "name": "Push Inventory (→ 6805674)"
                                 },
