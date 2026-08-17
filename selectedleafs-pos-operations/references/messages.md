@@ -1,14 +1,14 @@
 # Nachrichten-Übersicht
 
-> Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token. Abgeleitet aus dem finalisierten Wortlaut (Katalog Runde 24), **Stand 2026-08-16**.
+> Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token. Abgeleitet aus dem finalisierten Wortlaut (Katalog Runde 25), **Stand 2026-08-17**.
 >
-> Die **Wortlaut-Templates** (mit Token) sind die Text-SSoT in [[catalog]]; die **Mechanik** (Renderer, Token-Regeln, Channels) steht in [[notify]]. Hier steht keine Wahrheit, sondern die *Ansicht*. **Achtung:** Katalog Runde 24 ist dem Hub-Modul 2 voraus — die Angleichung läuft als Import-JSON.
+> Die **Wortlaut-Templates** (mit Token) sind die Text-SSoT in [[catalog]]; die **Mechanik** (Renderer, Token-Regeln, Channels) steht in [[notify]]. Hier steht keine Wahrheit, sondern die *Ansicht*. **Achtung:** Katalog Runde 25 ist dem Hub-Modul 2 voraus — die Angleichung läuft als Import-JSON.
 
-**Beispieldaten:** Vertriebler `Max Berger` · Store `Kiosk Nordstern` · Stadtteil `Linden` · `30449 Hannover` · `Limmerstraße 12` · Rechnung `RG-10128-1` (12.08.2026, fällig 26.08.2026) · Nettoverkaufswert `248,50 €` · Gesamtkosten `96,00 €` · Kostenanteil `28,80 €` · `60 Einheiten` · Bestandsdifferenz `12 Einheiten` / `41,00 €` · Nettoumsatz `312,40 €` · Provision `46,86 €` · Ertrag `78,10 €` · offener Saldo `134,20 €` · Auszahlung `150,00 €`.
+**Beispieldaten:** Vertriebler `Max Berger` · Store `Kiosk Nordstern` (JTL-Kundennummer `10132`) · Stadtteil `Linden` · `30449 Hannover` · `Limmerstraße 12` · Lieferung `UL-10042-1` · Rechnung `RG-10128-1` (12.08.2026, fällig 26.08.2026) · Nettoverkaufswert `248,50 €` · Gesamtkosten `96,00 €` · Kostenanteil `28,80 €` · `60 Einheiten` · Bestandsdifferenz `12 Einheiten` / `41,00 €` · Nettoumsatz `312,40 €` · Provision `46,86 €` · Ertrag `78,10 €` · offener Saldo `134,20 €` · Auszahlung `150,00 €`.
 
 **Register:** **Operations** (Team-Forum, Topic) · **Vertriebler** (persönlicher Sales-Channel) · **City** (öffentlicher Stadt-Channel).
 
-**Status:** `live` = Emitter postet · `geplant` = hängt am noch nicht gebauten `[Scheduled] Daily Operations` · `offen` = Meldung definiert, Emitter fehlt · `gestrichen` = nicht aktiv.
+**Status:** `live` = Emitter postet · `geplant` = hängt an einem noch zu bauenden Trigger · `offen` = Meldung definiert, Emitter/Trigger fehlt · `gestrichen` = nicht aktiv.
 
 ---
 
@@ -117,6 +117,7 @@ Java Spark (White) ab sofort vor Ort erhältlich
 
 Google Maps öffnen → https://maps.google.com/…
 ```
+**Begleitend** → 👉 `task.jtl_stock`
 
 ### 📥 `delivery.returned` — Rückholung · `live`
 **Operations** — 📥 Vorgänge · 586
@@ -174,8 +175,10 @@ Nettoverkaufswert: 41,00 €
 Geprüft am 12.08.2026
 ```
 **City** — —
+**Begleitend** → 👉 `task.jtl_inventory_date`
 
-### ⏳ `inventory.due` — Prüfung fällig · `geplant`
+### ⏳ `inventory.due` — Prüfung fällig · `offen`
+*`[Scheduled] Daily Operations` ist endgültig gestrichen (17.08.2026) — dieser Anlass MUSS bleiben, braucht aber einen neuen eigenen Trigger. Template unverändert, nur der Auslöser ist Bau-Backlog.*
 **Operations** — 📥 Vorgänge · 586
 ```
 ⏳ Bestandsprüfung fällig
@@ -386,6 +389,30 @@ für Max Berger in Region Hannover
 • Chat-ID in »⚙ Telegram ID« eintragen
 ```
 
+### 👉 `task.jtl_stock` · `offen`
+*Hängt fachlich an `delivery.booked` (nur Übergabe) — Klingel dafür ist Bau-Backlog.*
+```
+👉 Lager buchen (JTL)
+Kiosk Nordstern · 60 Einheiten
+
+• Lager Modul öffnen
+• Wareneingang (UL-10042-1) buchen
+
+Geliefert am 12.08.2026
+```
+
+### 👉 `task.jtl_inventory_date` · `offen`
+*Hängt fachlich an `inventory.checked` — Klingel dafür ist Bau-Backlog.*
+```
+👉 Prüfdatum setzen (JTL)
+Kiosk Nordstern · Linden
+
+• Kunde öffnen (10132)
+• Letzte Bestandsprüfung setzen
+
+Geprüft am 12.08.2026
+```
+
 ### 👉 `task.terms_missing` · `offen`
 ```
 👉 Konditionen prüfen
@@ -423,13 +450,12 @@ Beleg vom 12.08.2026
 ## ⚙️ System · 583
 
 ### ⚙️ `sync.products` — Produkt-Sync · `live`
-*Postet nur bei materieller Änderung (Preis korrigiert / Sorte neu); No-Op-Lauf bleibt still.*
+*Postet nur bei materieller Änderung (Preis korrigiert / Sorte neu); No-Op-Lauf bleibt still. Runde 25: nur noch das Neu-Signal — »geändert«-Zähler und Gesamtzahl-Infozeile raus.*
 ```
 ⚙️ Produkte aktualisiert
-12 Produkte · 34 Varianten
 
-Produkte: 2 angelegt · 3 geändert
-Varianten: 5 angelegt · 4 geändert
+Produkte: 2 angelegt
+Varianten: 5 angelegt
 Preise: 1 korrigiert
 ```
 **Begleitend** → 🛑 `error.sync_aborted`
@@ -440,7 +466,7 @@ Preise: 1 korrigiert
 ---
 
 ## 🛑 Störungen · 584
-*Alle im Topic 🛑 Störungen · 584. Werte als ctx aus dem abbrechenden Lauf.*
+*Alle im Topic 🛑 Störungen · 584. Werte als ctx aus dem abbrechenden Lauf. Runde 25: `{Fehler}` trägt den menschlichen Grund (welches Feld, welche Stufe) — nie mehr den rohen HTTP-Status wie zuvor „HTTP 422 – Feld ungültig".*
 
 ```
 🛑 Mahnschreiben nicht verarbeitbar
@@ -460,7 +486,7 @@ Folge: Beleg nicht abgelegt, keine Meldung an den Vertriebler
 🛑 Lexware-ID nicht zurückgeschrieben
 Max Berger · Hannover
 
-Grund: HTTP 422 – Feld ungültig
+Grund: Lexware-Antwort ohne ID-Feld
 Folge: der nächste Lauf legt eine Dublette an
 
 a257b406-… von Hand in »⚙ Lexware ID« eintragen.
@@ -469,14 +495,14 @@ a257b406-… von Hand in »⚙ Lexware ID« eintragen.
 🛑 Sync abgebrochen
 [Sync] Inventory to Shopify · Abbruch bei: Belegdatum
 
-Grund: HTTP 422 – Feld ungültig
+Grund: Belegdatum fehlt im Beleg
 Folge: kein Bestands-Push, keine City-Posts
 ```
 ```
 🛑 Store konnte nicht angelegt werden
 Kiosk Nordstern · Abbruch bei: Kontakt anlegen
 
-Grund: HTTP 422 – Feld ungültig
+Grund: Steuernummer fehlt am Store
 Folge: kein Metaobjekt, kein Lexware-Kontakt, kein Broadcast
 
 Hinweis steht im Airtable-Datensatz.
@@ -485,7 +511,7 @@ Hinweis steht im Airtable-Datensatz.
 🛑 Store nur teilweise angelegt
 Kiosk Nordstern · Abbruch bei: Kontakt anlegen
 
-Grund: HTTP 422 – Feld ungültig
+Grund: Steuernummer fehlt am Store
 Angelegt: Metaobjekt
 Fehlt: Lexware-Kontakt
 ```
@@ -493,7 +519,7 @@ Fehlt: Lexware-Kontakt
 🛑 Vertriebler konnte nicht angelegt werden
 Max Berger · Abbruch bei: Kontakt anlegen
 
-Grund: HTTP 422 – Feld ungültig
+Grund: Steuernummer fehlt am Vertriebler
 Angelegt: Metaobjekt
 Fehlt: Lexware-Kontakt
 ```

@@ -1,10 +1,11 @@
 # Nachrichtenkatalog
 
-> **Runde 24** · finalisierter Wortlaut, **Stand 2026-08-16**.
+> **Runde 25** · finalisierter Wortlaut, **Stand 2026-08-17**.
 > **Achtung — dem Hub VORAUS:** dieser Satz wurde im Wortlaut-Durchgang festgelegt und ist die neue Text-SSoT. Der Hub (`[Report/Notify] Telegram Notifications` 6862968, Modul 2 „Ereignis-Landkarte") ist **noch nicht angeglichen** — die Angleichung läuft als Import-JSON. Bis dahin gilt: **diese Datei ist die Wahrheit, der Hub zieht nach**, nicht umgekehrt.
 > Mechanik (Renderer, Token, Channels, Empfänger-Logik) steht in [[notify]] — hier nur die Wortlaute.
 
 **Register je Meldung:** `text` → Operations · `vtext` → Vertriebler · `ctext` → City. Fehlt ein Register, gibt es dorthin keine Meldung. Token-Regeln (`{abs}`, `{Vorname}`, `{Maps-URL}`, `{Saldoabruf}`, `{leer …}`/`{gesetzt …}`) siehe [[notify]].
+**Runde-25-Änderungen:** zwei neue `task.*` (JTL-Handgriffe an Lieferung/Bestandsprüfung) · `sync.products` auf das Neu-Signal eingedampft (»geändert«-Zähler + Gesamtzahl-Infozeile raus) · in den Störungen trägt `{Fehler}` ab jetzt den menschlichen Grund (Feld/Stufe), nie den rohen HTTP-Code.
 
 **Grammatik dieser Runde (fest):** Betreff = reines Ereignis (Emoji + Ereignis) — **kein Store-Name, keine Beleg-ID, kein Zustandswort**; Referenzen (Store, RG-Nr.) in die Infozeile. **Ops- und Sales-Label getrennt** (Ops = Ereignis-Substantiv, Sales = „… erfasst"). **RG-Nr. in die Infozeile**, Datum in die Belegzeile. **⚠️ auf jeder Vorbehaltszeile**, in Ops und Sales gleich, konditional. Reine Floskeln raus (Ausnahme: warmer Halbsatz an Meilensteinen — Onboarding, Auszahlung). Sales-Body trägt **einen** fetten Anker-Wert, Ops bleibt mager.
 
@@ -373,6 +374,32 @@ für {Vertriebler} in Region {Ort}
 • Chat-ID in »⚙ Telegram ID« eintragen
 ```
 
+### `task.jtl_stock`
+*Hängt fachlich an `delivery.booked` (nur Übergabe, nicht Rückholung) — Klingel dafür ist Bau-Backlog, kein Textedit.*
+**Operations**
+```
+👉 Lager buchen (JTL)
+{Store} · {Menge (Stück)} Einheiten
+
+• Lager Modul öffnen
+• Wareneingang ({ID}) buchen
+
+<i>Geliefert am {Datum}</i>
+```
+
+### `task.jtl_inventory_date`
+*Hängt fachlich an `inventory.checked` — Klingel dafür ist Bau-Backlog, kein Textedit.*
+**Operations**
+```
+👉 Prüfdatum setzen (JTL)
+{Store} · {Stadtteil}
+
+• Kunde öffnen ({⚙ Store ID})
+• Letzte Bestandsprüfung setzen
+
+<i>Geprüft am {Datum}</i>
+```
+
 ### `task.terms_missing`
 **Operations**
 ```
@@ -412,14 +439,13 @@ für {Vertriebler} in Region {Ort}
 *(alle Token ctx; wiederholte Blöcke liefert der Emitter fertig als `{Zeilen}`.)*
 
 ### `sync.products`
-*Postet nur bei materieller Änderung — Preis korrigiert oder Sorte neu; ein No-Op-Lauf bleibt still.*
+*Postet nur bei materieller Änderung — Preis korrigiert oder Sorte neu; ein No-Op-Lauf bleibt still. Runde 25: nur noch das Signal, worauf Joscha reagiert — neu angelegt + Preise korrigiert; »geändert«-Zähler und Gesamtzahl-Infozeile raus.*
 **Operations**
 ```
 ⚙️ Produkte aktualisiert
-{n} Produkte · {m} Varianten
 
-Produkte: {a} angelegt · {b} geändert
-Varianten: {c} angelegt · {d} geändert
+Produkte: {a} angelegt
+Varianten: {c} angelegt
 Preise: {e} korrigiert
 ```
 
@@ -428,6 +454,7 @@ Preise: {e} korrigiert
 ---
 
 ## 🛑 Störungen · Topic 584
+*Runde 25: `{Fehler}` trägt den menschlichen Grund (welches Feld, welche Stufe) — nie den rohen HTTP-Status. Umstellung ist Emitter-Sache (ctx füttern), kein Template-Edit; steht im Bau-Backlog beim System-Emitter-Schnitt.*
 
 ### `error.reminder_unreadable`
 ```
