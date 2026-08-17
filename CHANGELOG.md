@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.23.0](https://github.com/wemwi/skill-library/compare/v5.22.0...v5.23.0) (2026-08-17)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Nachrichtenkatalog Runde 24 — Hub-Blueprint angeglichen ([#174](https://github.com/wemwi/skill-library/issues/174)) ([148a87a](https://github.com/wemwi/skill-library/commit/148a87a8be4e88a0e3d96afd0216dca8c90db490))
+
 ## [5.22.0](https://github.com/wemwi/skill-library/compare/v5.21.0...v5.22.0) (2026-08-16)
 
 
