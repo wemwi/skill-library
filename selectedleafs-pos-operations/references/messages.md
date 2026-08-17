@@ -1,25 +1,23 @@
 # Nachrichten-Übersicht
 
-> Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token, damit man die tatsächliche Nachricht sieht. Abgeleitet aus dem Live-Hub `[Notify] Telegram` (6862968); Emitter & Status aus Live-Inventar und Audit-Remediation, **Stand 15.08.2026**.
+> Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token. Abgeleitet aus dem finalisierten Wortlaut (Katalog Runde 24), **Stand 2026-08-16**.
 >
-> Die **Wortlaut-Templates** (mit Token) sind die Text-SSoT in [[catalog]]; die **Mechanik** (Renderer, Token-Regeln, Channels, Empfänger-Logik) steht in [[notify]]. Hier steht keine Wahrheit, sondern die *Ansicht* — bei Textänderung: erst Modul 2 im `[Notify] Telegram`-Szenario, dann [[catalog]], dann bei Bedarf diese Datei.
+> Die **Wortlaut-Templates** (mit Token) sind die Text-SSoT in [[catalog]]; die **Mechanik** (Renderer, Token-Regeln, Channels) steht in [[notify]]. Hier steht keine Wahrheit, sondern die *Ansicht*. **Achtung:** Katalog Runde 24 ist dem Hub-Modul 2 voraus — die Angleichung läuft als Import-JSON.
 
-**Beispieldaten (neutral, keine echten Partner-/Vertriebler-Daten):** Vertriebler `Max Berger` · Store `Kiosk Nordstern` · Stadtteil `Linden` · `30449 Hannover` · Rechnung `RG-10128-1` (12.08.2026, fällig 26.08.2026) · Nettoumsatz `312,40 €` · Provision `46,86 €` · offener Saldo `134,20 €`.
+**Beispieldaten:** Vertriebler `Max Berger` · Store `Kiosk Nordstern` · Stadtteil `Linden` · `30449 Hannover` · `Limmerstraße 12` · Rechnung `RG-10128-1` (12.08.2026, fällig 26.08.2026) · Nettoverkaufswert `248,50 €` · Gesamtkosten `96,00 €` · Kostenanteil `28,80 €` · `60 Einheiten` · Bestandsdifferenz `12 Einheiten` / `41,00 €` · Nettoumsatz `312,40 €` · Provision `46,86 €` · Ertrag `78,10 €` · offener Saldo `134,20 €` · Auszahlung `150,00 €`.
 
-**Register:** **Operations** (Team-Forum, Topic) · **Vertriebler** (persönlicher Sales-Channel) · **City** (öffentlicher Stadt-Channel). Fehlt ein Register, gibt es dorthin keine Meldung — der Grund steht dann dabei.
+**Register:** **Operations** (Team-Forum, Topic) · **Vertriebler** (persönlicher Sales-Channel) · **City** (öffentlicher Stadt-Channel).
 
-**Status:** `live` = Emitter existiert und postet · `geplant` = hängt am noch nicht gebauten `[Scheduled] Daily Operations` · `offen` = Meldung definiert, Emitter (Klingel) im Szenario fehlt noch · `gestrichen` = nicht mehr aktiv.
+**Status:** `live` = Emitter postet · `geplant` = hängt am noch nicht gebauten `[Scheduled] Daily Operations` · `offen` = Meldung definiert, Emitter fehlt · `gestrichen` = nicht aktiv.
 
 ---
 
 ## 📥 Vorgänge — ein Anlass, alle Register
 
-### 🎉 `store.created` — Neuer Store
-**Emitter** `[Create] New Store Partner` · **Status** `live`
-
+### 🎉 `store.created` — Neuer Store · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-🎉 Neuer Store aktiv
+🎉 Neuer Store
 Kiosk Nordstern · Linden
 
 Akquiriert durch Max Berger
@@ -28,13 +26,11 @@ Akquiriert durch Max Berger
 ```
 🎉 Neuer Store erfasst
 Kiosk Nordstern · 30449 Hannover
-
-Gute Arbeit Max.
 ```
 **City** (mit Foto)
 ```
-🎉 Neuer Partner: Kiosk Nordstern
-Linden · Limmerstraße 12
+🎉 Neuer Partner
+Kiosk Nordstern · Limmerstraße 12
 
 🕒 Öffnungszeiten
 Mo–Do    08:30–23:30
@@ -43,27 +39,18 @@ So       09:00–23:30
 
 Google Maps öffnen → https://maps.google.com/…
 ```
-**Begleitend** → 👉 `task.jtl_missing` ⚠ offen · 🛑 `error.store_failed` · 🛑 `error.store_partial`
+**Begleitend** → 👉 `task.jtl_missing` · 🛑 `error.store_failed` · 🛑 `error.store_partial`
 
-### 🤝 `salesperson.created` — Neuer Vertriebler
-**Emitter** `[Create] New Sales Member` · **Status** `live`
-
+### 🤝 `salesperson.created` — Neuer Vertriebler · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-🤝 Neuer Vertriebler aktiv
+🤝 Neuer Vertriebler
 Max Berger · Hannover
-
-Besteuerung: Kleinunternehmer
 ```
-**Vertriebler** — kein Kanal (existiert bei Anlage noch nicht)
-**City** — —
-**Begleitend** → 👉 `task.telegram_missing` ⚠ offen · 🛑 `error.salesperson_failed` · 🛑 `error.lexware_orphan`
+**Vertriebler** — kein Kanal (existiert bei Anlage noch nicht) · **City** — —
+**Begleitend** → 👉 `task.telegram_missing` · 🛑 `error.salesperson_failed` · 🛑 `error.lexware_orphan`
 
-### 👋 `salesperson.onboarded` — Onboarding
-**Emitter** `Airtable-Webhook (⚙ Telegram ID)` · **Status** `offen`
-
-**Operations** — —
-**City** — —
+### 👋 `salesperson.onboarded` — Onboarding · `offen`
 **Vertriebler**
 ```
 👋 Willkommen bei selectedleafs, Max
@@ -81,37 +68,38 @@ Deine Auszahlung
 Deine einzige Pflicht
 • mindestens eine Bestandsprüfung alle 14 Tage
 
+Dein Store-Formular
+• neuen Partnerstore anlegen → https://…
+• nur über diesen Link — er trägt deinen Namen
+
 Schön, dass du dabei bist.
 ```
 *Schließt 👉 `task.telegram_missing`.*
 
-### 📦 `delivery.booked` — Lieferung
-**Emitter** `[Process] Upload PDF (Delivery)` · **Status** `live`
-
+### 📦 `delivery.booked` — Lieferung · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
 📦 Kommissionsware übergeben
-Max Berger · Kiosk Nordstern
+Max Berger bei Kiosk Nordstern
 
-Nettowarenwert: 248,50 €
+Nettoverkaufswert: 248,50 €
 Gesamtkosten: 96,00 €
-Anteil Max: 28,80 €
 
-Protokoll ohne Unterschrift.
+⚠️ Protokoll ohne Unterschrift.
 
 Geliefert am 12.08.2026
 ```
 **Vertriebler**
 ```
 📦 Lieferung erfasst
-Kiosk Nordstern · 5 Sorten
+Kiosk Nordstern · 60 Einheiten
 
-Nettowarenwert: 248,50 €
+Nettoverkaufswert: 248,50 €
 Dein Kostenanteil: 28,80 €
 
 Geliefert am 12.08.2026
 ```
-**City** — Restock-Post (`city.restock`)
+**City** — Restock (`city.restock`)
 ```
 📦 Frisch aufgefüllt
 Kiosk Nordstern · Linden
@@ -120,36 +108,35 @@ Indo Fusion (White), Suma Rush (White), Borneo Lift (Green)
 
 Google Maps öffnen → https://maps.google.com/…
 ```
-**City** — Neue-Sorte-Post (`city.strain_new`, je neuer Sorte ein eigener Post)
+**City** — neue Sorte (`city.strain_new`, je Sorte ein Post)
 ```
-🌿 Neu: Java Spark (White)
+🌿 Neue Sorte verfügbar
 Kiosk Nordstern · Linden
+
+Java Spark (White) ab sofort vor Ort erhältlich
 
 Google Maps öffnen → https://maps.google.com/…
 ```
 
-### 📥 `delivery.returned` — Rückholung
-**Emitter** `[Process] Upload PDF (Delivery)` · **Status** `live`
-
+### 📥 `delivery.returned` — Rückholung · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-📥 Rückholung abgeschlossen
-Max Berger · Kiosk Nordstern
+📥 Kommissionsware abgeholt
+Max Berger bei Kiosk Nordstern
 
-Nettowarenwert: 248,50 €
+Nettoverkaufswert: 248,50 €
 Gesamtkosten: 96,00 €
-Anteil Max: 28,80 €
 
-Protokoll ohne Unterschrift.
+⚠️ Protokoll ohne Unterschrift.
 
 Zurückgeholt am 12.08.2026
 ```
 **Vertriebler**
 ```
 📥 Rückholung erfasst
-Kiosk Nordstern · 5 Sorten
+Kiosk Nordstern · 60 Einheiten
 
-Nettowarenwert: 248,50 €
+Nettoverkaufswert: 248,50 €
 Dein Kostenanteil: 28,80 €
 
 Die Kosten wurden deinem Saldo gutgeschrieben.
@@ -157,282 +144,288 @@ Die Kosten wurden deinem Saldo gutgeschrieben.
 Zurückgeholt am 12.08.2026
 ```
 **City** — — (Leerbestand nie im Feed)
+*Beträge ohne Vorzeichen; Rückholungen buchen intern negativ (`{abs …}`).*
 
-*Beträge werden hier ohne Vorzeichen gezeigt — Rückholungen buchen intern negativ (`{abs …}`).*
-
-### 📋 `inventory.checked` — Bestandsprüfung
-**Emitter** `[Process] Upload PDF (Inventory)` · **Status** `live`
-
+### 📋 `inventory.checked` — Bestandsprüfung · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-📋 Bestandsprüfung abgeschlossen
-Max Berger · Kiosk Nordstern
+📋 Bestand geprüft
+Max Berger bei Kiosk Nordstern
 
-IST-Differenz: 12 Einheiten
-Differenzwert: 41,00 €
+Differenz: 12 Einheiten
+Nettoverkaufswert: 41,00 €
 
-Inventar nicht geprüft.
-Protokoll ohne Unterschrift.
+⚠️ Inventar nicht geprüft.
+⚠️ Protokoll ohne Unterschrift.
 
 Geprüft am 12.08.2026
 ```
 **Vertriebler**
 ```
 📋 Bestandsprüfung erfasst
-Kiosk Nordstern · 5 Sorten
+Kiosk Nordstern · Linden
 
-IST-Differenz: 12 Einheiten
-Differenzwert: 41,00 €
+Differenz: 12 Einheiten
+Nettoverkaufswert: 41,00 €
 
-⚠️ Das Inventar wurde nicht geprüft.
-⚠️ Das Protokoll ist nicht unterschrieben.
+⚠️ Inventar nicht geprüft.
+⚠️ Protokoll ohne Unterschrift.
 
 Geprüft am 12.08.2026
 ```
 **City** — —
 
-### ⏳ `inventory.due` — Prüfung fällig
-**Emitter** `[Scheduled] Daily Operations` · **Status** `geplant`
-
+### ⏳ `inventory.due` — Prüfung fällig · `geplant`
 **Operations** — 📥 Vorgänge · 586
 ```
-⏳ Erinnerung zur Bestandsprüfung
-Max Berger · Kiosk Nordstern
+⏳ Bestandsprüfung fällig
+Max Berger bei Kiosk Nordstern
 
 Zuletzt geprüft am 12.08.2026
 ```
 **Vertriebler**
 ```
 ⏳ Bestandsprüfung fällig
-Kiosk Nordstern · Zuletzt geprüft am 12.08.2026
+Kiosk Nordstern · Linden
 
 Zeit für einen Besuch — Route öffnen → https://maps.google.com/…
+
+Letzte Prüfung: 12.08.2026
 ```
 **City** — —
 
-### 🧾 `invoice.created` — Rechnung erstellt
-**Emitter** `[Process] Invoice (Store)` · **Status** `live`
-
+### 🧾 `invoice.created` — Rechnung erstellt · `live`
+*Beträge gültig, sobald die Klingel hinter die Positionsschreibung wandert (Szenario-Änderung 1b).*
 **Operations** — 📥 Vorgänge · 586
 ```
-🧾 Rechnung RG-10128-1 erstellt
-Kiosk Nordstern · Fällig am 26.08.2026
+🧾 Rechnung erstellt
+Kiosk Nordstern · RG-10128-1
 
 Nettoumsatz: 312,40 €
 Ertrag nach Provision: 78,10 €
+
+⚠️ Umsatz ohne Bestandsprüfung.
+
+Fällig am 26.08.2026
 ```
 **Vertriebler**
 ```
-🧾 Neue Rechnung RG-10128-1
-Kiosk Nordstern · Fällig am 26.08.2026
+🧾 Neue Rechnung
+Kiosk Nordstern · RG-10128-1
 
 Nettoumsatz: 312,40 €
 Deine Provision: 46,86 €
 
 Bitte leite die Rechnung an den Store weiter.
+
+Fällig am 26.08.2026
 ```
-**City** — —
-**Begleitend** → 👉 `task.terms_missing` · 👉 `task.invoice_unlinked` · 🛑 `error.checksum_mismatch`
+**Begleitend** → 👉 `task.terms_missing`
 
-### ✅ `invoice.paid` — Rechnung bezahlt
-**Emitter** `[Process] Invoice (Store)` · **Status** `live`
-
+### ✅ `invoice.paid` — Rechnung bezahlt · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-✅ Zahlungseingang RG-10128-1
-Kiosk Nordstern · pünktlich
+✅ Zahlungseingang (pünktlich)
+Kiosk Nordstern · RG-10128-1
 
 Saldo Max (offen): 134,20 €
 ```
 **Vertriebler**
 ```
-✅ Zahlung für RG-10128-1
-Kiosk Nordstern · pünktlich
+✅ Zahlungseingang (pünktlich)
+Kiosk Nordstern · RG-10128-1
 
 Deine Provision: +46,86 €
 Dein Saldo (offen): 134,20 €
-
-Sauber. Genau so weiter.
 ```
-**City** — —
+*`{Zahlungsverlauf}`: pünktlich / nach Zahlungserinnerung / nach Mahnung.*
 
-### ⏰ `invoice.overdue` — Überfällig
-**Emitter** `[Scheduled] Daily Operations` · **Status** `geplant`
-
+### ⏰ `invoice.reminder_filed` — Zahlungserinnerung · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-⏰ RG-10128-1 noch nicht bezahlt
-Kiosk Nordstern · Fällig seit 26.08.2026
+⏰ Rechnung überfällig
+Kiosk Nordstern · RG-10128-1
 
-Nettoumsatz: 312,40 €
-```
-**Vertriebler** — — (Ops-only)
-**City** — —
-
-### 📄 `invoice.reminder_filed` — Zahlungserinnerung
-**Emitter** `[Process] Payment Reminder (Store)` · **Status** `live`
-
-**Operations** — 📥 Vorgänge · 586
-```
-📄 Mahnstufe erreicht
-Kiosk Nordstern · Zahlungserinnerung
-
-RG-10128-1 vom 12.08.2026
+Fällig seit 26.08.2026
 ```
 **Vertriebler**
 ```
-⏰ RG-10128-1 noch nicht bezahlt
-Kiosk Nordstern · Fällig seit 26.08.2026
+⏰ Rechnung überfällig
+Kiosk Nordstern · RG-10128-1
 
-Nettoumsatz: 312,40 €
-Deine Provision: 46,86 €
-
-Bitte leite die Zahlungserinnerung weiter, um deine Provision zu sichern.
+Fällig seit 26.08.2026
 ```
-**City** — —
 **Begleitend** → 🛑 `error.reminder_unmatched`
 
-### 📮 `invoice.dunning_filed` — Mahnung
-**Emitter** `[Process] Payment Reminder (Store)` · **Status** `live`
-
+### 📮 `invoice.dunning_filed` — Mahnung · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-📄 Mahnstufe erreicht
-Kiosk Nordstern · Mahnung
+📮 Mahnung erfasst
+Kiosk Nordstern · RG-10128-1
 
-RG-10128-1 vom 12.08.2026
+Fällig seit 26.08.2026
 ```
 **Vertriebler**
 ```
-📮 RG-10128-1 im Mahnlauf
-Kiosk Nordstern · Fällig seit 26.08.2026
+📮 Rechnung im Mahnlauf
+Kiosk Nordstern · RG-10128-1
 
-Nettoumsatz: 312,40 €
-Deine Provision: 46,86 €
-
-Die Mahnung geht per Post raus. Ein Besuch bringt trotzdem meist mehr.
+Fällig seit 26.08.2026
 ```
-**City** — —
-**Begleitend** → 🛑 `error.reminder_unmatched`
 
-### ❌ `invoice.written_off` — Ausgebucht
-**Emitter** `[Process] Invoice (Store)` · **Status** `live`
-
+### ↩️ `invoice.voided` — Storniert · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-❌ RG-10128-1 wurde ausgebucht
-Kiosk Nordstern · Fällig seit 26.08.2026
+↩️ Rechnung storniert
+Kiosk Nordstern · RG-10128-1
 
 Nettoumsatz: 312,40 €
-Entgangener Ertrag: 78,10 €
+Entgangener Ertrag: −78,10 €
+
+Erstellt am 12.08.2026
 ```
 **Vertriebler**
 ```
-❌ RG-10128-1 wurde ausgebucht
-Kiosk Nordstern · Fällig seit 26.08.2026
+↩️ Rechnung storniert
+Kiosk Nordstern · RG-10128-1
+
+Nettoumsatz: 312,40 €
+Entfallene Provision: −46,86 €
+
+Erstellt am 12.08.2026
+```
+
+### ❌ `invoice.written_off` — Ausgebucht · `live`
+**Operations** — 📥 Vorgänge · 586
+```
+❌ Rechnung ausgebucht
+Kiosk Nordstern · RG-10128-1
+
+Nettoumsatz: 312,40 €
+Entgangener Ertrag: −78,10 €
+
+Fällig seit 26.08.2026
+```
+**Vertriebler**
+```
+❌ Rechnung ausgebucht
+Kiosk Nordstern · RG-10128-1
 
 Entfallene Provision: −46,86 €
 
 Der Betrag konnte leider nicht eingetrieben werden.
+
+Fällig seit 26.08.2026
 ```
-**City** — —
 
-### ↩️ `invoice.voided` — Storniert
-**Emitter** `[Process] Invoice (Store)` · **Status** `live`
-
+### 💶 `payout.created` — Provisionsrechnung erfasst · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-↩️ RG-10128-1 wurde storniert
-Kiosk Nordstern · Rechnung vom 12.08.2026
-
-Nettoumsatz: 312,40 €
-Entgangener Ertrag: 78,10 €
-```
-**Vertriebler**
-```
-↩️ RG-10128-1 wurde storniert
-Kiosk Nordstern · Rechnung vom 12.08.2026
-
-Entfallene Provision: −46,86 €
-```
-**City** — —
-
-### 🧾 `payout.created` — Provisionsrechnung erfasst
-**Emitter** `[Process] Invoice (Sales)` · **Status** `live`
-
-**Operations** — 📥 Vorgänge · 586
-```
-🧾 Auszahlung beantragt
-Max Berger · Voller Saldo
+💶 Auszahlung beantragt
+Max Berger · RG-10128-1
 
 Betrag: 150,00 €
 
-Rechnung RG-10128-1 vom 12.08.2026
+Erstellt am 12.08.2026
 ```
 **Vertriebler**
 ```
-🧾 Rechnung RG-10128-1 erfasst
+🧾 Rechnung erfasst
+RG-10128-1 · Voller Saldo
 
 Betrag: 150,00 €
 
 Auszahlung erfolgt in Kürze.
 ```
-**City** — —
 
-### 💶 `payout.settled` — Auszahlung abgeschlossen
-**Emitter** `[Process] Invoice (Sales)` · **Status** `live`
-
+### 💶 `payout.settled` — Auszahlung abgeschlossen · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
 💶 Auszahlung abgeschlossen
-Max Berger · Voller Saldo
+Max Berger · RG-10128-1
 
 Betrag: 150,00 €
+Neuer Saldo: 134,20 €
 
-Saldo Max (offen): 134,20 €
-
-Rechnung RG-10128-1 vom 12.08.2026
+Rechnung vom 12.08.2026
 ```
 **Vertriebler**
 ```
 💶 Auszahlung unterwegs
-Rechnung RG-10128-1 vom 12.08.2026
+RG-10128-1 vom 12.08.2026
 
 Betrag: 150,00 €
-Dein Saldo (offen): 134,20 €
+Neuer Saldo: 134,20 €
 
 Danke für deine Arbeit! :)
 ```
-**City** — —
+
+*`invoice.overdue` gestrichen (16.08.2026) — der Überfällig-Hinweis läuft über `reminder_filed`.*
 
 ---
 
-## 👉 Belege & Klassifikator
+## 👉 Aufgaben · 585
 
-### 👉 `task.doctype_unclear` — Beleg — Typ unklar
-**Emitter** `[Dispatch] Upload PDF` · **Status** `live`
+### 👉 `task.jtl_missing` · `offen`
+```
+👉 JTL Datensatz anlegen
+Kunde & Lager für Kiosk Nordstern
 
-**Operations** — 👉 Aufgaben · 585
+• Kunden anlegen, Erstkontakt: Max Berger
+• Lager anlegen, Namen und Adresse wie Kunde
+• Kundennummer in Airtable unter »ID« eintragen
+```
+
+### 👉 `task.telegram_missing` · `offen`
+```
+👉 Telegram-Channel anlegen
+für Max Berger in Region Hannover
+
+• Channel anlegen: „selectedleafs.com · Region Hannover"
+• Max und „selectedleafs_sales_bot" einladen
+• Chat-ID in »⚙ Telegram ID« eintragen
+```
+
+### 👉 `task.terms_missing` · `offen`
+```
+👉 Konditionen prüfen
+Kiosk Nordstern · RG-10128-1
+
+• Leistungsdatum 31.07.2026 an der Rechnung prüfen
+• Konditionen-Version mit »Gültig ab« ≤ Leistungsdatum anlegen
+
+Rechnung vom 12.08.2026
+```
+
+### 👉 `task.doctype_unclear` · `live`
 ```
 👉 Belegtyp korrigieren
-RG-10128-1 · Belegdatum: 12.08.2026
+RG-10128-1 · Unbekannt
 
 • Grund prüfen: Belegtyp nicht eindeutig erkannt
 • Belegtyp in Airtable setzen — danach läuft der Prozess weiter
+
+Beleg vom 12.08.2026
 ```
-**Vertriebler** — — · **City** — —
+
+### 🗒 `task.digest` — Digest 07:00 · `geplant`
+*Postet nur bei ≥ 1 offenem Punkt.*
+```
+🗒 Offene Aufgaben (2)
+
+3 T — JTL-Kunde anlegen · Kiosk Nordstern
+1 T — Belegtyp korrigieren · BLG-00044
+```
+*(`task.invoice_unlinked` / `task.beleg_no_pdf` — nur Zeile im Digest.)*
 
 ---
 
-## ⚙️ System & 07:00-Lauf
-*Operations-only · alle Werte kommen fertig aus dem auslösenden Lauf (ctx).*
+## ⚙️ System · 583
 
-### ⚙️ `sync.products` — Produkt-Sync
-**Emitter** `[Sync] Shopify Products to Airtable` · **Status** `live`
-
-**Operations** — ⚙️ System · 583
+### ⚙️ `sync.products` — Produkt-Sync · `live`
+*Postet nur bei materieller Änderung (Preis korrigiert / Sorte neu); No-Op-Lauf bleibt still.*
 ```
-⚙️ Produkt-Sync abgeschlossen
+⚙️ Produkte aktualisiert
 12 Produkte · 34 Varianten
 
 Produkte: 2 angelegt · 3 geändert
@@ -441,78 +434,21 @@ Preise: 1 korrigiert
 ```
 **Begleitend** → 🛑 `error.sync_aborted`
 
-### ⚙️ `sync.stores` — Store-Sync
-**Emitter** `[Sync] Shopify Stores from Google Place API` · **Status** `live`
-
-**Operations** — ⚙️ System · 583
-```
-⚙️ Store-Sync abgeschlossen
-8 Stores · 2 aktualisiert
-
-Kiosk Nordstern: Öffnungszeiten, Bewertung
-… und 1 weitere
-```
-**Begleitend** → 🛑 `error.sync_aborted`
-
-### ⚙️ `sync.inventory` — Bestands-Push
-**Emitter** `[Sync] Inventory to Shopify` · **Status** `gestrichen`
-*Gestrichen — nur noch Störungen.*
-
-**Operations** — ⚙️ System · 583
-```
-⚙️ Bestands-Push abgeschlossen
-8 Stores · 3 mit Änderung
-
-Kiosk Nordstern: +2 Sorten
-… und 2 weitere
-
-City-Posts: 1× 🌿 · 3× 📦
-```
-**Begleitend** → 🛑 `error.sync_aborted`
-
-### 🗒 `task.digest` — Digest 07:00
-**Emitter** `[Scheduled] Daily Operations` · **Status** `geplant`
-*Postet nur bei ≥ 1 offenem Punkt.*
-
-**Operations** — 👉 Aufgaben · 585
-```
-🗒 Offene Aufgaben (2)
-
-3 T — JTL-Kunde anlegen · Kiosk Nordstern
-1 T — Belegtyp korrigieren · BLG-00044
-```
-
-### ☀️ `system.heartbeat` — Systemcheck
-**Emitter** `[Scheduled] Daily Operations` · **Status** `geplant`
-*Die Meldung, deren Abwesenheit die Information ist.*
-
-**Operations** — ⚙️ System · 583
-```
-☀️ Systemcheck
-Stand 12.08.2026 · 15 Szenarien aktiv
-
-Ohne Lauf: [Sync] Shopify Products
-Unvollständige Ausführungen: 1 ([Process] Upload PDF (Inventory))
-Webhooks: 3 aktiv · nächster Ablauf in 6 Tagen
-```
+### `sync.stores` · `gestrichen` · `system.heartbeat` · `gestrichen` · `sync.inventory` · `gestrichen`
+*System-/Sync-Bereich meldet nur noch Störungen (16.08.2026). Abbrüche → `error.sync_aborted`.*
 
 ---
 
-## 🛑 Störungen — Referenz
-*Alle im Topic 🛑 Störungen · 584. Werte kommen als ctx aus dem abbrechenden Lauf.*
+## 🛑 Störungen · 584
+*Alle im Topic 🛑 Störungen · 584. Werte als ctx aus dem abbrechenden Lauf.*
 
-### 🛑 `error.checksum_mismatch`
 ```
-🛑 Rechnung ohne Positionen
-Max Berger · Kiosk Nordstern
+🛑 Mahnschreiben nicht verarbeitbar
+Betreff: Zahlungserinnerung 10128
 
-Grund: Positionssumme weicht vom Rechnungsbetrag ab
-Folge: RG-10128-1 steht auf 0,00 € — Provision und Saldo sind falsch
-
-Beleg in Lexware prüfen und erneut auf bezahlt setzen.
+Grund: PDF nicht lesbar
+Folge: kein Beleg angelegt, keine Meldung an den Vertriebler
 ```
-
-### 🛑 `error.reminder_unmatched`
 ```
 🛑 Mahnschreiben nicht zuordenbar
 Rechnung RG-10128-1 · Zahlungserinnerung
@@ -520,8 +456,6 @@ Rechnung RG-10128-1 · Zahlungserinnerung
 Grund: kein Umsatz mit dieser Nummer in Airtable
 Folge: Beleg nicht abgelegt, keine Meldung an den Vertriebler
 ```
-
-### 🛑 `error.lexware_orphan`
 ```
 🛑 Lexware-ID nicht zurückgeschrieben
 Max Berger · Hannover
@@ -531,8 +465,6 @@ Folge: der nächste Lauf legt eine Dublette an
 
 a257b406-… von Hand in »⚙ Lexware ID« eintragen.
 ```
-
-### 🛑 `error.sync_aborted`
 ```
 🛑 Sync abgebrochen
 [Sync] Inventory to Shopify · Abbruch bei: Belegdatum
@@ -540,8 +472,6 @@ a257b406-… von Hand in »⚙ Lexware ID« eintragen.
 Grund: HTTP 422 – Feld ungültig
 Folge: kein Bestands-Push, keine City-Posts
 ```
-
-### 🛑 `error.store_failed`
 ```
 🛑 Store konnte nicht angelegt werden
 Kiosk Nordstern · Abbruch bei: Kontakt anlegen
@@ -551,8 +481,6 @@ Folge: kein Metaobjekt, kein Lexware-Kontakt, kein Broadcast
 
 Hinweis steht im Airtable-Datensatz.
 ```
-
-### 🛑 `error.store_partial` · `offen`
 ```
 🛑 Store nur teilweise angelegt
 Kiosk Nordstern · Abbruch bei: Kontakt anlegen
@@ -561,8 +489,6 @@ Grund: HTTP 422 – Feld ungültig
 Angelegt: Metaobjekt
 Fehlt: Lexware-Kontakt
 ```
-
-### 🛑 `error.salesperson_failed`
 ```
 🛑 Vertriebler konnte nicht angelegt werden
 Max Berger · Abbruch bei: Kontakt anlegen
@@ -574,47 +500,4 @@ Fehlt: Lexware-Kontakt
 
 ---
 
-## 👉 Begleitende Aufgaben-Texte
-*Werden zusammen mit dem auslösenden Vorgang in 👉 Aufgaben · 585 gepostet.*
-
-### 👉 `task.jtl_missing`
-```
-👉 JTL-Kunde und Lager anlegen
-Max Berger · Kiosk Nordstern
-
-• Kunden anlegen, Max Berger als Erstkontakt
-• Lager mit gleichem Namen und gleicher Adresse anlegen
-• Kundennummer in Airtable unter »ID« eintragen
-```
-
-### 👉 `task.telegram_missing`
-```
-👉 Telegram-Channel anlegen
-Max Berger · Hannover
-
-• Channel anlegen: „selectedleafs.com · Max Berger"
-• Max und „selectedleafs_sales_bot" einladen
-• Chat-ID in »⚙ Telegram ID« eintragen
-```
-
-### 👉 `task.terms_missing`
-```
-👉 Konditionen prüfen
-Max Berger · Kiosk Nordstern
-
-• Leistungsdatum 31.07.2026 an der Rechnung prüfen
-• Konditionen-Version mit »Gültig ab« ≤ Leistungsdatum anlegen
-
-RG-10128-1 vom 12.08.2026
-```
-
-### 👉 `task.invoice_unlinked` / `task.beleg_no_pdf`
-*Keine eigene Meldung — nur eine Zeile im Digest:*
-```
-Rechnung ohne Bestandsprüfung · RG-10128-1
-Beleg ohne PDF · RG-10128-1
-```
-
----
-
-*Der öffentliche City-Channel hängt an genau zwei Anlässen: `delivery.booked` (→ `city.restock` / `city.strain_new`) und `store.created`. „geplant" hängt am noch nicht gebauten `[Scheduled] Daily Operations`; „offen" heißt: Meldung definiert, Emitter im Szenario fehlt noch.*
+*City-Channel hängt an genau zwei Anlässen: `delivery.booked` (→ `city.restock` / `city.strain_new`) und `store.created`.*

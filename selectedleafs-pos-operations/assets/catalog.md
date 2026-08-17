@@ -1,9 +1,12 @@
 # Nachrichtenkatalog
 
-> **Runde 23** · **generiert aus `[Notify] Telegram` (6862968), Stand 2026-08-14.**
-> **Der Hub (Modul 2 „Ereignis-Landkarte") ist die Wahrheit.** Diese Datei ist die lesbare, datierte Spiegelung der Texte. **Bei Textänderung: erst Modul 2 im Szenario ändern, dann diese Datei neu ziehen.** Die Mechanik (Renderer, Token, Channels, Empfänger-Logik) steht in [[notify]] — hier nur die Wortlaute.
+> **Runde 24** · finalisierter Wortlaut, **Stand 2026-08-16**.
+> **Achtung — dem Hub VORAUS:** dieser Satz wurde im Wortlaut-Durchgang festgelegt und ist die neue Text-SSoT. Der Hub (`[Report/Notify] Telegram Notifications` 6862968, Modul 2 „Ereignis-Landkarte") ist **noch nicht angeglichen** — die Angleichung läuft als Import-JSON. Bis dahin gilt: **diese Datei ist die Wahrheit, der Hub zieht nach**, nicht umgekehrt.
+> Mechanik (Renderer, Token, Channels, Empfänger-Logik) steht in [[notify]] — hier nur die Wortlaute.
 
 **Register je Meldung:** `text` → Operations · `vtext` → Vertriebler · `ctext` → City. Fehlt ein Register, gibt es dorthin keine Meldung. Token-Regeln (`{abs}`, `{Vorname}`, `{Maps-URL}`, `{Saldoabruf}`, `{leer …}`/`{gesetzt …}`) siehe [[notify]].
+
+**Grammatik dieser Runde (fest):** Betreff = reines Ereignis (Emoji + Ereignis) — **kein Store-Name, keine Beleg-ID, kein Zustandswort**; Referenzen (Store, RG-Nr.) in die Infozeile. **Ops- und Sales-Label getrennt** (Ops = Ereignis-Substantiv, Sales = „… erfasst"). **RG-Nr. in die Infozeile**, Datum in die Belegzeile. **⚠️ auf jeder Vorbehaltszeile**, in Ops und Sales gleich, konditional. Reine Floskeln raus (Ausnahme: warmer Halbsatz an Meilensteinen — Onboarding, Auszahlung). Sales-Body trägt **einen** fetten Anker-Wert, Ops bleibt mager.
 
 ---
 
@@ -12,7 +15,7 @@
 ### `store.created`
 **Operations**
 ```
-🎉 Neuer Store aktiv
+🎉 Neuer Store
 {Store} · {Stadtteil}
 
 Akquiriert durch {Vertriebler}
@@ -21,13 +24,11 @@ Akquiriert durch {Vertriebler}
 ```
 🎉 Neuer Store erfasst
 {Store} · {Postleitzahl} {Stadt}
-
-Gute Arbeit {Vorname}.
 ```
 **City** (mit Foto)
 ```
-🎉 Neuer Partner: {Store}
-{Stadtteil} · {Straße / Nr.}
+🎉 Neuer Partner
+{Store} · {Straße / Nr.}
 
 🕒 <b>Öffnungszeiten</b>
 {Öffnungszeiten}
@@ -38,10 +39,8 @@ Gute Arbeit {Vorname}.
 ### `salesperson.created`
 **Operations**
 ```
-🤝 Neuer Vertriebler aktiv
+🤝 Neuer Vertriebler
 {Vertriebler} · {Ort}
-
-Besteuerung: {Besteuerung}
 ```
 
 ### `salesperson.onboarded`
@@ -73,22 +72,21 @@ Schön, dass du dabei bist.
 **Operations**
 ```
 📦 Kommissionsware übergeben
-{Vertriebler} · {Store}
+{Vertriebler} bei {Store}
 
-Nettowarenwert: {Nettoverkaufswert}
+Nettoverkaufswert: {Nettoverkaufswert}
 Gesamtkosten: {Kosten}
-Anteil {Vorname}: {Kostenanteil}
 
-{leer Unterschrieben}Protokoll ohne Unterschrift.
+{leer Unterschrieben}⚠️ Protokoll ohne Unterschrift.
 
 <i>Geliefert am {Datum}</i>
 ```
 **Vertriebler**
 ```
 📦 Lieferung erfasst
-{Store} · {Positionen} Sorten
+{Store} · {Menge (Stück)} Einheiten
 
-Nettowarenwert: {Nettoverkaufswert}
+Nettoverkaufswert: {Nettoverkaufswert}
 Dein Kostenanteil: <b>{Kostenanteil}</b>
 
 <i>Geliefert am {Datum}</i>
@@ -97,23 +95,22 @@ Dein Kostenanteil: <b>{Kostenanteil}</b>
 ### `delivery.returned`
 **Operations**
 ```
-📥 Rückholung abgeschlossen
-{Vertriebler} · {Store}
+📥 Kommissionsware abgeholt
+{Vertriebler} bei {Store}
 
-Nettowarenwert: {abs Nettoverkaufswert}
+Nettoverkaufswert: {abs Nettoverkaufswert}
 Gesamtkosten: {abs Kosten}
-Anteil {Vorname}: {abs Kostenanteil}
 
-{leer Unterschrieben}Protokoll ohne Unterschrift.
+{leer Unterschrieben}⚠️ Protokoll ohne Unterschrift.
 
 <i>Zurückgeholt am {Datum}</i>
 ```
 **Vertriebler**
 ```
 📥 Rückholung erfasst
-{Store} · {Positionen} Sorten
+{Store} · {Menge (Stück)} Einheiten
 
-Nettowarenwert: {abs Nettoverkaufswert}
+Nettoverkaufswert: {abs Nettoverkaufswert}
 Dein Kostenanteil: <b>{abs Kostenanteil}</b>
 
 Die Kosten wurden deinem Saldo gutgeschrieben.
@@ -124,27 +121,27 @@ Die Kosten wurden deinem Saldo gutgeschrieben.
 ### `inventory.checked`
 **Operations**
 ```
-📋 Bestandsprüfung abgeschlossen
-{Vertriebler} · {Store}
+📋 Bestand geprüft
+{Vertriebler} bei {Store}
 
-IST-Differenz: {⚙ Differenz (Gesamt)} Einheiten
-Differenzwert: {⚙ Nettoverkaufswert}
+Differenz: {⚙ Differenz (Gesamt)} Einheiten
+Nettoverkaufswert: {⚙ Nettoverkaufswert}
 
-{leer Inventar geprüft}Inventar nicht geprüft.
-{leer Unterschrieben}Protokoll ohne Unterschrift.
+{leer Inventar geprüft}⚠️ Inventar nicht geprüft.
+{leer Unterschrieben}⚠️ Protokoll ohne Unterschrift.
 
 <i>Geprüft am {Datum}</i>
 ```
 **Vertriebler**
 ```
 📋 Bestandsprüfung erfasst
-{Store} · {Positionen} Sorten
+{Store} · {Stadtteil}
 
-IST-Differenz: {⚙ Differenz (Gesamt)} Einheiten
-Differenzwert: <b>{⚙ Nettoverkaufswert}</b>
+Differenz: {⚙ Differenz (Gesamt)} Einheiten
+Nettoverkaufswert: <b>{⚙ Nettoverkaufswert}</b>
 
-{leer Inventar geprüft}⚠️ Das Inventar wurde nicht geprüft.
-{leer Unterschrieben}⚠️ Das Protokoll ist nicht unterschrieben.
+{leer Inventar geprüft}⚠️ Inventar nicht geprüft.
+{leer Unterschrieben}⚠️ Protokoll ohne Unterschrift.
 
 <i>Geprüft am {Datum}</i>
 ```
@@ -152,183 +149,180 @@ Differenzwert: <b>{⚙ Nettoverkaufswert}</b>
 ### `inventory.due`
 **Operations**
 ```
-⏳ Erinnerung zur Bestandsprüfung
-{Vertriebler} · {Store}
+⏳ Bestandsprüfung fällig
+{Vertriebler} bei {Store}
 
 Zuletzt geprüft am {Datum}
 ```
 **Vertriebler**
 ```
 ⏳ Bestandsprüfung fällig
-{Store} · Zuletzt geprüft am {Datum}
+{Store} · {Stadtteil}
 
 Zeit für einen Besuch — <a href="{Maps-URL}">Route öffnen</a>
+
+Letzte Prüfung: {Datum}
 ```
 
 ### `invoice.created`
+*Beträge gültig, sobald die Klingel hinter die Positionsschreibung wandert (Szenario-Änderung 1b, Import-JSON offen). Vorher rendert der Nettoumsatz-Rollup 0.*
 **Operations**
 ```
-🧾 Rechnung {ID} erstellt
-{Store} · Fällig am {⚙ Fällig am}
+🧾 Rechnung erstellt
+{Store} · {ID}
 
+Nettoumsatz: {Nettoumsatz}
+Ertrag nach Provision: {Nettoertrag}
 
 {gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.
+
+<i>Fällig am {⚙ Fällig am}</i>
 ```
 **Vertriebler**
 ```
-🧾 Neue Rechnung {ID}
-{Store} · Fällig am {⚙ Fällig am}
+🧾 Neue Rechnung
+{Store} · {ID}
 
+Nettoumsatz: {Nettoumsatz}
+Deine Provision: <b>{Provision}</b>
 
 Bitte leite die Rechnung an den Store weiter.
+
+<i>Fällig am {⚙ Fällig am}</i>
 ```
 
 ### `invoice.paid`
 **Operations**
 ```
-✅ Zahlungseingang {ID}
-{Store} · {Zahlungsverlauf}
+✅ Zahlungseingang ({Zahlungsverlauf})
+{Store} · {ID}
 
 Saldo {Vorname} (offen): {Offen}
-
-{gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.
 ```
 **Vertriebler**
 ```
-✅ Zahlung für {ID}
-{Store} · {Zahlungsverlauf}
+✅ Zahlungseingang ({Zahlungsverlauf})
+{Store} · {ID}
 
 Deine Provision: +{Provision}
 Dein Saldo (offen): <b>{Offen}</b>
-
-Sauber. Genau so weiter.
-```
-
-### `invoice.overdue`
-**Operations**
-```
-⏰ {ID} noch nicht bezahlt
-{Store} · Fällig seit {⚙ Fällig am}
-
-Nettoumsatz: {Nettoumsatz}
 ```
 
 ### `invoice.reminder_filed`
 **Operations**
 ```
-📄 Mahnstufe erreicht
-{Store} · {Belegtyp}
+⏰ Rechnung überfällig
+{Store} · {ID}
 
-<i>{ID} vom {Datum}</i>
+Fällig seit {⚙ Fällig am}
 ```
 **Vertriebler**
 ```
-⏰ {ID} noch nicht bezahlt
-{Store} · Fällig seit {⚙ Fällig am}
+⏰ Rechnung überfällig
+{Store} · {ID}
 
-Nettoumsatz: {Nettoumsatz}
-Deine Provision: <b>{Provision}</b>
-
-Bitte leite die Zahlungserinnerung weiter, um deine Provision zu sichern.
+Fällig seit {⚙ Fällig am}
 ```
 
 ### `invoice.dunning_filed`
 **Operations**
 ```
-📄 Mahnstufe erreicht
-{Store} · {Belegtyp}
+📮 Mahnung erfasst
+{Store} · {ID}
 
-<i>{ID} vom {Datum}</i>
+Fällig seit {⚙ Fällig am}
 ```
 **Vertriebler**
 ```
-📮 {ID} im Mahnlauf
-{Store} · Fällig seit {⚙ Fällig am}
+📮 Rechnung im Mahnlauf
+{Store} · {ID}
 
-Nettoumsatz: {Nettoumsatz}
-Deine Provision: <b>{Provision}</b>
-
-Die Mahnung geht per Post raus. Ein Besuch bringt trotzdem meist mehr.
+Fällig seit {⚙ Fällig am}
 ```
 
 ### `invoice.voided`
 **Operations**
 ```
-↩️ {ID} wurde storniert
-{Store} · Rechnung vom {Datum}
+↩️ Rechnung storniert
+{Store} · {ID}
 
 Nettoumsatz: {Nettoumsatz}
-Entgangener Ertrag: {Nettoertrag}
+Entgangener Ertrag: −{Nettoertrag}
 
-{gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.
+<i>Erstellt am {Datum}</i>
 ```
 **Vertriebler**
 ```
-↩️ {ID} wurde storniert
-{Store} · Rechnung vom {Datum}
+↩️ Rechnung storniert
+{Store} · {ID}
 
+Nettoumsatz: {Nettoumsatz}
 Entfallene Provision: <b>−{Provision}</b>
+
+<i>Erstellt am {Datum}</i>
 ```
 
 ### `invoice.written_off`
 **Operations**
 ```
-❌ {ID} wurde ausgebucht
-{Store} · Fällig seit {⚙ Fällig am}
+❌ Rechnung ausgebucht
+{Store} · {ID}
 
 Nettoumsatz: {Nettoumsatz}
-Entgangener Ertrag: {Nettoertrag}
+Entgangener Ertrag: −{Nettoertrag}
 
-{gesetzt Hinweis}⚠️ Umsatz ohne Bestandsprüfung.
+<i>Fällig seit {⚙ Fällig am}</i>
 ```
 **Vertriebler**
 ```
-❌ {ID} wurde ausgebucht
-{Store} · Fällig seit {⚙ Fällig am}
+❌ Rechnung ausgebucht
+{Store} · {ID}
 
 Entfallene Provision: <b>−{Provision}</b>
 
 Der Betrag konnte leider nicht eingetrieben werden.
+
+<i>Fällig seit {⚙ Fällig am}</i>
 ```
 
-### `payout.created`  · `saldo: created`
+### `payout.created` · `saldo: created`
 **Operations**
 ```
-🧾 Auszahlung beantragt
-{Vertriebler} · {Saldoabruf}
+💶 Auszahlung beantragt
+{Vertriebler} · {Rechnungsnummer}
 
 Betrag: {Betrag}
 
-<i>Rechnung {Rechnungsnummer} vom {Datum}</i>
+<i>Erstellt am {Datum}</i>
 ```
 **Vertriebler**
 ```
-🧾 Rechnung {Rechnungsnummer} erfasst
+🧾 Rechnung erfasst
+{Rechnungsnummer} · {Saldoabruf}
 
 Betrag: <b>{Betrag}</b>
 
 Auszahlung erfolgt in Kürze.
 ```
 
-### `payout.settled`  · `saldo: settled`
+### `payout.settled` · `saldo: settled`
 **Operations**
 ```
 💶 Auszahlung abgeschlossen
-{Vertriebler} · {Saldoabruf}
+{Vertriebler} · {Rechnungsnummer}
 
 Betrag: {Betrag}
+Neuer Saldo: {Offen}
 
-Saldo {Vorname} (offen): {Offen}
-
-<i>Rechnung {Rechnungsnummer} vom {Datum}</i>
+<i>Rechnung vom {Datum}</i>
 ```
 **Vertriebler**
 ```
 💶 Auszahlung unterwegs
-Rechnung {Rechnungsnummer} vom {Datum}
+{Rechnungsnummer} vom {Datum}
 
 Betrag: {Betrag}
-Dein Saldo (offen): <b>{Offen}</b>
+Neuer Saldo: <b>{Offen}</b>
 
 Danke für deine Arbeit! :)
 ```
@@ -345,8 +339,10 @@ Danke für deine Arbeit! :)
 
 ### `city.strain_new` · City (ein Post je neuer Sorte)
 ```
-🌿 Neu: {Sorte} ({Vein})
+🌿 Neue Sorte verfügbar
 {Store} · {Stadtteil}
+
+{Sorte} ({Vein}) ab sofort vor Ort erhältlich
 
 <a href="{Maps-URL}">Google Maps öffnen</a>
 ```
@@ -355,36 +351,14 @@ Danke für deine Arbeit! :)
 
 ## 👉 Aufgaben · Topic 585
 
-### `task.doctype_unclear`
-**Operations**
-```
-👉 Belegtyp korrigieren
-{ID} · Belegdatum: {Datum}
-
-• Grund prüfen: {Hinweis}
-• Belegtyp in Airtable setzen — danach läuft der Prozess weiter
-```
-
-### `task.terms_missing`
-**Operations**
-```
-👉 Konditionen prüfen
-{Vertriebler} · {Store}
-
-• Leistungsdatum {Leistungsdatum} an der Rechnung prüfen
-• Konditionen-Version mit »Gültig ab« ≤ Leistungsdatum anlegen
-
-<i>{ID} vom {Rechnungsdatum}</i>
-```
-
 ### `task.jtl_missing`
 **Operations**
 ```
-👉 JTL-Kunde und Lager anlegen
-{Vertriebler} · {Store}
+👉 JTL Datensatz anlegen
+Kunde & Lager für {Store}
 
-• Kunden anlegen, {Vertriebler} als Erstkontakt
-• Lager mit gleichem Namen und gleicher Adresse anlegen
+• Kunden anlegen, Erstkontakt: {Vertriebler}
+• Lager anlegen, Namen und Adresse wie Kunde
 • Kundennummer in Airtable unter »ID« eintragen
 ```
 
@@ -392,14 +366,38 @@ Danke für deine Arbeit! :)
 **Operations**
 ```
 👉 Telegram-Channel anlegen
-{Vertriebler} · {Ort}
+für {Vertriebler} in Region {Ort}
 
-• Channel anlegen: „selectedleafs.com · {Vertriebler}"
+• Channel anlegen: „selectedleafs.com · Region {Ort}"
 • {Vorname} und „selectedleafs_sales_bot" einladen
 • Chat-ID in »⚙ Telegram ID« eintragen
 ```
 
-### `task.digest`  · 07:00-Lauf
+### `task.terms_missing`
+**Operations**
+```
+👉 Konditionen prüfen
+{Store} · {ID}
+
+• Leistungsdatum {Leistungsdatum} an der Rechnung prüfen
+• Konditionen-Version mit »Gültig ab« ≤ Leistungsdatum anlegen
+
+<i>Rechnung vom {Rechnungsdatum}</i>
+```
+
+### `task.doctype_unclear`
+**Operations**
+```
+👉 Belegtyp korrigieren
+{ID} · Unbekannt
+
+• Grund prüfen: Belegtyp nicht eindeutig erkannt
+• Belegtyp in Airtable setzen — danach läuft der Prozess weiter
+
+<i>Beleg vom {Datum}</i>
+```
+
+### `task.digest` · 07:00-Lauf
 **Operations**
 ```
 🗒 Offene Aufgaben ({n})
@@ -414,9 +412,10 @@ Danke für deine Arbeit! :)
 *(alle Token ctx; wiederholte Blöcke liefert der Emitter fertig als `{Zeilen}`.)*
 
 ### `sync.products`
+*Postet nur bei materieller Änderung — Preis korrigiert oder Sorte neu; ein No-Op-Lauf bleibt still.*
 **Operations**
 ```
-⚙️ Produkt-Sync abgeschlossen
+⚙️ Produkte aktualisiert
 {n} Produkte · {m} Varianten
 
 Produkte: {a} angelegt · {b} geändert
@@ -424,23 +423,7 @@ Varianten: {c} angelegt · {d} geändert
 Preise: {e} korrigiert
 ```
 
-### `sync.stores`
-**Operations**
-```
-⚙️ Store-Sync abgeschlossen
-{n} Stores · {m} aktualisiert
-
-{Zeilen}
-```
-
-### `system.heartbeat`
-**Operations**
-```
-☀️ Systemcheck
-Stand {Datum} · {n} Szenarien aktiv
-
-{Zeilen}
-```
+*`sync.stores` (Erfolg) und `system.heartbeat` sind gestrichen (16.08.2026) — nur noch Störungen im System-/Sync-Bereich. `sync.inventory` bleibt gestrichen. Abbrüche laufen über `error.sync_aborted`.*
 
 ---
 
@@ -517,4 +500,4 @@ Fehlt: {Fehlt}
 
 ---
 
-*Unbekannter `key` → roh nach ⁉️ Unsortiert (Topic 1), nichts verworfen. Neu ziehen: `scenarios_get(6862968)` → Modul 2.*
+*Unbekannter `key` → roh nach ⁉️ Unsortiert (Topic 1), nichts verworfen. Nach der Hub-Angleichung neu ziehen: `scenarios_get(6862968)` → Modul 2.*
