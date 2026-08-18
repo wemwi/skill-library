@@ -1,6 +1,6 @@
 # Szenarien
 
-> **Vertrag, nicht Innereien.** Je Szenario: Aufgabe · Trigger · gelesene/geschriebene Tabellen · Aufrufe · Notify-Keys. Die Modulketten liegen als JSON in `assets/blueprints/<id>.json` (SSoT der Innereien) und im Live-Szenario. Stand **2026-08-15**, Team **2174024** (eu1). Präfix = Rolle (nicht Trigger).
+> **Vertrag, nicht Innereien.** Je Szenario: Aufgabe · Trigger · gelesene/geschriebene Tabellen · Aufrufe · Notify-Keys. Die Modulketten leben ausschließlich im **Live-Szenario** (SSoT der Innereien) — bei Bedarf per Make-MCP `scenarios_get(<id>)` ziehen; diese Datei dupliziert sie bewusst nicht. Stand **2026-08-15**, Team **2174024** (eu1). Präfix = Rolle (nicht Trigger).
 
 ## Topologie in einem Satz
 
