@@ -13,7 +13,7 @@ description: >-
   [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.5.0"
+  version: "1.6.0"
 ---
 
 # selectedleafs · POS Operations
@@ -21,8 +21,8 @@ metadata:
 Das Betriebssystem hinter der **Kommissionsware an Kiosk-Partner-Stores**: Vertriebler beliefern Stores, selectedleafs rechnet ab, alles läuft über **Make + Airtable**. Diese Datei ist die **Landkarte** — sie reicht für die meisten Fragen allein. Tiefe steckt in `references/`, exakte Feld-/Szenario-Fakten in den generierten Assets.
 
 > **Leitplanken (gelten überall):**
-> 1. **Drift-Firewall.** Diese Datei und die references tragen **Muster + „wo live nachsehen"**, nie eine `fld…`-ID oder Formel **als Fakt**. Volatile Fakten leben in datierten, generierten Blöcken (`airtable/…`-Feld-Block, `blueprints/`) mit „verify-live"-Kopf. **Im Zweifel gewinnt die Base / das Live-Szenario.**
-> 2. **Ein Fakt, ein Zuhause.** Rechenformel nur in der Tabellen-Datei, hier nur das Muster · Szenario-Innereien nur in `blueprints/` · Meldetexte nur im Nachrichtenkatalog.
+> 1. **Drift-Firewall.** Diese Datei und die references tragen **Muster + „wo live nachsehen"**, nie eine `fld…`-ID oder Formel **als Fakt**. Volatile Fakten leben in datierten, generierten Blöcken (`airtable/…`-Feld-Block) mit „verify-live"-Kopf; Szenario-Innereien tragen **kein** gespeichertes Zuhause — sie werden bei Bedarf **live** aus dem Szenario gelesen (Make-MCP `scenarios_get`). **Im Zweifel gewinnt die Base / das Live-Szenario.**
+> 2. **Ein Fakt, ein Zuhause.** Rechenformel nur in der Tabellen-Datei, hier nur das Muster · Szenario-Innereien nur im Live-Szenario (per Make-MCP gelesen) · Meldetexte nur im Nachrichtenkatalog.
 > 3. **Vertrag statt Innereien.** Szenarien über Aufgabe/Trigger/r-w-Felder/Notify-Keys, nicht Modul-für-Modul.
 
 ---
@@ -106,7 +106,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 | Wenn du … | lies |
 |---|---|
 | die Base liest/änderst, ein Feld/eine Formel anfasst | `references/model.md` + die passende `references/airtable/<tabelle>.md` |
-| ein Szenario baust/mappst/debuggst | `references/scenarios.md` (Vertrag) + `assets/blueprints/<szenario>.json` |
+| ein Szenario baust/mappst/debuggst | `references/scenarios.md` (Vertrag) + Live-Szenario per Make-MCP (`scenarios_get(<id>)`) |
 | eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) + `references/messages.md` (ausgefüllte Übersicht) |
 | an Airtable-/Make-MCP-Eigenheiten scheiterst | `references/tools.md` |
 | Idempotenz, Fehlerpfad, Registry, Wächter brauchst | `references/operations.md` |
@@ -135,6 +135,6 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 
 **`references/`** — `model.md` (Datenmodell, Geld, Versionierung, Datum, Steuer) · `scenarios.md` (Szenario-Verträge + Topologie) · `notify.md` (Telegram-Grammatik, drei Channels, Renderer-Kontrakt, City-Anker) · `messages.md` (ausgefüllte Nachrichten-Übersicht — Ansicht; Text-SSoT bleibt `assets/catalog.md`) · `tools.md` (Airtable-/Make-MCP-Fallen; Generisches → `global-make-conventions`) · `operations.md` (Idempotenz, Fehlerkonvention, Registry, Wächter-Views) · **`airtable/<tabelle>.md`** (je Tabelle: Zweck · Beziehungen · tragende Felder + datierter Feld-Block).
 
-**`assets/`** — `catalog.md` (Nachrichtenkatalog) · `blueprints/` (JSON je Szenario) · `diagrams/` (`er.html`, `topology.html` — datierte Review-Artefakte) · `examples/` (echte Belege).
+**`assets/`** — `catalog.md` (Nachrichtenkatalog) · `diagrams/` (`er.html`, `topology.html` — datierte Review-Artefakte) · `examples/` (echte Belege). Szenario-Innereien werden **live** per Make-MCP gelesen (`scenarios_get`) statt als Dump vorgehalten.
 
 **Abgrenzung:** Shopify-Theme → `liftr-*` · City-Marketing/Brand → `selectedleafs-city-content`/`-brand` · generische Make-Mechanik → `global-make-conventions` · Build-Time-Agenten → `global-agent-framework`.
