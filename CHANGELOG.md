@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.25.0](https://github.com/wemwi/skill-library/compare/v5.24.0...v5.25.0) (2026-08-18)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Szenario-Innereien live statt aus Dumps lesen ([#180](https://github.com/wemwi/skill-library/issues/180)) ([94e0e92](https://github.com/wemwi/skill-library/commit/94e0e92cc7845624217fb6f168fcecdd838c76c1))
+
 ## [5.24.0](https://github.com/wemwi/skill-library/compare/v5.23.1...v5.24.0) (2026-08-17)
 
 
