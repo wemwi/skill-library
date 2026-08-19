@@ -26,15 +26,30 @@ Die Wahl fällt am **Leistungsdatum** (§4).
 
 ---
 
-## 2. Die 🟣-Konvention
+## 2. Feld-Konvention & Make-Kopplung
 
-**🟣** (im Feld-/Tabellennamen) heißt: **gehört Make oder den Formeln, nicht der Hand.** Drei Sorten, die man kennen muss:
+**Die einzige verbliebene Namenskopplung sitzt in `filterByFormula`-Strings** (Airtable erlaubt dort keine Feld-IDs) — plus in den dort gematchten Options-Werten und Sortier-Feldern. Reads/Writes sind sonst überall ID-fest (`returnFieldsByFieldId` / `useColumnId:true`). Drei Kopplungsarten:
 
-- **Dedup-/Match-Schlüssel.** `Lieferungen.ID` = Belegnummer aus dem PDF · `Bestandsprüfungen.ID` = `"BSP-" & ⚙ Store ID & "-" & Datum` (Make baut denselben Wert als `dedupkey` und sucht per `filterByFormula {ID} = …`) · `Produktvarianten.ID` = SKU (Bestands-Schlüssel `"BST-" & Store-Nr & "-" & SKU`) · `Produkte.ID` = SKU-Präfix. **Präfix/Trennzeichen/Datumsformat ändern bricht den Match still.**
-- **Namens-Match.** `Stores.Name` — der Restock-Match läuft zeichengenau darüber. Umbenennen bricht still.
-- **Volle GIDs.** `Stores.⚙ Shopify GID` (Metaobjekt), `Produkte.⚙ Shopify GID` (Produkt), `Produktvarianten.⚙ Shopify GID` (Variante) — **immer inkl. `gid://shopify/…`-Präfix**, Make normalisiert nicht. Formate nie mischen.
+- **Dedup-/Match-Schlüssel.** `Lieferungen.ID` = Belegnummer aus dem PDF · `Bestandsprüfungen.ID` = `"BSP-" & ⚙ Store ID & "-" & Datum` (Make baut denselben Wert als `dedupkey` und sucht per `filterByFormula {ID} = …`) · `Bestände.ID` = `"BST-" & Store-Nr & "-" & SKU` · `Produktvarianten.ID` = SKU. **Präfix/Trennzeichen/Datumsformat ändern bricht den Match still.**
+- **Namens-Match & Werte-Match.** `Stores.Name`/`Vertriebler.Name` (zeichengenau) · Selects, deren **Optionen** als String gematcht werden (`Belegtyp`, `Status`, `Modell`, `Typ`, `Gültig für`). Umbenennen von Feld **oder** Option bricht still.
+- **Volle GIDs.** `Stores.⚙ Shopify GID` (Metaobjekt), `Produkte.⚙ Shopify GID`, `Produktvarianten.⚙ Shopify GID` — **immer inkl. `gid://shopify/…`-Präfix**, Make normalisiert nicht.
 
-Die drei Bruchmodi (umbenannt = laut 422 · Wert/Option = still · Bedeutung gewandert = unsichtbar) stehen im SKILL.md; die tabellenscharfen Fälle in `airtable/…`.
+Bruchmodi: umbenannt = **laut** (422) · Wert/Option geändert = **still** · Bedeutung gewandert = **unsichtbar**.
+
+### Marker (Stand 2026-08-19)
+
+- **🔒 (Feldbeschreibung, erste Zeile `🔒 make.com — nicht ändern!`)** — Freeze. Auf jedem gekoppelten Feld (Index unten). „Nicht ändern" = **Name UND Options-Werte**. Bewusst in der Beschreibung, nicht im Namen (ein Glyph im Namen bräche den Match, den er schützt) — kein Namens-Glyph, keine View, keine Feldberechtigungen (die sperren nur Werte). Restrisiko akzeptiert (kein Drift-Audit): Options-Rename und neue Szenarien laufen am Marker vorbei → Gegenmaßnahme ist Prozess: **neue `filterByFormula` → 🔒 + Index-Eintrag im selben Zug.**
+- **⚙ (Feldname)** — **Ausblend-Marker**: „im Arbeits-View ausgeblendet, Maschine pflegt es." Test: *ausblenden ja/nein* (nicht „berechnet ja/nein"). Nutzt das namens-durchsuchbare Ausblenden-Panel.
+- **🟣 — wird abgeschafft** (war redundant zu ⚙). Kommt aus Tabellen-/Feldnamen raus; der „INSERT-only, Zeilen nicht von Hand"-Hinweis der drei Positions-Tabellen wandert in deren **Tabellen-Beschreibung**. **Base-Umsetzung ausstehend** — bis dahin ist 🟣 live und dieser Abschnitt beschreibt den Zielzustand.
+
+### Freeze-Index (welche Felder tragen 🔒 — Detail am Feld in `airtable/<tabelle>.md`)
+
+Namens-gekoppelt: `Lieferungen.ID` · `Umsätze.ID` · `Bestandsprüfungen.ID`+`Status` · `Bestandsprüfungspositionen.ID` · `Produktvarianten.ID` · `Bestände.ID` · `Preise.Produkt`+`Gültig ab` · `Konditionen.Gültig für`+`Gültig ab`+`Provision`+`Kostenanteil` · `Stores.⚙ Lexware ID`+`Name`+`Status`+`Modell`+`Zuletzt geprüft`+`⚙ Fällig gemeldet am` · `Vertriebler.Name`+`⚙ Lexware ID` · `Auszahlungen.⚙ Lexware ID` · `Belege.Belegtyp`+`Datum`+`Umsatz` · `Städte.Name` · `Stadtteile.Name`+`Stadt`.
+Nur Werte-gekoppelt (Feldname frei, Optionen gefroren): `Umsätze.Status` (Offen/Bezahlt/Teilgezahlt/Überfällig/Angemahnt/Storniert/Ausgebucht) · `Auszahlungen.Status` (In Bearbeitung/Abgeschlossen/Storniert/Teilzahlung) · `Produkte.Typ` (Kratom/POS Display).
+
+**Zwei `useColumnId:false`-Fixes ausstehend** (sonst bricht Rename mehr als nur die Formel): `[Maintain] Inventory Check Reminder` (7001118) Modul 4 schreibt `Stores.⚙ Fällig gemeldet am` per Name (→ `useColumnId:true` + `fldzaj0Ai31RqgqnU`) · `[Create] New Sales Member` (6821121) Modul 213 liefert `Konditionen.Provision`/`Kostenanteil` namens-keyed an Modul 215 (→ `useColumnId:true` + fld-ID). Goldstandard ohne jede Namenskopplung: `[Sync] Products` (in-Code-GID), `[Notify] Telegram` (`RECORD_ID()`).
+
+*Freeze-Menge aus vollständigem Live-Scan aller 17 Szenarien am 2026-08-19 (Make-MCP `scenarios_get`).*
 
 ---
 
