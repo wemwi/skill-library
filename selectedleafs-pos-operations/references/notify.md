@@ -65,10 +65,10 @@ Die City-Auflösung läuft `Store.Stadt → Städte.⚙ Telegram ID`. **Eine neu
 
 ## Key-Katalog (Index — Texte im `catalog.md`)
 
-**📥 Vorgänge (586):** `store.created` · `salesperson.created` · `salesperson.onboarded` · `delivery.booked` · `delivery.returned` · `inventory.checked` · `inventory.due` · `invoice.created` · `invoice.paid` · `invoice.overdue` · `invoice.reminder_filed` · `invoice.dunning_filed` · `invoice.voided` · `invoice.written_off` · `payout.created` · `payout.settled` · `city.restock` · `city.strain_new`.
-**👉 Aufgaben (585):** `task.doctype_unclear` · `task.terms_missing` · `task.jtl_missing` · `task.telegram_missing` · `task.digest`. *(`task.invoice_unlinked` / `task.beleg_no_pdf` haben bewusst keine eigene Meldung — nur Zeile im Digest.)*
-**⚙️ System (583):** `sync.products` · `sync.stores` · `system.heartbeat`. *(alle Token ctx; wiederholte Blöcke kommen fertig als `{Zeilen}`.)*
-**🛑 Störungen (584):** `error.reminder_unreadable` · `error.reminder_unmatched` · `error.lexware_orphan` · `error.sync_aborted` · `error.store_failed` · `error.store_partial` · `error.salesperson_failed`.
+**📥 Vorgänge (586):** `store.created` · `salesperson.created` · `salesperson.onboarded` · `delivery.booked` · `delivery.returned` · `inventory.checked` · `inventory.due` · `invoice.created` · `invoice.paid` · `invoice.reminder_filed` · `invoice.dunning_filed` · `invoice.voided` · `invoice.written_off` · `payout.created` · `payout.settled` · `city.restock` · `city.strain_new`. *(Runde 26: `invoice.overdue` gestrichen.)*
+**👉 Aufgaben (585):** `task.doctype_unclear` · `task.terms_missing` · `task.jtl_missing` · `task.jtl_stock` · `task.jtl_inventory_date` · `task.jtl_payment`. *(Runde 26: `task.digest` dormant/raus, `task.telegram_missing` gestrichen. `task.jtl_payment` neu.)*
+**⚙️ System (583):** `sync.products` · `sync.stores` · `sync.inventory`. *(Runde 26: `system.heartbeat` gestrichen, `sync.inventory` wieder aktiv. Zähler-Token ctx.)*
+**🛑 Störungen (584):** `error.reminder_unmatched` · `error.lexware_orphan` · `error.sync_aborted` · `error.store_failed` · `error.store_partial` · `error.salesperson_failed` · `error.payment_unmatched`. *(Runde 26: `error.reminder_unreadable` gestrichen, `error.payment_unmatched` neu.)*
 
 ## Fallstricke
 

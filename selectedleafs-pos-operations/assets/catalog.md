@@ -1,11 +1,11 @@
 # Nachrichtenkatalog
 
-> **Runde 25** · finalisierter Wortlaut, **Stand 2026-08-17**.
+> **Runde 26** · **Stand 2026-08-18** · alle Familien auf R26-Wortlaut. ⚙️ System + 🛑 Störungen aus `POS-Meldungen_System-Stoerungen_R26-final.md`, 📥 Vorgänge + 👉 Aufgaben aus `POS-Meldungen_Liste_Format-A.md`. **Q1: Infozeile (Zeile 2) durchgängig kursiv `<i>…</i>`.** Noch offen im Wortlaut: `invoice.reminder_filed` (Richtung).
 > **Achtung — dem Hub VORAUS:** dieser Satz wurde im Wortlaut-Durchgang festgelegt und ist die neue Text-SSoT. Der Hub (`[Report/Notify] Telegram Notifications` 6862968, Modul 2 „Ereignis-Landkarte") ist **noch nicht angeglichen** — die Angleichung läuft als Import-JSON. Bis dahin gilt: **diese Datei ist die Wahrheit, der Hub zieht nach**, nicht umgekehrt.
 > Mechanik (Renderer, Token, Channels, Empfänger-Logik) steht in [[notify]] — hier nur die Wortlaute.
 
 **Register je Meldung:** `text` → Operations · `vtext` → Vertriebler · `ctext` → City. Fehlt ein Register, gibt es dorthin keine Meldung. Token-Regeln (`{abs}`, `{Vorname}`, `{Maps-URL}`, `{Saldoabruf}`, `{leer …}`/`{gesetzt …}`) siehe [[notify]].
-**Runde-25-Änderungen:** zwei neue `task.*` (JTL-Handgriffe an Lieferung/Bestandsprüfung) · `sync.products` auf das Neu-Signal eingedampft (»geändert«-Zähler + Gesamtzahl-Infozeile raus) · in den Störungen trägt `{Fehler}` ab jetzt den menschlichen Grund (Feld/Stufe), nie den rohen HTTP-Code.
+**Runde-26-Änderungen:** Q1 (Infozeile durchgängig kursiv) · Mahnleiter-Verben `{Mahnstufe}` erstellt/versendet (reminder_filed + dunning_filed) · store.created „Akquiriert **von**" · inventory.checked „**Gesamtdifferenz**" · invoice.created-vtext „🧾 Neuer Umsatz / … **Ansprechpartner vor Ort**" · invoice.paid ohne `({Zahlungsverlauf})` + Ops-⚠️ „Zahlung nach Mahnung" (`{gesetzt Gemahnt}`) · JTL-Tasks tragen den Identifikator in der Infozeile · neuer Key `task.jtl_payment` · System kompakt (Richtung als Infozeile), `sync.stores`+`sync.inventory` reaktiviert · Störungen neu geschnitten, `error.reminder_unreadable` raus, `error.payment_unmatched` neu · `task.digest`/`task.telegram_missing` raus.
 
 **Grammatik dieser Runde (fest):** Betreff = reines Ereignis (Emoji + Ereignis) — **kein Store-Name, keine Beleg-ID, kein Zustandswort**; Referenzen (Store, RG-Nr.) in die Infozeile. **Ops- und Sales-Label getrennt** (Ops = Ereignis-Substantiv, Sales = „… erfasst"). **RG-Nr. in die Infozeile**, Datum in die Belegzeile. **⚠️ auf jeder Vorbehaltszeile**, in Ops und Sales gleich, konditional. Reine Floskeln raus (Ausnahme: warmer Halbsatz an Meilensteinen — Onboarding, Auszahlung). Sales-Body trägt **einen** fetten Anker-Wert, Ops bleibt mager.
 
@@ -17,19 +17,19 @@
 **Operations**
 ```
 🎉 Neuer Store
-{Store} · {Stadtteil}
+<i>{Store} · {Stadtteil}</i>
 
-Akquiriert durch {Vertriebler}
+Akquiriert von {Vertriebler}
 ```
 **Vertriebler**
 ```
 🎉 Neuer Store erfasst
-{Store} · {Postleitzahl} {Stadt}
+<i>{Store} · {Postleitzahl} {Stadt}</i>
 ```
 **City** (mit Foto)
 ```
 🎉 Neuer Partner
-{Store} · {Straße / Nr.}
+<i>{Store} · {Straße / Nr.}</i>
 
 🕒 <b>Öffnungszeiten</b>
 {Öffnungszeiten}
@@ -41,7 +41,7 @@ Akquiriert durch {Vertriebler}
 **Operations**
 ```
 🤝 Neuer Vertriebler
-{Vertriebler} · {Ort}
+<i>{Vertriebler} · {Ort}</i>
 ```
 
 ### `salesperson.onboarded`
@@ -73,7 +73,7 @@ Schön, dass du dabei bist.
 **Operations**
 ```
 📦 Kommissionsware übergeben
-{Vertriebler} bei {Store}
+<i>{Vertriebler} bei {Store}</i>
 
 Nettoverkaufswert: {Nettoverkaufswert}
 Gesamtkosten: {Kosten}
@@ -85,7 +85,7 @@ Gesamtkosten: {Kosten}
 **Vertriebler**
 ```
 📦 Lieferung erfasst
-{Store} · {Menge (Stück)} Einheiten
+<i>{Store} · {Menge (Stück)} Einheiten</i>
 
 Nettoverkaufswert: {Nettoverkaufswert}
 Dein Kostenanteil: <b>{Kostenanteil}</b>
@@ -97,7 +97,7 @@ Dein Kostenanteil: <b>{Kostenanteil}</b>
 **Operations**
 ```
 📥 Kommissionsware abgeholt
-{Vertriebler} bei {Store}
+<i>{Vertriebler} bei {Store}</i>
 
 Nettoverkaufswert: {abs Nettoverkaufswert}
 Gesamtkosten: {abs Kosten}
@@ -109,7 +109,7 @@ Gesamtkosten: {abs Kosten}
 **Vertriebler**
 ```
 📥 Rückholung erfasst
-{Store} · {Menge (Stück)} Einheiten
+<i>{Store} · {Menge (Stück)} Einheiten</i>
 
 Nettoverkaufswert: {abs Nettoverkaufswert}
 Dein Kostenanteil: <b>{abs Kostenanteil}</b>
@@ -123,9 +123,9 @@ Die Kosten wurden deinem Saldo gutgeschrieben.
 **Operations**
 ```
 📋 Bestand geprüft
-{Vertriebler} bei {Store}
+<i>{Vertriebler} bei {Store}</i>
 
-Differenz: {⚙ Differenz (Gesamt)} Einheiten
+Gesamtdifferenz: {⚙ Differenz (Gesamt)} Einheiten
 Nettoverkaufswert: {⚙ Nettoverkaufswert}
 
 {leer Inventar geprüft}⚠️ Inventar nicht geprüft.
@@ -136,9 +136,9 @@ Nettoverkaufswert: {⚙ Nettoverkaufswert}
 **Vertriebler**
 ```
 📋 Bestandsprüfung erfasst
-{Store} · {Stadtteil}
+<i>{Store} · {Stadtteil}</i>
 
-Differenz: {⚙ Differenz (Gesamt)} Einheiten
+Gesamtdifferenz: {⚙ Differenz (Gesamt)} Einheiten
 Nettoverkaufswert: <b>{⚙ Nettoverkaufswert}</b>
 
 {leer Inventar geprüft}⚠️ Inventar nicht geprüft.
@@ -151,26 +151,25 @@ Nettoverkaufswert: <b>{⚙ Nettoverkaufswert}</b>
 **Operations**
 ```
 ⏳ Bestandsprüfung fällig
-{Vertriebler} bei {Store}
+<i>{Vertriebler} bei {Store}</i>
 
 Zuletzt geprüft am {Datum}
 ```
 **Vertriebler**
 ```
 ⏳ Bestandsprüfung fällig
-{Store} · {Stadtteil}
+<i>{Store} · {Stadtteil}</i>
 
-Zeit für einen Besuch — <a href="{Maps-URL}">Route öffnen</a>
+👉 Zeit für einen Besuch — <a href="{Maps-URL}">Route öffnen</a>
 
 Letzte Prüfung: {Datum}
 ```
 
 ### `invoice.created`
-*Beträge gültig, sobald die Klingel hinter die Positionsschreibung wandert (Szenario-Änderung 1b, Import-JSON offen). Vorher rendert der Nettoumsatz-Rollup 0.*
 **Operations**
 ```
 🧾 Rechnung erstellt
-{Store} · {ID}
+<i>{Store} · {ID}</i>
 
 Nettoumsatz: {Nettoumsatz}
 Ertrag nach Provision: {Nettoertrag}
@@ -181,13 +180,13 @@ Ertrag nach Provision: {Nettoertrag}
 ```
 **Vertriebler**
 ```
-🧾 Neue Rechnung
-{Store} · {ID}
+🧾 Neuer Umsatz
+<i>{Store} · {ID}</i>
 
 Nettoumsatz: {Nettoumsatz}
 Deine Provision: <b>{Provision}</b>
 
-Bitte leite die Rechnung an den Store weiter.
+👉 Bitte leite die Rechnung an deinen Ansprechpartner vor Ort weiter.
 
 <i>Fällig am {⚙ Fällig am}</i>
 ```
@@ -195,15 +194,17 @@ Bitte leite die Rechnung an den Store weiter.
 ### `invoice.paid`
 **Operations**
 ```
-✅ Zahlungseingang ({Zahlungsverlauf})
-{Store} · {ID}
+✅ Zahlungseingang
+<i>{Store} · {ID}</i>
 
 Saldo {Vorname} (offen): {Offen}
+
+{gesetzt Gemahnt}⚠️ Zahlung nach Mahnung.
 ```
 **Vertriebler**
 ```
-✅ Zahlungseingang ({Zahlungsverlauf})
-{Store} · {ID}
+✅ Zahlungseingang
+<i>{Store} · {ID}</i>
 
 Deine Provision: +{Provision}
 Dein Saldo (offen): <b>{Offen}</b>
@@ -212,15 +213,15 @@ Dein Saldo (offen): <b>{Offen}</b>
 ### `invoice.reminder_filed`
 **Operations**
 ```
-⏰ Rechnung überfällig
-{Store} · {ID}
+⏰ {Mahnstufe} erstellt
+<i>{Store} · {ID}</i>
 
 Fällig seit {⚙ Fällig am}
 ```
 **Vertriebler**
 ```
-⏰ Rechnung überfällig
-{Store} · {ID}
+⏰ {Mahnstufe} versendet
+<i>{Store} · {ID}</i>
 
 Fällig seit {⚙ Fällig am}
 ```
@@ -228,15 +229,15 @@ Fällig seit {⚙ Fällig am}
 ### `invoice.dunning_filed`
 **Operations**
 ```
-📮 Mahnung erfasst
-{Store} · {ID}
+📮 {Mahnstufe} erstellt
+<i>{Store} · {ID}</i>
 
 Fällig seit {⚙ Fällig am}
 ```
 **Vertriebler**
 ```
-📮 Rechnung im Mahnlauf
-{Store} · {ID}
+📮 {Mahnstufe} versendet
+<i>{Store} · {ID}</i>
 
 Fällig seit {⚙ Fällig am}
 ```
@@ -245,7 +246,7 @@ Fällig seit {⚙ Fällig am}
 **Operations**
 ```
 ↩️ Rechnung storniert
-{Store} · {ID}
+<i>{Store} · {ID}</i>
 
 Nettoumsatz: {Nettoumsatz}
 Entgangener Ertrag: −{Nettoertrag}
@@ -255,7 +256,7 @@ Entgangener Ertrag: −{Nettoertrag}
 **Vertriebler**
 ```
 ↩️ Rechnung storniert
-{Store} · {ID}
+<i>{Store} · {ID}</i>
 
 Nettoumsatz: {Nettoumsatz}
 Entfallene Provision: <b>−{Provision}</b>
@@ -267,7 +268,7 @@ Entfallene Provision: <b>−{Provision}</b>
 **Operations**
 ```
 ❌ Rechnung ausgebucht
-{Store} · {ID}
+<i>{Store} · {ID}</i>
 
 Nettoumsatz: {Nettoumsatz}
 Entgangener Ertrag: −{Nettoertrag}
@@ -277,7 +278,7 @@ Entgangener Ertrag: −{Nettoertrag}
 **Vertriebler**
 ```
 ❌ Rechnung ausgebucht
-{Store} · {ID}
+<i>{Store} · {ID}</i>
 
 Entfallene Provision: <b>−{Provision}</b>
 
@@ -290,7 +291,7 @@ Der Betrag konnte leider nicht eingetrieben werden.
 **Operations**
 ```
 💶 Auszahlung beantragt
-{Vertriebler} · {Rechnungsnummer}
+<i>{Vertriebler} · {Rechnungsnummer}</i>
 
 Betrag: {Betrag}
 
@@ -299,7 +300,7 @@ Betrag: {Betrag}
 **Vertriebler**
 ```
 🧾 Rechnung erfasst
-{Rechnungsnummer} · {Saldoabruf}
+<i>{Rechnungsnummer} · {Saldoabruf}</i>
 
 Betrag: <b>{Betrag}</b>
 
@@ -310,7 +311,7 @@ Auszahlung erfolgt in Kürze.
 **Operations**
 ```
 💶 Auszahlung abgeschlossen
-{Vertriebler} · {Rechnungsnummer}
+<i>{Vertriebler} · {Rechnungsnummer}</i>
 
 Betrag: {Betrag}
 Neuer Saldo: {Offen}
@@ -320,7 +321,7 @@ Neuer Saldo: {Offen}
 **Vertriebler**
 ```
 💶 Auszahlung unterwegs
-{Rechnungsnummer} vom {Datum}
+<i>{Rechnungsnummer} vom {Datum}</i>
 
 Betrag: {Betrag}
 Neuer Saldo: <b>{Offen}</b>
@@ -331,7 +332,7 @@ Danke für deine Arbeit! :)
 ### `city.restock` · City
 ```
 📦 Frisch aufgefüllt
-{Store} · {Stadtteil}
+<i>{Store} · {Stadtteil}</i>
 
 {Sorten}
 
@@ -341,7 +342,7 @@ Danke für deine Arbeit! :)
 ### `city.strain_new` · City (ein Post je neuer Sorte)
 ```
 🌿 Neue Sorte verfügbar
-{Store} · {Stadtteil}
+<i>{Store} · {Stadtteil}</i>
 
 {Sorte} ({Vein}) ab sofort vor Ort erhältlich
 
@@ -351,60 +352,60 @@ Danke für deine Arbeit! :)
 ---
 
 ## 👉 Aufgaben · Topic 585
+*Runde 26: Identifikator wandert in die (kursive) Infozeile. `task.telegram_missing` bleibt **gestrichen** (18.08.: ⚙ Telegram ID kommt aus dem Formular) — in Format-A noch gelistet, hier bewusst nicht.*
 
 ### `task.jtl_missing`
 **Operations**
 ```
 👉 JTL Datensatz anlegen
-Kunde & Lager für {Store}
+<i>Kunde & Lager für {Store}</i>
 
 • Kunden anlegen, Erstkontakt: {Vertriebler}
 • Lager anlegen, Namen und Adresse wie Kunde
 • Kundennummer in Airtable unter »ID« eintragen
 ```
 
-### `task.telegram_missing`
-**Operations**
-```
-👉 Telegram-Channel anlegen
-für {Vertriebler} in Region {Ort}
-
-• Channel anlegen: „selectedleafs.com · Region {Ort}"
-• {Vorname} und „selectedleafs_sales_bot" einladen
-• Chat-ID in »⚙ Telegram ID« eintragen
-```
-
 ### `task.jtl_stock`
-*Hängt fachlich an `delivery.booked` (nur Übergabe, nicht Rückholung) — Klingel dafür ist Bau-Backlog, kein Textedit.*
 **Operations**
 ```
 👉 Lager buchen (JTL)
-{Store} · {Menge (Stück)} Einheiten
+<i>{Store} · {ID}</i>
 
 • Lager Modul öffnen
-• Wareneingang ({ID}) buchen
+• Wareneingang buchen
 
 <i>Geliefert am {Datum}</i>
 ```
 
 ### `task.jtl_inventory_date`
-*Hängt fachlich an `inventory.checked` — Klingel dafür ist Bau-Backlog, kein Textedit.*
 **Operations**
 ```
 👉 Prüfdatum setzen (JTL)
-{Store} · {Stadtteil}
+<i>{Store} · {⚙ Store ID}</i>
 
-• Kunde öffnen ({⚙ Store ID})
+• Kunde öffnen
 • Letzte Bestandsprüfung setzen
 
 <i>Geprüft am {Datum}</i>
+```
+
+### `task.jtl_payment`
+**Operations**
+```
+👉 Zahlung setzen (JTL)
+<i>{Store} · {ID}</i>
+
+• Kunde in JTL öffnen
+• Zahlung als bezahlt buchen
+
+<i>Bezahlt am {Datum}</i>
 ```
 
 ### `task.terms_missing`
 **Operations**
 ```
 👉 Konditionen prüfen
-{Store} · {ID}
+<i>{Store} · {ID}</i>
 
 • Leistungsdatum {Leistungsdatum} an der Rechnung prüfen
 • Konditionen-Version mit »Gültig ab« ≤ Leistungsdatum anlegen
@@ -416,7 +417,7 @@ für {Vertriebler} in Region {Ort}
 **Operations**
 ```
 👉 Belegtyp korrigieren
-{ID} · Unbekannt
+<i>{ID} · Unbekannt</i>
 
 • Grund prüfen: Belegtyp nicht eindeutig erkannt
 • Belegtyp in Airtable setzen — danach läuft der Prozess weiter
@@ -424,105 +425,116 @@ für {Vertriebler} in Region {Ort}
 <i>Beleg vom {Datum}</i>
 ```
 
-### `task.digest` · 07:00-Lauf
-**Operations**
-```
-🗒 Offene Aufgaben ({n})
-
-{Zeilen}
-```
-*(`task.invoice_unlinked` / `task.beleg_no_pdf` haben bewusst keine eigene Meldung — sie erscheinen nur als Zeile hier.)*
-
----
-
 ## ⚙️ System · Topic 583
-*(alle Token ctx; wiederholte Blöcke liefert der Emitter fertig als `{Zeilen}`.)*
+*Titel „X aktualisiert" · kursive Infozeile = Richtung (ein Fakt) · **kein Datum** (Telegram stempelt die Sendezeit). Zähler-Token ctx.*
 
-### `sync.products`
-*Postet nur bei materieller Änderung — Preis korrigiert oder Sorte neu; ein No-Op-Lauf bleibt still. Runde 25: nur noch das Signal, worauf Joscha reagiert — neu angelegt + Preise korrigiert; »geändert«-Zähler und Gesamtzahl-Infozeile raus.*
+### `sync.products` · feuert nur bei materieller Änderung
 **Operations**
 ```
 ⚙️ Produkte aktualisiert
+<i>Shopify → Airtable</i>
 
-Produkte: {a} angelegt
-Varianten: {c} angelegt
-Preise: {e} korrigiert
++{a} Produkte · +{c} Varianten · {e} Preise
 ```
 
-*`sync.stores` (Erfolg) und `system.heartbeat` sind gestrichen (16.08.2026) — nur noch Störungen im System-/Sync-Bereich. `sync.inventory` bleibt gestrichen. Abbrüche laufen über `error.sync_aborted`.*
+### `sync.stores` · Runde 26: R24-Streichung zurückgenommen
+**Operations**
+```
+⚙️ Stores aktualisiert
+<i>Google Places → Airtable</i>
+
+{Stores} Stores · {Öffnungszeiten} Öffnungszeiten geändert
+```
+
+### `sync.inventory` · Runde 26: 10.08.-Streichung zurückgenommen
+*Template = R26-final (aggregat). ACHTUNG: der 18.08. gebaute Emitter 6805674 klingelt **pro Store** mit `{Store}` (nicht `{Stores}`) — Shape-Konflikt vor dem Hub-Reimport klären.*
+**Operations**
+```
+⚙️ Bestand aktualisiert
+<i>Airtable → Shopify</i>
+
+{Stores} Stores · {Varianten} Varianten
+```
+
+*`system.heartbeat` bleibt gestrichen. Abbrüche laufen über `error.sync_aborted`.*
 
 ---
 
 ## 🛑 Störungen · Topic 584
-*Runde 25: `{Fehler}` trägt den menschlichen Grund (welches Feld, welche Stufe) — nie den rohen HTTP-Status. Umstellung ist Emitter-Sache (ctx füttern), kein Template-Edit; steht im Bau-Backlog beim System-Emitter-Schnitt.*
-
-### `error.reminder_unreadable`
-```
-🛑 Mahnschreiben nicht verarbeitbar
-Betreff: {Betreff}
-
-Grund: {Hinweis}
-Folge: kein Beleg angelegt, keine Meldung an den Vertriebler
-```
+*Skelett: 2–3-Wort-Betreff (der Fehler-Zustand IST das Ereignis) · kursive Infozeile mit 2 label-freien Fakten (Fachbezug · `{Stufe}`/Unterscheider) · Body `Grund:` (Wert), `Folge:` nur wo nicht impliziert · **👉-Aktionszeile als eigener Absatz**. Familie = 7 Keys (`error.reminder_unreadable` gestrichen). `{Fehler}` trägt den menschlichen Grund (Feld/Stufe), nie den rohen HTTP-Status.*
 
 ### `error.reminder_unmatched`
 ```
-🛑 Mahnschreiben nicht zuordenbar
-Rechnung {Rechnungsnummer} · {Belegtyp}
+🛑 Mahnschreiben ohne Treffer
+<i>{Rechnungsnummer} · {Belegtyp}</i>
 
-Grund: kein Umsatz mit dieser Nummer in Airtable
-Folge: Beleg nicht abgelegt, keine Meldung an den Vertriebler
+Grund: keine Rechnung mit dieser Nummer in Airtable
+
+👉 Nummer prüfen — Tippfehler im Betreff oder Umsatz fehlt
 ```
 
 ### `error.lexware_orphan`
 ```
-🛑 Lexware-ID nicht zurückgeschrieben
-{Vertriebler} · {Ort}
+🛑 Lexware-ID nicht gespeichert
+<i>{Vertriebler} · {Ort}</i>
 
 Grund: {Fehler}
 Folge: der nächste Lauf legt eine Dublette an
 
-{Lexware ID} von Hand in »⚙ Lexware ID« eintragen.
+👉 {Lexware ID} von Hand in »⚙ Lexware ID« eintragen
 ```
 
 ### `error.sync_aborted`
 ```
 🛑 Sync abgebrochen
-{Szenario} · Abbruch bei: {Stufe}
+<i>{Szenario} · {Stufe}</i>
 
 Grund: {Fehler}
 Folge: {Folge}
+
+👉 {Szenario} prüfen, wenn der Fehler bleibt
 ```
 
 ### `error.store_failed`
 ```
-🛑 Store konnte nicht angelegt werden
-{Store} · Abbruch bei: {Stufe}
+🛑 Store nicht angelegt
+<i>{Store} · {Stufe}</i>
 
 Grund: {Fehler}
 Folge: kein Metaobjekt, kein Lexware-Kontakt, kein Broadcast
 
-Hinweis steht im Airtable-Datensatz.
+👉 Hinweis im Datensatz prüfen: {Record-Link}
 ```
 
 ### `error.store_partial`
 ```
-🛑 Store nur teilweise angelegt
-{Store} · Abbruch bei: {Stufe}
+🛑 Store unvollständig
+<i>{Store} · {Stufe}</i>
 
 Grund: {Fehler}
-Angelegt: {Angelegt}
-Fehlt: {Fehlt}
+
+👉 Datensatz öffnen, Onboarding erneut auslösen: {Record-Link}
 ```
 
-### `error.salesperson_failed`
+### `error.salesperson_failed` · ein Key, neutraler Titel
 ```
-🛑 Vertriebler konnte nicht angelegt werden
-{Vertriebler} · Abbruch bei: {Stufe}
+🛑 Vertriebler-Anlage gestoppt
+<i>{Vertriebler} · Eingangsprüfung</i>
 
 Grund: {Fehler}
-Angelegt: {Angelegt}
-Fehlt: {Fehlt}
+
+👉 Grund prüfen und Anlage erneut anstoßen
+```
+
+### `error.payment_unmatched` · NEU (Key wurde geklingelt, Template fehlte)
+```
+🛑 Zahlung ohne Treffer
+<i>{Rechnungsnummer}</i>
+
+Grund: keine Rechnung mit dieser Nummer in Airtable
+Folge: Zahlungsstatus nicht gesetzt — der Umsatz bleibt offen
+
+👉 Prüfen, ob {Rechnungsnummer} als Umsatz existiert
 ```
 
 ---

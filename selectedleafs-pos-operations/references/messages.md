@@ -1,6 +1,6 @@
 # Nachrichten-Übersicht
 
-> Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token. Abgeleitet aus dem finalisierten Wortlaut (Katalog Runde 25), **Stand 2026-08-17**.
+> Zeigt pro Anlass, **was in welchen Channel gepostet wird** — mit **ausgefüllten Beispielwerten** statt Token. Alle Familien auf **Runde 26 (Stand 2026-08-18)**. Infozeilen sind in den Live-Templates durchgängig kursiv (Q1); hier plain gerendert.
 >
 > Die **Wortlaut-Templates** (mit Token) sind die Text-SSoT in [[catalog]]; die **Mechanik** (Renderer, Token-Regeln, Channels) steht in [[notify]]. Hier steht keine Wahrheit, sondern die *Ansicht*. **Achtung:** Katalog Runde 25 ist dem Hub-Modul 2 voraus — die Angleichung läuft als Import-JSON.
 
@@ -8,7 +8,7 @@
 
 **Register:** **Operations** (Team-Forum, Topic) · **Vertriebler** (persönlicher Sales-Channel) · **City** (öffentlicher Stadt-Channel).
 
-**Status:** `live` = Emitter postet · `geplant` = hängt an einem noch zu bauenden Trigger · `offen` = Meldung definiert, Emitter/Trigger fehlt · `gestrichen` = nicht aktiv.
+**Status:** `live` = Emitter postet · `gebaut · … ausstehend` = Emitter/Klingel gebaut, Reimport in Make (bzw. Import des neuen Szenarios) noch offen · `geplant` = hängt an einem noch zu bauenden Trigger · `offen` = Meldung definiert, Emitter/Trigger fehlt · `gestrichen` = nicht aktiv.
 
 ---
 
@@ -20,7 +20,7 @@
 🎉 Neuer Store
 Kiosk Nordstern · Linden
 
-Akquiriert durch Max Berger
+Akquiriert von Max Berger
 ```
 **Vertriebler**
 ```
@@ -48,9 +48,9 @@ Google Maps öffnen → https://maps.google.com/…
 Max Berger · Hannover
 ```
 **Vertriebler** — kein Kanal (existiert bei Anlage noch nicht) · **City** — —
-**Begleitend** → 👉 `task.telegram_missing` · 🛑 `error.salesperson_failed` · 🛑 `error.lexware_orphan`
+**Begleitend** → 🛑 `error.salesperson_failed` · 🛑 `error.lexware_orphan`
 
-### 👋 `salesperson.onboarded` — Onboarding · `offen`
+### 👋 `salesperson.onboarded` — Onboarding · `gebaut · Reimport 6821121 ausstehend`
 **Vertriebler**
 ```
 👋 Willkommen bei selectedleafs, Max
@@ -66,7 +66,7 @@ Deine Auszahlung
 • Rechnung ausschließlich an invoice@selectedleafs.com
 
 Deine einzige Pflicht
-• mindestens eine Bestandsprüfung alle 14 Tage
+• mindestens eine Bestandsprüfung alle 30 Tage
 
 Dein Store-Formular
 • neuen Partnerstore anlegen → https://…
@@ -74,7 +74,6 @@ Dein Store-Formular
 
 Schön, dass du dabei bist.
 ```
-*Schließt 👉 `task.telegram_missing`.*
 
 ### 📦 `delivery.booked` — Lieferung · `live`
 **Operations** — 📥 Vorgänge · 586
@@ -153,7 +152,7 @@ Zurückgeholt am 12.08.2026
 📋 Bestand geprüft
 Max Berger bei Kiosk Nordstern
 
-Differenz: 12 Einheiten
+Gesamtdifferenz: 12 Einheiten
 Nettoverkaufswert: 41,00 €
 
 ⚠️ Inventar nicht geprüft.
@@ -166,7 +165,7 @@ Geprüft am 12.08.2026
 📋 Bestandsprüfung erfasst
 Kiosk Nordstern · Linden
 
-Differenz: 12 Einheiten
+Gesamtdifferenz: 12 Einheiten
 Nettoverkaufswert: 41,00 €
 
 ⚠️ Inventar nicht geprüft.
@@ -177,8 +176,8 @@ Geprüft am 12.08.2026
 **City** — —
 **Begleitend** → 👉 `task.jtl_inventory_date`
 
-### ⏳ `inventory.due` — Prüfung fällig · `offen`
-*`[Scheduled] Daily Operations` ist endgültig gestrichen (17.08.2026) — dieser Anlass MUSS bleiben, braucht aber einen neuen eigenen Trigger. Template unverändert, nur der Auslöser ist Bau-Backlog.*
+### ⏳ `inventory.due` — Prüfung fällig · `gebaut · Import ausstehend`
+*Auslöser ist das eigene Szenario `[Maintain] Overdue Inventory Checks` (Schedule tgl. ~07:00, gebaut 18.08.2026 — Import + Schedule-Aktivierung noch offen). Vertrag siehe [[scenarios]].*
 **Operations** — 📥 Vorgänge · 586
 ```
 ⏳ Bestandsprüfung fällig
@@ -191,14 +190,13 @@ Zuletzt geprüft am 12.08.2026
 ⏳ Bestandsprüfung fällig
 Kiosk Nordstern · Linden
 
-Zeit für einen Besuch — Route öffnen → https://maps.google.com/…
+👉 Zeit für einen Besuch — Route öffnen → https://maps.google.com/…
 
 Letzte Prüfung: 12.08.2026
 ```
 **City** — —
 
 ### 🧾 `invoice.created` — Rechnung erstellt · `live`
-*Beträge gültig, sobald die Klingel hinter die Positionsschreibung wandert (Szenario-Änderung 1b).*
 **Operations** — 📥 Vorgänge · 586
 ```
 🧾 Rechnung erstellt
@@ -213,13 +211,13 @@ Fällig am 26.08.2026
 ```
 **Vertriebler**
 ```
-🧾 Neue Rechnung
+🧾 Neuer Umsatz
 Kiosk Nordstern · RG-10128-1
 
 Nettoumsatz: 312,40 €
 Deine Provision: 46,86 €
 
-Bitte leite die Rechnung an den Store weiter.
+👉 Bitte leite die Rechnung an deinen Ansprechpartner vor Ort weiter.
 
 Fällig am 26.08.2026
 ```
@@ -228,49 +226,53 @@ Fällig am 26.08.2026
 ### ✅ `invoice.paid` — Rechnung bezahlt · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-✅ Zahlungseingang (pünktlich)
+✅ Zahlungseingang
 Kiosk Nordstern · RG-10128-1
 
 Saldo Max (offen): 134,20 €
+
+⚠️ Zahlung nach Mahnung.
 ```
 **Vertriebler**
 ```
-✅ Zahlungseingang (pünktlich)
+✅ Zahlungseingang
 Kiosk Nordstern · RG-10128-1
 
 Deine Provision: +46,86 €
 Dein Saldo (offen): 134,20 €
 ```
-*`{Zahlungsverlauf}`: pünktlich / nach Zahlungserinnerung / nach Mahnung.*
+*Ops-⚠️ nur konditional (`{gesetzt Gemahnt}`): fällt weg, wenn pünktlich gezahlt.*
+**Begleitend** → 👉 `task.jtl_payment`
 
 ### ⏰ `invoice.reminder_filed` — Zahlungserinnerung · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-⏰ Rechnung überfällig
+⏰ Zahlungserinnerung erstellt
 Kiosk Nordstern · RG-10128-1
 
 Fällig seit 26.08.2026
 ```
 **Vertriebler**
 ```
-⏰ Rechnung überfällig
+⏰ Zahlungserinnerung versendet
 Kiosk Nordstern · RG-10128-1
 
 Fällig seit 26.08.2026
 ```
+*`{Mahnstufe}` aus ctx (Zahlungserinnerung / Mahnung).*
 **Begleitend** → 🛑 `error.reminder_unmatched`
 
 ### 📮 `invoice.dunning_filed` — Mahnung · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
-📮 Mahnung erfasst
+📮 Mahnung erstellt
 Kiosk Nordstern · RG-10128-1
 
 Fällig seit 26.08.2026
 ```
 **Vertriebler**
 ```
-📮 Rechnung im Mahnlauf
+📮 Mahnung versendet
 Kiosk Nordstern · RG-10128-1
 
 Fällig seit 26.08.2026
@@ -368,8 +370,9 @@ Danke für deine Arbeit! :)
 ---
 
 ## 👉 Aufgaben · 585
+*Runde 26: Identifikator in der Infozeile. `task.telegram_missing` bleibt gestrichen (18.08.). `task.digest` dormant/raus.*
 
-### 👉 `task.jtl_missing` · `offen`
+### 👉 `task.jtl_missing` · `gebaut · Reimport 6820980 ausstehend`
 ```
 👉 JTL Datensatz anlegen
 Kunde & Lager für Kiosk Nordstern
@@ -379,38 +382,37 @@ Kunde & Lager für Kiosk Nordstern
 • Kundennummer in Airtable unter »ID« eintragen
 ```
 
-### 👉 `task.telegram_missing` · `offen`
-```
-👉 Telegram-Channel anlegen
-für Max Berger in Region Hannover
-
-• Channel anlegen: „selectedleafs.com · Region Hannover"
-• Max und „selectedleafs_sales_bot" einladen
-• Chat-ID in »⚙ Telegram ID« eintragen
-```
-
-### 👉 `task.jtl_stock` · `offen`
-*Hängt fachlich an `delivery.booked` (nur Übergabe) — Klingel dafür ist Bau-Backlog.*
+### 👉 `task.jtl_stock` · `live`
 ```
 👉 Lager buchen (JTL)
-Kiosk Nordstern · 60 Einheiten
+Kiosk Nordstern · UL-10042-1
 
 • Lager Modul öffnen
-• Wareneingang (UL-10042-1) buchen
+• Wareneingang buchen
 
 Geliefert am 12.08.2026
 ```
 
-### 👉 `task.jtl_inventory_date` · `offen`
-*Hängt fachlich an `inventory.checked` — Klingel dafür ist Bau-Backlog.*
+### 👉 `task.jtl_inventory_date` · `live`
 ```
 👉 Prüfdatum setzen (JTL)
-Kiosk Nordstern · Linden
+Kiosk Nordstern · 10132
 
-• Kunde öffnen (10132)
+• Kunde öffnen
 • Letzte Bestandsprüfung setzen
 
 Geprüft am 12.08.2026
+```
+
+### 👉 `task.jtl_payment` · `gebaut · Reimport 6633991 ausstehend` · NEU
+```
+👉 Zahlung setzen (JTL)
+Kiosk Nordstern · RG-10128-1
+
+• Kunde in JTL öffnen
+• Zahlung als bezahlt buchen
+
+Bezahlt am 12.08.2026
 ```
 
 ### 👉 `task.terms_missing` · `offen`
@@ -435,93 +437,121 @@ RG-10128-1 · Unbekannt
 Beleg vom 12.08.2026
 ```
 
-### 🗒 `task.digest` — Digest 07:00 · `geplant`
-*Postet nur bei ≥ 1 offenem Punkt.*
-```
-🗒 Offene Aufgaben (2)
-
-3 T — JTL-Kunde anlegen · Kiosk Nordstern
-1 T — Belegtyp korrigieren · BLG-00044
-```
-*(`task.invoice_unlinked` / `task.beleg_no_pdf` — nur Zeile im Digest.)*
+*Runde 26: `task.digest` (07:00-Digest) ist aus dem Hub entfernt (dormant) — `task.invoice_unlinked` / `task.beleg_no_pdf` haben damit aktuell keinen Ausgabeort.*
 
 ---
 
 ## ⚙️ System · 583
+*Runde 26: Titel „X aktualisiert", Infozeile = Richtung, kein Datum. Templates final — der **Hub-Reimport 6862968 steht aus**, bis dahin postet der Live-Hub noch die R25-Form.*
 
-### ⚙️ `sync.products` — Produkt-Sync · `live`
-*Postet nur bei materieller Änderung (Preis korrigiert / Sorte neu); No-Op-Lauf bleibt still. Runde 25: nur noch das Neu-Signal — »geändert«-Zähler und Gesamtzahl-Infozeile raus.*
+### ⚙️ `sync.products` — Produkt-Sync · `live` (R26-Layout mit Hub-Reimport)
+*Postet nur bei materieller Änderung; No-Op-Lauf bleibt still.*
 ```
 ⚙️ Produkte aktualisiert
+Shopify → Airtable
 
-Produkte: 2 angelegt
-Varianten: 5 angelegt
-Preise: 1 korrigiert
++2 Produkte · +5 Varianten · 3 Preise
 ```
 **Begleitend** → 🛑 `error.sync_aborted`
 
-### `sync.stores` · `gestrichen` · `system.heartbeat` · `gestrichen` · `sync.inventory` · `gestrichen`
-*System-/Sync-Bereich meldet nur noch Störungen (16.08.2026). Abbrüche → `error.sync_aborted`.*
+### ⚙️ `sync.stores` — Store-Sync · `gebaut · Hub-Reimport ausstehend`
+*Runde 26: R24-Streichung zurückgenommen. Erfolgs-Klingel an 6655783 bleibt; ctx `{Stores}` / `{Öffnungszeiten}`.*
+```
+⚙️ Stores aktualisiert
+Google Places → Airtable
+
+3 Stores · 1 Öffnungszeiten geändert
+```
+
+### ⚙️ `sync.inventory` — Bestand-Sync · `gebaut · Hub-Reimport ausstehend`
+*Runde 26: 10.08.-Streichung zurückgenommen. **Shape-Konflikt:** Template (R26-final) ist aggregat `{Stores}`, der 18.08. gebaute Emitter 6805674 klingelt aber **pro Store** mit `{Store}` — vor dem Reimport klären.*
+```
+⚙️ Bestand aktualisiert
+Airtable → Shopify
+
+2 Stores · 4 Varianten
+```
+
+*`system.heartbeat` bleibt gestrichen. Abbrüche → `error.sync_aborted`.*
 
 ---
 
 ## 🛑 Störungen · 584
-*Alle im Topic 🛑 Störungen · 584. Werte als ctx aus dem abbrechenden Lauf. Runde 25: `{Fehler}` trägt den menschlichen Grund (welches Feld, welche Stufe) — nie mehr den rohen HTTP-Status wie zuvor „HTTP 422 – Feld ungültig".*
+*Alle im Topic 🛑 Störungen · 584. Werte als ctx aus dem abbrechenden Lauf. Runde 26: 2–3-Wort-Betreff, kursive Infozeile (2 label-freie Fakten), 👉-Aktionszeile als eigener Absatz. **7 Keys** — `error.reminder_unreadable` gestrichen, `error.payment_unmatched` neu. Templates final, Hub-Reimport steht aus.*
 
+### 🛑 `error.reminder_unmatched` · `live`
 ```
-🛑 Mahnschreiben nicht verarbeitbar
-Betreff: Zahlungserinnerung 10128
+🛑 Mahnschreiben ohne Treffer
+RG-10128-1 · Zahlungserinnerung
 
-Grund: PDF nicht lesbar
-Folge: kein Beleg angelegt, keine Meldung an den Vertriebler
-```
-```
-🛑 Mahnschreiben nicht zuordenbar
-Rechnung RG-10128-1 · Zahlungserinnerung
+Grund: keine Rechnung mit dieser Nummer in Airtable
 
-Grund: kein Umsatz mit dieser Nummer in Airtable
-Folge: Beleg nicht abgelegt, keine Meldung an den Vertriebler
+👉 Nummer prüfen — Tippfehler im Betreff oder Umsatz fehlt
 ```
+
+### 🛑 `error.lexware_orphan` · `live`
 ```
-🛑 Lexware-ID nicht zurückgeschrieben
+🛑 Lexware-ID nicht gespeichert
 Max Berger · Hannover
 
 Grund: Lexware-Antwort ohne ID-Feld
 Folge: der nächste Lauf legt eine Dublette an
 
-a257b406-… von Hand in »⚙ Lexware ID« eintragen.
+👉 a257b406-… von Hand in »⚙ Lexware ID« eintragen
 ```
+
+### 🛑 `error.sync_aborted` · `live`
 ```
 🛑 Sync abgebrochen
-[Sync] Inventory to Shopify · Abbruch bei: Belegdatum
+[Sync] Inventory to Shopify · Belegdatum
 
 Grund: Belegdatum fehlt im Beleg
 Folge: kein Bestands-Push, keine City-Posts
+
+👉 [Sync] Inventory to Shopify prüfen, wenn der Fehler bleibt
 ```
+
+### 🛑 `error.store_failed` · `live`
 ```
-🛑 Store konnte nicht angelegt werden
-Kiosk Nordstern · Abbruch bei: Kontakt anlegen
+🛑 Store nicht angelegt
+Kiosk Nordstern · Kontakt anlegen
 
 Grund: Steuernummer fehlt am Store
 Folge: kein Metaobjekt, kein Lexware-Kontakt, kein Broadcast
 
-Hinweis steht im Airtable-Datensatz.
+👉 Hinweis im Datensatz prüfen: airtable.com/…
 ```
+
+### 🛑 `error.store_partial` · `live`
 ```
-🛑 Store nur teilweise angelegt
-Kiosk Nordstern · Abbruch bei: Kontakt anlegen
+🛑 Store unvollständig
+Kiosk Nordstern · Kontakt anlegen
 
 Grund: Steuernummer fehlt am Store
-Angelegt: Metaobjekt
-Fehlt: Lexware-Kontakt
+
+👉 Datensatz öffnen, Onboarding erneut auslösen: airtable.com/…
 ```
+
+### 🛑 `error.salesperson_failed` · `live`
 ```
-🛑 Vertriebler konnte nicht angelegt werden
-Max Berger · Abbruch bei: Kontakt anlegen
+🛑 Vertriebler-Anlage gestoppt
+Max Berger · Eingangsprüfung
 
 Grund: Steuernummer fehlt am Vertriebler
-Angelegt: Metaobjekt
-Fehlt: Lexware-Kontakt
+
+👉 Grund prüfen und Anlage erneut anstoßen
+```
+
+### 🛑 `error.payment_unmatched` · `gebaut · Hub-Reimport ausstehend` · NEU
+*No-Match-Zweig von `[Sync] Lexware Payments` (6955541) klingelt den Key; deckt Sales + Store (ein Key, `{Rechnungsnummer}` als Kennung).*
+```
+🛑 Zahlung ohne Treffer
+RG-10128-1
+
+Grund: keine Rechnung mit dieser Nummer in Airtable
+Folge: Zahlungsstatus nicht gesetzt — der Umsatz bleibt offen
+
+👉 Prüfen, ob RG-10128-1 als Umsatz existiert
 ```
 
 ---

@@ -27,6 +27,7 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 ## Fallstricke
 
 - **Dedup über `ID`** (Store-Nr + Prüfdatum): zwei Prüfungen desselben Stores am selben Tag kollidieren bewusst.
+- **`[Maintain] Overdue Inventory Checks` (→ `inventory.due`) nutzt denselben Präfix als Sortier-Schlüssel:** jüngste Prüfung je Store per `FIND("BSP-{JTL}-", {ID}) = 1` + Sort `ID` **desc**, max 1 — weil das Datum im `ID` steckt, ist `ID` desc = Datum desc innerhalb des Stores (kein separates Datumsfeld nötig).
 - Nur **positive** Differenzen fließen in den `⚙ Nettoverkaufswert` (Schwund); Mehrbestand wird nicht als negativer Wert gezählt (siehe [[bestandspruefungspositionen]]).
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
