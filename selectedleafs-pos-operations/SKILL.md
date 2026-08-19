@@ -13,7 +13,7 @@ description: >-
   [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.7.0"
+  version: "1.8.0"
 ---
 
 # selectedleafs · POS Operations
@@ -106,6 +106,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 | Wenn du … | lies |
 |---|---|
 | die Base liest/änderst, ein Feld/eine Formel anfasst | `references/model.md` + die passende `references/airtable/<tabelle>.md` |
+| ein Feld/eine Option **umbenennst** | `references/model.md` §2 (Marker + Freeze-Index) — gekoppeltes Feld erst dort prüfen |
 | ein Szenario baust/mappst/debuggst | `references/scenarios.md` (Vertrag) + Live-Szenario per Make-MCP (`scenarios_get(<id>)`) |
 | eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) + `references/messages.md` (ausgefüllte Übersicht) |
 | an Airtable-/Make-MCP-Eigenheiten scheiterst | `references/tools.md` |
