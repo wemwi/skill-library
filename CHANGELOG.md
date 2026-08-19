@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.26.0](https://github.com/wemwi/skill-library/compare/v5.25.0...v5.26.0) (2026-08-19)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Nachrichtenkatalog Runde 26 — alle Familien auf R26-Wortlaut ([#182](https://github.com/wemwi/skill-library/issues/182)) ([b81d5fc](https://github.com/wemwi/skill-library/commit/b81d5fcbc14ca687261cdd5e9f36c5371a475fd2))
+
 ## [5.25.0](https://github.com/wemwi/skill-library/compare/v5.24.0...v5.25.0) (2026-08-18)
 
 
