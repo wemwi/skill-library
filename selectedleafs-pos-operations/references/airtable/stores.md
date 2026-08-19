@@ -2,7 +2,7 @@
 
 `tblfB5nsTSOXrUK1q` · Kategorie **Stammdaten**
 
-> Feld-Block: **Stand 2026-08-15**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
+> Feld-Block: **Stand 2026-08-18**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
 
 ## Zweck
 
@@ -22,6 +22,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 - **`⚙ Shopify GID`** (Metaobjekt-GID, voll inkl. Präfix) · **`⚙ Google Place ID`** (baut den Maps-Link der City-Posts; leer ⇒ Namenssuche).
 - `Storemarge (Jahr/Gesamt)` (Formel, €) — `Nettoumsatzerlös − Nettoumsatz` (Handelsmarge des Stores; Basis Umsätze, nicht Lieferungen).
 - `Status` (Aktiv/Inaktiv/Probezeit) · `Modell` (Kommission/Eigenbestand) · `Stufe` (Bronze … Diamant) · `⚙ Telegram ID` (Lookup ← Stadt) · `⚙ Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
+- **`⚙ Fällig gemeldet am`** (Datum) — **B2-Idempotenz-Marker** von `[Maintain] Overdue Inventory Checks` (→ `inventory.due`): der Emitter setzt ihn `= heute`, wenn er den Store als überfällig meldet, und meldet erst wieder, wenn der Marker älter als das wöchentliche Re-Nag-Fenster ist. Nur diese Klingel schreibt hier.
 
 ## Fallstricke
 
@@ -29,7 +30,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 - **GIDs immer voll** (`gid://shopify/…`), keine führenden Leerzeichen.
 - Store↔City-Zuordnung ist **redaktionell** (über Stadtteil/Stadt), nicht aus der Adresse abgeleitet.
 
-## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
+## Feld-Block (Stand 2026-08-18 · `list_tables_for_base`)
 
 | Feld | Typ | fld-ID |
 |---|---|---|
@@ -65,5 +66,6 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 | Instagram / Facebook / TikTok / Webseite | url | `fldsVzi4cb6TQkMx3` … |
 | Zuletzt geprüft | rollup date | `fld36tZGPVPcuqOJU` |
 | Akquise durch | link → Vertriebler | `fldMF3vhN0mNklbkb` |
+| ⚙ Fällig gemeldet am | date | `fldzaj0Ai31RqgqnU` |
 
 *Neu ziehen: `list_tables_for_base` → Stores; Formeln via `get_table_schema`.*

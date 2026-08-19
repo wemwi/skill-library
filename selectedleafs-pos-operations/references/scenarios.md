@@ -32,7 +32,7 @@ Ausgangsrechnung → schreibt **`Umsätze`** + **`🟣 Umsatzpositionen`**; wäh
 Eingangsrechnung (Provisionsrechnung des Vertrieblers) → schreibt **`Auszahlungen`** (Idempotenz über `⚙ Lexware ID`) + Gegen-`Beleg`. Notify **`payout.created` / `.settled`**; **`error.lexware_orphan`**.
 
 **`[Process] Payment Reminder (Store)` · 6844567**
-Trigger: **Mailhook**. Zahlungserinnerung/Mahnung → verknüpft `Beleg` mit dem `Umsatz` (Mahnstufe). Notify **`invoice.reminder_filed` / `.dunning_filed`**; **`error.reminder_unreadable` / `.reminder_unmatched`**.
+Trigger: **Mailhook**. Zahlungserinnerung/Mahnung → verknüpft `Beleg` mit dem `Umsatz` (Mahnstufe). Notify **`invoice.reminder_filed` / `.dunning_filed`**; **`error.reminder_unmatched`** (R26: `error.reminder_unreadable`-Zweig entfernt).
 
 ## `[Notify]`
 
@@ -41,7 +41,7 @@ Trigger: **Mailhook**. Zahlungserinnerung/Mahnung → verknüpft `Beleg` mit dem
 ## `[Sync]` — Spiegel nach außen
 
 **`[Sync] Inventory to Shopify` · 6805674**
-Push der Bestände nach Shopify; danach die **City-Posts** aus `🟣 Bestände` (`⚙ Letzte Lieferung` = Belegdatum-Gate). Notify **`city.restock` / `city.strain_new`**; **`error.sync_aborted`**.
+Push der Bestände nach Shopify; danach die **City-Posts** aus `🟣 Bestände` (`⚙ Letzte Lieferung` = Belegdatum-Gate). Notify **`sync.inventory`** (R26, Erfolgs-Report) · **`city.restock` / `city.strain_new`**; **`error.sync_aborted`**.
 
 **`[Sync] Shopify Products to Airtable` · 6795533** · wöchentl. **So 04:00**
 Upsert **`Produkte` / `Produktvarianten` / `Preise`** (Match über SKU). Notify **`sync.products`**; **`error.sync_aborted`**.
@@ -53,7 +53,7 @@ Aktualisiert **`Stores`** (Öffnungszeiten/Bewertung via Place API). Notify **`s
 Trigger: **Mailhook**. JTL-Ausgangsrechnung → Lexware.
 
 **`[Sync] Lexware Payments` · 6955541** · ohne Ordner
-Trigger: **lexoffice `watchEvents` (`payment.changed`)**. Setzt den Zahlungsstatus auf **`Umsätze` / `Auszahlungen`** (inkl. **Teilzahlung**). Der definierte Sonderfall gegen die INSERT-only-Regel.
+Trigger: **lexoffice `watchEvents` (`payment.changed`)**. Setzt den Zahlungsstatus auf **`Umsätze` / `Auszahlungen`** (inkl. **Teilzahlung**). Der definierte Sonderfall gegen die INSERT-only-Regel. Notify **`error.payment_unmatched`** (R26, No-Match-Zweig).
 
 ## `[Create]` — Onboarding
 
@@ -61,17 +61,20 @@ Trigger: **lexoffice `watchEvents` (`payment.changed`)**. Setzt den Zahlungsstat
 Trigger: **Formular** (personalisierter Link, `Akquise durch` vorbelegt; Eingangs-Guard Modul 2). Legt `Stores` + Shopify-Metaobjekt + Lexware-Kontakt an. Notify **`store.created`**; **`task.jtl_missing`**; **`error.store_failed` / `.store_partial`**.
 
 **`[Create] New Sales Member` · 6821121**
-Legt `Vertriebler` + Lexware-Kreditor + Provisions-Sheet an. Notify **`salesperson.created`**; **`task.telegram_missing`**; **`error.salesperson_failed`**. *(Emitter für `salesperson.onboarded` noch offen.)*
+Legt `Vertriebler` + Lexware-Kreditor + Provisions-Sheet an. Notify **`salesperson.created` / `.onboarded`**; **`error.salesperson_failed`**.
 
 ## `[Maintain]`
 
 **`[Maintain] Airtable Webhooks` · 6830404** · Ordner 377621 · tägl. **04:30**
 Hält die Airtable-Webhook-Registry frisch (Ablauf-Erneuerung).
 
+**`[Maintain] Overdue Inventory Checks` · ID nach Import** · tägl. **~07:00**
+Trigger: **Schedule**. Scannt aktive Stores (`Status` ∈ Aktiv/Probezeit · `Modell` = Kommission), bestimmt je Store die jüngste `Bestandsprüfung` und meldet Überfällige (heute − letzte Prüfung > 30 Tage). Liest `Stores` + `Bestandsprüfungen`; schreibt den Marker `⚙ Fällig gemeldet am`. Notify **`inventory.due`**. Idempotenz über den Marker (wöchentliches Re-Nag).
+
 ---
 
 ## ⬜ Nicht gebaut: `[Scheduled] Daily Operations`
 
-Der 07:00-Lauf fehlt noch. Er wäre der Emitter für **`inventory.due` · `invoice.overdue` · `task.digest` · `system.heartbeat`** — bis dahin sind diese vier Keys im Hub definiert, aber ohne Auslöser. Siehe [[operations]] / Audit-Remediation.
+Der 07:00-Lauf fehlt noch. Er wäre der Emitter für **`invoice.overdue` · `task.digest` · `system.heartbeat`** — bis dahin sind diese Keys im Hub definiert, aber ohne Auslöser. (`inventory.due` hat seit 18.08. einen eigenen Auslöser → `[Maintain] Overdue Inventory Checks`.) Siehe [[operations]] / Audit-Remediation.
 
 *Beziehungsgraph als Bild: `assets/diagrams/topology.html`.*
