@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.27.0](https://github.com/wemwi/skill-library/compare/v5.26.0...v5.27.0) (2026-08-19)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Airtable-Feld-Konvention + Make-Freeze-Index (§2), 🟣 abgelöst ([#184](https://github.com/wemwi/skill-library/issues/184)) ([af08776](https://github.com/wemwi/skill-library/commit/af08776f084c70abef8fbee47ee70045a6b5de4a))
+
 ## [5.26.0](https://github.com/wemwi/skill-library/compare/v5.25.0...v5.26.0) (2026-08-19)
 
 
