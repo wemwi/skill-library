@@ -497,7 +497,7 @@ Max Berger · Hannover
 Grund: Lexware-Antwort ohne ID-Feld
 Folge: der nächste Lauf legt eine Dublette an
 
-👉 a257b406-… von Hand in »⚙ Lexware ID« eintragen
+👉 a257b406-… von Hand in »Lexware ID« eintragen
 ```
 
 ### 🛑 `error.sync_aborted` · `live`

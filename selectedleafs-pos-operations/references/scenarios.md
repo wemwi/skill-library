@@ -20,16 +20,16 @@ Trigger: **lexoffice `watchEvents`**. Aufgabe: Voucher-Events aufnehmen, per **A
 ## `[Process]` — Ereigniszeilen schreiben
 
 **`[Process] Upload PDF (Delivery)` · 6677862**
-Übergabe-/Rückholprotokoll → schreibt **`Lieferungen`** + **`🟣 Lieferpositionen`** (stempelt `⚙ EK`). Notify **`delivery.booked`** / **`delivery.returned`**.
+Übergabe-/Rückholprotokoll → schreibt **`Lieferungen`** + **`Lieferpositionen`** (stempelt `EK`). Notify **`delivery.booked`** / **`delivery.returned`**.
 
 **`[Process] Upload PDF (Inventory)` · 6729541**
-Bestandsprotokoll → schreibt **`Bestandsprüfungen`** + **`🟣 Bestandsprüfungspositionen`**. Notify **`inventory.checked`**.
+Bestandsprotokoll → schreibt **`Bestandsprüfungen`** + **`Bestandsprüfungspositionen`**. Notify **`inventory.checked`**.
 
 **`[Process] Invoice (Store)` · 6633991**
-Ausgangsrechnung → schreibt **`Umsätze`** + **`🟣 Umsatzpositionen`**; wählt `Konditionen` (eff-dated). Notify **`invoice.created` / `.paid` / `.voided` / `.written_off`**; **`task.terms_missing`** wenn keine passende Konditionen-Version.
+Ausgangsrechnung → schreibt **`Umsätze`** + **`Umsatzpositionen`**; wählt `Konditionen` (eff-dated). Notify **`invoice.created` / `.paid` / `.voided` / `.written_off`**; **`task.terms_missing`** wenn keine passende Konditionen-Version.
 
 **`[Process] Invoice (Sales)` · 6872651**
-Eingangsrechnung (Provisionsrechnung des Vertrieblers) → schreibt **`Auszahlungen`** (Idempotenz über `⚙ Lexware ID`) + Gegen-`Beleg`. Notify **`payout.created` / `.settled`**; **`error.lexware_orphan`**.
+Eingangsrechnung (Provisionsrechnung des Vertrieblers) → schreibt **`Auszahlungen`** (Idempotenz über `Lexware ID`) + Gegen-`Beleg`. Notify **`payout.created` / `.settled`**; **`error.lexware_orphan`**.
 
 **`[Process] Payment Reminder (Store)` · 6844567**
 Trigger: **Mailhook**. Zahlungserinnerung/Mahnung → verknüpft `Beleg` mit dem `Umsatz` (Mahnstufe). Notify **`invoice.reminder_filed` / `.dunning_filed`**; **`error.reminder_unmatched`** (R26: `error.reminder_unreadable`-Zweig entfernt).
@@ -41,7 +41,7 @@ Trigger: **Mailhook**. Zahlungserinnerung/Mahnung → verknüpft `Beleg` mit dem
 ## `[Sync]` — Spiegel nach außen
 
 **`[Sync] Inventory to Shopify` · 6805674**
-Push der Bestände nach Shopify; danach die **City-Posts** aus `🟣 Bestände` (`⚙ Letzte Lieferung` = Belegdatum-Gate). Notify **`sync.inventory`** (R26, Erfolgs-Report) · **`city.restock` / `city.strain_new`**; **`error.sync_aborted`**.
+Push der Bestände nach Shopify; danach die **City-Posts** aus `Bestände` (`Letzte Lieferung` = Belegdatum-Gate). Notify **`sync.inventory`** (R26, Erfolgs-Report) · **`city.restock` / `city.strain_new`**; **`error.sync_aborted`**.
 
 **`[Sync] Shopify Products to Airtable` · 6795533** · wöchentl. **So 04:00**
 Upsert **`Produkte` / `Produktvarianten` / `Preise`** (Match über SKU). Notify **`sync.products`**; **`error.sync_aborted`**.
@@ -69,7 +69,7 @@ Legt `Vertriebler` + Lexware-Kreditor + Provisions-Sheet an. Notify **`salespers
 Hält die Airtable-Webhook-Registry frisch (Ablauf-Erneuerung).
 
 **`[Maintain] Overdue Inventory Checks` · ID nach Import** · tägl. **~07:00**
-Trigger: **Schedule**. Scannt aktive Stores (`Status` ∈ Aktiv/Probezeit · `Modell` = Kommission), bestimmt je Store die jüngste `Bestandsprüfung` und meldet Überfällige (heute − letzte Prüfung > 30 Tage). Liest `Stores` + `Bestandsprüfungen`; schreibt den Marker `⚙ Fällig gemeldet am`. Notify **`inventory.due`**. Idempotenz über den Marker (wöchentliches Re-Nag).
+Trigger: **Schedule**. Scannt aktive Stores (`Status` ∈ Aktiv/Probezeit · `Modell` = Kommission), bestimmt je Store die jüngste `Bestandsprüfung` und meldet Überfällige (heute − letzte Prüfung > 30 Tage). Liest `Stores` + `Bestandsprüfungen`; schreibt den Marker `Fällig gemeldet am`. Notify **`inventory.due`**. Idempotenz über den Marker (wöchentliches Re-Nag).
 
 ---
 

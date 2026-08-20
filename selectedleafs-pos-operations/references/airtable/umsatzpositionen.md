@@ -1,6 +1,6 @@
-# 🟣 Umsatzpositionen
+# Umsatzpositionen
 
-`tbl1fA7Ih6RseHfNk` · Kategorie **Positionen** (🟣, INSERT-only Kind von [[umsaetze]])
+`tbl1fA7Ih6RseHfNk` · Kategorie **Positionen** (INSERT-only Kind von [[umsaetze]])
 
 > Feld-Block: **Stand 2026-08-15**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
 
@@ -17,9 +17,9 @@ Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positi
 
 - **`ID`** (Formel) — `{Umsatz} & "#" & {Position}`.
 - **`Nettoumsatz`** (€, von **Make** geschrieben) — der **abgerechnete** Positionsbetrag (mit Partnerrabatt). **Geldwahrheit**, rollt zu `Umsätze.Nettoumsatz`.
-- **`Nettoumsatzerlös`** (Formel, €) — `Menge (Stück) × ⚙ VK (netto)` — Wert zum **Endkunden-VK**, liegt systematisch **über** `Nettoumsatz`. Die Lücke ist die **Storemarge**, kein Fehler; fließt in **keine** Provisions-/Saldoformel.
-- **`⚙ VK (netto)`** (Lookup ← [[preise]]).
-- `Menge (Stück)` / `Menge (kg)` (Zahl) · Lookups `⚙ Datum`, `⚙ Status`, `⚙ Typ`.
+- **`Nettoumsatzerlös`** (Formel, €) — `Menge (Stück) × VK (netto)` — Wert zum **Endkunden-VK**, liegt systematisch **über** `Nettoumsatz`. Die Lücke ist die **Storemarge**, kein Fehler; fließt in **keine** Provisions-/Saldoformel.
+- **`VK (netto)`** (Lookup ← [[preise]]).
+- `Menge (Stück)` / `Menge (kg)` (Zahl) · Lookups `Datum`, `Status`, `Typ`.
 
 ## Fallstricke
 
@@ -38,11 +38,11 @@ Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positi
 | Nettoumsatz | currency € (Make) | `fld5XP3ejidcHedf3` |
 | Nettoumsatzerlös | formula € | `fldyiQByQKF6tbk4c` |
 | Preis | link → Preise | `fld3c913AqpjDU93P` |
-| ⚙ VK (netto) | lookup € (← Preise) | `fldAe9Te0I5L4Dp7J` |
+| VK (netto) | lookup € (← Preise) | `fldAe9Te0I5L4Dp7J` |
 | Umsatz | link → Umsätze | `fldW0MfIBLe7XYsOT` |
 | Bestand | link → Bestände | `fldQ78oQsJxrEssGH` |
-| ⚙ Datum | lookup | `fldpH9mzVV7abfwqB` |
-| ⚙ Status | lookup | `fldgkUqpUgDjoAQJY` |
-| ⚙ Typ | lookup | `fldV7NTjnV1ELyuO5` |
+| Datum | lookup | `fldpH9mzVV7abfwqB` |
+| Status | lookup | `fldgkUqpUgDjoAQJY` |
+| Typ | lookup | `fldV7NTjnV1ELyuO5` |
 
-*Neu ziehen: `list_tables_for_base` → 🟣 Umsatzpositionen; Formeln via `get_table_schema`.*
+*Neu ziehen: `list_tables_for_base` → Umsatzpositionen; Formeln via `get_table_schema`.*

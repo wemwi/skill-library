@@ -40,3 +40,12 @@ Versionierte **Provision** und **Kostenanteil** (in %), **nach Steuerstatus getr
 | Lieferungen | link → Lieferungen | `fldaG7zFSh44if4T6` |
 
 *Neu ziehen: `list_tables_for_base` → Konditionen; Formeln via `get_table_schema`.*
+
+## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+
+Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+
+- **`Gültig ab`** — 🟣 READ. Eff-dated Versionsauswahl (Sortier-/Vergleichsfeld).
+- **`Gültig für`** — 🟣 READ. Make matcht als String; Option umbenennen bricht still.
+- **`Provision`** — 🟣 READ. Wird von [Create] New Sales Member per Name an Modul 215 gereicht (bis C-Fix).
+- **`Kostenanteil`** — 🟣 READ. Dito Provision.

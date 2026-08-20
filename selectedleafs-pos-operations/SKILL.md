@@ -9,11 +9,11 @@ description: >-
   "rechnet das richtig", "darf ich das Feld umbenennen"). Trigger u.a.: POS Operations,
   appiIkOaz1ID1FjfE, Umsätze, Lieferungen, Bestandsprüfungen, Auszahlungen, Konditionen,
   Kalkulationen, Vertriebler, Saldo, Provision, Kostenanteil, Leistungsdatum, Regelbesteuerung,
-  Kleinunternehmer, Belegeingang, Lexware-Sync nach Airtable, 🟣, [Sync]/[Create]/[Process]/
+  Kleinunternehmer, Belegeingang, Lexware-Sync nach Airtable, [Sync]/[Create]/[Process]/
   [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
 ---
 
 # selectedleafs · POS Operations
@@ -51,7 +51,7 @@ Der Grund, warum Historie verlässlich bleibt. **Strukturell nicht erzwungen** �
 
 1. **Versionen sind append-only.** `Konditionen` und `Kalkulationen` werden nie editiert, nur neu versioniert (`Gültig ab`). Wer eine alte Version ändert, verschiebt rückwirkend Geld — spurlos.
 2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Auszahlungen` nur ein, ändert nie. **Einziger definierter Sonderfall:** der Zahlungseingang setzt einen Status (jetzt über `[Sync] Lexware Payments`).
-3. **🟣-Felder sind unantastbar.** Alles mit 🟣 gehört Make/den Formeln, nicht der Hand.
+3. **Make-/Formel-Felder sind unantastbar.** Was Make auflöst oder per Name matcht, gehört Make/den Formeln, nicht der Hand.
 
 → `references/operations.md` (Wächter-Views, ein Bearbeiter, keine Testbase)
 
@@ -63,7 +63,7 @@ Zwei Geldwerte, an **zwei verschiedenen** Tabellen — das ist die Stelle, an de
 
 - **Kostenanteil** sitzt auf **`Lieferungen`** und wird **bei der Lieferung** abgezogen (der Vertriebler trägt seinen fairen Anteil an den Warenkosten).
 - **Provision** sitzt auf **`Umsätzen`** und wird **bei der Zahlung** gutgeschrieben (Provision auf den bezahlten Store-Umsatz).
-- Daraus: **`Saldo = ⚙ Realprovision − Kostenanteil`**, **`Offen = Saldo − Ausgezahlt`**. Der Saldo nutzt **Realprovision** (Provision auf den *bezahlten* Betrag), nicht die nominale Provision; `Ausgezahlt` = Σ `Auszahlungen.Bezahlt`.
+- Daraus: **`Saldo = Realprovision − Kostenanteil`**, **`Offen = Saldo − Ausgezahlt`**. Der Saldo nutzt **Realprovision** (Provision auf den *bezahlten* Betrag), nicht die nominale Provision; `Ausgezahlt` = Σ `Auszahlungen.Bezahlt`.
 - Alles **brutto gegen brutto** (0 % bei Kleinunternehmern, sonst latente Fehler).
 - **250 € ist Betriebs-Policy, kein System-Gate.** Es gibt keine „Auszahlung möglich"-Meldung; die Schwelle steht nur in der Onboarding-Kommunikation.
 
@@ -71,13 +71,13 @@ Die konkreten Formeln stehen **nicht hier**, sondern in der jeweiligen Tabellen-
 
 ---
 
-## Ereignis → Positionen, und die 🟣-Konvention
+## Ereignis → Positionen, und die Make-Kopplung
 
 Jede Geschäftshandlung ist eine **Haupttabelle mit Positions-Kindtabelle**. Die Ereignis-Trias:
 
 **`Lieferungen` · `Bestandsprüfungen` · `Umsätze`** (+ `Auszahlungen`) — je mit Positionszeilen darunter.
 
-**🟣** markiert Felder/Tabellen, die Make auflöst oder per Name matched. Drei Bruchmodi, nach Sichtbarkeit:
+Manche Felder/Tabellen werden von Make aufgelöst oder per Name gematcht. Drei Bruchmodi, nach Sichtbarkeit:
 
 | Änderung | Symptom |
 |---|---|
@@ -85,7 +85,7 @@ Jede Geschäftshandlung ist eine **Haupttabelle mit Positions-Kindtabelle**. Die
 | **Wert/Option** einer Auswahl geändert | **still** — Match schlägt fehl, kein Fehler |
 | **Bedeutung** eines Feldes gewandert | **unsichtbar** — rechnet falsch weiter |
 
-→ `references/model.md` (Tabellenrollen, 🟣 im Detail) · `references/tools.md` (die Fallen der Werkzeuge)
+→ `references/model.md` (Tabellenrollen, Kopplung im Detail) · `references/tools.md` (die Fallen der Werkzeuge)
 
 ---
 
@@ -106,7 +106,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 | Wenn du … | lies |
 |---|---|
 | die Base liest/änderst, ein Feld/eine Formel anfasst | `references/model.md` + die passende `references/airtable/<tabelle>.md` |
-| ein Feld/eine Option **umbenennst** | `references/model.md` §2 (Marker + Freeze-Index) — gekoppeltes Feld erst dort prüfen |
+| ein Feld/eine Option **umbenennst** | `references/model.md` §2 (Marker + Zugriffs-Index) — gekoppeltes Feld erst dort prüfen |
 | ein Szenario baust/mappst/debuggst | `references/scenarios.md` (Vertrag) + Live-Szenario per Make-MCP (`scenarios_get(<id>)`) |
 | eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) + `references/messages.md` (ausgefüllte Übersicht) |
 | an Airtable-/Make-MCP-Eigenheiten scheiterst | `references/tools.md` |
@@ -125,7 +125,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 ## Harte Verbote
 
 - **Make schreibt nie einen berechneten Geldwert** — nur Rohdaten + Links.
-- **🟣-Felder nie von Hand anfassen.**
+- **Make-/Formel-Felder nie von Hand anfassen.**
 - **Keine Testbase.** Es gibt nur die Produktivbase.
 - **Altstand-Base `appAFFDgesKLltBtd` nie anfassen** (eingefroren).
 - **Keine volatile `fld…`-ID/Formel als Fakt in Prosa** (Drift-Firewall).

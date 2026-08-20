@@ -27,11 +27,11 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 
 ## Tragende Felder
 
-- **`ID`** (Formel) — `"BLG-" & RIGHT("00000" & ⚙ Belegnummer, 5)` (z. B. `BLG-00044`).
+- **`ID`** (Formel) — `"BLG-" & RIGHT("00000" & Belegnummer, 5)` (z. B. `BLG-00044`).
 - **`Belegtyp`** (Select) — die acht Typen oben; **`Unbekannt`** löst die Korrektur-Aufgabe aus (Make-String, nicht umbenennen).
 - **`Datum`** (EU) — **Quelle des Leistungsdatums**; die Ereignis-Tabellen spiegeln es per Lookup.
 - **`Anhang`** (Attachments) — das PDF.
-- `⚙ Hinweis` (Freitext) · `⚙ Belegnummer` (autoNumber).
+- `Hinweis` (Freitext) · `Belegnummer` (autoNumber).
 
 ## Fallstricke
 
@@ -49,8 +49,16 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 | Umsatz | link → Umsätze | `fldI5lU4NQ7ymG4d0` |
 | Lieferung | link → Lieferungen | `fld3Ca5ejPbG2DVYb` |
 | Bestandsprüfung | link → Bestandsprüfungen | `fldbzOIOSaNcwdNAL` |
-| ⚙ Hinweis | multilineText | `fldW8Gk8tDwDoJoJ8` |
+| Hinweis | multilineText | `fldW8Gk8tDwDoJoJ8` |
 | Auszahlung | link → Auszahlungen | `fld0o0yQ9AS4iFYKN` |
-| ⚙ Belegnummer | autoNumber | `fldUprNttE4qhl3ph` |
+| Belegnummer | autoNumber | `fldUprNttE4qhl3ph` |
 
 *Neu ziehen: `list_tables_for_base` → Belege; Formeln via `get_table_schema`.*
+
+## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+
+Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+
+- **`Belegtyp`** — 🟣 READ. Make matcht als String; Option umbenennen bricht still.
+- **`Datum`** — 🟣 READ+WRITE. Leistungsdatum-Quelle, wird nach Umsatz/Lieferung/Bestandsprüfung gespiegelt.
+- **`Umsatz`** — 🟣 WRITE. Fach-Link, per Name/Ziel aufgelöst.

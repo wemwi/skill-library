@@ -6,19 +6,19 @@
 
 ## Zweck
 
-Versionierter **Verkaufspreis je Produktvariante**. Eine Zeile = ein ab `Gültig ab` geltender VK. Positionen ziehen daraus den `⚙ VK (netto)`.
+Versionierter **Verkaufspreis je Produktvariante**. Eine Zeile = ein ab `Gültig ab` geltender VK. Positionen ziehen daraus den `VK (netto)`.
 
 ## Beziehungen
 
 - **→ `Produkt`** (Einzel, → Produktvarianten).
 - **→ `Steuersatz`** (Einzel, → [[steuersaetze]]) — liefert die `MwSt.`.
-- **→ `Umsatzpositionen`** / **→ `🟣 Lieferpositionen`** / **→ `🟣 Bestandsprüfungspositionen`** — die Positionen, die diesen Preis gewählt haben.
+- **→ `Umsatzpositionen`** / **→ `Lieferpositionen`** / **→ `Bestandsprüfungspositionen`** — die Positionen, die diesen Preis gewählt haben.
 
 ## Tragende Felder
 
 - **`Gültig ab`** (Datum, EU) — **Versionswahl:** jüngste Version mit `Gültig ab ≤ Leistungsdatum` gewinnt.
 - **`VK (brutto)`** (€) — der Eingabewert.
-- **`VK (netto)`** (Formel, €) — `VK (brutto) / (1 + MwSt.)`. **Das ist der `⚙ VK (netto)`, den alle Positionen als Lookup ziehen.**
+- **`VK (netto)`** (Formel, €) — `VK (brutto) / (1 + MwSt.)`. **Das ist der `VK (netto)`, den alle Positionen als Lookup ziehen.**
 - **`MwSt.`** (Lookup ← Steuersatz).
 - `ID` (Formel) — `Jahr(Gültig ab) & "-" & Produkt`.
 
@@ -38,8 +38,15 @@ Versionierter **Verkaufspreis je Produktvariante**. Eine Zeile = ein ab `Gültig
 | MwSt. | lookup % (← Steuersätze) | `fldlLNMrsO6dYfyoB` |
 | VK (netto) | formula € | `fldsBZtlWLMMEzbPB` |
 | VK (brutto) | currency | `fldrvbwTvTBGatH9M` |
-| Umsatzpositionen | link → 🟣 Umsatzpositionen | `fldU1uDEOoNvrj1CY` |
-| Lieferpositionen | link → 🟣 Lieferpositionen | `fldoFc0cajTjg8wbz` |
-| 🟣 Bestandsprüfungspositionen | link → 🟣 …positionen | `fld83vKlDZTYdiie7` |
+| Umsatzpositionen | link → Umsatzpositionen | `fldU1uDEOoNvrj1CY` |
+| Lieferpositionen | link → Lieferpositionen | `fldoFc0cajTjg8wbz` |
+| Bestandsprüfungspositionen | link → …positionen | `fld83vKlDZTYdiie7` |
 
 *Neu ziehen: `list_tables_for_base` → Preise; Formeln via `get_table_schema`.*
+
+## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+
+Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+
+- **`Produkt`** — 🟣 READ. Match-/Sortier-Feld der eff-dated Preisauswahl.
+- **`Gültig ab`** — 🟣 READ. Eff-dated Versionsauswahl (jüngster Preis ≤ Leistungsdatum).
