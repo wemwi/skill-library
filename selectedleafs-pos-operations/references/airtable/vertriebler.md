@@ -67,5 +67,7 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`Formularlink`** — 🟣 READ. Formel; wird als {Formularlink} im Onboarding-Post ausgegeben. ⚠ ändert sich die Feld-ID von Akquise durch oder die Page-ID des Formulars, bricht der Link still.
+
 - **`Name`** — 🟣 READ. Zeichengenauer Namens-Match (Vertriebler-Auflösung).
 - **`Lexware ID`** — 🟣 READ. Kreditor-Referenz.

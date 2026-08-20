@@ -64,5 +64,8 @@ Eine Zeile = eine **Warenübergabe (Kommission)** an einen Store, belegt durch d
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`Vertriebler`** — 🟣 READ. Handgesetzte Verknüpfung; Make liest sie zur Vertriebler-Auflösung und lauscht darauf im Trigger.
+- **`Lieferpositionen`** — 🟣 WRITE. Make hängt die Positionszeilen hier ein.
+
 - **`ID`** — 🟣 READ+WRITE. Belegnummer aus dem PDF = Dedup-Schlüssel; zweiter Beleg mit gleicher Nummer wird abgewiesen. Präfix/Format nicht ändern.
 - **`Status`** — 🟣 WRITE (Abgeschlossen / In Bearbeitung / Fehlerhaft). Make schreibt als String; Option umbenennen bricht still. (Audit 2026-08-19 in §2 aufgenommen.)

@@ -160,9 +160,10 @@ Zuletzt geprüft am {Datum}
 ⏳ Bestandsprüfung fällig
 <i>{Store} · {Stadtteil}</i>
 
-👉 Zeit für einen Besuch — <a href="{Maps-URL}">Route öffnen</a>
+👉 Zeit für einen Besuch
+<a href="{Maps-URL}">Routenplanung öffnen</a>
 
-Letzte Prüfung: {Datum}
+<i>Letzte Prüfung: {Datum}</i>
 ```
 
 ### `invoice.created`

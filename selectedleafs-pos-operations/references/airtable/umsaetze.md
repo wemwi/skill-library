@@ -66,5 +66,8 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`Hinweis`** — 🟣 WRITE. Freitext des pos-invoice-Szenarios (Extraktions-Hinweise / Fehlertexte).
+- **`Zahlungsverlauf`** — 🟣 READ. Rollup; speist {Zahlungsverlauf} in der invoice.paid-Meldung.
+
 - **`ID`** — 🟣 READ+WRITE. Make-geschriebener Dedup-Schlüssel.
 - **`Status`** — 🟣 WRITE (Offen / Bezahlt / Teilgezahlt / Überfällig / Angemahnt / Storniert / Ausgebucht). Make schreibt als String.

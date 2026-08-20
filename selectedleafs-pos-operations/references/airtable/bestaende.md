@@ -60,4 +60,8 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`Store`** — 🟣 WRITE. Make setzt die Verknüpfung beim Upsert (die Formel-ID liest daraus die Store-Nummer).
+- **`Letzte Lieferung`** — 🟣 READ. Rollup; der Owner-Sync vergleicht dieses Datum mit dem Belegdatum. ⚠ Rollup-Konfig (Link-Feld, Zielfeld, Aggregation MAX) nicht ändern — sonst fallen City-Posts still aus.
+- **`Erstlieferung am`** — 🟣 READ+WRITE. Post-Datum je Sorte/Store; einmal gesetzt, nie zurückgesetzt — Löschen löst einen erneuten Neuheits-Post aus.
+
 - **`ID`** — 🟣 READ. Bestands-Schlüssel "BST-" & Store-Nr & "-" & SKU (Upsert-Match). Präfix/Trennzeichen nicht ändern.
