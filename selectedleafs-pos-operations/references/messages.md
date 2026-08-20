@@ -190,7 +190,8 @@ Zuletzt geprüft am 12.08.2026
 ⏳ Bestandsprüfung fällig
 Kiosk Nordstern · Linden
 
-👉 Zeit für einen Besuch — Route öffnen → https://maps.google.com/…
+👉 Zeit für einen Besuch
+Routenplanung öffnen → https://maps.google.com/…
 
 Letzte Prüfung: 12.08.2026
 ```
