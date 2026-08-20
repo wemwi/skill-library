@@ -42,4 +42,8 @@ Das Produkt (Produkt-Ebene, über den Varianten). Trägt die Shopify-Produkt-Ank
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`ID`** — 🟣 READ+WRITE. Produktnummer (SKU vor dem letzten Bindestrich); Match-Schlüssel des Produkt-Syncs, nur beim Anlegen geschrieben.
+- **`Shopify Tags`** — 🟣 READ+WRITE. Sync schreibt (aus Shopify), Restock-Filter liest (Vein-Info). ⚠ Format/Trennzeichen ändern bricht den Filter still.
+- **`Shopify GID`** — 🟣 READ+WRITE. VOLLE Product-GID inkl. `gid://shopify/Product/…`-Präfix; Sync matcht darauf und schreibt sie beim Create. ⚠ Formate nicht mischen. *(Blueprint-verifiziert 6795533)*
+
 - **`Typ`** — 🟣 READ (Kratom / POS Display). Make matcht als String; Option umbenennen bricht still.

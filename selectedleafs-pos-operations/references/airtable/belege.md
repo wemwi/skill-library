@@ -59,6 +59,8 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`Auszahlung`** — 🟣 WRITE. Vierter Fach-Link; `Process Salesperson Invoice` setzt ihn beim Anlegen des Belegs.
+
 - **`Belegtyp`** — 🟣 READ. Make matcht als String; Option umbenennen bricht still.
 - **`Datum`** — 🟣 READ+WRITE. Leistungsdatum-Quelle, wird nach Umsatz/Lieferung/Bestandsprüfung gespiegelt.
 - **`Umsatz`** — 🟣 WRITE. Fach-Link, per Name/Ziel aufgelöst.

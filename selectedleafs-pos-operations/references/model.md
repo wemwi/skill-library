@@ -48,11 +48,11 @@ Bewusst in der Beschreibung, nicht im Namen (ein Glyph im Namen bräche den Matc
 
 ### Zugriffs-Index (welcher Marker auf welchem Feld — Detail am Feld in `airtable/<tabelle>.md`)
 
-- **READ:** `Belege.Belegtyp` · `Bestandsprüfungen.ID` · `Bestandsprüfungspositionen.ID` · `Bestände.ID` · `Konditionen.Gültig ab`+`Gültig für`+`Provision`+`Kostenanteil` · `Produkte.Typ` · `Preise.Gültig ab`+`Produkt` · `Stadtteile.Name`+`Stadt` · `Städte.Name` · `Stores.Modell`+`Lexware ID`+`Zuletzt geprüft` · `Vertriebler.Name`+`Lexware ID`.
-- **WRITE:** `Auszahlungen.Status` · `Bestandsprüfungen.Status` · `Lieferungen.Status` · `Umsätze.Status` · `Belege.Umsatz`.
-- **READ+WRITE:** `Auszahlungen.Lexware ID` · `Belege.Datum` · `Lieferungen.ID` · `Produktvarianten.ID` · `Umsätze.ID` · `Stores.Name`+`Status`+`Fällig gemeldet am`.
+- **READ:** `Belege.Belegtyp` · `Bestandsprüfungen.ID` · `Bestandsprüfungspositionen.ID` · `Bestände.ID`+`Letzte Lieferung` · `Konditionen.Gültig ab`+`Gültig für`+`Provision`+`Kostenanteil` · `Lieferungen.Vertriebler` · `Produkte.Typ` · `Preise.Gültig ab`+`Produkt` · `Stadtteile.Name`+`Stadt` · `Städte.Name` · `Stores.ID`+`Modell`+`Lexware ID`+`Zuletzt geprüft`+`Shopify GID`+`Google Place ID`+`Akquise durch` · `Umsätze.Zahlungsverlauf` · `Vertriebler.Name`+`Lexware ID`+`Formularlink`.
+- **WRITE:** `Auszahlungen.Status`+`Beleg` · `Belege.Umsatz`+`Auszahlung` · `Bestandsprüfungen.Status` · `Bestände.Store` · `Lieferungen.Status`+`Lieferpositionen` · `Umsätze.Status`+`Hinweis`.
+- **READ+WRITE:** `Auszahlungen.Lexware ID` · `Belege.Datum` · `Bestände.Erstlieferung am` · `Lieferungen.ID` · `Produkte.ID`+`Shopify Tags`+`Shopify GID` · `Produktvarianten.ID`+`Shopify GID`+`EK (netto)` · `Umsätze.ID` · `Stores.Name`+`Status`+`Fällig gemeldet am`.
 
-Was der Marker **nicht** abbildet: fld-ID-feste Zugriffe (`returnFieldsByFieldId`/`useColumnId`) sind rename-sicher und bleiben bewusst markerlos — die Karte umfasst nur die **namens-/options-gekoppelten** Felder, bei denen ein Rename bricht. Goldstandard ohne jede Namenskopplung: `[Sync] Products` (in-Code-GID), `[Notify] Telegram` (`RECORD_ID()`).
+Was der Marker (noch) **nicht** abbildet: make-berührte Felder **ohne jede Feldbeschreibung** — rein fld-ID-feste Reads/Writes (`returnFieldsByFieldId`/`useColumnId`), die nie Prosa trugen. Die Karte deckt die **namens-/options-gekoppelten** plus alle **in ihrer Beschreibung dokumentierten** make-berührten Felder ab; die vollständige Zugriffskarte aller markerlosen fld-ID-Felder ist Scope B (offen, verlangt einen Blueprint-Scan aller Szenarien). Goldstandard ohne jede Namenskopplung: `[Sync] Products` (in-Code-GID), `[Notify] Telegram` (`RECORD_ID()`).
 
 *Marker-Menge = die 32 namens-/options-gekoppelten Felder aus dem vollständigen Live-Scan aller 17 Szenarien (2026-08-19/20, Make-MCP `scenarios_get`).*
 

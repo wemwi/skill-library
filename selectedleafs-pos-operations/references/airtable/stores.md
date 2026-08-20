@@ -74,6 +74,11 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`ID`** — 🟣 READ. JTL-Kundennummer; Make liest sie (baut den Bestands-Schlüssel, prüft Präsenz für task.jtl_missing). *(prosa-abgeleitet, nicht blueprint-verifiziert)*
+- **`Shopify GID`** — 🟣 READ. VOLLE Metaobjekt-GID inkl. Präfix; der Sync matcht zeichengenau dagegen. ⚠ Formate nicht mischen. *(prosa-abgeleitet, nicht blueprint-verifiziert)*
+- **`Google Place ID`** — 🟣 READ. Restock-Szenario baut daraus den Maps-Link. ⚠ Wert ändern bricht still; leeres Feld degradiert den Link nur.
+- **`Akquise durch`** — 🟣 READ. [Create] New Store Partner prüft es (Pflichtfeld), [Dispatch] navigiert darüber. ⚠ Feld-ID nicht ändern und „Neue Datensätze erlauben" NICHT einschalten — sonst legt ein Prefill still einen zweiten Vertriebler an.
+
 - **`Lexware ID`** — 🟣 READ. Kreditor-Referenz.
 - **`Name`** — 🟣 READ+WRITE. Store-Match des Restock-Szenarios zeichengenau; Wert ändern bricht still.
 - **`Status`** — 🟣 READ+WRITE. Make matcht als String.

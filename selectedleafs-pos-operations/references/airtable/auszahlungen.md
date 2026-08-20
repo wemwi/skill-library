@@ -50,5 +50,7 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`Beleg`** — 🟣 WRITE. Gegenfeld zu Belege.Auszahlung; `Process Salesperson Invoice` setzt den Link von der Beleg-Seite.
+
 - **`Lexware ID`** — 🟣 READ+WRITE. Voucher-UUID = Idempotenz-Klammer; Match-Schlüssel Erfassen/Bezahlen.
 - **`Status`** — 🟣 WRITE (In Bearbeitung / Teilzahlung / Abgeschlossen / Storniert). Make schreibt als String; Option umbenennen bricht still.

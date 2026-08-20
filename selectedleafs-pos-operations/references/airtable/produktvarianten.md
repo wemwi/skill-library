@@ -50,4 +50,7 @@ Die verkaufte Einheit (SKU-Ebene). Trägt SKU, Variant-GID und den **wöchentlic
 
 Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
 
+- **`Shopify GID`** — 🟣 READ+WRITE. VOLLE Variant-GID inkl. Präfix; Sync matcht darauf und schreibt sie beim Create. ⚠ Make setzt kein Präfix davor. *(Blueprint-verifiziert 6795533)*
+- **`EK (netto)`** — 🟣 READ+WRITE. Spiegel des Shopify-unitCost, wöchentlich; Sync liest zum Diff und überschreibt. ⚠ nie in eine Kosten- oder Saldoformel ziehen — Kostenwahrheit liegt eingefroren auf Lieferpositionen.EK. *(Blueprint-verifiziert 6795533)*
+
 - **`ID`** — 🟣 READ+WRITE. Shopify-SKU = Upsert-Match + Bestands-Schlüssel. Sync schreibt nur beim Anlegen; Wert ändern verschiebt den Bestandsschlüssel still.
