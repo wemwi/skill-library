@@ -29,3 +29,10 @@ Der Stadtteil — feinere Geo-Ebene unter der Stadt, für City-Posts (`{Stadttei
 | Stadt | link → Städte | `fld3aeuw7c8wxXnMg` |
 
 *Neu ziehen: `list_tables_for_base` → Stadtteile.*
+
+## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+
+Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+
+- **`Name`** — 🟣 READ. Zeichengenauer Match.
+- **`Stadt`** — 🟣 READ. Link/Zuordnung, per Ziel aufgelöst.

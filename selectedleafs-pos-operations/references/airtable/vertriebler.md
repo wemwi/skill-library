@@ -17,16 +17,16 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 
 - **`Nettoumsatz`** (Rollup ← Umsätze) · **`Kostenanteil`** (Rollup ← `Lieferungen.Kostenanteil`).
 - **`Provision`** (Rollup ← `Umsätze.Provision`) — **nominal**, auf den vollen Nettoumsatz. Anzeige.
-- **`⚙ Realprovision`** (Rollup ← `Umsätze.⚙ Realprovision`) — Provision auf den **tatsächlich Bezahlten** Betrag. **Das ist die saldo-relevante Größe.**
+- **`Realprovision`** (Rollup ← `Umsätze.Realprovision`) — Provision auf den **tatsächlich Bezahlten** Betrag. **Das ist die saldo-relevante Größe.**
 - **`Ausgezahlt`** (Rollup ← `Auszahlungen.Bezahlt`) — Σ der real überwiesenen Beträge (nicht statusgefiltert; `Bezahlt` ist bis zur Zahlung 0).
-- **`Saldo`** (Formel, €) — **`⚙ Realprovision − Kostenanteil`**. ⚠️ nutzt **Realprovision**, nicht die nominale Provision.
+- **`Saldo`** (Formel, €) — **`Realprovision − Kostenanteil`**. ⚠️ nutzt **Realprovision**, nicht die nominale Provision.
 - **`Offen`** (Formel, €) — `Saldo − Ausgezahlt`. Der Betrag, der noch aussteht.
 
 ## Weitere tragende Felder
 
-- **`Besteuerung`** (Select: Kleinunternehmer / Regelbesteuerung) + **`⚙ Regelbesteuerung ab`** (Datum) — **wählt die passende [[konditionen]]-Version** (`Gültig für`). Kleinunternehmer ⇒ 0 % MwSt.
-- **`⚙ Formularlink`** (Formel) — personalisierter Link auf das „Store anlegen"-Formular; belegt `Stores.Akquise durch` mit `RECORD_ID()` vor und blendet das Feld aus. Wird als `{Formularlink}` im Onboarding-Post ausgegeben. Bricht still, wenn Feld-ID von `Akquise durch` oder die Formular-Page-ID sich ändert.
-- `⚙ Lexware ID` (Kreditor) · `⚙ Telegram ID` (Sales-Channel) · PLZ / Ort / Straße · `⚙ Hinweis`.
+- **`Besteuerung`** (Select: Kleinunternehmer / Regelbesteuerung) + **`Regelbesteuerung ab`** (Datum) — **wählt die passende [[konditionen]]-Version** (`Gültig für`). Kleinunternehmer ⇒ 0 % MwSt.
+- **`Formularlink`** (Formel) — personalisierter Link auf das „Store anlegen"-Formular; belegt `Stores.Akquise durch` mit `RECORD_ID()` vor und blendet das Feld aus. Wird als `{Formularlink}` im Onboarding-Post ausgegeben. Bricht still, wenn Feld-ID von `Akquise durch` oder die Formular-Page-ID sich ändert.
+- `Lexware ID` (Kreditor) · `Telegram Channel ID` (Sales-Channel) · PLZ / Ort / Straße · `Hinweis`.
 
 ## Fallstricke
 
@@ -44,8 +44,8 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 | Saldo | formula € | `fldZO8vJbgbwc5Udj` |
 | Ausgezahlt | rollup € (← Ausz.Bezahlt) | `fldI2anszbyAWnqKa` |
 | Offen | formula € | `fld3XtirjKm3VUBlw` |
-| ⚙ Realprovision | rollup € | `fldxv77iZbz3QxLJJ` |
-| ⚙ Hinweis | multilineText | `fldr6qhoPrJBK1enZ` |
+| Realprovision | rollup € | `fldxv77iZbz3QxLJJ` |
+| Hinweis | multilineText | `fldr6qhoPrJBK1enZ` |
 | Umsätze | link → Umsätze | `fldxfb41lMhPDfWLi` |
 | Auszahlungen | link → Auszahlungen | `fldD62ahzQlCCgwem` |
 | Lieferungen | link → Lieferungen | `fldKQgIZ3NBsG1Xrx` |
@@ -54,11 +54,18 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 | Postleitzahl | number | `fldvsm8IZnzVQWJae` |
 | Ort | singleLineText | `fldTfEX0YglBq8alh` |
 | Straße / Nr. | singleLineText | `fldnwZ7yZ8A8B5yGt` |
-| ⚙ Lexware ID | singleLineText | `fldIP42qOvkdnnzHH` |
-| ⚙ Regelbesteuerung ab | date | `fldF4idsFUiCgAX1A` |
-| ⚙ Telegram ID | singleLineText | `flduydWiRl0ZgGBGM` |
+| Lexware ID | singleLineText | `fldIP42qOvkdnnzHH` |
+| Regelbesteuerung ab | date | `fldF4idsFUiCgAX1A` |
+| Telegram Channel ID | singleLineText | `flduydWiRl0ZgGBGM` |
 | Stores | link → Stores (Akquise durch) | `fldkydrhcYuCqb4lq` |
-| ⚙ Formularlink | formula | `flddGkcgwdmCvBEXF` |
-| ⚙ Realprovision (Rollup) | rollup € | `fldxv77iZbz3QxLJJ` |
+| Formularlink | formula | `flddGkcgwdmCvBEXF` |
+| Realprovision (Rollup) | rollup € | `fldxv77iZbz3QxLJJ` |
 
 *Neu ziehen: `list_tables_for_base` → Vertriebler; Formeln via `get_table_schema`.*
+
+## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+
+Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+
+- **`Name`** — 🟣 READ. Zeichengenauer Namens-Match (Vertriebler-Auflösung).
+- **`Lexware ID`** — 🟣 READ. Kreditor-Referenz.

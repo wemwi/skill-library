@@ -6,7 +6,7 @@
 
 ## Zweck
 
-Die Stadt — **Träger des öffentlichen City-Telegram-Channels.** Die City-Auflösung läuft `Store.Stadt → Städte.⚙ Telegram ID`.
+Die Stadt — **Träger des öffentlichen City-Telegram-Channels.** Die City-Auflösung läuft `Store.Stadt → Städte.Telegram ID`.
 
 ## Beziehungen
 
@@ -14,12 +14,12 @@ Die Stadt — **Träger des öffentlichen City-Telegram-Channels.** Die City-Auf
 
 ## Tragende Felder
 
-- **`⚙ Telegram ID`** (Text) — **die Chat-ID des öffentlichen City-Channels.** Muss gesetzt sein, **bevor** ein Restock-/Store-Post dorthin gehen kann (neue Stadt = manueller, fail-closed Schritt, siehe [[notify]]).
+- **`Telegram ID`** (Text) — **die Chat-ID des öffentlichen City-Channels.** Muss gesetzt sein, **bevor** ein Restock-/Store-Post dorthin gehen kann (neue Stadt = manueller, fail-closed Schritt, siehe [[notify]]).
 - `Name` (Text).
 
 ## Fallstricke
 
-- **Kein `⚙ Telegram ID` ⇒ kein City-Post** (fail-closed). Eine neue Stadt wird nicht automatisch angelegt.
+- **Kein `Telegram ID` ⇒ kein City-Post** (fail-closed). Eine neue Stadt wird nicht automatisch angelegt.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
 
@@ -27,7 +27,13 @@ Die Stadt — **Träger des öffentlichen City-Telegram-Channels.** Die City-Auf
 |---|---|---|
 | Name | singleLineText | `fldD5NSzJjupX7waM` |
 | Stadtteile | link → Stadtteile | `fldMW44bgSYNm95uR` |
-| ⚙ Telegram ID | singleLineText (City-Channel) | `fldl5GAsDGTHl8iHL` |
+| Telegram ID | singleLineText (City-Channel) | `fldl5GAsDGTHl8iHL` |
 | Stores | link → Stores | `fldeTZ5tmD9bSc1hb` |
 
 *Neu ziehen: `list_tables_for_base` → Städte.*
+
+## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+
+Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+
+- **`Name`** — 🟣 READ. Zeichengenauer Match.

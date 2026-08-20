@@ -13,7 +13,7 @@ Projektspezifische Fallen von Airtable-MCP und Make in **dieser** Base/diesem Te
 - **`filterByFormula` nutzt Feld-**Namen** (oder `RECORD_ID()`).** By-ID-Lookup: `RECORD_ID()="rec…"`. Der Dedup-Match läuft `filterByFormula {ID} = dedupkey` gegen ein Formelfeld.
 - **EU-Datum.** Datumsfelder stehen auf **`D/M/YYYY`** (european). `cellFormat=string` gibt das **angezeigte** Format, nicht ISO; ISO + Zeitzone kann beim Schreiben auf den **Vortag** kippen. Zeitzone/Locale bewusst setzen.
 - **`typecast`.** `create/update_records_for_table` nur mit `typecast:true`, wenn String→Option/Zahl gewandelt werden soll — sonst Default `false` (Integrität).
-- **`🟣`-Felder & Match-Schlüssel nie anfassen** (Namen, Optionswerte, GID-Präfixe) — Bruchmodi in [[model]].
+- **Make-/Formel-Felder & Match-Schlüssel nie anfassen** (Namen, Optionswerte, GID-Präfixe) — Bruchmodi in [[model]].
 
 ## Make
 
@@ -26,4 +26,4 @@ Projektspezifische Fallen von Airtable-MCP und Make in **dieser** Base/diesem Te
 
 ## Namen & Werte, an denen Make zeichengenau hängt
 
-`Stores.Name` (Restock-Match) · `Stores.ID`/`Produktvarianten.ID` (Bestands-/SKU-Schlüssel) · alle `⚙ Shopify GID` (voll inkl. Präfix) · die Dedup-Formeln `BLG-`/`BSP-`/`BST-` · die Select-Optionen, die Make als String schreibt (`Status`, `Belegtyp`). Ändern = stiller Bruch.
+`Stores.Name` (Restock-Match) · `Stores.ID`/`Produktvarianten.ID` (Bestands-/SKU-Schlüssel) · alle `Shopify GID` (voll inkl. Präfix) · die Dedup-Formeln `BLG-`/`BSP-`/`BST-` · die Select-Optionen, die Make als String schreibt (`Status`, `Belegtyp`). Ändern = stiller Bruch.

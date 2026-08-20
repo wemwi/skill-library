@@ -6,10 +6,10 @@ Wie POS-Operations verlässlich läuft: Idempotenz, Fehlerpfade, die Registry un
 
 Kein Ereignis wird doppelt geschrieben — der Schutz sitzt in **Dedup-Schlüsseln + Match**:
 
-- **Formel-ID als Schlüssel:** `Lieferungen.ID` = Belegnummer · `Bestandsprüfungen.ID` = `"BSP-" & ⚙ Store ID & "-" & Datum` · `Belege.ID` = `"BLG-" & …` · `Bestände.ID` = `"BST-" & Store & "-" & SKU`.
+- **Formel-ID als Schlüssel:** `Lieferungen.ID` = Belegnummer · `Bestandsprüfungen.ID` = `"BSP-" & Store ID & "-" & Datum` · `Belege.ID` = `"BLG-" & …` · `Bestände.ID` = `"BST-" & Store & "-" & SKU`.
 - **Match vor Insert:** Make baut denselben Wert als `dedupkey` und sucht per `filterByFormula {ID} = dedupkey`. Treffer ⇒ Verdikt **„übersprungen"**, kein zweiter Datensatz.
-- **Auszahlungen:** Idempotenz über **`⚙ Lexware ID`** (Voucher-UUID) — beim Erfassen entsteht der Datensatz, beim Bezahlen wird nur der Status aktualisiert.
-- **City-Neuheit:** `Bestände.⚙ Erstlieferung am` ist der Dedup gegen doppelte 🌿-Posts (einmal gesetzt, nie zurück).
+- **Auszahlungen:** Idempotenz über **`Lexware ID`** (Voucher-UUID) — beim Erfassen entsteht der Datensatz, beim Bezahlen wird nur der Status aktualisiert.
+- **City-Neuheit:** `Bestände.Erstlieferung am` ist der Dedup gegen doppelte 🌿-Posts (einmal gesetzt, nie zurück).
 
 ## Fehler-Konvention (aus dem Live-Bestand)
 
@@ -35,7 +35,7 @@ Views sind **load-bearing**, nicht Kosmetik:
 
 ## Freeze-Invarianten sind disziplin-getragen
 
-Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · 🟣 unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Der **einzige** definierte INSERT-only-Bruch ist der Zahlungs-Status über `[Sync] Lexware Payments`.
+Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Der **einzige** definierte INSERT-only-Bruch ist der Zahlungs-Status über `[Sync] Lexware Payments`.
 
 ## Harte Regeln
 
