@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.28.0](https://github.com/wemwi/skill-library/compare/v5.27.0...v5.28.0) (2026-08-20)
+
+
+### Features
+
+* **pos-skill:** extend the 🟣 make.com access map by 19 documented fields ([#188](https://github.com/wemwi/skill-library/issues/188)) ([b55423e](https://github.com/wemwi/skill-library/commit/b55423e89c9a562c796741866d0954f768ce9070))
+
 ## [5.27.0](https://github.com/wemwi/skill-library/compare/v5.26.0...v5.27.0) (2026-08-19)
 
 
