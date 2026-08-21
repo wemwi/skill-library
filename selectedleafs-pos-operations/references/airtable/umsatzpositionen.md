@@ -46,3 +46,20 @@ Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positi
 | Typ | lookup | `fldV7NTjnV1ELyuO5` |
 
 *Neu ziehen: `list_tables_for_base` → Umsatzpositionen; Formeln via `get_table_schema`.*
+
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
+
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
+
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make SCHREIBT hier 8 Felder und liest keines.
+> Alle Zugriffe laufen über die Feld-ID — Umbenennen ist hier folgenlos.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/umsatzpositionen.md.
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Bestand` · `Menge (Stück)` · `Menge (kg)` · `Nettoumsatz` · `Position` · `Preis` · `Produkt` · `Umsatz`  
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 6 von 14 Feldern.*

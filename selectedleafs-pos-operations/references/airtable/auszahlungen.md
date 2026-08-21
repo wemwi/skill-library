@@ -46,11 +46,25 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 
 *Neu ziehen: `list_tables_for_base` → Auszahlungen; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
 
-- **`Beleg`** — 🟣 WRITE. Gegenfeld zu Belege.Auszahlung; `Process Salesperson Invoice` setzt den Link von der Beleg-Seite.
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make schreibt 6 Felder und liest 6.
+> Eines davon matcht Make über den Klartext-Namen — es trägt 🟣 make.com (KEY · …) in der Feldbeschreibung und darf nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/auszahlungen.md.
 
-- **`Lexware ID`** — 🟣 READ+WRITE. Voucher-UUID = Idempotenz-Klammer; Match-Schlüssel Erfassen/Bezahlen.
-- **`Status`** — 🟣 WRITE (In Bearbeitung / Teilzahlung / Abgeschlossen / Storniert). Make schreibt als String; Option umbenennen bricht still.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`Lexware ID`** — 🟣 `make.com (KEY · Name)` · lookup · `fldgfj7Wr3OxjY2Zz`  
+  Beleg → Auszahlung. Szenarien: 6955541, 6872651.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Betrag` · `Bezahlt` · `Datum` · `Rechnungsnummer` · `Status` · `Vertriebler`  
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 4 von 11 Feldern.*

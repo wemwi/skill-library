@@ -44,9 +44,29 @@ Versionierter **Verkaufspreis je Produktvariante**. Eine Zeile = ein ab `Gültig
 
 *Neu ziehen: `list_tables_for_base` → Preise; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
 
-- **`Produkt`** — 🟣 READ. Match-/Sortier-Feld der eff-dated Preisauswahl.
-- **`Gültig ab`** — 🟣 READ. Eff-dated Versionsauswahl (jüngster Preis ≤ Leistungsdatum).
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make schreibt 4 Felder und liest 6.
+> 2 davon matcht Make über den Klartext-Namen — sie tragen 🟣 make.com (KEY · …) in der Feldbeschreibung und dürfen nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/preise.md.
+
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`Gültig ab`** — 🟣 `make.com (KEY · Name)` · date · `fldI7FiSfUxmDxNNj`  
+  eff-dated Preiswahl am Leistungsdatum. Szenarien: 6633991, 6677862, 6729541.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Produkt`** — 🟣 `make.com (KEY · Name)` · link · `fldCdNn8nWUcgPlFG`  
+  ARRAYJOIN({Produkt}) Match. Szenarien: 6633991, 6677862, 6729541.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Steuersatz` · `VK (brutto)`  
+**Make liest:** `Lieferpositionen` · `Umsatzpositionen`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 4 von 10 Feldern.*

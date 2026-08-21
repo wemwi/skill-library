@@ -28,35 +28,50 @@ Die Wahl fällt am **Leistungsdatum** (§4).
 
 ## 2. Feld-Konvention & Make-Kopplung
 
-**Die einzige verbliebene Namenskopplung sitzt in `filterByFormula`-Strings** (Airtable erlaubt dort keine Feld-IDs) — plus in den dort gematchten Options-Werten und Sortier-Feldern. Reads/Writes sind sonst überall ID-fest (`returnFieldsByFieldId` / `useColumnId:true`). Drei Kopplungsarten:
+Make spricht Airtable auf **zwei** Wegen an — und nur einer davon ist zerbrechlich:
 
-- **Dedup-/Match-Schlüssel.** `Lieferungen.ID` = Belegnummer aus dem PDF · `Bestandsprüfungen.ID` = `"BSP-" & Store ID & "-" & Datum` (Make baut denselben Wert als `dedupkey` und sucht per `filterByFormula {ID} = …`) · `Bestände.ID` = `"BST-" & Store-Nr & "-" & SKU` · `Produktvarianten.ID` = SKU. **Präfix/Trennzeichen/Datumsformat ändern bricht den Match still.**
-- **Namens-Match & Werte-Match.** `Stores.Name`/`Vertriebler.Name` (zeichengenau) · Selects, deren **Optionen** als String gematcht werden (`Belegtyp`, `Status`, `Modell`, `Typ`, `Gültig für`). Umbenennen von Feld **oder** Option bricht still.
-- **Volle GIDs.** `Stores.Shopify GID` (Metaobjekt), `Produkte.Shopify GID`, `Produktvarianten.Shopify GID` — **immer inkl. `gid://shopify/…`-Präfix**, Make normalisiert nicht.
+- **Über die Feld-ID** (`returnFieldsByFieldId`, `fields[]`, `useColumnId:true`, `record`-Maps). Die ID ist unveränderlich; das Feld darf beliebig heißen. **Umbenennen ist folgenlos.**
+- **Über den Klartext-Namen** — ausschließlich dort, wo Airtable keine Feld-IDs zulässt: in `filterByFormula` und in `sort`. Plus in den dort gematchten **Options-Werten** von Selects. **Umbenennen bricht den Match still** — kein Fehler, kein Log, nur ein Treffer weniger.
 
-Bruchmodi: umbenannt = **laut** (422) · Wert/Option geändert = **still** · Bedeutung gewandert = **unsichtbar**.
+Der zweite Fall ist selten (26 von 250 Feldern), aber er trägt die Idempotenz, die eff-dated Versionswahl und die Brücken zu Lexware. Deshalb bekommt genau er den Marker.
 
-### Marker (Stand 2026-08-20)
+### Der 🟣-Marker (Stand 2026-08-21)
 
-Feld-Beschreibungen tragen in der **ersten Zeile** einen 🟣-Zugriffsmarker — er sagt, **wie Make das Feld anfasst**:
+Die **erste Zeile** der Feldbeschreibung trägt bei diesen Feldern:
 
-- **`🟣 make.com (READ)`** — Make liest/matcht (filterByFormula-Match, eff-dated Versionsauswahl, Lookup-Quelle), schreibt den Wert aber nicht.
-- **`🟣 make.com (WRITE)`** — Make setzt den Wert (Status/Optionen als String, gesetzte Links).
-- **`🟣 make.com (READ+WRITE)`** — Make schreibt beim Insert **und** liest/matcht (Dedup-/Idempotenz-Schlüssel).
+- **`🟣 make.com (KEY · Name)`** — Make matcht über den **Feldnamen**. Name einfrieren.
+- **`🟣 make.com (KEY · Options)`** — Make matcht über Feldname **und Optionswert**. Beides einfrieren. Gilt nur für Selects; `Options` ist die Steigerung von `Name`, nie ein anderer Fall (eine Options-Kopplung setzt die Namens-Kopplung immer voraus, weil `filterByFormula` den Feldnamen zwangsläufig mitschreibt).
 
-Bewusst in der Beschreibung, nicht im Namen (ein Glyph im Namen bräche den Match, den er schützt) — kein Namens-Glyph, keine View, keine Feldberechtigungen. Der Marker ist **Doku, kein Laufzeit-Gate**: eine Beschreibung zu ändern hat keinen Effekt auf Make; das Umbenennen des Feld- oder Optionsnamens dagegen bricht READ-Matches still. Prozess-Gegenmaßnahme: **neuer Make-Zugriff (`filterByFormula`/String-Write) → 🟣-Marker im selben Zug setzen.**
+Darunter steht in Klartext, *wo* gematcht wird. Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den Match, den er schützt. Der Marker ist **Doku, kein Laufzeit-Gate**: eine Beschreibung zu ändern hat auf Make keinen Effekt.
 
-### Zugriffs-Index (welcher Marker auf welchem Feld — Detail am Feld in `airtable/<tabelle>.md`)
+**Was der Marker NICHT mehr trägt: die Richtung.** READ/WRITE steht jetzt auf **Tabellenebene** — jede Tabellenbeschreibung nennt, wie viele Felder Make dort schreibt und liest. Eine Aussage gehört auf die Ebene, auf der sie gilt: „Namen nicht ändern" ist eine Feld-Eigenschaft, „Make schreibt hier" eine Tabellen-Eigenschaft.
 
-- **READ:** `Belege.Belegtyp` · `Bestandsprüfungen.ID` · `Bestandsprüfungspositionen.ID` · `Bestände.ID`+`Letzte Lieferung` · `Konditionen.Gültig ab`+`Gültig für`+`Provision`+`Kostenanteil` · `Lieferungen.Vertriebler` · `Produkte.Typ` · `Preise.Gültig ab`+`Produkt` · `Stadtteile.Name`+`Stadt` · `Städte.Name` · `Stores.ID`+`Modell`+`Lexware ID`+`Zuletzt geprüft`+`Shopify GID`+`Google Place ID`+`Akquise durch` · `Umsätze.Zahlungsverlauf` · `Vertriebler.Name`+`Lexware ID`+`Formularlink`.
-- **WRITE:** `Auszahlungen.Status`+`Beleg` · `Belege.Umsatz`+`Auszahlung` · `Bestandsprüfungen.Status` · `Bestände.Store` · `Lieferungen.Status`+`Lieferpositionen` · `Umsätze.Status`+`Hinweis`.
-- **READ+WRITE:** `Auszahlungen.Lexware ID` · `Belege.Datum` · `Bestände.Erstlieferung am` · `Lieferungen.ID` · `Produkte.ID`+`Shopify Tags`+`Shopify GID` · `Produktvarianten.ID`+`Shopify GID`+`EK (netto)` · `Umsätze.ID` · `Stores.Name`+`Status`+`Fällig gemeldet am`.
+**Prozess-Gegenmaßnahme:** neuer `filterByFormula`- oder `sort`-Zugriff auf ein Feld → 🟣-Marker im selben Zug setzen.
 
-Was der Marker (noch) **nicht** abbildet: make-berührte Felder **ohne jede Feldbeschreibung** — rein fld-ID-feste Reads/Writes (`returnFieldsByFieldId`/`useColumnId`), die nie Prosa trugen. Die Karte deckt die **namens-/options-gekoppelten** plus alle **in ihrer Beschreibung dokumentierten** make-berührten Felder ab; die vollständige Zugriffskarte aller markerlosen fld-ID-Felder ist Scope B (offen, verlangt einen Blueprint-Scan aller Szenarien). Goldstandard ohne jede Namenskopplung: `[Sync] Products` (in-Code-GID), `[Notify] Telegram` (`RECORD_ID()`).
+### Die 26 namens-gekoppelten Felder
 
-*Marker-Menge = die 32 namens-/options-gekoppelten Felder aus dem vollständigen Live-Scan aller 17 Szenarien (2026-08-19/20, Make-MCP `scenarios_get`).*
+| Zweck | Felder |
+|---|---|
+| **Dedup / Idempotenz** | `Umsätze.ID` · `Lieferungen.ID` · `Bestandsprüfungen.ID` · `Bestandsprüfungspositionen.ID` · `Bestände.ID` · `Produktvarianten.ID` · `Stores.ID` |
+| **Eff-dated Versionswahl** | `Preise.Gültig ab` + `Preise.Produkt` · `Konditionen.Gültig ab` + `Konditionen.Gültig für` |
+| **Lexware-Brücken** | `Stores.Lexware ID` · `Vertriebler.Lexware ID` · `Auszahlungen.Lexware ID` |
+| **Namens-Match** | `Stores.Name` · `Vertriebler.Name` · `Städte.Name` · `Stadtteile.Name` |
+| **Options-Match** (Selects) | `Belege.Belegtyp` · `Bestandsprüfungen.Status` · `Stores.Status` · `Stores.Modell` · `Konditionen.Gültig für` |
+| **Filter / Sort** | `Belege.Datum` · `Belege.Umsatz` · `Stores.Zuletzt geprüft` · `Stores.Fällig gemeldet am` |
 
----
+`Konditionen.Gültig für` steht bewusst in zwei Zeilen — Zweck ist die eff-dated Auswahl, Mechanismus der Options-Match. Die Tabelle nennt damit 27 Einträge für 26 Felder.
+
+`Konditionen.Gültig für` steht bewusst in zwei Zeilen — Zweck ist die eff-dated Auswahl, Mechanismus der Options-Match. Die Tabelle nennt damit 27 Einträge für 26 Felder.
+
+Feld-Detail (fld-ID, Szenarien, Bruchmodus) je Tabelle in `airtable/<tabelle>.md`, Sektion „🟣 Make-Zugriff".
+
+### Vollständigkeit
+
+Die Karte ist **vollständig**: alle 17 Szenarien des Teams 2174024 wurden am 2026-08-21 per Make-MCP `scenarios_get` gegen die Live-Blueprints gescannt. Ergebnis: 156 der 250 Felder werden von Make berührt — 26 namens-gekoppelt (Marker am Feld), 130 rein fld-ID-fest (Zählung auf Tabellenebene, kein Marker). 94 Felder haben **keinen** Make-Bezug und sind frei.
+
+Drei Tabellen sind **rein lesend** — Make schreibt dort nie: `Konditionen`, `Städte`, `Steuersätze`. Drei sind **rein schreibend**: `Lieferpositionen`, `Umsatzpositionen` (INSERT-only) sowie `Produkte`.
+
+Bruchmodi: Name/Option geändert = **still** · Feld gelöscht oder umtypisiert = **laut** (422) · Bedeutung gewandert = **unsichtbar**. Der Marker deckt den ersten Fall ab; für den zweiten führt die Tabellenbeschreibung nach `airtable/<tabelle>.md`.
 
 ## 3. Wo Geld entsteht (live verifiziert)
 

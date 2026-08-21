@@ -32,8 +32,25 @@ Die Stadt — **Träger des öffentlichen City-Telegram-Channels.** Die City-Auf
 
 *Neu ziehen: `list_tables_for_base` → Städte.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
 
-- **`Name`** — 🟣 READ. Zeichengenauer Match.
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make LIEST hier 2 Felder und schreibt nie in diese Tabelle.
+> Eines davon matcht Make über den Klartext-Namen — es trägt 🟣 make.com (KEY · …) in der Feldbeschreibung und darf nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/staedte.md.
+
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`Name`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldD5NSzJjupX7waM`  
+  formulaCity aus M10. Szenarien: 6820980.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make liest:** `Telegram ID`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 2 von 4 Feldern.*

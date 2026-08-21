@@ -48,8 +48,26 @@ Eine Zeile = **eine Sorte in einer Bestandsprüfung** (SOLL vs. IST). Bewertet *
 
 *Neu ziehen: `list_tables_for_base` → Bestandsprüfungspositionen; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
 
-- **`ID`** — 🟣 READ. Positions-Schlüssel, per Name referenziert.
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make schreibt 7 Felder und liest 3.
+> Eines davon matcht Make über den Klartext-Namen — es trägt 🟣 make.com (KEY · …) in der Feldbeschreibung und darf nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/bestandspruefungspositionen.md.
+
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`ID`** — 🟣 `make.com (KEY · Name)` · formula · `fldVekCJcYqoCakJw`  
+  BSP-Positionsschluessel + sort. Szenarien: 6633991.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Bestand` · `Bestandsprüfung` · `IST` · `Position` · `Preis` · `Produkt` · `SOLL`  
+**Make liest:** `Differenz`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 6 von 15 Feldern.*

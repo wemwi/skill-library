@@ -55,12 +55,39 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 
 *Neu ziehen: `list_tables_for_base` → Belege; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
 
-- **`Auszahlung`** — 🟣 WRITE. Vierter Fach-Link; `Process Salesperson Invoice` setzt ihn beim Anlegen des Belegs.
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make schreibt 6 Felder und liest 7.
+> 3 davon matcht Make über den Klartext-Namen — sie tragen 🟣 make.com (KEY · …) in der Feldbeschreibung und dürfen nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
+> Zusätzlich lauscht ein Airtable-Webhook auf 1 Feld dieser Tabelle; dessen Löschen legt die zugehörige Inbox still.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/belege.md.
 
-- **`Belegtyp`** — 🟣 READ. Make matcht als String; Option umbenennen bricht still.
-- **`Datum`** — 🟣 READ+WRITE. Leistungsdatum-Quelle, wird nach Umsatz/Lieferung/Bestandsprüfung gespiegelt.
-- **`Umsatz`** — 🟣 WRITE. Fach-Link, per Name/Ziel aufgelöst.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`Belegtyp`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldKSqryQHeRzUCMd`  
+  Option als String. Szenarien: 6633991, 6844567.  
+  ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
+- **`Datum`** — 🟣 `make.com (KEY · Name)` · date · `fldPoeEx87w0wF8w9`  
+  Dubletten-Match + Vergabeliste-sort. Szenarien: 6633991, 6844567.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Umsatz`** — 🟣 `make.com (KEY · Name)` · link · `fldI5lU4NQ7ymG4d0`  
+  Dubletten-Match. Szenarien: 6844567.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Anhang` · `Auszahlung` · `Hinweis`  
+**Make liest:** `Bestandsprüfung` · `ID`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+### Webhook-Scope (`[Maintain] Airtable Webhooks`, 6830404)
+
+Der Airtable-Webhook lauscht per `watchDataInFieldIds` auf: `Anhang`.
+
+Feld-IDs, kein Namensbezug — Umbenennen unkritisch. Wird eines gelöscht, fällt der Trigger für dieses Feld still aus.
+
+*Ohne jeden Make-Zugriff: 2 von 10 Feldern.*

@@ -62,12 +62,26 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 
 *Neu ziehen: `list_tables_for_base` → Umsätze; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
 
-- **`Hinweis`** — 🟣 WRITE. Freitext des pos-invoice-Szenarios (Extraktions-Hinweise / Fehlertexte).
-- **`Zahlungsverlauf`** — 🟣 READ. Rollup; speist {Zahlungsverlauf} in der invoice.paid-Meldung.
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make schreibt 8 Felder und liest 13.
+> Eines davon matcht Make über den Klartext-Namen — es trägt 🟣 make.com (KEY · …) in der Feldbeschreibung und darf nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/umsaetze.md.
 
-- **`ID`** — 🟣 READ+WRITE. Make-geschriebener Dedup-Schlüssel.
-- **`Status`** — 🟣 WRITE (Offen / Bezahlt / Teilgezahlt / Überfällig / Angemahnt / Storniert / Ausgebucht). Make schreibt als String.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `flda4tTUPnyeuQbDP`  
+  Rechnungsnummer = Dedup. Szenarien: 6633991, 6955541, 6844567.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Bezahlt` · `Fällig am` · `Hinweis` · `Konditionen` · `Status` · `Store` · `Vertriebler`  
+**Make liest:** `Belege` · `Datum` · `Deckungsbeitrag` · `Nettoumsatz` · `Provision` · `Umsatzpositionen` · `Zahlungsverlauf`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 7 von 22 Feldern.*

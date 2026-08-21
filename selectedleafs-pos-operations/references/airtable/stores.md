@@ -70,18 +70,51 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 
 *Neu ziehen: `list_tables_for_base` → Stores; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
 
-- **`ID`** — 🟣 READ. JTL-Kundennummer; Make liest sie (baut den Bestands-Schlüssel, prüft Präsenz für task.jtl_missing). *(prosa-abgeleitet, nicht blueprint-verifiziert)*
-- **`Shopify GID`** — 🟣 READ. VOLLE Metaobjekt-GID inkl. Präfix; der Sync matcht zeichengenau dagegen. ⚠ Formate nicht mischen. *(prosa-abgeleitet, nicht blueprint-verifiziert)*
-- **`Google Place ID`** — 🟣 READ. Restock-Szenario baut daraus den Maps-Link. ⚠ Wert ändern bricht still; leeres Feld degradiert den Link nur.
-- **`Akquise durch`** — 🟣 READ. [Create] New Store Partner prüft es (Pflichtfeld), [Dispatch] navigiert darüber. ⚠ Feld-ID nicht ändern und „Neue Datensätze erlauben" NICHT einschalten — sonst legt ein Prefill still einen zweiten Vertriebler an.
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make schreibt 7 Felder und liest 24.
+> 7 davon matcht Make über den Klartext-Namen — sie tragen 🟣 make.com (KEY · …) in der Feldbeschreibung und dürfen nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
+> Zusätzlich lauscht ein Airtable-Webhook auf 12 Felder dieser Tabelle; deren Löschen legt die zugehörige Inbox still.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/stores.md.
 
-- **`Lexware ID`** — 🟣 READ. Kreditor-Referenz.
-- **`Name`** — 🟣 READ+WRITE. Store-Match des Restock-Szenarios zeichengenau; Wert ändern bricht still.
-- **`Status`** — 🟣 READ+WRITE. Make matcht als String.
-- **`Modell`** — 🟣 READ. Make matcht als String.
-- **`Zuletzt geprüft`** — 🟣 READ (Rollup, Sortier-/Vergleichsfeld).
-- **`Fällig gemeldet am`** — 🟣 READ+WRITE. Ziel von [Maintain] Inventory Check Reminder (7001118) Modul 4 → C-Fix auf fld-ID (`fldzaj0Ai31RqgqnU`).
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`Fällig gemeldet am`** — 🟣 `make.com (KEY · Name)` · date · `fldzaj0Ai31RqgqnU`  
+  Re-Nag-Fenster. Szenarien: 7001118.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldL1YaDEswIZNnNP`  
+  JTL-Kundennummer Match. Szenarien: 6729541.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Lexware ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldk5PuObAVdGbWP4`  
+  Kontakt → Store. Szenarien: 6633991, 6872775.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Modell`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fld8C3tgNKcDqBgdP`  
+  Kommission als String. Szenarien: 7001118.  
+  ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
+- **`Name`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fld7fbRS1BHvrqJrj`  
+  LOWER({Name}) Kommissionär-Match. Szenarien: 6729541.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fld8fYS00U23noJST`  
+  Aktiv/Probezeit als String. Szenarien: 7001118.  
+  ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
+- **`Zuletzt geprüft`** — 🟣 `make.com (KEY · Name)` · rollup · `fld36tZGPVPcuqOJU`  
+  DATETIME_DIFF-Vergleich. Szenarien: 7001118.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Google Place ID` · `Hinweis` · `Shopify GID` · `Stadt` · `Stadtteil`  
+**Make liest:** `Akquise durch` · `Bild` · `Facebook` · `Instagram` · `Paketdienste` · `Postleitzahl` · `Sortiment` · `Straße / Nr.` · `Telefon` · `Telegram ID` · `TikTok` · `Webseite` · `WhatsApp`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+### Webhook-Scope (`[Maintain] Airtable Webhooks`, 6830404)
+
+Der Airtable-Webhook lauscht per `watchDataInFieldIds` auf: `Name` · `Postleitzahl` · `Straße / Nr.` · `Bild` · `Sortiment` · `Paketdienste` · `Telefon` · `WhatsApp` · `Instagram` · `Facebook` · `TikTok` · `Webseite`.
+
+Feld-IDs, kein Namensbezug — Umbenennen unkritisch. Wird eines gelöscht, fällt der Trigger für dieses Feld still aus.
+
+*Ohne jeden Make-Zugriff: 11 von 36 Feldern.*

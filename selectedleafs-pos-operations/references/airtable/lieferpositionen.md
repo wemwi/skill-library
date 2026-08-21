@@ -51,3 +51,20 @@ Eine Zeile = **eine Sorte in einer Lieferung**. Hier entstehen **Kosten** und **
 | Geprüft am | lookup | `fld7MUJBmICExHpBV` |
 
 *Neu ziehen: `list_tables_for_base` → Lieferpositionen; Formeln via `get_table_schema`.*
+
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
+
+Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
+
+> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
+> Make SCHREIBT hier 8 Felder und liest keines.
+> Alle Zugriffe laufen über die Feld-ID — Umbenennen ist hier folgenlos.
+> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/lieferpositionen.md.
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Bestand` · `EK (netto)` · `Lieferung` · `Menge (Stück)` · `Menge (kg)` · `Position` · `Preis (VK)` · `Produkt`  
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 9 von 17 Feldern.*
