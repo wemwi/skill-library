@@ -46,7 +46,9 @@ Die Beschreibung trägt **genau diese eine Zeile** — kein Zusatztext. Wo und w
 
 Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den Match, den er schützt. Der Marker ist **Doku, kein Laufzeit-Gate**: eine Beschreibung zu ändern hat auf Make keinen Effekt.
 
-**Was der Marker NICHT mehr trägt: die Richtung.** READ/WRITE steht jetzt auf **Tabellenebene** — jede Tabellenbeschreibung nennt, wie viele Felder Make dort schreibt und liest. Eine Aussage gehört auf die Ebene, auf der sie gilt: „Namen nicht ändern" ist eine Feld-Eigenschaft, „Make schreibt hier" eine Tabellen-Eigenschaft.
+**Was der Marker NICHT trägt: die Richtung.** Ob Make ein Feld liest oder schreibt, ändert an der Handlung nichts, die der Marker auslöst — Namen einfrieren gilt so oder so. Die Richtung steht vollständig in `airtable/<tabelle>.md`, je Tabelle mit Zählung und Feldliste.
+
+**Die Base trägt ausschließlich diese 26 Feld-Marker.** Keine Tabellenbeschreibungen, keine Zusatztexte — alles Erklärende lebt im Skill, wo es versioniert ist und im Review auffällt.
 
 **Prozess-Gegenmaßnahme:** neuer `filterByFormula`- oder `sort`-Zugriff auf ein Feld → 🟣-Marker im selben Zug setzen.
 
@@ -73,7 +75,7 @@ Die Karte ist **vollständig**: alle 17 Szenarien des Teams 2174024 wurden am 20
 
 Drei Tabellen sind **rein lesend** — Make schreibt dort nie: `Konditionen`, `Städte`, `Steuersätze`. Drei sind **rein schreibend**: `Lieferpositionen`, `Umsatzpositionen` (INSERT-only) sowie `Produkte`.
 
-Bruchmodi: Name/Option geändert = **still** · Feld gelöscht oder umtypisiert = **laut** (422) · Bedeutung gewandert = **unsichtbar**. Der Marker deckt den ersten Fall ab; für den zweiten führt die Tabellenbeschreibung nach `airtable/<tabelle>.md`.
+Bruchmodi: Name/Option geändert = **still** · Feld gelöscht oder umtypisiert = **laut** (422) · Bedeutung gewandert = **unsichtbar**. Der Marker deckt den ersten Fall ab. Für den zweiten gibt es kein Signal in der Base — wer ein Feld löschen oder umtypisieren will, prüft `airtable/<tabelle>.md`, Sektion „🟣 Make-Zugriff".
 
 ## 3. Wo Geld entsteht (live verifiziert)
 

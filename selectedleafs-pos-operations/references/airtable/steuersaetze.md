@@ -39,12 +39,7 @@ Versionierte **MwSt.-Sätze**. Eine Zeile = ein ab `Gültig ab` geltender Satz. 
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
-
-> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
-> Make LIEST hier 1 Feld und schreibt nie in diese Tabelle.
-> Alle Zugriffe laufen über die Feld-ID — Umbenennen ist hier folgenlos.
-> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/steuersaetze.md.
+Make **liest** hier 1 Feld und schreibt nie in diese Tabelle. Kein Feld ist namens-gekoppelt — Umbenennen ist hier durchgehend folgenlos.
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 

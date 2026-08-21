@@ -40,12 +40,7 @@ Das Produkt (Produkt-Ebene, über den Varianten). Trägt die Shopify-Produkt-Ank
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
-
-> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
-> Make schreibt 5 Felder und liest 5.
-> Alle Zugriffe laufen über die Feld-ID — Umbenennen ist hier folgenlos.
-> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/produkte.md.
+Make schreibt **5** Felder und liest **5**. Kein Feld ist namens-gekoppelt — Umbenennen ist hier durchgehend folgenlos.
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 

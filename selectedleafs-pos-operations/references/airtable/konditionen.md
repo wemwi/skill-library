@@ -43,12 +43,7 @@ Versionierte **Provision** und **Kostenanteil** (in %), **nach Steuerstatus getr
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
-
-> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
-> Make LIEST hier 5 Felder und schreibt nie in diese Tabelle.
-> 2 davon matcht Make über den Klartext-Namen — sie tragen 🟣 make.com (KEY · …) in der Feldbeschreibung und dürfen nicht umbenannt werden. Alle übrigen Zugriffe laufen über die Feld-ID und sind umbenennungssicher.
-> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/konditionen.md.
+Make **liest** hier 5 Felder und schreibt nie in diese Tabelle. 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 

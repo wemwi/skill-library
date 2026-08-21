@@ -54,12 +54,7 @@ Eine Zeile = **eine Sorte in einer Lieferung**. Hier entstehen **Kosten** und **
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Diese Sektion ist die Langfassung. Kurzfassung steht **in der Base** als Tabellenbeschreibung:
-
-> 🟣 make.com — Zugriffskarte (Stand 2026-08-21, Live-Scan aller 17 Szenarien).
-> Make SCHREIBT hier 8 Felder und liest keines.
-> Alle Zugriffe laufen über die Feld-ID — Umbenennen ist hier folgenlos.
-> Vor dem Löschen oder Umtypisieren eines Feldes: POS-Skill → references/airtable/lieferpositionen.md.
+Make **schreibt** hier 8 Felder und liest keines. Kein Feld ist namens-gekoppelt — Umbenennen ist hier durchgehend folgenlos.
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
