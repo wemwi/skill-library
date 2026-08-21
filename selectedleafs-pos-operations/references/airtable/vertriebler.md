@@ -24,7 +24,13 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 
 ## Weitere tragende Felder
 
-- **`Besteuerung`** (Select: Kleinunternehmer / Regelbesteuerung) + **`Regelbesteuerung ab`** (Datum) — **wählt die passende [[konditionen]]-Version** (`Gültig für`). Kleinunternehmer ⇒ 0 % MwSt.
+- **`Besteuerung`** (Select: Kleinunternehmer / Regelbesteuerung) + **`⚙ Regelbesteuerung ab`** (Datum) — zusammen **wählen sie die passende [[konditionen]]-Version** (`Gültig für`). Kleinunternehmer ⇒ 0 % MwSt.
+
+  **Arbeitsteilung — entschieden 2026-08-21, verbindlich:**
+  - **`⚙ Regelbesteuerung ab` ist die alleinige Maschinenwahrheit**, überall wo Geld dranhängt. Abgeleitet wird **ereignisdatiert**: `Leistungsdatum ≥ ⚙ Regelbesteuerung ab` ⇒ `Regelbesteuerung`, sonst `Kleinunternehmer`. **Leer = durchgehend Kleinunternehmer.**
+  - **`Besteuerung` (Select) ist menschlicher Eingang und Anzeige** — es sagt den Stand *heute* und kann eine rückdatierte Rechnung nicht beantworten. **Kein Geldpfad liest es.** Einziger schreibender Berührungspunkt: `[Create] New Sales Member` übersetzt es beim Onboarding **einmal** in das Datum (nur wenn dieses noch leer ist).
+  - *Warum:* wechselt jemand zum 01.01. und kommt danach ein Beleg vom November nachgereicht, zieht das Select die falsche (neue) Kondition — das Datum die richtige (alte).
+  - *Bricht, wenn* ein Szenario `Besteuerung` in einen `filterByFormula` gegen `Konditionen.Gültig für` einsetzt statt das Datum auszuwerten.
 - **`Formularlink`** (Formel) — personalisierter Link auf das „Store anlegen"-Formular; belegt `Stores.Akquise durch` mit `RECORD_ID()` vor und blendet das Feld aus. Wird als `{Formularlink}` im Onboarding-Post ausgegeben. Bricht still, wenn Feld-ID von `Akquise durch` oder die Formular-Page-ID sich ändert.
 - `Lexware ID` (Kreditor) · `Telegram Channel ID` (Sales-Channel) · PLZ / Ort / Straße · `Hinweis`.
 

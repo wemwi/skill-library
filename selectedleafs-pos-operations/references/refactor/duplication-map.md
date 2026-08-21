@@ -384,7 +384,12 @@ es ist hier schlicht nie benutzt worden. Zu beweisen sind genau vier Dinge:
 Ohne Stufe 0 ist alles Weitere Spekulation. Sie kostet einen Nachmittag und kann komplett verworfen
 werden.
 
-### Stufe 1 — `[Resolve] Positions` (aus B5)
+### Stufe 1 — `[Resolve] Positions` (aus B5) — ✅ **gebaut 2026-08-21**
+
+**Szenario 7039710**, Ordner `Resolver` (382196), on-demand, aktiv. Kontrakt K1 wie unten, Testlauf
+gegen echte Daten verifiziert (Store 10031 · SKU `10004-002` aufgelöst, unbekannte SKU sauber in
+`unresolved[]`, `complete = false`). Nächster Schritt ist der erste Aufrufer, nicht ein weiterer
+Baustein.
 
 Erster echter Baustein: dreimal deckungsgleich, kein Angleich nötig, nur zwei Flags. Schreibt nichts
 außer der optionalen Bestandszeile. **Als Batch-Resolver bauen** (Array rein, Array raus, Schleife im
@@ -419,10 +424,11 @@ nicht, ist die Angleichung (A3–A5) trotzdem der Gewinn und die Extraktion verz
 | **A2** | Eine Namens-Normalisierung für `Stores.Name` | B1 | nein (Delivery-`norm()` übernehmen) |
 | **A3** | Ein Namensvergleich für `Vertriebler.Name` + hartes Verhalten bei 0/>1 | B2 | nein (Delivery übernehmen) |
 | **A4** | Ein Datumsvergleich für `Konditionen.Gültig ab` + Gleichstand-Guard | B3 | nein (Delivery/`IS_AFTER` übernehmen) |
-| **A5** | Besteuerung: `⚙ Regelbesteuerung ab` (eff-dated) vs. `Besteuerung`-Select — zwei Kontrakte sauber trennen | B3 | **ja — Joscha** |
+| **A5** | Besteuerung: Datum vs. Select | B3 | ✅ **entschieden 2026-08-21: `⚙ Regelbesteuerung ab` ist alleinige Maschinenwahrheit**, das Select ist Eingang/Anzeige · Regel steht in [[airtable/vertriebler]] |
 | **A6** | Klingel-`onerror`: `Resume` **oder** `Ignore`, nicht beides | B7 | nein |
 | **A7** | Fehler-ctx: `Stufe` überall als Input | B10 | nein |
 | **A8** | Anker-Ausschluss (`RECORD_ID() != …`) auch in Delivery | B6 | nein |
+| **A9** | `[Create] New Sales Member`: Modul „Airtable: Konditionen (eff-dated)" referenziert `{{3.result.heute}}` — **das Feld gibt Modul 3 gar nicht zurück**. Das Datumsprädikat läuft leer; gezogen wird faktisch nur „neueste Version mit passender Besteuerung". Heute zufällig richtig (Onboarding-Vorschau), in einem Geldpfad ein Fehler. | B3 | nein — mit Stufe 4 fixen |
 
 A2–A4 und A6–A8 sind **eigenständig nützlich**: sie beheben stille Divergenzen, auch wenn nie ein
 Resolver gebaut wird. Sie sind der risikoarme Teil und können vor Stufe 1 laufen.
@@ -498,10 +504,8 @@ lesen ihre Store-Felder selbst aus dem Record.
 
 ```
 IN   person_name    : text                     — Name vom Beleg
-     service_date   : YYYY-MM-DD               — Leistungsdatum, nie now()
-     mode           : "effective_dated" | "current"
-                       effective_dated → Besteuerung aus ⚙ Regelbesteuerung ab (Geldpfad)
-                       current         → Besteuerung aus dem Select (Onboarding-Vorschau)
+     service_date   : text (YYYY-MM-DD)        — Leistungsdatum, nie now(); BEWUSST text,
+                                                 ein date-Typ kippt DATETIME_PARSE (siehe K1)
 
 OUT  ok, resolver_version
      salesperson_id
@@ -515,9 +519,10 @@ OUT  ok, resolver_version
 Schmaler als die erste Skizze (Quelle: [[refactor/reference-inventory]] §3): `salesperson_name` und
 `condition_name` werden heute **nirgends** gelesen.
 
-`mode` ist der Preis dafür, dass `[Create] New Sales Member` denselben Baustein nutzen kann, ohne
-dass sein Sonderfall in den Geldpfad leckt. Wenn A5 anders entschieden wird, entfällt `mode` und
-Create New Sales Member ruft gar nicht auf.
+**A5 ist entschieden — `mode` entfällt.** Der Resolver kennt genau einen Weg: Besteuerung
+ereignisdatiert aus `Vertriebler.⚙ Regelbesteuerung ab`. `[Create] New Sales Member` ruft ihn
+**nicht** auf; es prüft beim Onboarding nur, ob für den neuen Vertriebler überhaupt eine
+Konditions-Version existiert, und behält dafür seinen eigenen Griff — inklusive A9-Fix.
 
 ### K4 · `[Archive] Document PDF`
 
