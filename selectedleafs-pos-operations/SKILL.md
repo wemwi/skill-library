@@ -13,7 +13,7 @@ description: >-
   [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.21.0"
+  version: "1.22.0"
 ---
 
 # selectedleafs · POS Operations
