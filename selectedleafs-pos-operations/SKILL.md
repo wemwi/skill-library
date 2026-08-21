@@ -13,7 +13,7 @@ description: >-
   [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.11.0"
+  version: "1.12.0"
 ---
 
 # selectedleafs · POS Operations
@@ -135,6 +135,8 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 ## Verzeichnis
 
 **`references/`** — `model.md` (Datenmodell, Geld, Versionierung, Datum, Steuer) · `scenarios.md` (Szenario-Verträge + Topologie) · `notify.md` (Telegram-Grammatik, drei Channels, Renderer-Kontrakt, City-Anker) · `messages.md` (ausgefüllte Nachrichten-Übersicht — Ansicht; Text-SSoT bleibt `assets/catalog.md`) · `tools.md` (Airtable-/Make-MCP-Fallen; Generisches → `global-make-conventions`) · `operations.md` (Idempotenz, Fehlerkonvention, Registry, Wächter-Views) · **`airtable/<tabelle>.md`** (je Tabelle: Zweck · Beziehungen · tragende Felder + datierter Feld-Block).
+
+**`references/refactor/`** — `duplication-map.md` (datiertes Review-Artefakt: wiederkehrende Logik-Blöcke über alle 17 produktiven Szenarien, deckungsgleich/divergiert je Block, Schnitt-Empfehlung + Kontrakt-Skizzen für den DRY-Resolver-Umbau).
 
 **`assets/`** — `catalog.md` (Nachrichtenkatalog) · `diagrams/` (`er.html`, `topology.html` — datierte Review-Artefakte) · `examples/` (echte Belege). Szenario-Innereien werden **live** per Make-MCP gelesen (`scenarios_get`) statt als Dump vorgehalten.
 
