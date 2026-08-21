@@ -7,6 +7,10 @@
 > bzw. `airtable/<tabelle>.md`. Wer nach dem Stand-Datum daraus baut: **vorher gegenlesen.**
 >
 > **Dieses Dokument baut nichts.** Es kartiert und empfiehlt einen Schnitt. Bau erst nach Review.
+>
+> **Schwesterdatei:** [[refactor/reference-inventory]] — jede Stelle, die beim Entschlacken umgehängt
+> werden muss (70 Referenzen über die drei Kern-Worker). Sie hat die Kontrakt-Skizzen in §5 an drei
+> Stellen korrigiert; die Korrekturen sind hier bereits eingearbeitet.
 
 ---
 
@@ -442,13 +446,24 @@ OUT  ok             : bool                     — Pflichtfeld, siehe Härtung H
      resolved[]      : { pos, sku,
                          variant_id, price_id, stock_id,
                          purchase_net,          — aus Variante oder Ø EK
-                         gross_price }
+                         gross_price,           — Preise.VK (brutto)
+                         product_rec,           — Produktvarianten.Produkt (Link)
+                         product_name,          — Produktvarianten.Name
+                         product_type,          — Produktvarianten.Typ  ⚠ steht in einer
+                                                  Filterbedingung, nicht nur im Mapping
+                         stock_target }         — Bestände.SOLL
      unresolved[]    : { pos, sku, reason }
      complete        : bool                    — alle Zeilen aufgelöst
 ```
 
 Wichtig: **ein** Aufruf je Beleg, nicht je Zeile. Der Aufrufer entscheidet weiterhin selbst, was er
 bei `complete = false` tut (Delivery markiert „Fehlerhaft", Inventory bucht Teilmengen).
+
+Die vier zusätzlichen Felder stammen aus [[refactor/reference-inventory]] §3 — ohne sie lassen sich
+Delivery und Inventory nicht migrieren. **Die Durchreich-Felder der Positionszeile** (`qty`, `kg`,
+`grams`, `actual`, `target`, `netto`, `stueck`) gehören **nicht** in den Kontrakt: der Aufrufer joint
+seine eigene Zeilenliste über `pos` mit `resolved[]`. Damit bleiben die Module, die in die
+Geldtabellen schreiben, byte-unverändert — Begründung in [[refactor/reference-inventory]] §4.
 
 ### K2 · `[Resolve] Store`
 
@@ -463,10 +478,7 @@ OUT  ok, resolver_version
      store_id       : rec…
      store_number   : Stores.ID
      store_name     : Stores.Name
-     place_id       : Stores.⚙ Google Place ID
-     chat_id        : Stores.⚙ Telegram ID (Stadt)
-     district_id    : Stores.Stadtteil
-     shopify_gid    : Stores.⚙ Shopify GID
+     model          : Stores.Modell            — Gate in [Process] Invoice (Store)
      via            : "number" | "name" | "lexware" | "record"
      warning        : text                     — blockt nicht; bei via="name" nach erfolgloser
                                                  Nummer PFLICHT (A1-Auflage)
@@ -474,7 +486,13 @@ OUT  ok, resolver_version
 ```
 
 Der Dedup-Schlüssel (`BSP-…`) gehört **nicht** hierher — er bleibt beim Aufrufer (Entflechtung aus B1
-Punkt 5).
+Punkt 5). Er wird in `[Process] Upload PDF (Inventory)` sechsmal gelesen; die Umhängung ist in
+[[refactor/reference-inventory]] §5.2 aufgeschlüsselt.
+
+Gegenüber der ersten Skizze **korrigiert** (Quelle: [[refactor/reference-inventory]] §3): `model` ist
+dazugekommen, und `place_id` / `chat_id` / `district_id` / `shopify_gid` sind **raus** — Delivery
+berechnet sie zwar, aber kein Modul liest sie. `[Sync] Inventory to Shopify` und `[Notify] Telegram`
+lesen ihre Store-Felder selbst aus dem Record.
 
 ### K3 · `[Resolve] Salesperson & Conditions`
 
@@ -486,12 +504,16 @@ IN   person_name    : text                     — Name vom Beleg
                        current         → Besteuerung aus dem Select (Onboarding-Vorschau)
 
 OUT  ok, resolver_version
-     salesperson_id, salesperson_name
+     salesperson_id
+     condition_id
      taxation       : "Kleinunternehmer" | "Regelbesteuerung"
-     condition_id, condition_name
-     provision, cost_share                     — nur lesend durchgereicht, nie gerechnet
-     error          : text                     — 0/>1 Treffer, Gleichstand, keine Version
+     service_date   : YYYY-MM-DD               — Echo, ersetzt 23.result.date in Delivery
+     salesperson_error, condition_error        — getrennt: das Verdikt unterscheidet sie
+     provision, cost_share                     — nur [Create] New Sales Member; nie gerechnet
 ```
+
+Schmaler als die erste Skizze (Quelle: [[refactor/reference-inventory]] §3): `salesperson_name` und
+`condition_name` werden heute **nirgends** gelesen.
 
 `mode` ist der Preis dafür, dass `[Create] New Sales Member` denselben Baustein nutzen kann, ohne
 dass sein Sonderfall in den Geldpfad leckt. Wenn A5 anders entschieden wird, entfällt `mode` und
