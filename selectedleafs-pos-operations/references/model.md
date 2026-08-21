@@ -42,7 +42,9 @@ Die **erste Zeile** der Feldbeschreibung trägt bei diesen Feldern:
 - **`🟣 make.com (KEY · Name)`** — Make matcht über den **Feldnamen**. Name einfrieren.
 - **`🟣 make.com (KEY · Options)`** — Make matcht über Feldname **und Optionswert**. Beides einfrieren. Gilt nur für Selects; `Options` ist die Steigerung von `Name`, nie ein anderer Fall (eine Options-Kopplung setzt die Namens-Kopplung immer voraus, weil `filterByFormula` den Feldnamen zwangsläufig mitschreibt).
 
-Darunter steht in Klartext, *wo* gematcht wird. Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den Match, den er schützt. Der Marker ist **Doku, kein Laufzeit-Gate**: eine Beschreibung zu ändern hat auf Make keinen Effekt.
+Die Beschreibung trägt **genau diese eine Zeile** — kein Zusatztext. Wo und warum gematcht wird, steht in `airtable/<tabelle>.md`: ein Fakt, ein Zuhause (Leitplanke 2). Stünde die Begründung zusätzlich in der Base, gäbe es zwei Orte, die bei einer Szenario-Änderung nachgezogen werden müssten — und die Base ist der, den niemand versioniert.
+
+Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den Match, den er schützt. Der Marker ist **Doku, kein Laufzeit-Gate**: eine Beschreibung zu ändern hat auf Make keinen Effekt.
 
 **Was der Marker NICHT mehr trägt: die Richtung.** READ/WRITE steht jetzt auf **Tabellenebene** — jede Tabellenbeschreibung nennt, wie viele Felder Make dort schreibt und liest. Eine Aussage gehört auf die Ebene, auf der sie gilt: „Namen nicht ändern" ist eine Feld-Eigenschaft, „Make schreibt hier" eine Tabellen-Eigenschaft.
 
