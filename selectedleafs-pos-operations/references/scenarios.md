@@ -57,6 +57,19 @@ Kein Notify — ein Baustein klingelt nicht, der Aufrufer meldet.
 Geplante Nutzer: `[Process] Upload PDF (Inventory)` → `[Process] Invoice (Store)` →
 `[Process] Upload PDF (Delivery)`. Kontrakt + Umhäng-Liste: [[refactor/reference-inventory]].
 
+**`[Archive] Document PDF` · 7042723**
+Ersetzt den Original-Anhang eines Belegs durch eine komprimierte Archivkopie: lädt selbst über
+`document_url`, `ilovepdf:compressPdf`, Upload nach `content.airtable.com`, dann PATCH auf
+`Belege.Beleg`. Eingaben `record_id` · `document_url` · `filename` (**ohne** `.pdf`) — Binärdaten
+passen durch kein Szenario-Interface, deshalb lädt das Kind statt sie übergeben zu bekommen.
+Nutzer: `[Process] Upload PDF (Delivery)` (Dateiname = Belegnummer) und
+`[Process] Upload PDF (Inventory)` (Dateiname = Dedup-Schlüssel).
+**Der Aufruf trägt beim Aufrufer `onerror: builtin:Ignore`** — der Block darf ausfallen, ohne den
+Lauf zu kippen; das war schon vor der Extraktion so und muss so bleiben.
+**Ausfall erkennen:** Kind-Lauf mit **2 statt 4 Operations** und der Beleg behält seine
+Originaldatei (iLovePDF fällt intermittierend aus). **Nachträgliches Archivieren mit demselben
+Dateinamen ist ein No-op** — siehe [[refactor/duplication-map]].
+
 **Pflicht-Outputs jedes Resolvers:** `ok` (der Baustein lief) und `resolver_version`. Sie sind die
 Gegenmaßnahme gegen ein beim Schreiben geleertes Interface ([[tools]]) — der Aufrufer **muss** hart
 darauf filtern, sonst bucht er still auf leeren Identitäten.
