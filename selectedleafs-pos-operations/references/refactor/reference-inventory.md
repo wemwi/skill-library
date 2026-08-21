@@ -303,7 +303,7 @@ Innerhalb **jedes** Workers gilt dieselbe Ordnung, und sie ist nicht beliebig:
 
 | # | Worker | Block | echte Umhängungen | warum hier |
 |---|---|---|---|---|
-| 1 | `[Process] Upload PDF (Inventory)` | B5 | **6** | liest nur, schreibt nichts — billigster Testfall |
+| 1 | ✅ `[Process] Upload PDF (Inventory)` | B5 | **6** | **erledigt 2026-08-21**, produktiv verifiziert |
 | 2 | `[Process] Invoice (Store)` | B5 | 6 | liest nur |
 | 3 | `[Process] Upload PDF (Delivery)` | B5 | 18 | schreibt (`upsert` Bestand) + Rückhol-EK |
 | 4 | beide Uploader | B8 | 0 | Fehlerpfad üben |

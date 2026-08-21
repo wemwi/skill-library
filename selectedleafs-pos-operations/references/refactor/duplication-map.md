@@ -388,8 +388,20 @@ werden.
 
 **Szenario 7039710**, Ordner `Resolver` (382196), on-demand, aktiv. Kontrakt K1 wie unten, Testlauf
 gegen echte Daten verifiziert (Store 10031 · SKU `10004-002` aufgelöst, unbekannte SKU sauber in
-`unresolved[]`, `complete = false`). Nächster Schritt ist der erste Aufrufer, nicht ein weiterer
-Baustein.
+`unresolved[]`, `complete = false`).
+
+**✅ Erster Nutzer produktiv seit 2026-08-21:** `[Process] Upload PDF (Inventory)` ruft den Resolver
+über `[Resolve] Positions` auf; Modul „Positions bookable" baut die Zeilen, „Resolver-Ergebnis
+anjoinen" setzt das Buchungs-Gate. Fünf Module (Feeder + drei Suchen + Aggregator) sind entfallen,
+47 → 45 Module. Erster echter Lauf gegengelesen: `BSP-10034-2026-08-13`, **9 von 9 Positionen
+gebucht**, Status Abgeschlossen, Differenz 42, Nettoverkaufswert 680,59 €.
+
+**Falle, die dabei einen halben Tag gekostet hat** (jetzt in `references/tools.md`): `Return output`
+im Kind braucht einen `metadata.expect`-Block mit seinen Ausgabefeldern. Ohne ihn sendet das Kind
+eine leere Nutzlast, der Aufrufer bekommt ein Bundle mit lauter `null` — der Lauf sieht erfolgreich
+aus und bucht nichts. Der Designer schreibt den Block beim Speichern, per API gebaute Kinder nicht.
+Die Härtung H2 (`ok` + `resolver_version` als Pflicht-Outputs) hat genau das abgefangen und statt
+falsch zu buchen laut „Ungültig" gemeldet — sie bleibt Pflicht für jeden weiteren Resolver.
 
 Erster echter Baustein: dreimal deckungsgleich, kein Angleich nötig, nur zwei Flags. Schreibt nichts
 außer der optionalen Bestandszeile. **Als Batch-Resolver bauen** (Array rein, Array raus, Schleife im
