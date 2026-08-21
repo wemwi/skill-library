@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.29.0](https://github.com/wemwi/skill-library/compare/v5.28.0...v5.29.0) (2026-08-21)
+
+
+### Features
+
+* **pos-skill:** full 🟣 make.com access map (scope B) ([#190](https://github.com/wemwi/skill-library/issues/190)) ([b7d106f](https://github.com/wemwi/skill-library/commit/b7d106fda1aac156527cd3a81fab63cbac2f3552))
+
 ## [5.28.0](https://github.com/wemwi/skill-library/compare/v5.27.0...v5.28.0) (2026-08-20)
 
 
