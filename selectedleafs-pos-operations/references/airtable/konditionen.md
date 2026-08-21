@@ -41,11 +41,23 @@ Versionierte **Provision** und **Kostenanteil** (in %), **nach Steuerstatus getr
 
 *Neu ziehen: `list_tables_for_base` → Konditionen; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make **liest** hier 5 Felder und schreibt nie in diese Tabelle. 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
-- **`Gültig ab`** — 🟣 READ. Eff-dated Versionsauswahl (Sortier-/Vergleichsfeld).
-- **`Gültig für`** — 🟣 READ. Make matcht als String; Option umbenennen bricht still.
-- **`Provision`** — 🟣 READ. Wird von [Create] New Sales Member per Name an Modul 215 gereicht (bis C-Fix).
-- **`Kostenanteil`** — 🟣 READ. Dito Provision.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`Gültig ab`** — 🟣 `make.com (KEY · Name)` · date · `fldLCQhky7QB1uZ20`  
+  eff-dated Konditionswahl. Szenarien: 6633991, 6821121.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Gültig für`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldJmJuFo4eDbNvP3`  
+  Besteuerung als String. Szenarien: 6633991, 6821121.  
+  ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make liest:** `ID` · `Kostenanteil` · `Provision`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 4 von 9 Feldern.*

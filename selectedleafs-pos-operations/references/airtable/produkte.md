@@ -38,12 +38,14 @@ Das Produkt (Produkt-Ebene, über den Varianten). Trägt die Shopify-Produkt-Ank
 
 *Neu ziehen: `list_tables_for_base` → Produkte; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make schreibt **5** Felder und liest **5**. Kein Feld ist namens-gekoppelt — Umbenennen ist hier durchgehend folgenlos.
 
-- **`ID`** — 🟣 READ+WRITE. Produktnummer (SKU vor dem letzten Bindestrich); Match-Schlüssel des Produkt-Syncs, nur beim Anlegen geschrieben.
-- **`Shopify Tags`** — 🟣 READ+WRITE. Sync schreibt (aus Shopify), Restock-Filter liest (Vein-Info). ⚠ Format/Trennzeichen ändern bricht den Filter still.
-- **`Shopify GID`** — 🟣 READ+WRITE. VOLLE Product-GID inkl. `gid://shopify/Product/…`-Präfix; Sync matcht darauf und schreibt sie beim Create. ⚠ Formate nicht mischen. *(Blueprint-verifiziert 6795533)*
+### fld-ID-fest — ohne Marker, umbenennungssicher
 
-- **`Typ`** — 🟣 READ (Kratom / POS Display). Make matcht als String; Option umbenennen bricht still.
+**Make schreibt:** `ID` · `Name` · `Shopify GID` · `Shopify Tags` · `Typ`  
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 1 von 6 Feldern.*

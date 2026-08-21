@@ -63,11 +63,30 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 
 *Neu ziehen: `list_tables_for_base` → Vertriebler; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make schreibt **3** Felder und liest **10**. 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
-- **`Formularlink`** — 🟣 READ. Formel; wird als {Formularlink} im Onboarding-Post ausgegeben. ⚠ ändert sich die Feld-ID von Akquise durch oder die Page-ID des Formulars, bricht der Link still.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
-- **`Name`** — 🟣 READ. Zeichengenauer Namens-Match (Vertriebler-Auflösung).
-- **`Lexware ID`** — 🟣 READ. Kreditor-Referenz.
+- **`Lexware ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldIP42qOvkdnnzHH`  
+  Kontakt → Vertriebler. Szenarien: 6872775.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Name`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldhDp2HHI6BxjlZq`  
+  LOWER(TRIM({Name})) Match. Szenarien: 6633991, 6729541.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Hinweis` · `Regelbesteuerung ab`  
+**Make liest:** `Besteuerung` · `Formularlink` · `Offen` · `Ort` · `Postleitzahl` · `Straße / Nr.` · `Telegram Channel ID`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+### Webhook-Scope (`[Maintain] Airtable Webhooks`, 6830404)
+
+Der Airtable-Webhook lauscht per `watchDataInFieldIds` auf: `Name` · `Straße / Nr.` · `Postleitzahl` · `Ort` · `Besteuerung` · `Regelbesteuerung ab`.
+
+Feld-IDs, kein Namensbezug — Umbenennen unkritisch. Wird eines gelöscht, fällt der Trigger für dieses Feld still aus.
+
+*Ohne jeden Make-Zugriff: 11 von 22 Feldern.*

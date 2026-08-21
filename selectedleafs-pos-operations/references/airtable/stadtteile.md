@@ -30,9 +30,20 @@ Der Stadtteil — feinere Geo-Ebene unter der Stadt, für City-Posts (`{Stadttei
 
 *Neu ziehen: `list_tables_for_base` → Stadtteile.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make schreibt **2** Felder und liest **2**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
-- **`Name`** — 🟣 READ. Zeichengenauer Match.
-- **`Stadt`** — 🟣 READ. Link/Zuordnung, per Ziel aufgelöst.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`Name`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldNJ60R7UN2vNtJ5`  
+  formulaDistricts + find-or-create. Szenarien: 6820980.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Stadt`  
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 1 von 3 Feldern.*

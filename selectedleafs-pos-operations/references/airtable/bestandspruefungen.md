@@ -51,9 +51,24 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 
 *Neu ziehen: `list_tables_for_base` → Bestandsprüfungen; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make schreibt **7** Felder und liest **11**. 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
-- **`ID`** — 🟣 READ. Formel-dedupkey "BSP-" & Store ID & "-" & Datum; Make baut denselben Wert und sucht per filterByFormula {ID}. Präfix/Trennzeichen/Datumsformat nicht ändern.
-- **`Status`** — 🟣 WRITE. Make schreibt als String; Option umbenennen bricht still.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
+
+- **`ID`** — 🟣 `make.com (KEY · Name)` · formula · `fld24GCd9UoMFtIW6`  
+  BSP-Dedup-Schlüssel + sort. Szenarien: 6633991, 6729541, 7001118.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldVx19XWUNiag4yJ`  
+  {Status} != "Ungültig". Szenarien: 6633991.  
+  ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Beleg` · `Hinweis` · `Inventar geprüft` · `Store` · `Unterschrieben` · `Vertriebler`  
+**Make liest:** `Datum` · `Differenz (Gesamt)` · `Nettoverkaufswert` · `Positionen` · `Store ID`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 1 von 14 Feldern.*

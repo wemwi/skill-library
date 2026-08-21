@@ -2,7 +2,7 @@
 
 `tblFboBzXrCop4nYt` · Kategorie **Silo** (abgeleitet, make-getrieben)
 
-> Feld-Block: **Stand 2026-08-15**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
+> Feld-Block: **Stand 2026-08-21**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
 
 ## Zweck
 
@@ -30,7 +30,7 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 - **`Erstlieferung am` nie zurücksetzen** — es ist der Dedup gegen doppelte 🌿-Posts.
 - `IST`/`SOLL`/`Differenz` liefern bei fehlender Prüfung `"-"` (String) — nicht als Zahl weiterrechnen ohne Guard.
 
-## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
+## Feld-Block (Stand 2026-08-21 · `list_tables_for_base`)
 
 | Feld | Typ | fld-ID |
 |---|---|---|
@@ -43,7 +43,6 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 | Lieferpositionen | link → Lieferpositionen | `fldsvFGwel4mmJYvK` |
 | Umsatzpositionen | link → Umsatzpositionen | `fldjydjHapLsTlnit` |
 | Bestandsprüfungspositionen | link → …positionen | `fldDuRv23YyncvwGQ` |
-| Store | lookup | `fldPuoageKdiyfZvd` |
 | Store | link → Stores | `fldhvkGD2RkmYOMKz` |
 | Geliefert | rollup | `fldmOWd6beQiTnZF5` |
 | Verkauft | rollup | `fldXBX7L99gnBo9Tl` |
@@ -56,12 +55,21 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 
 *Neu ziehen: `list_tables_for_base` → Bestände; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make schreibt **3** Felder und liest **9**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
-- **`Store`** — 🟣 WRITE. Make setzt die Verknüpfung beim Upsert (die Formel-ID liest daraus die Store-Nummer).
-- **`Letzte Lieferung`** — 🟣 READ. Rollup; der Owner-Sync vergleicht dieses Datum mit dem Belegdatum. ⚠ Rollup-Konfig (Link-Feld, Zielfeld, Aggregation MAX) nicht ändern — sonst fallen City-Posts still aus.
-- **`Erstlieferung am`** — 🟣 READ+WRITE. Post-Datum je Sorte/Store; einmal gesetzt, nie zurückgesetzt — Löschen löst einen erneuten Neuheits-Post aus.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
-- **`ID`** — 🟣 READ. Bestands-Schlüssel "BST-" & Store-Nr & "-" & SKU (Upsert-Match). Präfix/Trennzeichen nicht ändern.
+- **`ID`** — 🟣 `make.com (KEY · Name)` · formula · `fld6KO67C2lmpjZ0V`  
+  Bestands-Schlüssel BST-<JTL>-<SKU>; Upsert-Match. Szenarien: 6633991, 6677862, 6729541, 6805674.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Erstlieferung am` · `Produkt` · `Store`  
+**Make liest:** `IST` · `Letzte Lieferung` · `Letzte Prüfung` · `SOLL` · `Verkauft` · `Ø EK (netto)`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 8 von 18 Feldern.*

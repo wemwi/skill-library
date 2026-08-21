@@ -46,11 +46,21 @@ Die verkaufte Einheit (SKU-Ebene). Trägt SKU, Variant-GID und den **wöchentlic
 
 *Neu ziehen: `list_tables_for_base` → Produktvarianten; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make schreibt **5** Felder und liest **7**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
-- **`Shopify GID`** — 🟣 READ+WRITE. VOLLE Variant-GID inkl. Präfix; Sync matcht darauf und schreibt sie beim Create. ⚠ Make setzt kein Präfix davor. *(Blueprint-verifiziert 6795533)*
-- **`EK (netto)`** — 🟣 READ+WRITE. Spiegel des Shopify-unitCost, wöchentlich; Sync liest zum Diff und überschreibt. ⚠ nie in eine Kosten- oder Saldoformel ziehen — Kostenwahrheit liegt eingefroren auf Lieferpositionen.EK. *(Blueprint-verifiziert 6795533)*
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
-- **`ID`** — 🟣 READ+WRITE. Shopify-SKU = Upsert-Match + Bestands-Schlüssel. Sync schreibt nur beim Anlegen; Wert ändern verschiebt den Bestandsschlüssel still.
+- **`ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `flduzOEUi4iJGmqmw`  
+  SKU-Auflösung je Position. Szenarien: 6633991, 6677862, 6729541.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `EK (netto)` · `Produkt` · `Shopify GID` · `Variante`  
+**Make liest:** `Name` · `Typ`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 7 von 14 Feldern.*

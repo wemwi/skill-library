@@ -36,3 +36,15 @@ Versionierte **MwSt.-Sätze**. Eine Zeile = ein ab `Gültig ab` geltender Satz. 
 | Preise | link → Preise | `fldlPdLO38WeBxgEC` |
 
 *Neu ziehen: `list_tables_for_base` → Steuersätze; Formeln via `get_table_schema`.*
+
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
+
+Make **liest** hier 1 Feld und schreibt nie in diese Tabelle. Kein Feld ist namens-gekoppelt — Umbenennen ist hier durchgehend folgenlos.
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make liest:** `Gültig ab`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 6 von 7 Feldern.*

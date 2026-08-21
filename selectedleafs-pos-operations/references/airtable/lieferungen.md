@@ -60,12 +60,21 @@ Eine Zeile = eine **Warenübergabe (Kommission)** an einen Store, belegt durch d
 
 *Neu ziehen: `list_tables_for_base(appiIkOaz1ID1FjfE)` → Tabelle Lieferungen; Formeln via `get_table_schema`.*
 
-## 🟣 Make-Zugriff (Marker in der Base-Feldbeschreibung)
+## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Trägt einen 🟣-Zugriffsmarker in der Base-Feldbeschreibung (SSoT: [[model]] §2).
+Make schreibt **8** Felder und liest **10**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
-- **`Vertriebler`** — 🟣 READ. Handgesetzte Verknüpfung; Make liest sie zur Vertriebler-Auflösung und lauscht darauf im Trigger.
-- **`Lieferpositionen`** — 🟣 WRITE. Make hängt die Positionszeilen hier ein.
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
-- **`ID`** — 🟣 READ+WRITE. Belegnummer aus dem PDF = Dedup-Schlüssel; zweiter Beleg mit gleicher Nummer wird abgewiesen. Präfix/Format nicht ändern.
-- **`Status`** — 🟣 WRITE (Abgeschlossen / In Bearbeitung / Fehlerhaft). Make schreibt als String; Option umbenennen bricht still. (Audit 2026-08-19 in §2 aufgenommen.)
+- **`ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldRZt5ook8jiiXaX`  
+  Belegnummer = Dedup. Szenarien: 6677862.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+
+### fld-ID-fest — ohne Marker, umbenennungssicher
+
+**Make schreibt:** `Beleg` · `Hinweis` · `Konditionen` · `Status` · `Store` · `Unterschrieben` · `Vertriebler`  
+**Make liest:** `Datum` · `Kosten` · `Kostenanteil` · `Menge (Stück)` · `Nettoverkaufswert` · `Positionen`
+
+Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
+
+*Ohne jeden Make-Zugriff: 4 von 18 Feldern.*
