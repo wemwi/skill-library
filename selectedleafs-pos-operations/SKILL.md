@@ -13,7 +13,7 @@ description: >-
   [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.14.0"
+  version: "1.15.0"
 ---
 
 # selectedleafs · POS Operations
@@ -99,7 +99,7 @@ Versioniert wird **ereignisbasiert**: die jüngste Version mit `Gültig ab ≤ L
 
 Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach dem Auslöser):
 
-`[Sync]` · `[Create]` · `[Process]` · `[Dispatch]` · `[Notify]` · `[Maintain]` — `[Report]` reserviert, `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
+`[Sync]` · `[Create]` · `[Process]` · `[Dispatch]` · `[Notify]` · `[Maintain]` · `[Resolve]` (geteilter Baustein mit Rückgabe, synchron aufgerufen) — `[Report]` reserviert, `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
 
 **Dispatch — welche reference wofür:**
 

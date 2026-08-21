@@ -38,6 +38,29 @@ Trigger: **Mailhook**. Zahlungserinnerung/Mahnung → verknüpft `Beleg` mit dem
 
 **`[Notify] Telegram` · 6862968** · Hub (on-demand child). Kontrakt + Mechanik: **[[notify]]**.
 
+## `[Resolve]` — geteilte Bausteine (synchron)
+
+Neue Achse seit **2026-08-21**. Ein Resolver ist ein **Kind mit Rückgabe**: `Start scenario`
+(`scenario-service:StartSubscenario`) → Auflösung → `Return output` (`scenario-service:ReturnData`),
+aufgerufen mit **`Wait for the scenario to finish` = true**. Er löst nur auf und gibt zurück; was mit
+Lücken passiert, entscheidet der Aufrufer. Ordner **382196 (`Resolver`)**.
+
+**`[Resolve] Positions` · 7039710**
+Löst je Positionszeile **Produktvariante · Preis am Leistungsdatum · Bestandszeile** auf —
+**ein Aufruf je Beleg**, nicht je Zeile (Batch: `lines[]` rein, `resolved[]`/`unresolved[]` raus).
+Liest `Produktvarianten` / `Preise` / `Bestände`; schreibt **nur** bei `create_missing_stock = true`
+eine Bestandszeile (`airtable:upsertRecord`) — das darf ausschließlich
+`[Process] Upload PDF (Delivery)`, weil nur eine Lieferung ein Sortiment eröffnet.
+`purchase_source` schaltet den Einkaufswert: `variant` = `Produktvarianten.EK (netto)` (Übergabe) ·
+`stock_avg` = `Bestände.Ø EK (netto)` (Rückholung).
+Kein Notify — ein Baustein klingelt nicht, der Aufrufer meldet.
+Geplante Nutzer: `[Process] Upload PDF (Inventory)` → `[Process] Invoice (Store)` →
+`[Process] Upload PDF (Delivery)`. Kontrakt + Umhäng-Liste: [[refactor/reference-inventory]].
+
+**Pflicht-Outputs jedes Resolvers:** `ok` (der Baustein lief) und `resolver_version`. Sie sind die
+Gegenmaßnahme gegen ein beim Schreiben geleertes Interface ([[tools]]) — der Aufrufer **muss** hart
+darauf filtern, sonst bucht er still auf leeren Identitäten.
+
 ## `[Sync]` — Spiegel nach außen
 
 **`[Sync] Inventory to Shopify` · 6805674**
