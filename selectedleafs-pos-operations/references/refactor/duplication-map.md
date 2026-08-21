@@ -426,10 +426,35 @@ Kind) — nicht pro Zeile, siehe Engpass unten.
 Migrationsreihenfolge der Nutzer: Inventory (liest nur) → Invoice (Store) (liest nur) → Delivery
 (schreibt und braucht den Rückhol-EK).
 
-### Stufe 2 — `[Archive] Document PDF` (aus B8, optional mit B9)
+### Stufe 2 — `[Archive] Document PDF` (aus B8) — ✅ **produktiv seit 2026-08-21**
 
-Zwei Nutzer, byte-gleich, kein Geld. Der Baustein, an dem der **Fehlerpfad** geübt wird: er darf
-ausfallen, ohne den Lauf zu kippen — genau die Eigenschaft, die die späteren Resolver *nicht* haben.
+**Szenario 7042723**, Ordner `Resolver`, on-demand, aktiv. Beide Uploader rufen es auf; Inventory
+45 → 43 Module, Delivery 36 → 34. Verifiziert: `BLG-00097` → `UL-10048-1.pdf`, `BLG-00096` →
+`BSP-10034-2026-08-13.pdf` (1.124.331 B, größengleich zur Kopie des Vorlaufs).
+
+**Binärdaten passen durch kein Szenario-Interface.** Deshalb bekommt das Kind nicht die schon
+geladene Datei, sondern **lädt selbst** — Übergabe sind drei Textfelder: `record_id`,
+`document_url`, `filename` (ohne `.pdf`). Damit lösen sich beide Divergenzen der Karte auf: die
+Dateinamensquelle wird zum Parameter, die CRLF/LF-Unterschiede verschwinden mit der einen
+Implementierung.
+
+**Das Aufrufmodul trägt `onerror: builtin:Ignore` — Pflicht, nicht Kosmetik.** Heute hängen
+Ignore-Handler an „Compress" und „Upload"; der Block darf ausfallen, ohne den Lauf zu kippen. Ohne
+Ignore am Aufruf würde ein Fehler im Kind künftig den Elternlauf killen — eine stille Verschärfung
+im Produktionspfad.
+
+**iLovePDF ist unzuverlässig, und das war vorher unsichtbar.** Am 2026-08-21 in acht Läufen zwei
+Fehlschläge (bei 935 KB und bei 8,5 MB, Wiederholung jeweils erfolgreich) — also intermittierend,
+nicht größen- oder tarifbedingt. Erkennungsmerkmal: der Kind-Lauf zeigt **2 Operations statt 4**
+und der Beleg behält seine Originaldatei. **Der Umbau hat das nicht verursacht, aber sichtbar
+gemacht** — vorher verschwand der Ausfall im Elternlauf, jetzt ist er ein eigener Eintrag in
+`executions_list`. Das ist der eigentliche Gewinn dieser Stufe.
+
+**Archivieren ist nicht idempotent, es ist beim zweiten Mal ein No-op.** Der PATCH nimmt
+`get(map(…; "filename"; <name>); 1)`, also den **ersten** Anhang mit passendem Namen — der Upload
+hängt aber an, statt zu ersetzen. Läuft das Archiv erneut mit demselben Dateinamen, gewinnt die alte
+Datei und die neue wird verworfen. In Produktion fällt das nie auf, weil sich der Name beim ersten
+Mal ändert (`Scan_….pdf` → `BSP-….pdf`). Beim Nacharchivieren von Hand ist es zu beachten.
 
 ### Stufe 3 — `[Resolve] Store` (aus B1)
 

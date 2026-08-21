@@ -306,7 +306,7 @@ Innerhalb **jedes** Workers gilt dieselbe Ordnung, und sie ist nicht beliebig:
 | 1 | ✅ `[Process] Upload PDF (Inventory)` | B5 | **6** | **erledigt 2026-08-21**, produktiv verifiziert |
 | 2 | ✅ `[Process] Invoice (Store)` | B5 | **2** | **erledigt 2026-08-21**, produktiv verifiziert (statt 6: alle übrigen Referenzen waren blockintern) |
 | 3 | `[Process] Upload PDF (Delivery)` | B5 | 18 | schreibt (`upsert` Bestand) + Rückhol-EK |
-| 4 | beide Uploader | B8 | 0 | Fehlerpfad üben |
+| 4 | ✅ beide Uploader | B8 | 0 | **erledigt 2026-08-21**, produktiv verifiziert |
 | 5 | alle drei | B1 | 5 · 12 · 6 | erst nach A1-Umsetzung |
 | 6 | Delivery, Invoice (Store) | B2/B3 | 6 · 2 | erst nach A5 |
 
