@@ -63,14 +63,22 @@ Base durchgehend `appiIkOaz1ID1FjfE`, Airtable-Connection durchgehend **9136634*
 
 **Deckungsgleich oder divergiert — divergiert, an vier Stellen, davon eine gefährlich:**
 
-1. **Fallback-Semantik (die gefährliche).** Kunden-Nr. gelesen, aber **kein Store dazu**:
-   - Delivery bricht **hart** ab — Kommentar im Modul: *„Nummer gelesen, aber kein Store dazu: nicht
-     still auf den Namen ausweichen — eine unbekannte Kunden-Nr. ist ein eigener Befund."*
-   - Inventory **fällt still auf den Namen zurück** und schreibt nur einen Hinweis.
+1. **Fallback-Semantik (die gefährliche) — ✅ entschieden 2026-08-21.** Kunden-Nr. gelesen, aber
+   **kein Store dazu**:
+   - Delivery bricht heute **hart** ab — Kommentar im Modul: *„Nummer gelesen, aber kein Store dazu:
+     nicht still auf den Namen ausweichen — eine unbekannte Kunden-Nr. ist ein eigener Befund."*
+   - Inventory **fällt auf den Namen zurück** und schreibt einen Hinweis.
 
-   Dieselbe Eingabe führt in den beiden Workern zu gegensätzlichem Verhalten: der eine blockt, der
-   andere bucht. Ein geteilter Baustein muss sich für **eine** Seite entscheiden — und die andere
-   Seite ändert dabei ihr Verhalten. **Entscheidung nötig, bevor gebaut wird.**
+   **Entscheidung (Joscha): Name-Fallback für beide.** Damit gilt künftig die Inventory-Semantik —
+   Inventory bleibt unverändert, **`[Process] Upload PDF (Delivery)` ändert sein Verhalten**: eine
+   unbekannte Kunden-Nr. blockt dort nicht mehr, sondern versucht den Namen.
+
+   Zwei Auflagen, damit der neue Zweitweg nicht still wird:
+   - Der Fallback erzeugt **immer** eine Warnung, die im Verdikt landet — so wie Inventory es heute
+     schon tut („Store über den Namen aufgelöst, Kunden-Nr. … nicht in Stores gefunden"). Der
+     Beleg läuft durch, aber die unbekannte Kunden-Nr. bleibt sichtbar.
+   - Mehrdeutigkeit bleibt **hart**: >1 Namenstreffer ist ein Fehler, kein Ratespiel — hier gewinnt
+     die Delivery-Haltung (siehe Punkt 3).
 
 2. **Namens-Normalisierung — drei verschiedene Formen.** Delivery normalisiert in JS aggressiv
    (Anführungszeichen, Interpunktion, Binde-/Gedankenstriche → Leerzeichen, Mehrfach-Leerzeichen
@@ -355,8 +363,12 @@ Drei Befunde, die kein einzelner Block trägt, die aber den Umbau bestimmen:
 
 ### Stufe 0 — Beweis der Mechanik (vor jeder Extraktion, wegwerfbar)
 
-Ein Wegwerf-Paar aus Dummy-Resolver (`Start scenario` → konstante Werte → `Return outputs`) und
-Dummy-Aufrufer (`Call subscenario`, **`wait = true`**). Zu beweisen sind genau vier Dinge:
+Ein Wegwerf-Paar aus Dummy-Resolver (**Start scenario** `scenario-service:StartSubscenario` →
+konstante Werte → **Return output** `scenario-service:ReturnData`) und Dummy-Aufrufer
+(**Call a scenario** `scenario-service:CallSubscenario` mit *„Wait for the scenario to finish"* =
+**true**). Die Output-Felder kommen dabei aus dem am Szenario deklarierten `interface.output` — das
+`Return output`-Modul mappt nur hinein. Das Feature ist im Tarif frei (Org-Lizenz `scenarioIO: true`),
+es ist hier schlicht nie benutzt worden. Zu beweisen sind genau vier Dinge:
 
 1. Das Output-Interface kommt als Bundle beim Aufrufer an.
 2. Es **überlebt einen Blueprint-Import** — [[tools]] warnt ausdrücklich vor „Interface-Blank beim
@@ -399,7 +411,7 @@ nicht, ist die Angleichung (A3–A5) trotzdem der Gewinn und die Extraktion verz
 
 | # | Was | Betrifft | Entscheidung nötig? |
 |---|---|---|---|
-| **A1** | Store-Fallback: Kunden-Nr. bekannt, Store unbekannt → blocken (Delivery) oder Name-Fallback (Inventory)? | B1 | **ja — Joscha** |
+| **A1** | Store-Fallback bei unbekannter Kunden-Nr. | B1 | ✅ **entschieden 2026-08-21: Name-Fallback für beide**, mit Pflicht-Warnung im Verdikt · Delivery ändert Verhalten |
 | **A2** | Eine Namens-Normalisierung für `Stores.Name` | B1 | nein (Delivery-`norm()` übernehmen) |
 | **A3** | Ein Namensvergleich für `Vertriebler.Name` + hartes Verhalten bei 0/>1 | B2 | nein (Delivery übernehmen) |
 | **A4** | Ein Datumsvergleich für `Konditionen.Gültig ab` + Gleichstand-Guard | B3 | nein (Delivery/`IS_AFTER` übernehmen) |
@@ -445,7 +457,7 @@ IN   (genau einer der drei Eingänge)
      record_id      : rec…                     — [Sync] Inventory to Shopify, [Notify] Telegram
      lexware_id     : text                     — [Dispatch] Lexware Voucher, [Process] Invoice (Store)
      customer_no    : text  + name_hint : text — die beiden Upload-Worker
-     on_number_miss : "block" | "fallback_name" — bis A1 entschieden ist; danach fest
+                                                 (A1: Nummer zuerst, dann Name — kein Schalter)
 
 OUT  ok, resolver_version
      store_id       : rec…
@@ -456,8 +468,9 @@ OUT  ok, resolver_version
      district_id    : Stores.Stadtteil
      shopify_gid    : Stores.⚙ Shopify GID
      via            : "number" | "name" | "lexware" | "record"
-     warning        : text                     — blockt nicht (z. B. Name ≠ Nummer)
-     error          : text
+     warning        : text                     — blockt nicht; bei via="name" nach erfolgloser
+                                                 Nummer PFLICHT (A1-Auflage)
+     error          : text                     — 0 Treffer, oder >1 Namenstreffer (hart)
 ```
 
 Der Dedup-Schlüssel (`BSP-…`) gehört **nicht** hierher — er bleibt beim Aufrufer (Entflechtung aus B1
@@ -506,19 +519,19 @@ Bausteine setzen eine Entscheidung voraus, die noch nicht getroffen ist.
 
 ### Bruchstellen (priorisiert)
 
-1. **A1 wird während des Baus entschieden statt davor.** Der Fallback-Unterschied aus B1 ist keine
-   Stilfrage: Bei „block" verlieren Bestandsprüfungen, die heute über den Namen durchlaufen, ihren
-   Weg — sie landen als „Fehlerhaft" in der Inbox. Bei „fallback_name" bekommen Lieferungen einen
-   stillen Zweitweg, den ihr Autor ausdrücklich verhindern wollte. Beides sind Verhaltensänderungen
-   an einem Geldpfad, und beide sehen im Blueprint nach einer Zeile aus. **Wahrscheinlichkeit hoch,
-   Schaden hoch.**
-2. **Interface-Blank beim Import — still.** [[tools]] dokumentiert, dass ein importiertes
+1. **Interface-Blank beim Import — still.** [[tools]] dokumentiert, dass ein importiertes
    Subszenario sein Interface verlieren kann. Bei `[Notify] Telegram` kostet das eine Meldung. Bei
    einem Resolver liefert es **leere Identitäten ohne Fehler** — der Aufrufer schreibt dann eine
    Lieferung ohne Vertriebler oder mit `purchase_net = 0`. Kein Alarm, keine Spur.
-3. **Fan-in ohne Rückfallebene.** Heute bricht ein Fehler in der Store-Auflösung genau einen Worker.
+2. **Fan-in ohne Rückfallebene.** Heute bricht ein Fehler in der Store-Auflösung genau einen Worker.
    Nach Stufe 3 bricht er fünf. Es gibt **keine Testbase** und keinen Rollback-Pfad außer dem
    Blueprint-Reimport.
+3. **Der A1-Fallback macht Delivery durchlässiger — mit Ansage.** Entschieden ist er (Name-Fallback
+   für beide), aber die Bruchstelle bleibt benennbar: eine Lieferung, deren Kunden-Nr. nicht in
+   `Stores` steht, läuft künftig über den Namen durch statt zu blocken. Trifft der Name den falschen
+   Store, wird auf den falschen Bestand gebucht. Die Pflicht-Warnung im Verdikt macht das sichtbar,
+   sie verhindert es nicht — **beim Migrieren von Delivery gezielt gegenprüfen**, ob in den letzten
+   Läufen Kunden-Nummern auftauchten, die heute blocken.
 4. **Gekoppelte Fehlerbudgets.** Alle Szenarien laufen mit `maxErrors: 3` und DLQ. Ein synchroner
    Aufruf koppelt Eltern- und Kind-Lauf: ein Kind, das dreimal scheitert, parkt den Eltern-Lauf mit.
    Bei einem Batch-Resolver in der Positionsschleife ist das der plausibelste Weg in eine volle DLQ.
@@ -573,7 +586,8 @@ nicht trotzdem bauen.
 
 ### Härtung (nach Wirkung/Aufwand)
 
-- **H1 — A1 und A5 vor Stufe 3/4 entscheiden.** Zwei Fragen, kein Bau. Höchste Wirkung, kein Aufwand.
+- **H1 — A5 vor Stufe 4 entscheiden** (A1 ist ✅ entschieden). Eine Frage, kein Bau. Höchste Wirkung,
+  kein Aufwand.
 - **H2 — Jeder Resolver liefert `ok` und `resolver_version` als Pflichtfelder; jeder Aufrufer filtert
   hart darauf.** Das ist die einzige Gegenmaßnahme gegen das stille Interface-Blank: ein geleertes
   Interface liefert `ok = leer`, der Filter greift, der Lauf blockt sichtbar statt leise falsch zu
@@ -588,16 +602,31 @@ nicht trotzdem bauen.
 
 ---
 
-## 7 · Offene Fragen an Joscha
+## 7 · Entscheidungen und offene Fragen
 
-1. **A1 — Store-Fallback:** Kunden-Nr. gelesen, aber kein Store dazu — blocken (wie heute Delivery)
-   oder auf den Namen zurückfallen (wie heute Inventory)? Beides ändert das Verhalten eines der
-   beiden Worker.
-2. **A5 — Besteuerung:** Bleibt `⚙ Regelbesteuerung ab` die alleinige ereignisdatierte Quelle, und
-   ist das `Besteuerung`-Select damit ausschließlich Anzeige/Onboarding? Falls ja, entfällt `mode`
-   aus K3 und `[Create] New Sales Member` ruft den Resolver nicht auf.
-3. **Rückholung:** Ist sie fest eingeplant? Davon hängt ab, ob Stufe 4 gebaut oder auf die
-   Angleichung A3–A5 reduziert wird.
+**Entschieden am 2026-08-21 (Joscha):**
+
+- **A1 — Store-Fallback:** Name-Fallback für **beide** Worker. Inventory bleibt, Delivery wird
+  durchlässiger; Auflagen siehe B1 Punkt 1.
+- **Rückholung:** fest eingeplant. Damit bleibt **Stufe 4** im Plan (`[Resolve] Salesperson &
+  Conditions` bekommt seinen dritten Nutzer) und der Rückhol-Zweig aus B5 —
+  `Bestände.Ø EK (netto)` statt `Produktvarianten.⚙ EK (netto)` — ist Pflichtteil von K1.
+
+**Noch offen — A5, Besteuerung.** `Vertriebler` trägt zwei Felder dazu:
+
+| Feld | Typ | sagt |
+|---|---|---|
+| `Besteuerung` | singleSelect | Stand **heute** (Kleinunternehmer / Regelbesteuerung) |
+| `⚙ Regelbesteuerung ab` | date | **ab wann** Regelbesteuerung gilt |
+
+`[Process] Upload PDF (Delivery)` und `[Process] Invoice (Store)` **rechnen** die Besteuerung aus dem
+Datum: Leistungsdatum ≥ `⚙ Regelbesteuerung ab` → Regelbesteuerung, sonst Kleinunternehmer. Das
+Select lesen sie gar nicht. `[Create] New Sales Member` liest **nur** das Select.
+
+**Frage:** Ist `⚙ Regelbesteuerung ab` die alleinige Wahrheit überall, wo Geld dranhängt, und das
+Select damit reine Anzeige? Falls ja, bekommt K3 nur **einen** Weg, der `mode`-Schalter entfällt, und
+`[Create] New Sales Member` ruft den Resolver gar nicht auf — der prüft ja nur, ob für diesen
+Vertriebler überhaupt eine Konditions-Version existiert.
 
 ---
 
