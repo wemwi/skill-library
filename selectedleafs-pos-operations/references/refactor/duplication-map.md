@@ -396,6 +396,23 @@ anjoinen" setzt das Buchungs-Gate. Fünf Module (Feeder + drei Suchen + Aggregat
 47 → 45 Module. Erster echter Lauf gegengelesen: `BSP-10034-2026-08-13`, **9 von 9 Positionen
 gebucht**, Status Abgeschlossen, Differenz 42, Nettoverkaufswert 680,59 €.
 
+**✅ Zweiter Nutzer produktiv seit 2026-08-21:** `[Process] Invoice (Store)`. Erster echter Lauf
+gegengelesen: Umsatz `RG-10117-1` (Store 10034), **5 von 5 Positionen** mit Preis, Bestand und
+Produktvariante, Nettoumsatz 544,47 €, `⚙ Hinweis` leer. Nur **zwei** Referenzen mussten umgehängt
+werden — die Verbraucher „Abgleich + Hinweistext", „Iterator zum Schreiben" und „Umsatzposition
+anlegen" blieben unverändert, weil das Join-Modul die deutschen Schlüssel des alten Aggregators
+(`preis`/`bestand`/`produkt`/`stueck`) 1:1 wieder herstellt.
+
+**Bauunterschied zu Inventory — eine Weiche ist Pflicht.** Der alte `Iterator über Positionen` trug
+**keinen** Filter: bei leerer Positionsliste lief der Block leer durch und „Abgleich + Hinweistext"
+schrieb trotzdem den Grund ins Wächterfeld. Der Resolver weist ein leeres `lines` dagegen mit
+`[ValidationError] Scenario input validation failed` ab — ohne Weiche würde der Worker **hart
+abbrechen statt zu protokollieren**. Deshalb sitzt der Aufruf in einer `BasicIfElse`
+(`anzahl > 0`, beide Zweige `merge: true`) mit `BasicMerge` dahinter. Beide Pfade sind gemessen:
+mit Zeilen kommt die Rückgabe durch Weiche und Merge unverändert an, im Leerfall läuft das
+Folgemodul mit `null` weiter. **Regel für jeden weiteren Aufrufer: hatte die alte Schleife keinen
+Filter, braucht der Resolver-Aufruf eine Weiche.**
+
 **Falle, die dabei einen halben Tag gekostet hat** (jetzt in `references/tools.md`): `Return output`
 im Kind braucht einen `metadata.expect`-Block mit seinen Ausgabefeldern. Ohne ihn sendet das Kind
 eine leere Nutzlast, der Aufrufer bekommt ein Bundle mit lauter `null` — der Lauf sieht erfolgreich
