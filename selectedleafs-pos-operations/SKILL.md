@@ -10,10 +10,10 @@ description: >-
   appiIkOaz1ID1FjfE, Umsätze, Lieferungen, Bestandsprüfungen, Auszahlungen, Konditionen,
   Kalkulationen, Vertriebler, Saldo, Provision, Kostenanteil, Leistungsdatum, Regelbesteuerung,
   Kleinunternehmer, Belegeingang, Lexware-Sync nach Airtable, [Sync]/[Create]/[Process]/
-  [Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
+  [Resolve]/[Archive]/[Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.11.0"
+  version: "1.15.0"
 ---
 
 # selectedleafs · POS Operations
@@ -99,7 +99,9 @@ Versioniert wird **ereignisbasiert**: die jüngste Version mit `Gültig ab ≤ L
 
 Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach dem Auslöser):
 
-`[Sync]` · `[Create]` · `[Process]` · `[Dispatch]` · `[Notify]` · `[Maintain]` — `[Report]` reserviert, `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
+`[Sync]` · `[Create]` · `[Process]` · `[Resolve]` · `[Archive]` · `[Dispatch]` · `[Notify]` · `[Maintain]` — `[Report]` reserviert, `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
+
+`[Process]` orchestriert nur noch: das Lesen und Auflösen ist in native Subscenarios ausgezogen (`[Resolve]` = Beleg lesen + Store/Vertriebler/Kondition/Positionen auflösen, `[Archive]` = PDF sichern). Verträge in **[[scenarios]]**.
 
 **Dispatch — welche reference wofür:**
 
