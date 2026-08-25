@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.30.0](https://github.com/wemwi/skill-library/compare/v5.29.0...v5.30.0) (2026-08-25)
+
+
+### Features
+
+* **pos-operations:** document [Resolve]/[Archive] subscenario layer ([#192](https://github.com/wemwi/skill-library/issues/192)) ([075ce15](https://github.com/wemwi/skill-library/commit/075ce152a41a983c7c68fc0576d3503fe4b20c59))
+
 ## [5.29.0](https://github.com/wemwi/skill-library/compare/v5.28.0...v5.29.0) (2026-08-21)
 
 
