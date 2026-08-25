@@ -50,7 +50,7 @@ Max Berger · Hannover
 **Vertriebler** — kein Kanal (existiert bei Anlage noch nicht) · **City** — —
 **Begleitend** → 🛑 `error.salesperson_failed` · 🛑 `error.lexware_orphan`
 
-### 👋 `salesperson.onboarded` — Onboarding · `gebaut · Reimport 6821121 ausstehend`
+### 👋 `salesperson.onboarded` — Onboarding · `gebaut · eingesetzt · Produktivlauf ausstehend`
 **Vertriebler**
 ```
 👋 Willkommen bei selectedleafs, Max
@@ -371,7 +371,7 @@ Danke für deine Arbeit! :)
 ---
 
 ## 👉 Aufgaben · 585
-*Runde 26: Identifikator in der Infozeile. `task.telegram_missing` bleibt gestrichen (18.08.). `task.digest` dormant/raus.*
+*Runde 26: Identifikator in der Infozeile. `task.telegram_missing` bleibt gestrichen (18.08.). `task.digest` **gestrichen** (nicht dormant — der 07:00-Lauf kommt nicht).*
 
 ### 👉 `task.jtl_missing` · `gebaut · Reimport 6820980 ausstehend`
 ```
@@ -438,7 +438,7 @@ RG-10128-1 · Unbekannt
 Beleg vom 12.08.2026
 ```
 
-*Runde 26: `task.digest` (07:00-Digest) ist aus dem Hub entfernt (dormant) — `task.invoice_unlinked` / `task.beleg_no_pdf` haben damit aktuell keinen Ausgabeort.*
+*Runde 26 / Stand 2026-08-22: **es gibt keinen Digest und es wird keinen geben.** `task.digest` ist aus dem Hub entfernt, der 07:00-Lauf ist gestrichen (→ [[scenarios]], am Live-Hub gemessen). `task.invoice_unlinked` und `task.beleg_no_pdf` waren reine Digest-Zeilen und sind damit **tot** — kein Sender, kein Text, keine Zeile in der Landkarte, und das bleibt so (Entscheidung Joscha). Kommentare, die sie „bis der Digest steht" reservieren, sind Reste eines verworfenen Plans.*
 
 ---
 
