@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.31.0](https://github.com/wemwi/skill-library/compare/v5.30.0...v5.31.0) (2026-08-31)
+
+
+### Features
+
+* **figma-onlineprinters:** add skill ([#194](https://github.com/wemwi/skill-library/issues/194)) ([2c2f2b8](https://github.com/wemwi/skill-library/commit/2c2f2b805d787252dc1d4c4a3f3129e4a4dc423e))
+
 ## [5.30.0](https://github.com/wemwi/skill-library/compare/v5.29.0...v5.30.0) (2026-08-25)
 
 
