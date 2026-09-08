@@ -35,6 +35,20 @@ Bei `simple` greift der Default heute nicht (kein `package.json`-Name als Kompon
 > [!WARNING]
 > **Übergang bei bereits getaggten Repos.** Wurde ein Repo zuvor mit Präfix (`<name>-vX.Y.Z`) getaggt, findet release-please nach dem Umstellen den alten Tag nicht mehr und betrachtet die Historie neu. Dann den alten Präfix-Tag **plus** das zugehörige GitHub-Release einmalig entfernen und `.release-please-manifest.json` auf den Ist-Stand setzen. Ist nur ein Release-PR offen (noch kein Tag), reicht das Flag — der PR regeneriert sich.
 
+### Erster Release & Pre-1.0: `initial-version` + `bump-*` (Pflicht)
+
+Beide Config-Assets setzen auf Top-Level:
+
+```json
+"initial-version": "0.1.0",
+"bump-minor-pre-major": true,
+"bump-patch-for-minor-pre-major": true,
+```
+
+**`initial-version` ist der einzige Schalter für den *ersten* Release.** Solange kein Release existiert, überspringt release-please das Manifest *und* die `bump-*`-Schalter und nimmt die Version direkt aus `initial-version`. Fehlt der Schlüssel, ist der Vorgabewert hart `1.0.0` — ein frisches Repo springt dann beim ersten `feat:` sofort auf `v1.0.0`, obwohl `versioning.md` Pre-1.0 verlangt. `0.1.0` erzwingt den korrekten Start `v0.1.0`.
+
+Die beiden `bump-*`-Schalter greifen erst **ab dem zweiten** Release und halten das Repo in `0.x`: Breaking Change → Minor, alles andere → Patch. Erst ein bewusster `release-as: 1.0.0` verlässt Pre-1.0.
+
 ## Setup-Schritte (web-only, über GitHub Web)
 
 3. **Repo-Setting aktivieren:** *Settings → Actions → General →* „Allow GitHub Actions to create and approve pull requests" anhaken. Ohne das kann release-please keinen Release-PR öffnen.
