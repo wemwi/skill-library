@@ -18,7 +18,7 @@ Format `MAJOR.MINOR.PATCH`. Entscheidung, welche Stelle springt:
 
 - Format: `vMAJOR.MINOR.PATCH`, z.B. `v2.0.4`.
 - Tags werden **ausschließlich von release-please** gesetzt — nie von Hand. Manuelles Taggen umgeht den Changelog und das Manifest und führt zu Drift.
-- Pre-1.0: Solange ein Repo unreif ist, bleibt es bei `0.x.y`. In `0.x` darf `minor` auch Breaking sein — Konvention, kein Sonderfall in der Config.
+- Pre-1.0: Solange ein Repo unreif ist, bleibt es bei `0.x.y`. In `0.x` bewegt ein Breaking Change die **Minor**-Stelle, alles andere die **Patch**-Stelle. Das ist keine reine Konvention — die Config-Assets erzwingen es mit `bump-minor-pre-major` und `bump-patch-for-minor-pre-major` (siehe `automation.md`).
 
 ## Besonderheit `*-foundation`
 
@@ -67,4 +67,4 @@ Hat ein Repo schon eine Version (z.B. Foundation bei `v2.0.4`), wird diese **ein
 { ".": "2.0.4" }
 ```
 
-Neue Repos starten mit `{ ".": "0.0.0" }` — der erste `feat:` macht daraus `0.1.0`.
+Neue Repos starten mit `{ ".": "0.0.0" }`. **Der Wert im Manifest bestimmt den ersten Release aber nicht** — solange es noch keinen Release gibt, überspringt release-please Manifest *und* `bump-*`-Schalter und nimmt die Version allein aus `initial-version` (Fallback ohne den Schlüssel: hartes `1.0.0`, unabhängig vom Commit-Typ). Die Config-Assets setzen deshalb `"initial-version": "0.1.0"` — der erste Release wird `v0.1.0`. Die `bump-*`-Schalter greifen erst ab dem zweiten Release.
