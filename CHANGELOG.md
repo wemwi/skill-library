@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.32.0](https://github.com/wemwi/skill-library/compare/v5.31.0...v5.32.0) (2026-09-08)
+
+
+### Features
+
+* **global-git-conventions:** initial-version für Pre-1.0-Erstrelease ([#196](https://github.com/wemwi/skill-library/issues/196)) ([515f903](https://github.com/wemwi/skill-library/commit/515f903595005ffdf281234d4b33390c79a81ac8))
+
 ## [5.31.0](https://github.com/wemwi/skill-library/compare/v5.30.0...v5.31.0) (2026-08-31)
 
 
