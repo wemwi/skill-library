@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.32.1](https://github.com/wemwi/skill-library/compare/v5.32.0...v5.32.1) (2026-10-20)
+
+
+### Bug Fixes
+
+* **readme:** figma-onlineprinters ins Inventar aufnehmen ([#199](https://github.com/wemwi/skill-library/issues/199)) ([9a7c2be](https://github.com/wemwi/skill-library/commit/9a7c2bed3a795057357431be88dc6246af64e6a5))
+
 ## [5.32.0](https://github.com/wemwi/skill-library/compare/v5.31.0...v5.32.0) (2026-09-08)
 
 
