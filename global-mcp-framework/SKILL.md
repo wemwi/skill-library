@@ -9,11 +9,12 @@ description: >-
   Trigger u.a.: Custom MCP-Server bauen, Cloudflare Worker MCP, workers-oauth-provider,
   OAUTH_KV, OAuth 2.1 inbound, /authorize Login, Provider-Wiring, stateless Transport,
   sessionIdGenerator, "Session terminated", "Server misconfigured", "Authorization
-  failed" nach Consent, neuen Connector anlegen, Foundation-Tag bumpen,
+  failed" nach Consent, "Client not found", Error 1101 auf /authorize,
+  clientRegistrationTTL, neuen Connector anlegen, Foundation-Tag bumpen,
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.9.0"
+  version: "1.10.0"
 ---
 
 # global-mcp-framework

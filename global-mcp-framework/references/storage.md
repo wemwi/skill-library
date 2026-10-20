@@ -19,12 +19,14 @@ KV-Leak offenbart daher nur Metadaten.
 
 ## KV-Hygiene
 
-Bei Single-User läuft KV praktisch nicht voll — TTLs räumen automatisch: Access-Token
-~1h, Refresh-Token Default 30d, DCR-Clients Default 90d.
+Bei Single-User läuft KV praktisch nicht voll. Per TTL räumt sich nur der kurzlebige
+Teil: Access-Token ~1h, Login-State 600 s.
 
-**Aber:** bei `refreshTokenTTL: undefined` (siehe `auth.md` — gewollt, damit headless
-Agents verbunden bleiben) laufen Grants nicht von selbst ab, und jeder Reconnect
-hinterlässt einen toten DCR-Client + Grant.
+**Aber:** Refresh-Tokens und DCR-Clients laufen bewusst **nie** ab —
+`refreshTokenTTL: undefined` und `clientRegistrationTTL: undefined` (siehe `auth.md` —
+gewollt, damit headless Agents verbunden bleiben; die Provider-Defaults 30 d bzw. 90 d
+würden sie still abklemmen). Folge: Grants und DCR-Clients laufen nicht von selbst ab,
+und jeder Reconnect hinterlässt einen toten DCR-Client + Grant.
 
 `purgeExpiredData()` würde abgelaufene und verwaiste Records räumen und liegt als
 `scheduled`-Handler in der Foundation bereit (von `createOAuthWorker` geliefert, in der
@@ -35,7 +37,8 @@ keine Cron Jobs — kein `triggers`/`crons`-Block in der `wrangler.jsonc` (siehe
 aber nie automatisch.
 
 **Bewusst akzeptierte Folge:** Ohne periodischen Purge und mit `refreshTokenTTL:
-undefined` verfallen Grants und verwaiste DCR-Clients nicht von selbst. Bei Single-User
+undefined` + `clientRegistrationTTL: undefined` verfallen Grants und verwaiste
+DCR-Clients nicht von selbst. Bei Single-User
 ist das unkritisch, weil KV praktisch nicht voll läuft; bei Bedarf den betroffenen
 Namespace manuell im Dashboard räumen (Storage & Databases → KV). Das ist eine bewusste
 Entscheidung, kein Versehen.

@@ -181,6 +181,9 @@ die vier Exports stabil nach außen gibt.
 > Der `refreshTokenTTL`-Default in `createOAuthWorker` darf **nicht** `?? 0` sein —
 > `0` heißt „kein Refresh-Token" und erzwingt stündliches Re-Login. `undefined`
 > durchreichen (= nie ablaufen). Belegt in `auth.md`.
+> Gleiches gilt für `clientRegistrationTTL`: als `opts.clientRegistrationTTL`
+> durchreichen (Key immer präsent), sonst greift still der Provider-Default 90 Tage
+> und headless Clients sterben nach 90 Tagen (ab Foundation v3.0.4 verdrahtet).
 
 ## Connector-URL
 
