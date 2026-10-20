@@ -30,6 +30,20 @@ Secret am richtigen Worker setzen.
 
 → `secrets.md`
 
+## "Client not found" / Error 1101 auf `/authorize`
+
+Die DCR-Client-Registrierung ist aus dem KV verschwunden — typisch 90 Tage nach dem
+Erst-Connect, wenn der Worker auf einer Foundation ≤ v3.0.3 läuft (Provider-Default
+`clientRegistrationTTL`). `/token` meldet `Client not found`, `GET /authorize` wirft
+unbehandelt (1101), „Neu autorisieren" im Client scheitert, weil er die tote Client-ID
+wiederverwendet.
+
+Vorgehen: Foundation auf ≥ v3.0.4 bumpen und deployen, dann die Verbindung im Client
+**neu anlegen** (nicht neu autorisieren) — erzwingt eine frische `/register`-Registrierung
+ohne Ablauf.
+
+→ `auth.md`
+
 ## Deploy greift scheinbar nicht
 
 Version-live-Indikator prüfen (z.B. ob ein entfernter Diagnose-Log noch erscheint) →

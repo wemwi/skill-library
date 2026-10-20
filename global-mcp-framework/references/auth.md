@@ -50,6 +50,23 @@ Die kanonische Config steht als Vorlage in `assets/provider-wiring.ts`. Felder:
   nur, wenn `undefined` tatsächlich an den Provider durchgereicht wird (Default in
   `oauth.ts` auf `opts.refreshTokenTTL` ohne `?? 0`). **Folge für die KV-Hygiene**
   (siehe `storage.md`): Grants laufen dann nicht von selbst ab.
+- `clientRegistrationTTL` — Lebensdauer einer per `/register` (DCR) angelegten
+  Client-Registrierung. Provider-Default **90 Tage**
+  (`DEFAULT_CLIENT_REGISTRATION_TTL`), umgesetzt als KV-`expirationTtl` beim
+  Registrieren. Gleiche Semantik wie oben: `undefined` = kein `expirationTtl`, Client
+  läuft nie ab (`client_secret_expires_at` wird `0`).
+
+  ⚠️ **Falle:** Bis Foundation v3.0.3 hat `createOAuthWorker` die Option gar nicht
+  durchgereicht → der 90-Tage-Default griff still. Nach 90 Tagen ist der Client aus dem
+  KV verschwunden, obwohl Grant und Refresh-Token (nie ablaufend) noch existieren:
+  `/token` antwortet `Client not found`, `GET /authorize` wirft in `parseAuthRequest()`
+  unbehandelt → Cloudflare-Fehler 1101. Headless Clients (z.B. eine Make-MCP-Verbindung)
+  sterben damit genau 90 Tage nach dem Erst-Connect. Fix ab **v3.0.4**:
+  `clientRegistrationTTL: opts.clientRegistrationTTL` — Key immer präsent, kein `??`,
+  damit `undefined` den Provider-Default überschreibt. Registrierungen von vor dem Bump
+  behalten ihren TTL (er wird beim Schreiben gesetzt) → betroffene Clients nach dem
+  Deploy einmal **neu anlegen**; „Neu autorisieren" reicht nicht, es nutzt die tote
+  Client-ID weiter.
 - `accessTokenTTL: 3600` — kurzlebiger Access-Token; der stille Refresh über das
   Refresh-Token (s. o.) ist der Mechanismus, der ein erneutes `/authorize` vermeidet.
 
