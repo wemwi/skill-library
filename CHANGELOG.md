@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.33.0](https://github.com/wemwi/skill-library/compare/v5.32.1...v5.33.0) (2026-10-20)
+
+
+### Features
+
+* **global-mcp-framework:** clientRegistrationTTL-Falle dokumentieren ([#198](https://github.com/wemwi/skill-library/issues/198)) ([b2d7ac2](https://github.com/wemwi/skill-library/commit/b2d7ac2e7e1f2238ec080585c6465e3d21d0d088))
+
 ## [5.32.1](https://github.com/wemwi/skill-library/compare/v5.32.0...v5.32.1) (2026-10-20)
 
 
