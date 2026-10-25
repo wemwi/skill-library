@@ -10,15 +10,15 @@ description: >
   Druckvorlage, Dieline, Stanzkontur, Druckdaten, Beschnitt/Bleed, Safe Zone, Thekenaufsteller,
   Produktdisplay, Falzflyer, Broschüre, Plakat, PDF in Figma, print template, Druck-Component.
   Gilt nur für den Onlineprinters-Print-Workflow; allgemeine Figma-Token-/Struktur-Regeln
-  stehen in figma-standards.md.
+  stehen im Skill selectedleafs-figma.
 ---
 
 # figma-onlineprinters
 
 Der **Ingestion- und How-to-Workflow** für Onlineprinters-Druckvorlagen in Figma.
-Verhält sich zu `figma-standards.md` wie `liftr-section` zu `liftr-css-system`:
-`figma-standards.md` hält die Prinzipien (Token-Disziplin, Modes, File-Struktur, Naming),
-dieser Skill hält den konkreten Prozess. Bei Konflikt gewinnt `figma-standards.md`.
+Verhält sich zu `selectedleafs-figma` wie `liftr-section` zu `liftr-css-system`:
+`selectedleafs-figma` hält die Prinzipien (Token-Disziplin, Modes, File-Struktur, Naming),
+dieser Skill hält den konkreten Prozess. Bei Konflikt gewinnt `selectedleafs-figma`.
 
 **Print-File:** `IPEk40v01EMVITXst3UPOT` · **Sammelframe „Onlineprinters":** `272:41227`
 (gruppiert nach Format: DIN Lang, DIN A4, DIN A2, Produktdisplays).
@@ -323,7 +323,7 @@ ableiten, nicht durch Kopieren spiegeln.
 - **Decomposition:** Den gedroppten Monolith (flacher Vektor-Frame) per **Bounding-Box gegen die
   Panel-Regionen** + Farbe pro Panel zerlegen, die Knoten in die jeweilige Panel-Gruppe ziehen. Wenn der
   Monolith leer ist → Frame löschen.
-- Cross-File-Bindings beachten (`figma-standards` §1): Farben/Größen an Core binden, wo möglich.
+- Cross-File-Bindings beachten (`selectedleafs-figma`, Bindungsregel): Farben/Größen an Core binden, wo möglich.
 
 **use_figma kann das vollständig** (Plugin-API-JS): `figma.createComponent()`, benannte Frames mit
 Position/Größe, `figma.group()`, `figma.createFrame()` (Overlay), `componentNode.createSlot()` (echte Slots),
@@ -364,7 +364,7 @@ des alten Masters) — nicht automatisch ersetzen.
 
 ## 7. Component Description (einheitliche Struktur)
 
-Englische Labels (`figma-standards` §3: In-File-Doku ist englisch). **Source = PDF im Text;
+Englische Labels (`selectedleafs-figma`, Namen: In-File-Doku ist englisch). **Source = PDF im Text;
 Produktseite gehört ins native `documentationLinks`-Feld, nicht in den Fließtext.**
 
 **Markdown:** Über `node.descriptionMarkdown` setzen (nicht das alte Plain-`description`). Figma rendert
