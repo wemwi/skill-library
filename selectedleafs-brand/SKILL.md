@@ -503,6 +503,6 @@ Real product packaging shots live in `assets/products/` as **transparent WebP** 
 **This skill does NOT cover:**
 - Shopify Liquid syntax → liftr-section, liftr-block, liftr-snippet
 - CSS architecture (layers, container queries, owner pattern) → liftr-css-system
-- Layout decisions (grid vs slider, breakpoints) → `figma-standards.md` + liftr-section
-- Spacing hierarchy rules (when to use which level) → `figma-standards.md`
+- Layout decisions (grid vs slider, breakpoints) → `selectedleafs-figma` + liftr-section
+- Spacing hierarchy rules (when to use which level) → `selectedleafs-figma`
 - Component mechanics (slider, panel, accordion) → liftr-slider, liftr-panel, etc.
