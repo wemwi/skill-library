@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.35.0](https://github.com/wemwi/skill-library/compare/v5.34.0...v5.35.0) (2026-10-25)
+
+
+### Features
+
+* **global-credentials:** Regeln für Zugangsdaten als eigener Skill ([#204](https://github.com/wemwi/skill-library/issues/204)) ([e28466d](https://github.com/wemwi/skill-library/commit/e28466d74ff4384a7821023d2aeaa807814e93fc))
+
 ## [5.34.0](https://github.com/wemwi/skill-library/compare/v5.33.0...v5.34.0) (2026-10-25)
 
 
