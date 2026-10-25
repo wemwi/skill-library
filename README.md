@@ -19,6 +19,7 @@ Enthaltenes Inventar:
 |-------|-------|
 | `figma-onlineprinters` | Onlineprinters-Druckvorlagen (Dielines) in Figma übertragen, skalieren und als Print-Template-Component dokumentieren. |
 | `global-agent-framework` | Build-Time-Framework für Claude Managed Agents (Config, Deploy, Cron-Trigger, Permissions, Debug). |
+| `global-credentials` | Stack-weite Regeln für Zugangsdaten: Token je Anwendung und Zweck, Namen, Rechte, Ablage, Aufräumen. |
 | `global-git-conventions` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
 | `global-make-conventions` | Konventionsstandard & Audit-Maßstab für Make-Szenarien: Architektur-Muster + MUST/SHOULD-Regelliste. |
 | `global-mcp-framework` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |

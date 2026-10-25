@@ -1,6 +1,7 @@
 # MCP-Naming & Struktur
 
-Diese Datei regelt die **MCP-spezifische** Mechanik: Naming (Worker/Tool/Secret),
+Diese Datei regelt die **MCP-spezifische** Mechanik: Naming (Worker/Tool; Secret-Namen
+→ `global-credentials`),
 Folder-Struktur der Repo-Typen und Connector-Wiring. Der **typ-übergreifende**
 Repo-Standard (README-Pflichtsektionen, Versionierung, CHANGELOG, Release-Automation,
 About-Block) lebt in `global-git-conventions` und wird hier nur referenziert.
