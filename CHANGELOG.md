@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.34.0](https://github.com/wemwi/skill-library/compare/v5.33.0...v5.34.0) (2026-10-25)
+
+
+### Features
+
+* **selectedleafs-figma:** Figma-Regeln als eigener Skill ([#202](https://github.com/wemwi/skill-library/issues/202)) ([d1f7f5e](https://github.com/wemwi/skill-library/commit/d1f7f5e7d5f1ae2cc7fab6fb3a31fcec7592e558))
+
+
+### Bug Fixes
+
+* **figma-onlineprinters:** Verweis auf selectedleafs-figma statt figma-standards.md ([d1f7f5e](https://github.com/wemwi/skill-library/commit/d1f7f5e7d5f1ae2cc7fab6fb3a31fcec7592e558))
+* **selectedleafs-brand:** Verweis auf selectedleafs-figma statt figma-standards.md ([d1f7f5e](https://github.com/wemwi/skill-library/commit/d1f7f5e7d5f1ae2cc7fab6fb3a31fcec7592e558))
+
 ## [5.33.0](https://github.com/wemwi/skill-library/compare/v5.32.1...v5.33.0) (2026-10-20)
 
 
