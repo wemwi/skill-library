@@ -58,7 +58,7 @@ Zwei Ebenen wie bei KV — mit einer wichtigen Unterscheidung beim Binding:
 
 - **Binding** (worker-lokal) = `<FUNKTION>_<TYP>`, z.B. `DOWNLOAD_R2`. **Funktional,
   nicht aussteller-basiert** — anders als ein Secret (`<AUSSTELLER>_<TYP>`, siehe
-  `secrets.md`). Das Binding beschreibt, *wozu* der Worker die Ressource nutzt
+  `global-credentials`). Das Binding beschreibt, *wozu* der Worker die Ressource nutzt
   (Download-Ablage), nicht *wer* sie ausstellt. `OAUTH_KV` folgt derselben funktionalen
   Logik, ist dort nur zusätzlich vom Provider hardcodiert; R2-Bindings sind frei wählbar.
 - **Bucket-Name** (globale Ressource) = `mcp-download-<service>`, z.B.

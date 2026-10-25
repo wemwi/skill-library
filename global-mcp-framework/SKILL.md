@@ -14,7 +14,7 @@ description: >-
   wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH,
   Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
 metadata:
-  version: "1.10.0"
+  version: "1.10.1"
 ---
 
 # global-mcp-framework
@@ -39,6 +39,11 @@ und wird von hier nur referenziert, nie dupliziert (Single Source of Truth).
 Konkret heißt das: das *-mcp-README-Template steht dort (`assets/readme/mcp.md`),
 Tags entstehen ausschließlich über release-please, und der hier beschriebene
 Cloudflare-Build ist davon unabhängig (siehe `references/deploy.md`).
+
+Stack-weite Regeln für Zugangsdaten — Secret-Namen (`<AUSSTELLER>_<TYP>`), ein
+Credential je Anwendung und Zweck, Rechte, Ablage, Aufräumen — leben in
+`global-credentials`. Hier steht nur die MCP-eigene Secret-Mechanik
+(`MCP_AUTH_PASSWORD_HASH`, Inbound vs. Outbound).
 
 ## So findest du das richtige Detail
 
@@ -84,7 +89,8 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
    Repo-Layout (wrangler.jsonc im Build-Root): `references/deploy.md`.
 3. **Secrets** — `MCP_AUTH_PASSWORD_HASH` (SHA-256-Hex) und das Outbound-Secret **am
    Worker** setzen. Outbound-Secret nicht zu setzen ist die häufigste Ursache für
-   "Authorization failed" nach dem Consent. Details: `references/secrets.md`.
+   "Authorization failed" nach dem Consent. Details: `references/secrets.md`; Name,
+   Rechte und Ablage des Outbound-Credentials: `global-credentials`.
 4. **Build verifizieren** — Vor dem Push: `npm run typecheck` und
    `npx wrangler deploy --dry-run` müssen grün sein. Das reproduziert die
    Cloudflare-Build-Fehler ("entry not found" / "static files") lokal. Die Gate-Hooks
@@ -130,8 +136,8 @@ nur kommentierte Spiegel davon. Bei Abweichung gilt das `server-template/`.
   `MCP_OAUTH_GOOGLE_SHEETS`, `GOOGLE_REFRESH_TOKEN`). Tool-`name`s sind
   modell-lesbar → kurzes `<verb>_<objekt>` ohne Anbieter und ohne Service-Prefix
   (`append_row`, nicht `sheets_append_row`); die Server-Zuordnung macht der
-  Connector-Namespace. Secret = `<AUSSTELLER>_<TYP>`, nicht nach Worker benannt
-  (`GOOGLE_…`, nicht `GSC_…`). Details: `references/conventions.md`, `references/secrets.md`.
+  Connector-Namespace. Secret-Namen regelt `global-credentials`. Details:
+  `references/conventions.md`.
 - **Fremdimporte laufen über die Fassade, nie direkt.** Consumer importieren `z` aus
   `mcp-foundation/schema` und `McpServer` aus `mcp-foundation/sdk` — **nie** direkt aus
   `zod` oder `@modelcontextprotocol/sdk`. Die einzige Laufzeit-Dependency im Consumer ist
