@@ -18,7 +18,6 @@ Enthaltenes Inventar:
 | Skill | Zweck |
 |-------|-------|
 | `figma-onlineprinters` | Onlineprinters-Druckvorlagen (Dielines) in Figma übertragen, skalieren und als Print-Template-Component dokumentieren. |
-| `global-agent-framework` | Build-Time-Framework für Claude Managed Agents (Config, Deploy, Cron-Trigger, Permissions, Debug). |
 | `global-credentials` | Stack-weite Regeln für Zugangsdaten: Token je Anwendung und Zweck, Namen, Rechte, Ablage, Aufräumen. |
 | `global-git-conventions` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
 | `global-make-conventions` | Konventionsstandard & Audit-Maßstab für Make-Szenarien: Architektur-Muster + MUST/SHOULD-Regelliste. |
@@ -62,13 +61,13 @@ Enthaltenes Inventar:
 | `selectedleafs-city-content` | Content-Strategie für lokale City Landing Pages. |
 | `selectedleafs-figma` | Regeln für alle selectedleafs-Figma-Dateien (Variablen, Modi, Audit, MCP-Lehren, Icons). |
 | `selectedleafs-pos-operations` | Konsolidierter Runtime-Skill der POS-Operations-Agenten: Restock, Inventory, Invoice (Provisionsabrechnung), Telegram-Handwerk, Werte-Verzeichnis. |
-| `selectedleafs-pos-restock` | Runtime-Anleitung an den `pos-restock`-Agent: Übergabeprotokoll auswerten & in Drive ablegen. |
-| `selectedleafs-telegram` | Posting-Playbook für lokale Telegram City-Channels. |
 | `tailwind-4-docs` | Tailwind CSS v4 Doku-Snapshot + Migrations-Workflow. |
 
 Versionen stehen bewusst nicht hier — sie leben im jeweiligen SKILL.md
 (`metadata.version`), in der [`CHANGELOG.md`](./CHANGELOG.md) und im Release-Badge
 oben. So kann die Tabelle nicht driften.
+
+Abgehängte Skills liegen unter `_archive/` (gesichert, nicht gemountet, nicht im Inventar).
 
 Namens-Familien: `global-*` (projektübergreifend), `selectedleafs-*`
 (markenspezifisch), `liftr-*` (LIFTR-Theme), `figma-*` (Print/Figma).
