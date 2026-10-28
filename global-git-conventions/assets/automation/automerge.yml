@@ -1,0 +1,40 @@
+# Vorlage: Prüf-Workflow mit Auto-Merge als letztem Job (Regeln: references/ci.md).
+# → .github/workflows/<name>.yml. Den check-Job durch die echten Prüf-Jobs ersetzen
+#   und alle in `needs:` eintragen. Repo ohne Prüfung: check-Job + needs streichen.
+name: pruefung
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, unlabeled]
+    # paths-ignore: ["**.md", "docs/**"]   # Regel 6, je Repo anpassen
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pruefung-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - run: echo "Prüfung hier einsetzen (Tests, Lint, Build)"
+
+  automerge:
+    needs: [check]
+    if: >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !startsWith(github.event.pull_request.head.ref, 'renovate/') &&
+      !startsWith(github.event.pull_request.head.ref, 'release-please--') &&
+      !contains(github.event.pull_request.labels.*.name, 'kein-automerge')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: PR mergen
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE }}
+        run: gh pr merge --squash --repo "${{ github.repository }}" "${{ github.event.pull_request.number }}"

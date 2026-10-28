@@ -10,10 +10,12 @@ description: >-
   Version bumpen, SemVer-Entscheidung major/minor/patch, Git-Tag setzen, CHANGELOG
   anlegen/aktualisieren, Conventional Commits, release-please einrichten, Release-PR,
   Repo dokumentieren, Repo-Hygiene, eine Änderung committen oder ins Repo hochladen,
-  einen Commit-Title oder eine Commit-Message formulieren, Upload/Commit vorbereiten.
+  einen Commit-Title oder eine Commit-Message formulieren, Upload/Commit vorbereiten,
+  PR automatisch mergen, GitHub-Actions-Workflow schreiben oder prüfen, Actions-Minuten
+  bzw. CI-Kosten senken, Branches aufräumen.
   Gilt für alle eigenen Repos der Typen *-library, *-mcp und *-foundation.
 metadata:
-  version: "1.8.0"
+  version: "2.0.0"
 ---
 
 # global-git-conventions
@@ -24,10 +26,11 @@ Verbindlicher Standard für Doku und Versionierung aller eigenen GitHub-Repos. D
 
 1. **Single Source of Truth pro Regel.** Jede Vorgabe lebt an genau einer Stelle. Dieser Skill = Standard. Fach-Skills (`global-mcp-framework` etc.) = Erweiterung. README-Templates sind nur die *Materialisierung* der Regel aus `references/conventions.md` — bei Konflikt gewinnt die Referenz.
 2. **README passt auf einen Bildschirm.** Kein Handbuch. Was länger wird, kommt in eine separate Datei oder den passenden Fach-Skill.
-3. **Automation ist Pflicht, nicht optional.** Jedes Repo bekommt release-please (Releases) und Renovate (Dependency-Bumps). Versionierung und CHANGELOG werden nicht von Hand gepflegt, sondern aus Conventional Commits generiert; Dependency-Updates kommen als Renovate-PRs, nicht von Hand. **Release-PRs werden automatisch gemergt** — releasbarer Merge auf `main` → Release + Deploy ohne Handgriff (Mechanik + PAT-Pflicht in `references/automation.md`). Renovate-Bump-PRs bleiben bewusst manuell.
-4. **Web-only-tauglich.** Alle Schritte funktionieren über GitHub Web + Cloudflare-Git-Build. Keine Annahme über lokales git/Terminal.
+3. **Automation ist Pflicht, nicht optional.** Jedes Repo bekommt release-please (Releases) und Renovate (Dependency-Bumps). Versionierung und CHANGELOG werden nicht von Hand gepflegt, sondern aus Conventional Commits generiert; Dependency-Updates kommen als Renovate-PRs, nicht von Hand. **Alle PRs werden automatisch gemergt**, sobald ihre Prüfung grün ist; Release-PRs mergt release-please selbst → Release + Deploy ohne Handgriff (Mechanik: `references/ci.md`, PAT-Pflicht: `references/automation.md`). Renovate-Bump-PRs bleiben bewusst manuell.
+4. **Einrichtung web-tauglich.** Repo-Settings und Secrets lassen sich komplett über GitHub Web setzen. Änderungen am Repo macht Claude über einen git-Klon (Branch → PR), nie per Datei-Upload durch den Chat (`global-workflow`).
 5. **READMEs auf Deutsch.**
-6. **Jede Repo-Änderung endet mit einem fertigen Commit-Vorschlag.** Web-only heißt: du committest von Hand über GitHub-Web. Deshalb liefere ich den Commit-Block proaktiv mit — nie erst auf Nachfrage. Format und Regeln: Abschnitt unten + `references/changelog.md`.
+6. **Jede Repo-Änderung läuft als PR mit Conventional-Commit-Titel.** Der Titel wird beim Squash-Merge zur Commit-Message auf `main`. Nur wenn Claude keinen Schreibzugriff hat, kommt stattdessen ein fertiger Commit-Block zum Einfügen. Format: Abschnitt unten + `references/changelog.md`.
+7. **CI sparsam.** In privaten Repos kostet jede Minute; jeder Workflow folgt den Sparregeln in `references/ci.md` (Timeout, Abbruch veralteter Läufe, kein Doppellauf, Windows/macOS nur wo nötig). Gemergte Branches werden automatisch gelöscht (`references/settings.md`).
 
 ## Repo-Typ am Suffix erkennen
 
@@ -50,16 +53,15 @@ Details je Typ: siehe `references/types.md`.
 5. **Commit-Konvention** einhalten: Conventional Commits, auch im PR-Titel bei Squash-Merge. Mapping in `references/changelog.md`.
 6. **About-Block** setzen: Description (= README-Einzeiler), Website (Live-URL bei `*-mcp`) und Topics je Typ. Kein Datei-Artefakt — per `gh repo edit` mitsetzen. Schema in `references/about.md`.
 
-## Commit-Vorschlag — am Ende jeder Repo-Änderung mitliefern
+## Commit- und PR-Titel
 
-Sobald eine Änderung in einem dieser Repos landet (Datei geändert, Skill/Asset
-geliefert, Config angepasst), schließe die Antwort mit einem **copy-paste-fähigen
-Commit-Block** ab — Title und, wenn die Änderung es wert ist, ein kurzer Body. Das ist
-keine Option und keine Nachfrage-Sache: web-only committest du das von Hand im
-GitHub-Web, also muss der fertige Text bereitliegen.
+Jede Änderung in einem dieser Repos (Datei geändert, Skill/Asset geliefert, Config
+angepasst) bekommt einen Conventional-Commit-Titel — als PR-Titel, wenn Claude den PR
+selbst öffnet, sonst als copy-paste-fähiger Commit-Block am Ende der Antwort. Title und,
+wenn die Änderung es wert ist, ein kurzer Body.
 
 - **Auslöser:** echte Repo-Änderung (geänderte/neue Datei, geliefertes Artefakt). Reine
-  Fragen, Debugging ohne Dateiänderung oder Erklärungen brauchen keinen Block.
+  Fragen, Debugging ohne Dateiänderung oder Erklärungen brauchen keinen Titel.
 - **Format:** Conventional Commit, release-please-tauglich. Bei Squash-Merge zählt der
   PR-Titel — derselbe Text passt für beides. Mapping, Body-Format und Beispiele:
   `references/changelog.md`. SemVer-Stelle: `references/versioning.md`.
@@ -78,6 +80,8 @@ GitHub-Web, also muss der fertige Text bereitliegen.
 - `references/versioning.md` — SemVer-Policy (wann major/minor/patch), Tag-Konvention
 - `references/changelog.md` — CHANGELOG × release-please, Conventional-Commit-Mapping
 - `references/automation.md` — release-please + Renovate einrichten, Cloudflare-Interaktion, Token/Settings
+- `references/ci.md` — Auto-Merge aller PRs, CI-Sparregeln (Actions-Minuten)
+- `references/settings.md` — Repo-Settings: Merge-Verhalten, Branch-Hygiene, Actions-Härtung, Security
 - `references/protection.md` — Repo-Härtung: Branch-Protection, Secret Scanning, Dependabot, 2FA (GitHub Free, public vs. private)
 - `references/about.md` — GitHub About-Block: Description, Website, Topic-Schema je Typ
 - `references/types.md` — die drei Repo-Typen im Detail
@@ -87,6 +91,7 @@ GitHub-Web, also muss der fertige Text bereitliegen.
 - `assets/readme/{mcp,foundation,library}.md` — README-Templates
 - `assets/CHANGELOG.template.md` — CHANGELOG-Startdatei
 - `assets/automation/release-please.yml` — Workflow → `.github/workflows/`
+- `assets/automation/automerge.yml` — Prüf-Workflow mit Auto-Merge-Job → `.github/workflows/`
 - `assets/automation/config-{node,simple}.json` — → `release-please-config.json`
 - `assets/automation/manifest.json` — → `.release-please-manifest.json`
 - `assets/automation/renovate.json` — Renovate-Config (Mend-App), → Repo-Wurzel
