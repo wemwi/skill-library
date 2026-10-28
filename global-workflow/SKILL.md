@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Session-Uebergabe an frischen Chat oder Claude Code. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates und Handover. Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -46,11 +46,11 @@ Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken
 
 ## 5. Skill-Updates
 
-1. Basis = installierte Version (`/mnt/skills/…/<name>/`) in den Arbeitsordner kopieren. Bei Drift-Verdacht nur SHA/Größe gegen `main` vergleichen, nicht den Inhalt laden.
+1. Basis = `main` von skill-library (Klon, §4), nicht die gemountete Version unter `/mnt/skills/…` — der Mount kann hinterherhinken (August 2026 hätte das bei `selectedleafs-pos-operations` fast einen Rollback ausgelöst).
 2. Nur gezielte Edits — Datei nicht komplett neu tippen (Ausnahme: bewusster Neubau einer Hauptversion).
 3. Kontrolle per `grep` (Version, Abschnitte), kein erneutes Komplett-Lesen.
 4. `.skill` mit skill-creator `package_skill.py` bauen und ausliefern → Joscha mountet.
-5. Exakt dieselben Bytes ins Skill-Repo committen (§4) und per `diff` verifizieren. Eine Edit-Quelle — gemountete Version und `main` bleiben byte-identisch.
+5. Dieselbe Änderung ins Skill-Repo committen (§4). Nach dem Mounten Abgleich per `global-setup-audit/scripts/backup_check.py` — das Mounten formatiert den Frontmatter um, verglichen werden deshalb Version, Rumpf und übrige Dateien.
 
 ## 6. Modell & Delegation
 
