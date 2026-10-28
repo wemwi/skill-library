@@ -1,21 +1,13 @@
 ---
 name: global-git-conventions
 description: >-
-  Projektübergreifender Standard für GitHub-Repos — README-Aufbau,
-  SemVer-Versionierung, CHANGELOG und Pflicht-Release-Automation via release-please.
-  IMMER laden, sobald ein Repo angelegt, ein README geschrieben oder auditiert, eine
-  Version gebumpt, ein Tag/Release gesetzt, ein CHANGELOG gepflegt oder die
-  Release-Automation eingerichtet wird — auch wenn das Wort Skill oder Convention
-  nicht fällt. Trigger u.a. README erstellen/überarbeiten, neues Repo bootstrappen,
-  Version bumpen, SemVer-Entscheidung major/minor/patch, Git-Tag setzen, CHANGELOG
-  anlegen/aktualisieren, Conventional Commits, release-please einrichten, Release-PR,
-  Repo dokumentieren, Repo-Hygiene, eine Änderung committen oder ins Repo hochladen,
-  einen Commit-Title oder eine Commit-Message formulieren, Upload/Commit vorbereiten,
-  PR automatisch mergen, GitHub-Actions-Workflow schreiben oder prüfen, Actions-Minuten
-  bzw. CI-Kosten senken, Branches aufräumen.
-  Gilt für alle eigenen Repos der Typen *-library, *-mcp und *-foundation.
+  Standard für eigene GitHub-Repos (*-library, *-mcp, *-foundation): README, SemVer,
+  CHANGELOG, release-please, Conventional Commits, Auto-Merge, CI-Sparregeln,
+  Branch-Hygiene. IMMER laden bei Repo anlegen, README schreiben, Version bumpen,
+  Release/Tag, Commit- oder PR-Titel formulieren, Actions-Workflow schreiben oder prüfen.
+  Trigger: Release-PR, Actions-Minuten, Branches aufräumen.
 metadata:
-  version: "2.0.1"
+  version: "2.0.2"
 ---
 
 # global-git-conventions

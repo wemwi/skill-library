@@ -1,17 +1,13 @@
 ---
 name: global-setup-audit
 description: >-
-  Regelmäßige Prüfung von Joschas Claude-Setup — Skills, Konnektoren/MCP-Server,
-  Präferenzen, Memory, geplante Tasks und Projekte — auf Zeitgemäßheit, Konsistenz
-  und Funktion. Liefert einen Prüfbericht mit Befunden und Vorschlägen und ändert
-  selbst nichts. Laden beim monatlichen Setup-Audit (geplanter Task oder Projekt
-  Setup-Audit) und immer, wenn Joscha fragt, ob ein Skill, Konnektor oder eine Regel
-  noch zeitgemäß ist, eher stört, veraltet ist oder sich mit etwas überschneidet,
-  oder ob das Backup-Repo skill-library vollständig und aktuell ist, oder wie viele
-  Actions-Minuten und Branches die GitHub-Repos verbrauchen bzw. ansammeln.
-  Nicht für die Umsetzung der Änderungen selbst — dafür global-workflow.
+  Prüft Joschas Claude-Setup (Skills, Konnektoren, Präferenzen, Memory, geplante Tasks,
+  Projekte, Backup-Repo skill-library, Actions-Minuten, Branches) auf Zeitgemäßheit,
+  Konsistenz und Funktion; berichtet, ändert nichts. Laden beim monatlichen Setup-Audit
+  und bei Fragen, ob ein Skill, Konnektor oder eine Regel noch zeitgemäß ist, stört oder
+  sich überschneidet. Umsetzung: global-workflow.
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
 ---
 
 # Setup-Audit — das Claude-Setup prüfen

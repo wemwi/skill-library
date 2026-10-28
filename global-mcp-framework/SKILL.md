@@ -1,20 +1,13 @@
 ---
 name: global-mcp-framework
 description: >-
-  Generisches Framework zum Erstellen von Custom-MCP-Servern als Cloudflare Worker
-  mit @cloudflare/workers-oauth-provider (OAuth 2.1), stateless Streamable-HTTP und
-  einer gemeinsamen Foundation als versionierte Git-Tag-Dependency. IMMER laden,
-  sobald ein MCP-Server in diesem Stack erstellt, verdrahtet, auf eine neue
-  Foundation gebumpt oder debuggt wird — auch wenn das Wort Skill nicht fällt.
-  Trigger u.a.: Custom MCP-Server bauen, Cloudflare Worker MCP, workers-oauth-provider,
-  OAUTH_KV, OAuth 2.1 inbound, /authorize Login, Provider-Wiring, stateless Transport,
-  sessionIdGenerator, "Session terminated", "Server misconfigured", "Authorization
-  failed" nach Consent, "Client not found", Error 1101 auf /authorize,
-  clientRegistrationTTL, neuen Connector anlegen, Foundation-Tag bumpen,
-  wrangler.jsonc für MCP, KV-Namespace MCP_OAUTH,
-  Discovery-Check well-known. Gilt für jeden neuen Custom-MCP-Server in diesem Stack.
+  Framework für Custom-MCP-Server als Cloudflare Worker: workers-oauth-provider (OAuth
+  2.1), stateless Streamable-HTTP, Foundation als Git-Tag-Dependency. IMMER laden, wenn
+  ein MCP-Server gebaut, verdrahtet, auf eine neue Foundation gebumpt oder debuggt wird.
+  Trigger: neuer Connector, /authorize, OAUTH_KV, wrangler.jsonc, "Session terminated",
+  "Authorization failed", Error 1101.
 metadata:
-  version: "1.10.1"
+  version: "1.10.2"
 ---
 
 # global-mcp-framework

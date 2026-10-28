@@ -1,6 +1,13 @@
 ---
 name: selectedleafs-city-content
-description: "Content-Strategie und Textproduktion für lokale City Landing Pages auf selectedleafs.com. Definiert das Stadtteil-Geographie-Template, Content-Architektur, Compliance-Regeln, Daten-Checkliste und Qualitätskriterien für stadtspezifischen SEO-Content. Use whenever writing, reviewing, planning, or briefing city page content — including Textskizzen, page.content-Entwürfe, FAQ-Ergänzungen, Info-Box-Items, oder Content-Audits für lokale Landing Pages. Auch relevant wenn der Content Agent City-Texte generiert. Triggers on: city page, city content, lokale landing page, stadtspezifisch, Kratom kaufen in [Stadt], Stadtteil, Store Finder Content, lokaler SEO-Text, City SEO, Fußgänger-Traffic, Footfall-Content."
+description: >-
+  Content-Strategie und Textproduktion für lokale City Landing Pages auf
+  selectedleafs.com: Stadtteil-Template, Compliance, SEO, Daten-Checkliste. Laden beim
+  Schreiben, Prüfen, Planen oder Briefen von Stadtseiten-Texten (Textskizze, page.content,
+  FAQ, Info-Box, Content-Audit). Trigger: City Page, Kratom kaufen in [Stadt], Stadtteil,
+  lokaler SEO-Text, Store Finder Content.
+metadata:
+  version: "1.0.0"
 ---
 
 # City Content — Lokale Landing Pages

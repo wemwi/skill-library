@@ -1,19 +1,13 @@
 ---
 name: global-stress-test
 description: >-
-  Denk-Modus zum Härten eines bereits vorhandenen Konzepts, Entwurfs oder einer
-  Architektur — Bruchstellen finden, Skalierbarkeit unter Last prüfen, Optimierungen
-  und blinde Winkel aufdecken. Kein Ideen-Generator (das wäre divergent), sondern
-  adversariales Stressen eines Entwurfs (konvergent). IMMER laden, sobald eine
-  Konzept-, Architektur- oder Design-Entscheidung ansteht ODER Joscha explizit prüfen
-  lässt — auch wenn das Wort Skill oder Stresstest nicht fällt. Trigger u.a. die
-  Fragen ob etwas hält, tragfähig ist, wo es bricht, ob es skaliert, was übersehen
-  wird, ob ein Ansatz so Sinn macht, sowie prüf-das / stress-test / halt-das-stand;
-  ebenso neue Architektur/Datenmodell/Pipeline entwerfen, Ansätze vergleichen, vor
-  einer irreversiblen Festlegung. Feuert NICHT bei Routine-Ausführung (Section bauen,
-  Commit/PR, Lookup, Statuscheck, Mini-Edit) — da nur Token-Last ohne Nutzen.
+  Denk-Modus zum Härten eines vorhandenen Konzepts, Entwurfs oder einer Architektur:
+  Bruchstellen, Skalierung unter Last, blinde Winkel — adversarial, kein Brainstorming.
+  Laden vor Architektur-/Design-Entscheidungen, beim Vergleich von Ansätzen, vor
+  irreversiblen Festlegungen und bei Fragen wie: hält das, wo bricht es, skaliert das, was
+  übersehe ich, stress-test. Nicht bei Routine-Ausführung.
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Stress-Test — Konzept-Härtung unter Last

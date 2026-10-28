@@ -1,16 +1,13 @@
 ---
 name: figma-onlineprinters
-description: >
-  Workflow zum Übertragen, Skalieren und Dokumentieren von Onlineprinters-Druckvorlagen
-  (Dielines) in Figma für selectedleafs. Nutze diesen Skill IMMER, wenn eine neue
-  Onlineprinters-Druckvorlage in Figma soll, ein Dieline/Stanzkontur bereinigt werden muss
-  (Beschnitt, Safe Zone, Schnittlinie, Falz, Klebelaschen behalten — Bemaßung, Maßtext und
-  Bild/Badge entfernen), eine Print-Template-Component mit Slots erstellt wird, oder eine
-  Component Description für ein Druckprodukt geschrieben wird. Triggert bei: Onlineprinters,
-  Druckvorlage, Dieline, Stanzkontur, Druckdaten, Beschnitt/Bleed, Safe Zone, Thekenaufsteller,
-  Produktdisplay, Falzflyer, Broschüre, Plakat, PDF in Figma, print template, Druck-Component.
-  Gilt nur für den Onlineprinters-Print-Workflow; allgemeine Figma-Token-/Struktur-Regeln
-  stehen im Skill selectedleafs-figma.
+description: >-
+  Workflow für Onlineprinters-Druckvorlagen (Dielines) in Figma für selectedleafs: PDF
+  nach SVG, bereinigen (Beschnitt, Safe Zone, Schnitt, Falz behalten; Bemaßung entfernen),
+  Print-Template-Component mit Slots, Component Description. Trigger: Onlineprinters,
+  Druckvorlage, Dieline, Stanzkontur, Thekenaufsteller, Falzflyer, Plakat. Allgemeine
+  Figma-Regeln: selectedleafs-figma.
+metadata:
+  version: "1.0.0"
 ---
 
 # figma-onlineprinters

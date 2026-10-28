@@ -1,23 +1,13 @@
 ---
 name: global-make-conventions
 description: >-
-  Projektübergreifender Konventionsstandard und Audit-Maßstab für
-  Make-Szenarien — Architektur-Grundprinzipien, Architektur-Muster
-  (Dispatcher/Worker, native Subscenarios, Router-Fan-out u.a.) und eine
-  MUST/SHOULD-Regelliste (Naming, Settings, Modul-Wahl, Trigger,
-  Schleifenfreiheit, Webhook-Lebenszyklus, Idempotenz, Fehlerbehandlung,
-  Datenlayer, Variablen/State, Blueprint-Hygiene). IMMER laden, sobald ein Make-Szenario
-  entworfen, gebaut, geprüft oder auditiert wird — auch ohne das Wort Skill.
-  Ergänzt make-scenario-building/make-module-configuring (die WIE decken)
-  um das WELCHE und dient als Prüfmaßstab für den Gesamt-Audit. Trigger u.a.:
-  Szenario-Architektur, Dispatcher-Pattern, Trigger-Wahl, Webhook vs.
-  Polling, Schleifenprävention, Watch-Feld, changeTypes, Idempotenz-Gate,
-  dedupkey, Error-Handler-Konvention, Blueprint-Hygiene, Szenario-/Modul-
-  Naming, native Modul vs. HTTP, Legacy-Modul, Set/Get Variables,
-  Set Multiple Variables, Variablen-Scope, Scenario- vs. Custom-Variable,
-  Data Store, Make-Audit.
+  Konventionen und Audit-Maßstab für Make-Szenarien: Architektur-Prinzipien und -Muster
+  (Dispatcher/Worker, Subscenarios, Router-Fan-out) plus MUST/SHOULD-Regeln zu Naming,
+  Triggern, Schleifen, Webhooks, Idempotenz, Fehlerbehandlung und Variablen. IMMER laden,
+  wenn ein Make-Szenario entworfen, gebaut, geprüft oder auditiert wird. Ergänzt
+  make-scenario-building (das WIE) um das WELCHE.
 metadata:
-  version: "1.7.0"
+  version: "1.7.1"
 ---
 
 # global-make-conventions
