@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.0](https://github.com/wemwi/skill-library/compare/v6.0.0...v6.1.0) (2026-10-28)
+
+
+### Features
+
+* **global-setup-audit:** Repo-Check für Actions-Minuten, CI-Regeln und Branches ([#217](https://github.com/wemwi/skill-library/issues/217)) ([ba474c9](https://github.com/wemwi/skill-library/commit/ba474c9a77ad012c9809732a9c9bd580711873fb))
+
 ## [6.0.0](https://github.com/wemwi/skill-library/compare/v5.36.0...v6.0.0) (2026-10-28)
 
 
