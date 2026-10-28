@@ -7,7 +7,7 @@ description: >-
   wenn ein Make-Szenario entworfen, gebaut, geprüft oder auditiert wird. Ergänzt
   make-scenario-building (das WIE) um das WELCHE.
 metadata:
-  version: "1.7.1"
+  version: "1.7.2"
 ---
 
 # global-make-conventions
@@ -24,7 +24,7 @@ falsifizierbaren Check — woran ein Verstoß konkret erkennbar ist.
   = Bau-Mechanik: welches Modul, wie konfiguriert, Routing/Aggregation/
   Webhooks/IML/Error-Handler-Bedienung. Dieser Skill dupliziert das nie — er
   verweist darauf.
-- **`<projekt>-operations-*`** (z.B. `selectedleafs-pos-operations-v2`) =
+- **`<projekt>-operations-*`** (z.B. `selectedleafs-pos-operations`) =
   Projektspezifisches: konkrete Base-IDs, Feldnamen, Store-Logik. Gehört
   NICHT hierher. Test pro Regel: *Gilt sie für jedes Make-Projekt?* → hierher.
   *Hängt sie an projektspezifischen Werten/Namen/IDs?* → Projekt-Skill.
@@ -139,7 +139,7 @@ Referenz.
 - **MUST** ein `Start scenario`-Blueprint (Call-a-scenario-Ziel) behält beim Import seinen top-level `io`-Block (`input_spec`/`output_spec`) — das Interface ist eine eigene Szenario-Einstellung, kein Teil des Flows; ein Import ohne den Block wischt es leer. Nie auf `name`/`flow`/`metadata` reduzieren; Felder zusätzlich in `trigger.metadata.interface`. Nur Call-a-scenario-Ziele betroffen, `CustomWebHook` ist immun. Check: importiertes Blueprint hat einen nicht-leeren top-level `io`-Block.
 - **MUST** nach jedem `Start scenario`-Import wird das Interface aktiv geprüft (`scenarios_interface`) und bei Leerbefund über `validate_scenario_interface` → `scenarios_set-interface` restauriert — nicht annehmen, es sei durchgekommen. Check: Ziel-Interface listet nach dem Import die erwarteten Felder.
 - **MUST** nach jedem Blueprint-Import wird das Scheduling aktiv gegen den Soll-Zustand geprüft, nicht angenommen — der Import zieht den Wert aus dem Blueprint und kippt ein Webhook-Szenario dabei still von `immediately` auf ein Intervall (B2). Der Ausfall ist stumm: das Szenario bleibt aktiv und grün, aber die Trigger-Queue wird nur noch im Intervalltakt geleert und quittiert mit `Trigger cannot be handled when processing an incomplete execution` — ein Lauf, 1 Operation, kein Durchlauf. Check: `scenarios_get` zeigt nach dem Import für jedes Szenario mit `hookId` `scheduling.type = immediately`.
-- **SHOULD** Blueprint-Bytes laufen nie mehrfach durch einen Chat-/Agent-Kontext (Lesen ≠ wiederholtes Zurückschreiben) — siehe `global-workflow §5` für die Mechanik, hier nur als Prinzip referenziert.
+- **SHOULD** Blueprint-Bytes laufen nie mehrfach durch einen Chat-/Agent-Kontext (Lesen ≠ wiederholtes Zurückschreiben) — siehe `global-workflow` §4 für die Mechanik, hier nur als Prinzip referenziert.
 
 ### B11 — Variablen & State (`references/variables.md`)
 - **MUST** ein `Get variable`/`Get multiple variables` liest nur aus einer Set-Quelle, die im selben Ausführungspfad/Cycle tatsächlich vorher lief — ein Get auf eine nicht-nachgelagerte oder nie durchlaufene Set-Quelle liefert still leer. Check: jede Get-Referenz hat eine Set-Quelle auf demselben Pfad/Cycle.

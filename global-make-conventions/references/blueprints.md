@@ -124,5 +124,5 @@ Lese-Schreib-Zyklus verdoppelt die Bytes im Kontext und akkumuliert über
 mehrere Korrekturschleifen. Die konkrete Mechanik (Basis = installierte/
 exportierte Version, Edits als Diff statt Volltext, ein einziger
 vollständiger Durchlauf beim finalen Paketieren) ist projektübergreifend in
-`global-workflow §5` beschrieben und wird hier nur als Prinzip referenziert,
+`global-workflow` §4 beschrieben und wird hier nur als Prinzip referenziert,
 nicht dupliziert.
