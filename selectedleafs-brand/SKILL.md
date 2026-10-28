@@ -7,7 +7,7 @@ description: >-
   Mockup, Prototyp, Produktkarten oder Reports im Markenlook. Nicht für Shopify-Theme-Code
   (dafür liftr-*).
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Brand Kit: selectedleafs
@@ -508,8 +508,8 @@ Real product packaging shots live in `assets/products/` as **transparent WebP** 
 **This skill provides:** Visual values for approximation in demos and mockups, plus real product mockup imagery in `assets/products/`, brand logos in `assets/logos/`, icon sprite sheets in `assets/icons/`, and the canonical machine-readable token set in `references/tokens.json`.
 
 **This skill does NOT cover:**
-- Shopify Liquid syntax → liftr-section, liftr-block, liftr-snippet
-- CSS architecture (layers, container queries, owner pattern) → liftr-css-system
-- Layout decisions (grid vs slider, breakpoints) → `selectedleafs-figma` + liftr-section
+- Shopify Liquid syntax → liftr-liquid
+- CSS architecture (layers, container queries, owner pattern) → liftr-foundation
+- Layout decisions (grid vs slider, breakpoints) → `selectedleafs-figma` + liftr-liquid
 - Spacing hierarchy rules (when to use which level) → `selectedleafs-figma`
-- Component mechanics (slider, panel, accordion) → liftr-slider, liftr-panel, etc.
+- Component mechanics (slider, panel, accordion) → liftr-components

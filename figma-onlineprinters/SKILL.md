@@ -7,13 +7,13 @@ description: >-
   Druckvorlage, Dieline, Stanzkontur, Thekenaufsteller, Falzflyer, Plakat. Allgemeine
   Figma-Regeln: selectedleafs-figma.
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # figma-onlineprinters
 
 Der **Ingestion- und How-to-Workflow** für Onlineprinters-Druckvorlagen in Figma.
-Verhält sich zu `selectedleafs-figma` wie `liftr-section` zu `liftr-css-system`:
+Verhält sich zu `selectedleafs-figma` wie `liftr-liquid` (Sections) zu `liftr-foundation` (CSS-System):
 `selectedleafs-figma` hält die Prinzipien (Token-Disziplin, Modes, File-Struktur, Naming),
 dieser Skill hält den konkreten Prozess. Bei Konflikt gewinnt `selectedleafs-figma`.
 
