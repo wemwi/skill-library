@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.36.0](https://github.com/wemwi/skill-library/compare/v5.35.0...v5.36.0) (2026-10-28)
+
+
+### Features
+
+* **global-make-conventions:** Scheduling nach jedem Blueprint-Import prüfen ([#207](https://github.com/wemwi/skill-library/issues/207)) ([f3cc96c](https://github.com/wemwi/skill-library/commit/f3cc96cb4a7eea80e454d6f174c82b895133bde1))
+* **global-setup-audit:** Setup-Audit als eigener Skill ([#208](https://github.com/wemwi/skill-library/issues/208)) ([5d7a7ef](https://github.com/wemwi/skill-library/commit/5d7a7ef4e969a6aa621ff6493fcbce36d35085eb))
+* **global-workflow:** schlanke Fassung v2.0.0 ohne Pflicht-Laden ([#206](https://github.com/wemwi/skill-library/issues/206)) ([ea31c49](https://github.com/wemwi/skill-library/commit/ea31c499d0c469539235ef8e17627abde2ed50fd))
+* **liftr:** LIFTR-Skills ins Backup aufnehmen ([#209](https://github.com/wemwi/skill-library/issues/209)) ([4ce0420](https://github.com/wemwi/skill-library/commit/4ce0420512c30ddbbd538b503d10d96ce7bd81ec))
+
+
+### Bug Fixes
+
+* tote Verweise auf archiviertes global-agent-framework entfernen ([#211](https://github.com/wemwi/skill-library/issues/211)) ([8773977](https://github.com/wemwi/skill-library/commit/8773977ccbc495fac9e61f980db28a9768c96041))
+
 ## [5.35.0](https://github.com/wemwi/skill-library/compare/v5.34.0...v5.35.0) (2026-10-25)
 
 
