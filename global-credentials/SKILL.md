@@ -13,7 +13,7 @@ description: >-
   Scopes/Rechte eines Tokens, neue Anwendung, neuer Worker, Anwendung umbenennen,
   Rückbau, Zugangsdaten aufräumen.
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # global-credentials
@@ -34,7 +34,6 @@ aussehen soll.
 - `global-git-conventions` — Einrichtung von release-please samt Secret
   `RELEASE_PLEASE` (`references/automation.md`); Zuschnitt des Tokens nach Regel 1
   und 4.
-- `global-agent-framework` — Agent-Secrets in Vaults.
 
 ## Regeln
 
