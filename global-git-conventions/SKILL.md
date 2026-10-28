@@ -7,7 +7,7 @@ description: >-
   Release/Tag, Commit- oder PR-Titel formulieren, Actions-Workflow schreiben oder prüfen.
   Trigger: Release-PR, Actions-Minuten, Branches aufräumen.
 metadata:
-  version: "2.0.2"
+  version: "2.1.0"
 ---
 
 # global-git-conventions

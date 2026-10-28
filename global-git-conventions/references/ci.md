@@ -49,8 +49,10 @@ Automerge-Workflow, der nach jedem anderen Workflow und zusätzlich stündlich s
    oder per `paths`-Filter nur bei plattformrelevanten Dateien.
 6. **`paths`/`paths-ignore`**, damit reine Doku-Änderungen keine Tests starten.
 7. **Ereignis statt Polling.** Kein Cron für etwas, das ein Event auslösen kann.
-8. **Renovate bündeln:** `schedule` + gruppierte Minor/Patch-Bumps (`renovate.json`),
-   damit nicht jeder Einzel-Bump eine Suite startet.
+8. **Renovate bündeln:** montags vor 6 Uhr (`schedule`, `Europe/Berlin`) ein gebündelter
+   Minor/Patch-PR je Repo; Major (und 0.x-Minor) erst nach Häkchen im Dependency
+   Dashboard. So startet nicht jeder Einzel-Bump eine Suite. Vorlage:
+   `assets/automation/renovate.json`, Details `automation.md`.
 
 Kontrolle: Der monatliche Setup-Audit (`global-setup-audit`, Repo-Check) misst die Läufe je
 Repo und meldet Verstöße gegen diese Regeln.
