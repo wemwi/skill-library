@@ -1,0 +1,34 @@
+name: Branch-Aufräumen
+
+# Löscht in den angegebenen Repos Branches, deren PR gemergt ist (Regeln:
+# global-git-conventions, references/settings.md → Branch-Hygiene).
+# Nur manuell startbar. Erst mit dry_run=true laufen lassen, Liste in der
+# Zusammenfassung prüfen, dann mit dry_run=false wiederholen.
+# Braucht den PAT RELEASE_PLEASE mit Contents: write auf den Ziel-Repos.
+on:
+  workflow_dispatch:
+    inputs:
+      repos:
+        description: "Repos (Leerzeichen-getrennt, ohne Owner)"
+        required: true
+        default: "first-commerce-import-engine first-commerce-import-dashboard liftr-shopify-theme"
+      dry_run:
+        description: "Nur auflisten, nichts löschen"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Branches aufräumen
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          python3 scripts/branch_cleanup.py ${{ inputs.dry_run && '' || '--apply' }} ${{ inputs.repos }} >> "$GITHUB_STEP_SUMMARY"

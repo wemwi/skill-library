@@ -1,23 +1,44 @@
 name: inventory-check
 
-# Verhindert README-Drift: schlägt fehl, sobald die Inventartabelle nicht mehr
-# zu den tatsächlichen Skill-Ordnern + deren metadata.version passt.
+# Prüft, dass die README-Inventartabelle zu den Skill-Ordnern passt, und mergt den PR
+# danach automatisch (global-git-conventions, references/ci.md).
+# Ausnahmen vom Merge: Entwürfe, Forks, renovate/*, release-please--*, Label
+# `kein-automerge` (Label entfernen → Merge läuft nach). Merge per PAT, damit
+# release-please danach anläuft. Kein Lauf auf main: der PR war schon grün.
 on:
   pull_request:
-    paths:
-      - "README.md"
-      - "*/SKILL.md"
-      - "scripts/check_inventory.py"
-      - ".github/workflows/inventory-check.yml"
-  push:
-    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: inventory-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: "3.x"
       - run: python3 scripts/check_inventory.py
+
+  automerge:
+    needs: [check]
+    if: >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !startsWith(github.event.pull_request.head.ref, 'renovate/') &&
+      !startsWith(github.event.pull_request.head.ref, 'release-please--') &&
+      !contains(github.event.pull_request.labels.*.name, 'kein-automerge')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: PR mergen
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE }}
+        run: gh pr merge --squash --repo "${{ github.repository }}" "${{ github.event.pull_request.number }}"
