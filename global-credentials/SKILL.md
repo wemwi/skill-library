@@ -1,19 +1,13 @@
 ---
 name: global-credentials
 description: >-
-  Projektübergreifende Regeln für Zugangsdaten — API-Tokens, Personal Access Tokens,
-  API-Keys und Secrets: anlegen, beim Aussteller benennen, Secret-Namen im Code,
-  minimale Rechte, Ablage und Aufräumen. Gilt stack-weit für jede Anwendung (Worker,
-  Web-App, CI, MCP-Server), nicht nur für MCP. IMMER laden, sobald ein Token oder Secret
-  angelegt, benannt, gesetzt, rotiert, geprüft oder gelöscht wird oder eine neue
-  Anwendung bzw. ein neuer Worker Zugangsdaten braucht — auch wenn das Wort Skill nicht
-  fällt. Trigger u.a.: Token, API-Token, Secret, API-Key, PAT, Personal Access Token,
-  wrangler secret, wrangler secret put, Cloudflare API Tokens, Workers-Builds-Token,
-  GitHub-Secret, Repository-Secret, .dev.vars, Env-Variable benennen, Secret-Name,
-  Scopes/Rechte eines Tokens, neue Anwendung, neuer Worker, Anwendung umbenennen,
-  Rückbau, Zugangsdaten aufräumen.
+  Stack-weite Regeln für Zugangsdaten (API-Tokens, PATs, API-Keys, Secrets) in Worker,
+  Web-App, CI und MCP-Server: anlegen, beim Aussteller benennen, Secret-Namen im Code,
+  minimale Rechte, Ablage, Aufräumen. IMMER laden, sobald ein Token oder Secret angelegt,
+  benannt, gesetzt, rotiert oder gelöscht wird. Trigger: wrangler secret, GitHub-Secret,
+  .dev.vars, Env-Variable, Scopes, neuer Worker.
 metadata:
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # global-credentials

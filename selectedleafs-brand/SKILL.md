@@ -1,6 +1,13 @@
 ---
 name: selectedleafs-brand
-description: "Style kit for selectedleafs.com — the dark, nature-premium Kratom brand (Räuchermischung), with Tea and Special-Herbs lines. Provides exact color palette, typography, spacing tokens, logo guidance, component recipes, real product mockup images, icon sprite sheets, and design language for creating React demo artifacts, mockups, and visual prototypes that approximate the real store look. Use whenever creating demos, visual prototypes, landing page mockups, product grids/cards, reporting with brand styling, or any artifact that should look and feel like selectedleafs or needs real selectedleafs product imagery, brand logos, or store icons. Also use when the design-exploration skill needs brand values for a demo. Triggers on: demo, mockup, prototype, brand colors, selectedleafs style, visual preview, approximate style, logo, product images, product cards, icons, sprite, Kratom, Tee, packaging."
+description: >-
+  Style-Kit für selectedleafs.com (dunkles Nature-Premium; Kratom, Tee, Special Herbs):
+  Farben, Typografie, Spacing-Tokens, Logos, Komponenten-Rezepte, echte Produktbilder und
+  Icon-Sprites für React-Demos, Mockups und Prototypen im Shop-Look. Laden bei Demo,
+  Mockup, Prototyp, Produktkarten oder Reports im Markenlook. Nicht für Shopify-Theme-Code
+  (dafür liftr-*).
+metadata:
+  version: "1.0.0"
 ---
 
 # Brand Kit: selectedleafs

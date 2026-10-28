@@ -1,7 +1,14 @@
 ---
 name: tailwind-4-docs
-description: Comprehensive Tailwind CSS v4 (through v4.3) documentation snapshot, version-delta knowledge, and engineering workflow. Use this skill whenever the user writes, reviews, refactors, configures, or migrates Tailwind CSS — including selecting utilities/variants, CSS-first theme/token setup, v3-to-v4 migration, or any task touching scrollbar/mask/text-shadow/logical-property/@variant features. Works from a local docs snapshot when available and degrades to bundled summaries (version deltas, gotchas, engineering playbook) when not.
+description: >-
+  Tailwind CSS v4 (bis v4.3): lokaler Doku-Snapshot, Versions-Deltas, Gotchas und
+  Engineering-Playbook. Laden beim Schreiben, Prüfen, Refaktorieren, Konfigurieren oder
+  Migrieren von Tailwind CSS — Utilities, Varianten, CSS-first-Theme, Migration v3 → v4,
+  @variant, text-shadow, mask, Scrollbar. Funktioniert auch ohne Snapshot über die
+  mitgelieferten Zusammenfassungen.
 compatibility: Requires git, Python 3, and internet access to initialize the Tailwind docs snapshot from tailwindcss.com.
+metadata:
+  version: "1.0.0"
 ---
 
 # Tailwind 4 Docs

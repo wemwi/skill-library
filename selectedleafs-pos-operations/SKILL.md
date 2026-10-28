@@ -1,19 +1,13 @@
 ---
 name: selectedleafs-pos-operations
 description: >-
-  Mentales Modell und Betriebsmethoden der selectedleafs POS-Operations auf Make + Airtable
-  (Kommissionsware an Kiosk-Partner-Stores). IMMER laden, sobald an POS-Operations gearbeitet
-  wird — Airtable-Base gelesen oder geändert, ein Make-Szenario gebaut/gemappt/gedebuggt, ein
-  Feld oder eine Formel angefasst, eine neue Konditionen-/Kalkulations-Version angelegt, eine
-  Auszahlung oder ein Saldo geprüft. Auch bei reinen Fragen ("warum ist der Saldo so hoch",
-  "rechnet das richtig", "darf ich das Feld umbenennen"). Trigger u.a.: POS Operations,
-  appiIkOaz1ID1FjfE, Umsätze, Lieferungen, Bestandsprüfungen, Auszahlungen, Konditionen,
-  Kalkulationen, Vertriebler, Saldo, Provision, Kostenanteil, Leistungsdatum, Regelbesteuerung,
-  Kleinunternehmer, Belegeingang, Lexware-Sync nach Airtable, [Sync]/[Create]/[Process]/
-  [Resolve]/[Archive]/[Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
-  selectedleafs-pos-operations-v2.
+  Mentales Modell und Betriebsmethoden der selectedleafs POS-Operations auf Make +
+  Airtable (Kommissionsware an Kiosk-Partner-Stores). IMMER laden bei Arbeit an Base,
+  Make-Szenarien, Feldern, Formeln, Konditionen, Kalkulationen, Auszahlungen oder Salden —
+  auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
+  Provision, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.15.1"
+  version: "1.15.2"
 ---
 
 # selectedleafs · POS Operations

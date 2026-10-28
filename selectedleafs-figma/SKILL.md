@@ -1,8 +1,13 @@
 ---
 name: selectedleafs-figma
-description: "Regeln für alle selectedleafs-Figma-Dateien (Core, Product, Print, Sales App, künftig Shop): Variablen-Architektur Palette → Color Scheme → Kontext, Bindungsregel, Modi (Layout-Formate, White/Forest/Cream) mit Modus-Regel, Namens- und Seitenschema, Changelog, Governance, Audit R1–R6, Figma-MCP-Lehren und Font-Awesome-Icon-Pipeline. IMMER laden, bevor in einer selectedleafs-Figma-Datei etwas gebaut, geändert, umgebunden, geprüft oder veröffentlicht wird, auch ohne das Wort Skill. Trigger u. a.: Figma, Core-Library, Variablen, Tokens, Rollen, color/scheme, color/global, Palette, Farbmodus, Color Scheme, Layout-Modus, DIN A4, Text Styles, Changelog, INDEX, Components-Seite, Library veröffentlichen oder annehmen, alte Kopie, Audit, Icons, Font Awesome, use_figma in Core, Print, Product oder Sales App. Abgrenzung: Druckvorlagen → figma-onlineprinters, Demos/Artifacts → selectedleafs-brand, Plugin-API → figma-use."
+description: >-
+  Regeln für die selectedleafs-Figma-Dateien (Core, Product, Print, Sales App, Shop):
+  Variablen-Architektur Palette → Color Scheme → Kontext, Bindungs- und Modus-Regel,
+  Namens-/Seitenschema, Changelog, Audit, Icons. IMMER laden, bevor in einer dieser
+  Dateien gebaut, geändert, geprüft oder veröffentlicht wird. Trigger: Tokens, Text
+  Styles, Library, Font Awesome. Druckvorlagen: figma-onlineprinters.
 metadata:
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # selectedleafs-figma
