@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.1](https://github.com/wemwi/skill-library/compare/v6.2.0...v6.2.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **global-make-conventions:** veraltete Verweise korrigieren ([#227](https://github.com/wemwi/skill-library/issues/227)) ([f030c86](https://github.com/wemwi/skill-library/commit/f030c86e39f719e18a2b8d49bab4af200052f006))
+
 ## [6.2.0](https://github.com/wemwi/skill-library/compare/v6.1.2...v6.2.0) (2026-10-28)
 
 
