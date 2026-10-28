@@ -86,6 +86,36 @@ auf den Default-Thread ab, was in `[400] message thread not found` endete. Ein
 leeres Interface ist also kein kosmetischer Defekt, sondern bricht jeden
 nachgelagerten Consumer, der auf die Trigger-Felder mappt.
 
+## Scheduling nach jedem Import verifizieren
+
+Dieselbe Klasse Fehler wie beim StartSub-Interface, nur an einer anderen
+Einstellung: **der Import überschreibt das Scheduling.** Er zieht den Wert aus
+dem Blueprint, und wenn der Blueprint einen Intervall-Wert trägt (weil er aus
+einem anderen Szenario stammt, weil beim Zusammenbauen ein `scheduling`-Block
+mitgeschleift wurde, oder weil der Export einen Zwischenstand konserviert hat),
+steht das Szenario nach dem Import auf Intervall — auch wenn es vorher richtig
+auf `immediately` lief.
+
+**Warum das nicht auffällt.** Der Import meldet keinen Fehler. Das Szenario ist
+aktiv, grün, und produziert Executions. Bei einem Webhook-Trigger wird die
+Queue aber nur noch im Takt abgeholt, und jeder Zyklus quittiert mit
+`Trigger cannot be handled when processing an incomplete execution` — 1 Operation,
+kein Durchlauf, der eingehende Call ist weg. Details in `references/settings.md`.
+
+**Pflicht-Verifikation nach jedem Import.** Direkt nach dem Import
+`scenarios_get(id)` lesen und `scheduling` gegen den Soll-Zustand halten. Für
+jedes Szenario mit `hookId` muss dort `{"type": "immediately"}` stehen. Nicht
+annehmen, es sei durchgekommen — genau wie beim Interface.
+
+**Praktisch: die Nachkontrolle ist eine Liste, kein Einzelcheck.** `scenarios_list`
+gibt `hookId` und `scheduling` in derselben Antwort zurück. Ein Abgleich über den
+ganzen Team-Bestand („jedes Szenario mit `hookId` ≠ null hat
+`scheduling.type = immediately`") findet auch die Fälle, die ein früherer Import
+gekippt hat und die seitdem still mitlaufen. Zweites Signal im selben Datensatz:
+ein Execution-Zähler, der zur fachlichen Häufigkeit nicht passt (vierstellig bei
+einem Szenario, das ein paar Mal pro Woche laufen sollte) — das sind die
+Leerzyklen.
+
 ## Bytes nie mehrfach durch den Kontext
 
 Ein Blueprint-Inhalt sollte innerhalb eines Chat-/Agent-Kontexts nicht

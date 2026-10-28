@@ -17,7 +17,7 @@ description: >-
   Set Multiple Variables, Variablen-Scope, Scenario- vs. Custom-Variable,
   Data Store, Make-Audit.
 metadata:
-  version: "1.6.0"
+  version: "1.7.0"
 ---
 
 # global-make-conventions
@@ -95,7 +95,7 @@ Referenz.
 - **SHOULD** Die Szenario-Beschreibung (`description`) trägt den Trigger-Kontrakt in einer Zeile — wer/was triggert, welche Inputs, was zurückgegeben wird —, nicht die Wiederholung des Namens. Check: bei `Call a scenario`-Zielen (on-demand) ist die Beschreibung nicht leer, dort ist der Kontrakt die einzige Inline-Doku.
 
 ### B2 — Szenario-Settings (`references/settings.md`)
-- **MUST** Webhook-getriggerte Szenarien laufen mit Scheduling-Typ `immediately`, nie `indefinitely`.
+- **MUST** Webhook-getriggerte Szenarien laufen mit Scheduling-Typ `immediately`, nie `indefinitely`. Ein Blueprint-Import kann das still zurücksetzen — die Nachkontrolle steht in B10. Check: jedes Szenario mit `hookId` zeigt `scheduling.type = immediately`.
 - **MUST** `Store incomplete executions` ist aktiviert, wo ein Fehler sonst spurlos verschwindet (jedes Szenario mit Write-Seiteneffekten).
 - **SHOULD** Sequenzielle vs. parallele Ausführung ist eine bewusste Entscheidung (Datenintegrität bei geteiltem State vs. Durchsatz), nicht der Default.
 - **SHOULD** Auto-Deaktivierung nach N Folgefehlern ist konfiguriert, wo ein durchlaufender Fehler sonst unbemerkt Buchungen anhäuft.
@@ -148,6 +148,7 @@ Referenz.
 - **MUST** nach jedem programmatischen Blueprint-Update werden die Connection-Bindings verifiziert, nicht angenommen — das Verhalten ist inkonsistent (mal bleiben sie gebunden, mal nicht).
 - **MUST** ein `Start scenario`-Blueprint (Call-a-scenario-Ziel) behält beim Import seinen top-level `io`-Block (`input_spec`/`output_spec`) — das Interface ist eine eigene Szenario-Einstellung, kein Teil des Flows; ein Import ohne den Block wischt es leer. Nie auf `name`/`flow`/`metadata` reduzieren; Felder zusätzlich in `trigger.metadata.interface`. Nur Call-a-scenario-Ziele betroffen, `CustomWebHook` ist immun. Check: importiertes Blueprint hat einen nicht-leeren top-level `io`-Block.
 - **MUST** nach jedem `Start scenario`-Import wird das Interface aktiv geprüft (`scenarios_interface`) und bei Leerbefund über `validate_scenario_interface` → `scenarios_set-interface` restauriert — nicht annehmen, es sei durchgekommen. Check: Ziel-Interface listet nach dem Import die erwarteten Felder.
+- **MUST** nach jedem Blueprint-Import wird das Scheduling aktiv gegen den Soll-Zustand geprüft, nicht angenommen — der Import zieht den Wert aus dem Blueprint und kippt ein Webhook-Szenario dabei still von `immediately` auf ein Intervall (B2). Der Ausfall ist stumm: das Szenario bleibt aktiv und grün, aber die Trigger-Queue wird nur noch im Intervalltakt geleert und quittiert mit `Trigger cannot be handled when processing an incomplete execution` — ein Lauf, 1 Operation, kein Durchlauf. Check: `scenarios_get` zeigt nach dem Import für jedes Szenario mit `hookId` `scheduling.type = immediately`.
 - **SHOULD** Blueprint-Bytes laufen nie mehrfach durch einen Chat-/Agent-Kontext (Lesen ≠ wiederholtes Zurückschreiben) — siehe `global-workflow §5` für die Mechanik, hier nur als Prinzip referenziert.
 
 ### B11 — Variablen & State (`references/variables.md`)
