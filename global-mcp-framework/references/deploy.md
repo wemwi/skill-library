@@ -2,8 +2,15 @@
 
 ## Ablauf
 
-Claude Code → PR gegen `main` → **manueller Merge im GitHub-Web** → Cloudflare baut
-automatisch von `main`. Kein Terminal, kein `wrangler deploy` von Hand.
+Claude Code → PR gegen `main` → Prüfung `pruefung` (`npm run typecheck`) →
+**PR mergt nach grüner Prüfung automatisch** → Cloudflare baut automatisch von `main`.
+Kein Terminal, kein `wrangler deploy` von Hand, kein Merge im GitHub-Web. Regeln,
+Ausnahmen (Entwürfe, `renovate/*`, `release-please--*`, Label `kein-automerge`) und die
+Workflow-Vorlage: `global-git-conventions`, `references/ci.md`.
+
+Der Prüf-Job ist Pflicht, weil jeder Merge auf `main` sofort live geht. Er prüft nur den
+Typecheck — `npx wrangler deploy --dry-run` bleibt das lokale Gate vor dem Push
+(„Verifikation vor dem Push" unten).
 
 Dieser Cloudflare-Build ist **unabhängig** von der Release-Automation: Tags,
 CHANGELOG und GitHub-Release erzeugt release-please (Standard in
@@ -178,21 +185,27 @@ Die Version muss exakt die sein, die `agents` erwartet. Im `server-template` (Sp
 
 ## Foundation-Versionierung
 
-Die Foundation ist eine **versionierte Git-Dependency (Tag)**. Es gibt **kein
-Auto-Merge**: Eine neue Foundation-Version schlägt erst durch, wenn der Bump-PR bewusst
-gemergt und neu gebaut wird. Den PR öffnet **Renovate** automatisch — der manuelle
-Sechs-Repo-Nachzug entfällt, die Merge-Entscheidung bleibt bei dir.
+Die Foundation ist eine **versionierte Git-Dependency (Tag)**. Der **Bump bleibt eine
+bewusste Entscheidung**: Renovate-PRs sind vom Auto-Merge ausgenommen (`renovate/*`,
+`global-git-conventions` `references/ci.md`). Eine neue Foundation-Version schlägt erst
+durch, wenn der Bump-PR von Hand gemergt und neu gebaut wird. Den PR öffnet **Renovate**
+automatisch — der manuelle Sechs-Repo-Nachzug entfällt, die Merge-Entscheidung bleibt
+bei dir.
 
 Ablauf einer Framework-Änderung:
-1. Foundation-PR → Merge. Der **Tag entsteht über release-please**, nicht von Hand —
-   SemVer-Regel und Tag-Konvention stehen in `global-git-conventions`
-   (`versioning.md`); bei Breaking Changes ist `feat!:` / `BREAKING CHANGE:` Pflicht,
-   sonst ziehen Consumer unbemerkt inkompatibel nach.
+1. Foundation-PR → **mergt nach grüner Prüfung automatisch**. Der **Tag entsteht über
+   release-please**, nicht von Hand — SemVer-Regel und Tag-Konvention stehen in
+   `global-git-conventions` (`versioning.md`); bei Breaking Changes ist `feat!:` /
+   `BREAKING CHANGE:` Pflicht, sonst ziehen Consumer unbemerkt inkompatibel nach.
 2. Renovate erkennt den neuen Tag und öffnet pro `*-mcp` einen Bump-PR auf
-   `package.json`. Mergen → Cloudflare-Build. Den Rückstand über alle Server zeigt das
-   Renovate Dependency Dashboard zentral — keine README-Zone mehr.
-3. Konsumenten nacheinander mergen — kein Zwang, alle gleichzeitig zu heben. Bei einem
-   Breaking-/Major-Bump zuerst ein Repo als Kanarienvogel durchziehen.
+   `package.json`. Die Prüfung läuft dort mit, gemergt wird von Hand → Cloudflare-Build.
+   Den Rückstand über alle Server zeigt das Renovate Dependency Dashboard zentral —
+   keine README-Zone mehr.
+3. Bump-PRs der Konsumenten nacheinander mergen — kein Zwang, alle gleichzeitig zu
+   heben. Bei einem Breaking-/Major-Bump zuerst ein Repo als Kanarienvogel durchziehen.
+   Läuft der Bump über einen eigenen Claude-Code-PR (z. B. mit Code-Anpassung), mergt
+   der nach grüner Prüfung selbst — wer den Zeitpunkt selbst wählen will, setzt das
+   Label `kein-automerge`.
 
 ### Renovate erkennt den Foundation-Pin
 

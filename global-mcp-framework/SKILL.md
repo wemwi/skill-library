@@ -7,7 +7,7 @@ description: >-
   Trigger: neuer Connector, /authorize, OAUTH_KV, wrangler.jsonc, "Session terminated",
   "Authorization failed", Error 1101.
 metadata:
-  version: "1.10.2"
+  version: "1.11.0"
 ---
 
 # global-mcp-framework
@@ -18,8 +18,9 @@ Stack. Jeder Server ist ein eigener Cloudflare Worker, der eine gemeinsame Found
 noch service-spezifisch verdrahtet: Tools + Login-Titel + Outbound-Secret.
 
 **Betrieb ist web-only** — kein lokaler Rechner, kein VPS, kein Terminal. Alles läuft
-über Claude Code (Git/PR), GitHub-Web (Merge/Tag) und das Cloudflare-Dashboard
-(KV/Secrets/Logs). Bei jeder Anweisung gilt deshalb: keine `wrangler tail`-/SSH-
+über Claude Code (Git/PR) und das Cloudflare-Dashboard (KV/Secrets/Logs). Der PR mergt
+nach grüner Prüfung automatisch, den Tag setzt release-please (`global-git-conventions`,
+`references/ci.md`). Bei jeder Anweisung gilt deshalb: keine `wrangler tail`-/SSH-
 Schritte vorschlagen, sondern die Dashboard-Entsprechung.
 
 ## Abgrenzung zu `global-git-conventions`
