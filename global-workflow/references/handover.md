@@ -1,8 +1,8 @@
 # Handover — Session-Übergabe
 
 Vorlage für die Übergabe an eine **frische Session**, die diesen Chat nie gesehen hat. Zwei Ziele, gleiches Skelett:
-- **Claude Code** — ausgelöst durch einen 🧰-Werkzeugwechsel (global-workflow §3)
-- **frischer Chat** — ausgelöst durch einen 🔄-Kontextwechsel (global-workflow §3) bzw. Konversations-Hygiene (global-workflow §8, „ein Task, ein Chat")
+- **Claude Code** — ausgelöst durch einen 🧰-Werkzeugwechsel (global-workflow §4, §7)
+- **frischer Chat** — ausgelöst durch einen 🔄-Kontextwechsel (global-workflow §7, „ein Task, ein Chat")
 
 ## Leitgedanke
 

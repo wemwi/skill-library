@@ -1,262 +1,84 @@
 ---
-name: global-workflow
-description: Meta-Skill fuer Workflow-Steuerung und Arbeitsprotokoll. MUSS als ALLERERSTER Schritt bei JEDER eingehenden Nachricht aktiv gelesen werden — es gibt KEINEN Auto-Load, Claude muss den Skill selbst oeffnen, BEVOR recherchiert, ein anderer Skill geoeffnet oder etwas umgesetzt wird. Steuert wie Claude Aufgaben analysiert, das passende Modell waehlt, nachfragt, plant und umsetzt. Gilt projektuebergreifend fuer alle Projekte. Trigger bei JEDEM Task — neue Aufgabe, Bugfix, Feature, Refactoring UND auch reine Fragen, kurze Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zaehlt als Task; ein namentlich genannter Skill ersetzt das Lesen von global-workflow NICHT. Kein Task ohne diesen Skill.
+name: "global-workflow"
+description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Session-Uebergabe an frischen Chat oder Claude Code. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates und Handover. Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "1.6.0"
+  version: "2.0.0"
 ---
 
-# Workflow — Universelles Arbeitsprotokoll
+# Workflow — Arbeitsprotokoll
 
-Dieses Skill steuert wie du (Claude) jede Aufgabe bearbeitest. Es ist kein technisches Nachschlagewerk, sondern dein Arbeitsprotokoll. Lies es als ERSTEN Schritt bei JEDER eingehenden Nachricht — auch bei reinen Fragen, kurzen Lookups oder wenn ein anderer Skill namentlich genannt wird. "Frage" zählt als Task; ein genannter Skill ersetzt das Lesen dieses Skills nicht. Es gibt keinen Auto-Load — du musst es selbst öffnen.
+Gilt projektübergreifend. Die Grundregeln für *jede* Nachricht stehen in Joschas Präferenzen (immer im Kontext). Dieser Skill ergänzt nur, was bei echter Umsetzungsarbeit gebraucht wird.
 
----
+## 1. Auftrag prüfen
 
-## 1. Prompt-Vollständigkeit prüfen
-
-Bevor du irgendetwas tust — prüfe ob der Prompt vollständig ist.
-
-**Die vier Dimensionen:**
-
-| Dimension | Frage | Beispiel wenn unklar |
-|-----------|-------|----------------------|
-| **WAS** | Was genau soll passieren? | "Neuerstellung, Änderung, Bugfix, Refactoring?" |
-| **WO** | Welche Datei(en), welches Modul? | "Welche Datei ist betroffen? Kannst du sie teilen?" |
-| **REGELN** | Welche Constraints gelten? | "Gibt es ein bestehendes Pattern? Design-Vorgabe?" |
-| **OUTPUT** | Was erwartest du als Ergebnis? | "Erst Plan, oder direkt Code? Ganze Datei oder Diff?" |
-
-**Regeln:**
-- Wenn **WAS** oder **WO** fehlt → Sofort nachfragen, NICHT anfangen
-- Wenn **REGELN** unklar → Nachfragen ODER explizit benennen welche Annahmen du triffst
-- Wenn **OUTPUT** unklar → Default ist Spec-First (Plan vorlegen, auf OK warten)
-- Bei mehrdeutigen Aufgaben lieber einmal mehr fragen als falsche Annahmen treffen
-- Fragen kompakt stellen — maximal 3-4 gezielte Fragen, keine Fragewand
-
----
-
-## 2. Scope-Entscheidung
-
-Nach der Vollständigkeitsprüfung — bestimme den Scope:
-
-### Spec-First (Plan → Freigabe → Code)
-Verwende bei:
-- Neue Features oder Komponenten
-- Refactoring (Struktur ändert sich)
-- Alles was >1 Datei betrifft
-- Architektur-Entscheidungen
-- Wenn du unsicher bist → Default ist Spec-First
-
-**Bei Konzept-/Architektur-/Design-Entscheidungen zusätzlich `global-stress-test` laden** — der härtet den Entwurf (Bruchstellen, Skalierbarkeit unter Last, blinde Winkel), bevor er in einen Plan gegossen wird. Die „Risiken"-Sektion im Plan-Format unten ist der leichte Default; der Stress-Test ist der Tiefendurchlauf und füttert genau diese Sektion, statt sie zu ersetzen. Nicht bei Routine-Ausführung feuern (Section bauen, Commit/PR, Lookup, Statuscheck, Mini-Edit).
-
-**Plan-Format:**
-```
-## Analyse
-[Was ist die Aufgabe, was habe ich verstanden]
-
-## Relevante Skills
-[Welche Skills gelesen, welche Regeln gelten]
-
-## Benötigte Dateien
-[Was brauche ich noch / was habe ich gelesen]
-
-## Plan
-[Nummerierte Schritte, konkret]
-
-## Risiken
-[Was könnte schiefgehen, was muss geprüft werden]
-
-Warte auf OK.
-```
-
-### Direkt-Modus (sofort umsetzen)
-Verwende bei:
-- Einfache Bugfixes mit klarem Scope
-- Kleine Textänderungen
-- Klar definierte, isolierte Anpassungen
-- Joscha sagt explizit "mach einfach" oder "direkt"
-
-Auch im Direkt-Modus: Skill lesen, Datei lesen, dann erst Code.
-
----
-
-## 3. Routing — zwei Fragen vor jedem Task
-
-Zwei unabhängige Achsen. **Charakter** (wie schwer ist das Denken) steuert das Modell. **Aufwand/Volumen** (wie viel Arbeit) steuert das Werkzeug. Aufwand steuert NICHT das Modell — er steuert Werkzeug + Scope + Hygiene.
-
-### Frage 1 — welcher Kopf? (Charakter → Modell-Tier)
-
-Anker ist der Charakter, nicht das Modell — die Zuordnung nennt die aktuellen Tiers (ohne Versionsnummer, die driftet).
-
-| Task-Charakter | Tier |
-|----------------|------|
-| Echte Denkarbeit — Architektur/Design, mehrdeutige Specs mit Abwägung, fiese Multi-System-Bugs, das Planen/Vorausdenken selbst | höchstes (Opus) |
-| Ausführung gegen feststehende Konventionen — Skill-Inhalte, Section/CSS/JS nach LIFTR-Regeln, Routine-Refactors, Content-Entwürfe | mittleres (Sonnet) |
-| Mechanisches — kurze Lookups, Statuschecks, Mini-Edits, Datei lesen | schnellstes (Haiku) |
-
-Das Mapping Charakter→Tier ist der einzige Teil, der altern kann. Ändert sich die Tier-Landschaft, hier eine Zeile anpassen — die Logik bleibt.
-
-**Der Self-Check läuft an jeder Phasengrenze neu, nicht nur im ersten Turn.** Der Charakter eines Tasks ist nicht fix — er kippt, wenn die Arbeit von einer Denkphase (Architektur, Recherche, Abwägung) in eine Ausführungsphase (Skill-Inhalt schreiben, `.skill` packen) übergeht. An genau dieser Naht den Charakter neu bewerten; der erste Turn bindet nicht. Beispiel: der Übergang von der Architektur-/Abwägungsphase (Opus) zum Schreiben der Skill-Inhalte (Sonnet) — an dieser Naht den Charakter neu bewerten, Marker davor, auch wenn davor Opus lief. Der Repo-Commit selbst ist kein Chat-Schritt mehr (siehe Frage 2), er läuft in Claude Code.
-
-**Self-Check** (nach jeder Charakter-Bestimmung): aktives Modell mit nötigem Tier vergleichen. NUR bei echtem Mismatch handeln, sonst still bleiben:
-- Aktives Tier zu HOCH (z.B. Opus für Mechanisches) → kurzer Hinweis, dann normal weiter. Token-Sparen, kein Qualitätsrisiko.
-- Aktives Tier zu NIEDRIG (z.B. Sonnet für harte Architektur) → Wechsel-Vorschlag VOR der inhaltlichen Antwort, damit Joscha wechselt und neu fragt. Achtung: diese Richtung ist unzuverlässiger — ein schwächeres Modell erkennt eigene Überforderung evtl. nicht. Im Zweifel lieber einmal mehr flaggen.
-
-### Frage 2 — welches Werkzeug? (Aufwand/Medium-Fit → Chat ↔ Claude Code)
-
-| Signal | Werkzeug |
-|--------|----------|
-| Wenige Dateien, Denken/Design/Content, plan→approve-Rhythmus | Chat (hier) |
-| Arbeitsform riecht nach Ausführungsschleife — viele Dateien gleichzeitig, Code wirklich ausführen/testen, lange agentische Schleife | Claude Code |
-
-**Harter Mechanik-Trigger (nicht verhandelbar).** Der Chat schreibt **nie** ins Repo. Jeder schreibende Zugriff — Branch, Commit, `push_files`, PR, Merge — läuft **ausschließlich über Claude Code**, egal ob eine Datei oder zwanzig, egal wie trivial der einzelne Edit ist. Es gibt **keine chirurgische Ausnahme** mehr (auch nicht für 1-2 Dateien).
-
-Grund ist ein konkreter Fehlermodus, den der Byte-Durchlauf durch den Chat-Kontext erzeugt: `get_file_contents` liefert den Inhalt (oft base64, ~⅓ aufgebläht), `push_files` schickt den vollen `content` zurück — die Datei liegt damit **doppelt** im Kontext, mal N Dateien, mal N Korrekturschleifen. Und weil **jeder Turn den gesamten Verlauf mitzahlt**, schaukelt sich das auf, bis „maximale Länge erreicht" kommt — der Chat bricht mitten im Zyklus ab. Claude Code arbeitet dagegen auf einem ausgecheckten Repo auf der Platte, in-place, mit git — der Dateiinhalt läuft nie durch einen sich aufsummierenden Chat-Kontext. Dasselbe Prinzip wie `global-agent-framework` §12 („Bytes nie durch den Kontext routen"), hier als harte Selbst-Regel.
-
-**Lesen ≠ Schreiben.** Der Chat darf `get_file_contents` / `read_file` weiter zum *Entwerfen* nutzen (§4). Verboten ist nur der *schreibende* Zyklus. Sobald es „ins Repo" heißt, geht es raus.
-
-Der Wechsel läuft über einen **Migration-Prompt** (→ `references/handover.md`), nicht über einen rohen Kontextbruch — der Prompt IST der Kontexttransfer. Dadurch darf die Schwelle niedriger liegen als bei einem echten Bruch: nicht „lohnt der Aufwand?", sondern „passt die Arbeitsform?". Ehrlich bleibt: billiger als ein Bruch, aber nicht gratis — diese Session endet, Weiter-Iterieren im selben Thread geht nicht.
-
-In Claude Code löst sich Frage 1 teilweise auf — Code wählt das Modell intern.
-
-### Handover-Marker
-
-Wenn ein Wechsel sinnvoll ist, IMMER am ENDE der Antwort als Blockquote, immer gleiche Form. Drei Typen, je eigenes Glyph:
-
-> **🧠 Modellwechsel** — jetzt auf das mittlere Tier (Sonnet) für den Commit-Zyklus.
-
-> **🧰 Werkzeugwechsel** — dieser Task will Claude Code: Repo-weiter Refactor mit Testlauf. Migration-Prompt unten.
-
-> **🔄 Kontextwechsel** — dieser Thread ist lang/themen-gemischt, frischer Chat sinnvoll. Migration-Prompt unten (→ §8).
-
-Beim 🧰- UND beim 🔄-Marker direkt den fertigen Migration-Prompt nach `references/handover.md` mitliefern, zum Rüberkopieren — nicht nur flaggen. Beim 🔄 ist es derselbe Migration-Prompt mit Ziel `frischer Chat` statt `Claude Code`.
-
-WICHTIG: Claude kann weder Modell noch Werkzeug noch Thread selbst umschalten — alle drei Marker sind Hinweise an Joscha, der manuell wechselt (Modell per Dropdown, Werkzeug per neuer Code-Session, Thread per neuem Chat). Claude erkennt und sagt an, schaltet aber nie selbst um.
-
-Lohnt sich nur bei längeren/gemischten Sessions. Bei kurzen Tasks: ein Setup nehmen und durchziehen — das Hin und Her hat selbst Reibungskosten.
-
-**Drift:** Die Capability-Grenze zwischen Chat-mit-MCP und Claude Code altert (beide werden mächtiger) — genau wie die Tier-Nummern. Deshalb hier nur das Entscheidungs-PRINZIP pflegen (Ausführungsschleife/viele Dateien → Code), KEINE eingefrorene Feature-Liste von Claude Code. Die wäre in Wochen falsch.
-
----
-
-## 4. Vor jedem Code-Output
-
-**STOPP. Immer diese Reihenfolge:**
-
-1. **Skills lesen** — Welche Skills sind relevant? Öffnen und lesen, NICHT aus Erinnerung arbeiten.
-2. **Dateien lesen** — Datei SELBST holen via verbundenem MCP (GitHub `get_file_contents`, Drive `read_file`). Nur wenn kein MCP-Zugriff besteht → vom Nutzer anfordern. NIE raten was drinsteht.
-3. **Plan oder Code** — Je nach Scope-Entscheidung (siehe oben).
-
-**Keine Ausnahmen. Kein "schnell mal eben".**
-
----
-
-## 5. Bei Änderungen an bestehenden Dateien
-
-1. **Scope prüfen:** Was ist die Verantwortung dieser Datei?
-2. **Existenz prüfen:** Gibt es das bereits woanders? → Fragen oder Datei anfordern
-3. **Minimal-Prinzip:** Nur hinzufügen was explizit fehlt — keine "Verbesserungen" ohne Rückfrage
-4. **Seiteneffekte:** Wer nutzt diese Datei noch? Kann die Änderung etwas kaputt machen?
-5. **Bei Unsicherheit fragen**
-
-### 5.1 Skill-Updates token-effizient
-
-**Zweigleisig:** Der Chat baut das `.skill` für den Sofort-Mount; die GitHub-Seite läuft über Claude Code (§3, harter Mechanik-Trigger — kein Repo-Schreibzugriff im Chat). Der volle Datei-Inhalt läuft im Chat **genau einmal** durch den Kontext (beim `.skill`-Packen) — jeder andere Schritt vermeidet die Voll-Durchquerung:
-
-1. **Basis = installierte Version:** `cp /mnt/skills/user/<name>/SKILL.md /home/claude/`. Nie base64 aus der GitHub-API abtippen, nie den Volltext per `curl` in den Kontext laden. Bei Drift-Verdacht nur Byte-Größe/SHA gegen `main` prüfen, nicht den Inhalt.
-2. **Edits via `str_replace`** auf der lokalen Datei (nur die Diffs) — die Datei nie komplett neu schreiben.
-3. **Struktur-Check via `grep`** (Version, Abschnittszahl, Marker) — kein erneutes `cat` der Vollversion zur reinen Kontrolle.
-4. **`.skill`-Paket bauen** (skill-creator `package_skill`, Skill-Ordner auf Wurzelebene) und ausliefern → Joscha mountet sofort. Das ist die *eine* Voll-Durchquerung im Chat; danach ist die Chat-Seite fertig.
-5. **GitHub-Seite via Claude Code** — kein `push_files` im Chat. Der Handover-Prompt trägt **exakt den final editierten SKILL.md-Inhalt**; Claude Code committet *nur diese Bytes*: Branch → PR → Squash-Merge (→ `global-git-conventions`) → Byte-Verifikation (`diff` gegen den Handover-Stand). Claude Code leitet die Änderung **nicht selbst neu ab**.
-
-**Drift-Kontrakt (zwingend).** Der Chat ist alleiniger *Editor* des Inhalts, Claude Code alleiniger *Committer*. Nur so sind gemountetes `.skill` und Repo-`main` byte-identisch. Zwei unabhängige Editoren (Chat *und* Code) würden genau die Drift erzeugen, die die Byte-Verifikation eigentlich verhindern soll — deshalb: eine Edit-Quelle, ein Committer.
-
----
-
-## 6. Kommunikation
-
-- Zeige erstellte/geänderte Dateien mit Download-Links
-- Frage aktiv nach wenn Entscheidungen nötig sind
-- Sei ehrlich wenn etwas nicht optimal gelöst ist
-- Wenn der Scope zu groß wird → vorschlagen wie aufgeteilt werden kann
-- Wenn du unsicher bist → sag es, statt zu raten
-
----
-
-## 7. Bei Fehlern
-
-Wenn ein Fehler passiert, dokumentiere:
-
-1. **Was:** Was war der Fehler?
-2. **Warum:** Root Cause — warum ist es passiert?
-3. **Vermeidung:** Wie wird es in Zukunft vermieden?
-
----
-
-## 8. Konversations-Hygiene
-
-Lange Konversationen sind teuer und ein stiller Qualitätskiller. Regeln:
-
-- **Ein Task, ein Chat — aus Token-Gründen.** Jeder Turn zahlt den kompletten Verlauf mit; ein langer Thread wird pro Message teurer. Kontext geht durch einen neuen Chat NICHT verloren (Memory + "Search past chats" tragen das Nötige), also kostet der Schnitt nichts.
-- **Dateien teilen, nicht beschreiben.** "Der Block hat einen Bug" → schlecht. Datei dranhängen oder per MCP holen → gut. Kontext > Beschreibung.
-- **Korrekturen erklären.** "Falsch" ist okay, "Falsch weil X, die richtige Regel ist Y" ist besser — hilft im selben Chat und zeigt ob ein Skill-Update nötig ist.
-- **Wenn der Chat lang wird:** Zusammenfassen was bisher passiert ist, oder neuen Chat starten mit klarem Auftrag. Der „klare Auftrag" ist dasselbe Artefakt wie der Migration-Prompt — gleiches Skelett, nur Ziel `frischer Chat` statt `Claude Code` (→ `references/handover.md`).
-
-**Claude:** Wenn du merkst dass eine Konversation thematisch abdriftet oder sehr lang wird, weise Joscha freundlich darauf hin dass ein neuer Chat sinnvoll wäre — konkret über den `🔄 Kontextwechsel`-Marker (§3) am Antwortende, samt fertigem Migration-Prompt (Ziel `frischer Chat`).
-
----
-
-## 9. Anti-Patterns
-
-Vermeide diese häufigen Fehler:
-
-| Anti-Pattern | Stattdessen |
+| Dimension | Wenn unklar |
 |---|---|
-| Aus Erinnerung arbeiten | Skill lesen, Datei lesen |
-| Raten was in einer Datei steht | Datei selbst via MCP holen, sonst anfordern |
-| Alles auf einmal umsetzen | In Iterationen aufteilen |
-| "Verbesserungen" ohne Auftrag | Nur machen was gefragt wurde |
-| Monolithischer Output | Ein Feature/Fix pro Iteration |
-| Annahmen nicht benennen | Explizit sagen was du annimmst |
-| Fragewand (10+ Fragen) | Max 3-4 gezielte Fragen |
-| Modell-Hinweis bei jedem Task | Nur bei echtem Tier-Mismatch flaggen |
+| **WAS** — Neubau, Änderung, Bugfix, Refactor? | nachfragen, nicht anfangen |
+| **WO** — Datei, Modul, Szenario, Tabelle? | erst selbst suchen (Repo, MCP, Memory), dann fragen |
+| **REGELN** — Pattern, Vorgabe, Skill? | Annahme explizit benennen |
+| **OUTPUT** — Plan, Code, Diff, Import-JSON? | Default nach §2 |
 
----
+Höchstens 3–4 gezielte Fragen auf einmal.
 
-## 10. Knowledge Architecture
+## 2. Plan oder direkt?
 
-Drei Stufen mit unterschiedlichen Kosten. Falsche Platzierung verschwendet Tokens oder verursacht Misses.
+**Direkt umsetzen** — klarer Scope und billig zu korrigieren: Bugfix, Textänderung, isolierte Anpassung, mechanische Änderung (auch über mehrere Dateien). Ebenso, wenn Joscha „mach einfach" / „direkt" sagt.
 
-```
-Memory  = Generiert aus Chatverlauf, automatisch verfügbar. Stabile Fakten,
-          Identität, Architektur. Kostet Token im Kontext — nur nicht manuell
-          verwaltet. NICHT "kostenlos".
-Skill   = Task-spezifisch, on-demand per Tool-Call geladen. Prozeduren,
-          Anleitungen, API-Docs. Kostet nur wenn geladen.
-Project = (falls projektgebunden gearbeitet wird) Project-Knowledge, permanent
-          im Kontext jedes Chats im Projekt. Für projektweite Referenz.
-```
+**Erst Plan, auf OK warten** — Architektur-/Konzeptentscheidung, neue Komponente, Struktur-Refactor, mehrdeutige Spec, alles schwer Umkehrbare oder Geld-/Daten-kritische (Live-Szenarien, Airtable-Schema, Lexware).
 
-### Entscheidungsregel
+Bei Architektur-/Konzeptentscheidungen zusätzlich `global-stress-test` laden — nicht bei Routine.
 
-| Wissen | Gehört in |
-|--------|-----------|
-| Stabile Architektur-Fakten, Identität | Memory |
-| Prozedurales "Wie baue ich X", API-Docs | Skill |
-| Projektweite Referenz, in jedem Chat des Projekts gebraucht | Project-Knowledge |
+Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken** → Warte auf OK.
 
-### Inline (SKILL.md) vs. references/
+## 3. Vor jeder Änderung
 
-Diese Datei wird bei JEDER Nachricht komplett gelesen — jede Zeile ist Always-on-Kost. Detaillierte Vorlagen, die nur selten gebraucht werden, gehören deshalb nach `references/` (on-demand geladen), nicht inline.
+1. Relevante Skills öffnen — nicht aus Erinnerung arbeiten.
+2. Dateien, Szenarien, Schema selbst holen (Repo-Checkout, MCP). Nur ohne Zugriff anfordern. Nie raten.
+3. Minimal-Prinzip: nur das Gefragte, keine ungefragten „Verbesserungen".
+4. Seiteneffekte prüfen: Wer nutzt das noch?
 
-| Inhalt | Gehört |
-|--------|--------|
-| Häufig gebraucht ODER sehr kurz (Spec-Format §2, Postmortem §7) | inline in SKILL.md |
-| Selten gebraucht UND detailliert (Migration/Handover-Template) | `references/` |
+## 4. Repo-Arbeit
 
-Vorhandene References:
-- `references/handover.md` — Session-Handover-Template. Deckt beide Ziele ab: Chat→Claude Code (Werkzeugwechsel, §3) und Chat→frischer Chat (Hygiene, §8). Öffnen, wenn ein 🧰-Wechsel feuert oder ein neuer Chat gebrieft wird.
+- **Schreiben** über einen ausgecheckten Klon mit git: Branch → Commit → PR → Merge nach `global-git-conventions`.
+- **Nie** Dateiinhalte über die GitHub-API (`push_files`, `create_or_update_file`) durch den Chat schicken — der Inhalt läge doppelt im Kontext und summiert sich mit jeder Korrekturschleife auf.
+- **Lesen** über die API ist okay; bei mehr als ein paar Dateien lieber auch klonen.
+- Repo in der Session nicht erreichbar, oder lange Ausführungsschleife (viele Dateien, Tests, Builds) → Übergabe an Claude Code (§7).
 
-### Anti-Patterns
+## 5. Skill-Updates
 
-- Prozedurales Wissen ("Wie baue ich X") in Memory → gehört in Skill
-- Task-spezifische API-Docs dauerhaft im Kontext → gehört in Skill
-- Volatiles (Versionsnummern, häufig wechselnde Werte) in Always-on-Wissen → driftet, vermeiden
+1. Basis = installierte Version (`/mnt/skills/…/<name>/`) in den Arbeitsordner kopieren. Bei Drift-Verdacht nur SHA/Größe gegen `main` vergleichen, nicht den Inhalt laden.
+2. Nur gezielte Edits — Datei nicht komplett neu tippen (Ausnahme: bewusster Neubau einer Hauptversion).
+3. Kontrolle per `grep` (Version, Abschnitte), kein erneutes Komplett-Lesen.
+4. `.skill` mit skill-creator `package_skill.py` bauen und ausliefern → Joscha mountet.
+5. Exakt dieselben Bytes ins Skill-Repo committen (§4) und per `diff` verifizieren. Eine Edit-Quelle — gemountete Version und `main` bleiben byte-identisch.
+
+## 6. Modell & Delegation
+
+- Echte Denkarbeit (Architektur, Abwägung, verzwickte Multi-System-Bugs) → höchstes verfügbares Tier.
+- Mechanisches innerhalb eines Tasks (Lookups, Massen-Lesen, Statuschecks) an einen Subagenten mit kleinerem Modell geben, statt den Hauptchat zu wechseln.
+- Modellwechsel-Hinweis an Joscha nur bei echtem Mismatch im Hauptchat, sonst still.
+
+## 7. Hygiene & Übergabe
+
+- Ein Task, ein Chat. Kontext tragen Memory und Chat-Suche.
+- Thread lang oder themen-gemischt → am Antwortende:
+
+  > **🔄 Kontextwechsel** — frischer Chat sinnvoll. Übergabe-Prompt unten.
+
+- Übergabe an Claude Code analog mit **🧰 Werkzeugwechsel**.
+- Beide Male den fertigen Übergabe-Prompt nach `references/handover.md` mitliefern. Claude schaltet nie selbst um — das sind Hinweise an Joscha.
+
+## 8. Fehler
+
+Dokumentieren: **Was** · **Warum** (Root Cause) · **Vermeidung** — bei wiederkehrenden Fehlern Skill-Update vorschlagen.
+
+## 9. Wissen ablegen
+
+| Wissen | Ort |
+|---|---|
+| Regeln, die bei jeder Nachricht gelten | Präferenzen |
+| Stabile Fakten, Identität, Projektstand | Memory |
+| Prozeduren, „Wie baue ich X", API-Docs | Skill (on demand) |
+| Projektweite Referenz | Project-Knowledge |
+
+Volatiles (Versionsnummern, Modellnamen, Feature-Listen von Tools) nicht in Always-on-Wissen — driftet.
