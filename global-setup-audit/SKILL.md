@@ -2,12 +2,12 @@
 name: global-setup-audit
 description: >-
   Prüft Joschas Claude-Setup (Skills, Konnektoren, Präferenzen, Memory, geplante Tasks,
-  Projekte, Backup-Repo skill-library, Actions-Minuten, Branches) auf Zeitgemäßheit,
-  Konsistenz und Funktion; berichtet, ändert nichts. Laden beim monatlichen Setup-Audit
-  und bei Fragen, ob ein Skill, Konnektor oder eine Regel noch zeitgemäß ist, stört oder
-  sich überschneidet. Umsetzung: global-workflow.
+  Projekte, Backup-Repo, Actions-Minuten, Branches) und schlägt passende neue
+  Skills, Plugins und Konnektoren vor; ändert nichts. Laden beim monatlichen Setup-Audit
+  und bei Fragen, ob etwas noch zeitgemäß ist, stört, sich überschneidet oder ob sich
+  ein neuer Skill oder Konnektor lohnt. Umsetzung: global-workflow.
 metadata:
-  version: "1.2.1"
+  version: "1.3.0"
 ---
 
 # Setup-Audit — das Claude-Setup prüfen
@@ -98,6 +98,34 @@ Vergleich mit dem letzten Lauf: steigen Läufe oder Minuten eines Repos deutlich
 
 Claude kann Anweisungen und Dateien anderer Projekte nicht lesen. Der Bericht enthält dafür eine kurze Checkliste für Joscha: Anweisungen aktuell? Wissen veraltet? Memory-Einstellung passend?
 
+### Neue Möglichkeiten (proaktiv)
+
+Nicht nur prüfen, was da ist, sondern suchen, was fehlt. Ausgangspunkt ist immer ein **Anlass**, nie der Katalog.
+
+**1. Anlässe sammeln** (vor jeder Suche):
+- Reibungen seit dem letzten Lauf: `recent_chats` (Titel der letzten ~20 Chats) und gezielt `conversation_search` nach wiederkehrenden Handgriffen, Umwegen, „geht nicht".
+- Offene Punkte in den Memory-Bereichen und Befunde dieses Laufs (z. B. fehlender Konnektor, Skill mit Lücke).
+- Arbeitsfelder aus Profil und Memory: Make, Airtable, Shopify, Lexware, Figma, Webflow, GitHub/Cloudflare, Telegram/Mail.
+
+**2. Suchen — begrenzt, rund 15 Aufrufe je Lauf:**
+
+| Quelle | Wie | Umfang |
+|---|---|---|
+| Plugin-, Skill- und Konnektor-Katalog | `SearchPlugins`, `SearchSkills`, `SearchMcpRegistry` | je Anlass eine Suche; dazu je Katalog eine Breitensuche über die Arbeitsfelder |
+| Anthropic-Produktstand | Ergebnis aus §1.2 | neue eingebaute Funktion, die einen eigenen Skill oder Umweg ersetzt |
+| Hersteller | WebSearch | nur für genutzte Werkzeuge ohne Konnektor: gibt es inzwischen einen offiziellen MCP-Server? |
+| Community im Web | WebSearch | höchstens 2 Suchen, nur für eine konkrete Lücke, die die Kataloge nicht schließen |
+
+**3. Filtern — ein Kandidat muss alle Kriterien erfüllen:**
+1. **Anlass:** löst ein beobachtetes Problem oder eine wiederkehrende Aufgabe. „Könnte nützlich sein" reicht nicht.
+2. **Läuft bei Joscha:** claude.ai, Cloud-Sitzungen, Projekte. Nichts, das lokale Programme oder Abos voraussetzt, die er nicht hat.
+3. **Keine Doppelung:** überschneidet sich nicht mit eigenem Skill oder Konnektor — oder ist klar besser; dann als Ersatz vorschlagen und sagen, was entfällt.
+4. **Platz in der Skill-Liste:** Zahl der Skills × Beschreibungslänge gegen das Budget (§1.2). Plugins mit Dutzenden Skills nur, wenn der Nutzen den Platz rechtfertigt.
+5. **Herkunft und Rechte:** Anthropic oder offizieller Hersteller vor Community. Reichweite (eingeschlossen, extern, privilegiert), schreibende Rechte, welche Daten das Haus verlassen. Community-Kandidaten: Code lesen, gepflegt (Update < 6 Monate).
+6. **Aufwand gegen Nutzen:** Einrichtung, Konto, laufende Kosten gegen eingesparte Zeit.
+
+**4. Berichten:** höchstens 3 Vorschläge, nach Nutzen sortiert. Verworfene Kandidaten mit einem Halbsatz Grund, damit sie nicht wiederkommen. Nichts Passendes gefunden → so sagen. Ersetzt eine neue eingebaute Funktion einen eigenen Skill, ist das zusätzlich ein 🟡-Befund beim Skill.
+
 ## 4. Bewerten
 
 | Stufe | Bedeutung |
@@ -126,6 +154,11 @@ Umgebung/Produkt: … → betroffene Skills: …
 ## Befunde
 ### 🔴 <Gegenstand> — <ein Satz>
 Was · Warum es stört · Vorschlag · Aufwand (S/M/L)
+
+## Neue Möglichkeiten
+### 💡 <Name> — <ein Satz Nutzen>
+Anlass · Was es kann · Ersetzt/entfällt · Herkunft & Rechte · Platz in der Skill-Liste · Einrichtung (S/M/L)
+Geprüft und verworfen: <Name> — <Grund>; …
 
 ## Manuell zu prüfen
 Projekte: …
@@ -157,3 +190,5 @@ Das Inventar ist der Referenzstand für den nächsten Lauf — immer vollständi
 - **Alles lesen.** Inventar + Fokus + Rotation reichen.
 - **Schreibende Test-Aufrufe** an Konnektoren oder Repos (keine Workflows starten, keine Branches löschen).
 - **Befund-Inflation.** Zehn Kosmetik-Punkte sind kein Audit.
+- **Katalog-Shopping.** Vorschlagen, weil etwas neu oder beliebt ist, statt weil es einen Anlass löst.
+- **Selbst installieren.** Vorschläge kommen als Karte (`SuggestPluginInstall`, `SuggestSkills`, `SuggestConnectors`) oder im Bericht — die Entscheidung trifft Joscha.
