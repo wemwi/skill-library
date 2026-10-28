@@ -10,8 +10,9 @@ Release-PR), **Renovate** hält Dependencies aktuell (Bump-PRs).
   „Auto-Merge" unten. Alle übrigen PRs mergt der Auto-Merge-Job im Prüf-Workflow
   (`ci.md`).
 - **Renovate-Bump-PRs bleiben manuell.** Bewusst nicht auto-gemergt — ein Major-Bump auf
-  einem Produktions-Worker soll eine Entscheidung bleiben. Das Dependency Dashboard zeigt
-  den Rückstand zentral.
+  einem Produktions-Worker soll eine Entscheidung bleiben. Minor/Patch kommen gebündelt
+  einmal pro Woche, Major erst nach Freigabe im Dependency Dashboard (Abschnitt
+  „Bündeln und Freigabe" unten).
 
 ## Release-Automation: release-please
 
@@ -141,6 +142,24 @@ Dependency Dashboard (ein Issue pro Repo) zeigt den Gesamt-Rückstand zentral.
    generierten Default-Config). `config:recommended` liefert sinnvolle Defaults; **kein**
    Auto-Merge aktivieren. `"mode": "full"` ist Pflicht (siehe Silent-Falle unten).
 3. Onboarding-PR mergen. Ab dann öffnet Renovate Bump-PRs nach Zeitplan.
+
+### Bündeln und Freigabe (Vorlage)
+
+Damit sich kein Rückstand aus Einzel-PRs aufstaut (`ci.md`, Sparregel 8):
+
+| Update | Verhalten |
+|--------|-----------|
+| Minor, Patch, Pin, Digest | **ein** PR „Abhängigkeiten (minor/patch)" je Repo, montags vor 6 Uhr (`Europe/Berlin`) |
+| Major | kein PR, bis im Dependency Dashboard unter „Pending Approval" das Häkchen gesetzt ist (`dependencyDashboardApproval`) |
+| Minor eines 0.x-Pakets | wie Major: darf nach SemVer brechen, eigener PR erst nach Häkchen |
+| `@modelcontextprotocol/sdk` | aus: folgt dem exakten Pin von `agents`, kommt über die Foundation (`global-mcp-framework`) |
+| `mcp-foundation` | eigener PR (Gruppe `mcp-foundation`), Präfix `fix(deps):` |
+
+Die Reihenfolge der `packageRules` zählt: spätere Regeln überschreiben frühere. Braucht
+ein Update in einer Gruppe Freigabe, wartet die ganze Gruppe; deshalb nimmt die 0.x-Regel
+ihre Updates mit `"groupName": null` aus dem Bündel. Wer nicht bis Montag warten will,
+setzt im Dashboard unter „Awaiting Schedule" das Häkchen. Vor dem Merge des Bündel-PRs
+gilt der Lockfile-Check aus `global-mcp-framework` (`references/deploy.md`).
 
 > [!WARNING]
 > **Silent-Falle.** Wird Renovate mit „All repositories" installiert, defaulten alle
