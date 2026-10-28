@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.0](https://github.com/wemwi/skill-library/compare/v6.3.0...v6.4.0) (2026-10-28)
+
+
+### Features
+
+* **global-setup-audit:** neue Skills, Plugins und Konnektoren proaktiv vorschlagen ([#230](https://github.com/wemwi/skill-library/issues/230)) ([9f4772a](https://github.com/wemwi/skill-library/commit/9f4772aaf52d17bea16b74ca7400cbcd4097d77b))
+
 ## [6.3.0](https://github.com/wemwi/skill-library/compare/v6.2.1...v6.3.0) (2026-10-28)
 
 
