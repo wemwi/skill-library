@@ -23,6 +23,7 @@ Enthaltenes Inventar:
 | `global-git-conventions` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
 | `global-make-conventions` | Konventionsstandard & Audit-Maßstab für Make-Szenarien: Architektur-Muster + MUST/SHOULD-Regelliste. |
 | `global-mcp-framework` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
+| `global-setup-audit` | Regelmäßige Prüfung des Claude-Setups (Skills, Konnektoren, Memory, Backup-Abgleich) mit Prüfbericht. |
 | `global-stress-test` | Denk-Modus zum Härten von Konzepten/Architektur: Bruchstellen, Skalierbarkeit, blinde Winkel. |
 | `global-workflow` | Universelles Arbeitsprotokoll: Task-Analyse, Modell-Routing, Nachfragen, Planung. |
 | `selectedleafs-brand` | Style-Kit der selectedleafs-Marke (Farben, Typo, Mockups, Icons). |
