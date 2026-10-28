@@ -1,0 +1,39 @@
+name: automerge
+
+# Mergt jeden PR automatisch (Squash), sobald die Inventar-Prüfung grün ist.
+# Ausnahmen: Entwürfe, PRs aus Forks, Renovate-Bumps (bleiben bewusst manuell,
+# siehe global-git-conventions), Release-PRs (mergt release-please.yml selbst)
+# und PRs mit Label `kein-automerge`. Label entfernen → Merge läuft nach.
+# Merge per PAT (RELEASE_PLEASE), damit release-please danach anläuft —
+# ein Push mit GITHUB_TOKEN würde keine weiteren Workflows auslösen.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, unlabeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: automerge-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  merge:
+    if: >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !startsWith(github.event.pull_request.head.ref, 'renovate/') &&
+      !startsWith(github.event.pull_request.head.ref, 'release-please--') &&
+      !contains(github.event.pull_request.labels.*.name, 'kein-automerge')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+      - name: Inventar prüfen
+        run: python3 scripts/check_inventory.py
+      - name: PR mergen
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE }}
+        run: gh pr merge --squash "${{ github.event.pull_request.number }}"

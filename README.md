@@ -50,6 +50,9 @@ Skill-Ordner als `.skill` packen (via `skill-creator`, Ordner als ZIP-Root).
 Bei einer Änderung: `metadata.version` im SKILL.md erhöhen, committen — den Tag
 setzt release-please, danach neu packen und in claude.ai neu installieren.
 
+PRs werden automatisch gemergt, sobald die Inventar-Prüfung grün ist
+(`automerge.yml`). Ausnahmen: Entwürfe, Forks, Renovate und Label `kein-automerge`.
+
 ## Gotchas
 
 - _(noch keine — Symptom → Ursache → Fix)_
