@@ -1,5 +1,16 @@
 # Changelog
 
+## [6.0.0](https://github.com/wemwi/skill-library/compare/v5.36.0...v6.0.0) (2026-10-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **global-git-conventions:** Prinzip 6 ändert die Anwendung — kein Pflicht-Commit-Block mehr, Änderungen laufen als PR mit Auto-Merge. Skill-Version 2.0.0.
+
+### Features
+
+* **global-git-conventions:** Auto-Merge aller PRs, CI-Sparregeln, Branch-Hygiene ([#214](https://github.com/wemwi/skill-library/issues/214)) ([1300e9a](https://github.com/wemwi/skill-library/commit/1300e9ab5e25b8a06c15ef11103860a184c6468c))
+
 ## [5.36.0](https://github.com/wemwi/skill-library/compare/v5.35.0...v5.36.0) (2026-10-28)
 
 
