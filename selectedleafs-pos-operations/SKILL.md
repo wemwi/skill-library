@@ -13,7 +13,7 @@ description: >-
   [Resolve]/[Archive]/[Dispatch]/[Notify]/[Maintain]. Ersetzt selectedleafs-pos-operations (v1) und
   selectedleafs-pos-operations-v2.
 metadata:
-  version: "1.15.0"
+  version: "1.15.1"
 ---
 
 # selectedleafs · POS Operations
@@ -140,4 +140,4 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 
 **`assets/`** — `catalog.md` (Nachrichtenkatalog) · `diagrams/` (`er.html`, `topology.html` — datierte Review-Artefakte) · `examples/` (echte Belege). Szenario-Innereien werden **live** per Make-MCP gelesen (`scenarios_get`) statt als Dump vorgehalten.
 
-**Abgrenzung:** Shopify-Theme → `liftr-*` · City-Marketing/Brand → `selectedleafs-city-content`/`-brand` · generische Make-Mechanik → `global-make-conventions` · Build-Time-Agenten → `global-agent-framework`.
+**Abgrenzung:** Shopify-Theme → `liftr-*` · City-Marketing/Brand → `selectedleafs-city-content`/`-brand` · generische Make-Mechanik → `global-make-conventions`.
