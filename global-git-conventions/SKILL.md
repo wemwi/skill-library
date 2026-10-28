@@ -15,7 +15,7 @@ description: >-
   bzw. CI-Kosten senken, Branches aufräumen.
   Gilt für alle eigenen Repos der Typen *-library, *-mcp und *-foundation.
 metadata:
-  version: "2.0.0"
+  version: "2.0.1"
 ---
 
 # global-git-conventions
