@@ -7,10 +7,11 @@ description: >-
   selbst nichts. Laden beim monatlichen Setup-Audit (geplanter Task oder Projekt
   Setup-Audit) und immer, wenn Joscha fragt, ob ein Skill, Konnektor oder eine Regel
   noch zeitgemäß ist, eher stört, veraltet ist oder sich mit etwas überschneidet,
-  oder ob das Backup-Repo skill-library vollständig und aktuell ist.
+  oder ob das Backup-Repo skill-library vollständig und aktuell ist, oder wie viele
+  Actions-Minuten und Branches die GitHub-Repos verbrauchen bzw. ansammeln.
   Nicht für die Umsetzung der Änderungen selbst — dafür global-workflow.
 metadata:
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # Setup-Audit — das Claude-Setup prüfen
@@ -29,6 +30,7 @@ Ohne Referenzstand prüft Claude gegen das eigene Trainingswissen, und das ist s
    - **Skill-Liste der Session:** Welche Skills erscheinen dort ohne Beschreibung? Die Beschreibung in der Datei ist nicht automatisch die, die Claude sieht. Wird die Liste zu lang, fallen Beschreibungen weg, und der Trigger greift nicht mehr.
    - **Konnektoren/MCP-Server:** verfügbare Server, Zahl der Tools, Hinweise in den Server-Instructions (z. B. „deprecated").
    - **Backup-Abgleich:** `wemwi/skill-library` klonen (öffentlich, `git clone --depth 1`) und `python3 scripts/backup_check.py --mount /mnt/skills/plugins --repo <klon>` laufen lassen. Die Tabelle kommt unverändert in den Bericht (§5).
+   - **Repo-Check:** alle Repos per `list_repos` holen, private per `add_repo` (Lesezugriff) anhängen, dann `python3 scripts/repo_check.py <repo> …` — Actions-Läufe und geschätzte Minuten je Repo, Abweichungen von den CI-Sparregeln, Branch-Hygiene. Die Tabelle kommt unverändert in den Bericht (§5).
    - **Geplante Tasks:** Liste mit letzter Ausführung.
    - **Produktstand:** Anthropic-Release-Notes und Claude-Hilfe seit dem letzten Lauf (WebSearch; Produktfakten über `product-self-knowledge`). Neue Fähigkeiten, Umbenennungen, Abkündigungen.
 3. **Mit dem letzten Inventar vergleichen** → „Was hat sich geändert". Das bestimmt den Fokus (§2).
@@ -83,6 +85,19 @@ Alle übrigen Skills laufen nur über das Inventar (Version, Größe, Beschreibu
 
 - Läuft er (letzte Ausführung ok)? Wird er noch gebraucht? Gibt es Doppelte?
 
+### Repos
+
+Maßstab ist `global-git-conventions` (`references/ci.md`, `references/settings.md`). Bewertung des `repo_check.py`-Ergebnisses:
+
+| Befund | Stufe |
+|---|---|
+| Privates Repo über dem Monatskontingent (2.000 Free / 3.000 Pro) oder ein Workflow mit hohem Windows/macOS-Anteil | 🔴 |
+| Verstoß gegen eine Sparregel in einem privaten Repo (Timeout, Abbruch, Doppellauf, `workflow_run`, Polling-Cron) | 🟡 |
+| „Auto-Löschen" aus oder > 20 gemergte Branches | 🟡 — Häkchen setzt Joscha; Altbestand per Workflow „Branch-Aufräumen" in `skill-library` |
+| Branches ohne PR, offene Renovate-PRs, Abweichungen in öffentlichen Repos | ⚪ |
+
+Vergleich mit dem letzten Lauf: steigen Läufe oder Minuten eines Repos deutlich, die Ursache benennen (welcher Workflow, welches Ereignis).
+
 ### Projekte (manuell)
 
 Claude kann Anweisungen und Dateien anderer Projekte nicht lesen. Der Bericht enthält dafür eine kurze Checkliste für Joscha: Anweisungen aktuell? Wissen veraltet? Memory-Einstellung passend?
@@ -125,6 +140,7 @@ Projekte: …
 ## Inventar
 Skills: Name · Version · Zeilen · Beschreibung sichtbar ja/nein
 Backup: Tabelle aus scripts/backup_check.py
+Repos: Tabelle aus scripts/repo_check.py
 Konnektoren: Name · erreichbar · Hinweise
 Geplante Tasks: Name · letzte Ausführung
 Tief geprüft: … · Nächste Rotation: …
@@ -143,5 +159,5 @@ Das Inventar ist der Referenzstand für den nächsten Lauf — immer vollständi
 - **Selbst umbauen.** Auch offensichtliche Fixes nur vorschlagen.
 - **Gegen Trainingswissen prüfen** statt gegen den erhobenen Referenzstand.
 - **Alles lesen.** Inventar + Fokus + Rotation reichen.
-- **Schreibende Test-Aufrufe** an Konnektoren.
+- **Schreibende Test-Aufrufe** an Konnektoren oder Repos (keine Workflows starten, keine Branches löschen).
 - **Befund-Inflation.** Zehn Kosmetik-Punkte sind kein Audit.
