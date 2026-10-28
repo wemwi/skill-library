@@ -13,11 +13,11 @@ Deshalb ist `assets/CHANGELOG.template.md` bewusst nur ein **minimaler Header** 
 3. Der Release-PR bleibt offen und sammelt weitere Änderungen, bis du ihn mergst.
 4. Merge des Release-PR = offizielles Release: Tag wird gesetzt, GitHub-Release erstellt, Changelog committet.
 
-## Den Commit-Vorschlag ausliefern (web-only)
+## Commit- und PR-Titel formulieren
 
-Weil du web-only von Hand committest, kommt am Ende jeder Repo-Änderung ein fertiger,
-copy-paste-fähiger Block — proaktiv, nicht auf Nachfrage (Pflicht-Regel in der
-`SKILL.md`). So sieht er aus:
+Öffnet Claude den PR selbst, ist der Titel unten der PR-Titel. Fehlt der Schreibzugriff,
+kommt derselbe Text als fertiger, copy-paste-fähiger Block ans Ende der Antwort —
+proaktiv, nicht auf Nachfrage (Regel in der `SKILL.md`). So sieht er aus:
 
 Nur Title (Normalfall, kleine Änderung):
 

@@ -7,7 +7,8 @@ Release-PR), **Renovate** hält Dependencies aktuell (Bump-PRs).
   `main` → release-please öffnet den Release-PR → der Workflow mergt ihn sofort → Tag,
   GitHub-Release und (bei `*-mcp`/`*-foundation`) Cloudflare-Deploy laufen ohne Handgriff.
   Der Merge ist kein Gate mehr. Mechanik und die dafür nötige PAT-Pflicht: Abschnitt
-  „Auto-Merge" unten.
+  „Auto-Merge" unten. Alle übrigen PRs mergt der Auto-Merge-Job im Prüf-Workflow
+  (`ci.md`).
 - **Renovate-Bump-PRs bleiben manuell.** Bewusst nicht auto-gemergt — ein Major-Bump auf
   einem Produktions-Worker soll eine Entscheidung bleiben. Das Dependency Dashboard zeigt
   den Rückstand zentral.

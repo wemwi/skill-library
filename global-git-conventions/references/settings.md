@@ -14,6 +14,22 @@ Alles web-only über die GitHub-Oberfläche setzbar. Ziel ist ein Solo-Betrieb, 
 | Default commit message (Squash) | **„Pull request title and description"** | **release-please-kritisch.** |
 | Automatically delete head branches | **an** | Branch-Liste bleibt sauber, kollidiert nicht mit dem Workflow. |
 
+### Branch-Hygiene
+
+Branches sind Arbeitszweige, kein Archiv: Nach dem Squash-Merge stecken ihre Änderungen im
+Commit auf `main`, die Einzel-Commits bleiben im PR sichtbar, und GitHub bietet dort
+„Restore branch" an. Ein gemergter Branch hat also keinen Wert mehr.
+
+- **„Automatically delete head branches" an** (Tabelle oben) — das verhindert das
+  Anwachsen. Claude kann Repo-Settings über den Proxy nicht ändern; das Häkchen setzt
+  Joscha einmal je Repo.
+- **Altbestand einmalig aufräumen:** Workflow **„Branch-Aufräumen"** im Repo
+  `skill-library` (Actions → Run workflow, Repo-Liste, erst `dry_run`). Gelöscht wird nur,
+  was zu einem gemergten PR gehört, keinen offenen PR hat und seit dem Merge keine neuen
+  Commits trägt; `renovate/*` und `release-please--*` bleiben.
+- **Branches ohne PR** (z. B. abgebrochene `claude/*`-Sitzungen) meldet der Setup-Audit;
+  Löschen nur nach Sichtung.
+
 > [!IMPORTANT]
 > **„Default to pull request title" ist kein Kosmetik-Punkt.** release-please liest beim Squash-Merge den **PR-Titel** als Conventional Commit. Steht der Default auf „commit messages", landet schnell ein nicht-conventional Titel auf `main` → **kein Release-PR**. Symptom und Re-Run-Fix: `automation.md`, „Wenn ein Release-PR ausbleibt".
 
