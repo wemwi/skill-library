@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.0](https://github.com/wemwi/skill-library/compare/v6.1.2...v6.2.0) (2026-10-28)
+
+
+### Features
+
+* **global-mcp-framework:** Auto-Merge nach grüner Prüfung ([#224](https://github.com/wemwi/skill-library/issues/224)) ([88c497f](https://github.com/wemwi/skill-library/commit/88c497fe4c0cd651eb96ad6321e2f82a1640c12e))
+
 ## [6.1.2](https://github.com/wemwi/skill-library/compare/v6.1.1...v6.1.2) (2026-10-28)
 
 
