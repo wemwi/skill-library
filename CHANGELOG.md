@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.2](https://github.com/wemwi/skill-library/compare/v6.1.1...v6.1.2) (2026-10-28)
+
+
+### Bug Fixes
+
+* **skills:** Beschreibungen für das Listen-Budget kürzen ([#222](https://github.com/wemwi/skill-library/issues/222)) ([1dcc6fc](https://github.com/wemwi/skill-library/commit/1dcc6fcb366f02860cb8ce6726e17e76169bc7ae))
+
 ## [6.1.1](https://github.com/wemwi/skill-library/compare/v6.1.0...v6.1.1) (2026-10-28)
 
 
