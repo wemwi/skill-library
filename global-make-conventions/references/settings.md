@@ -4,8 +4,25 @@
 
 Ein Szenario, dessen erstes Modul ein Webhook ist (`gateway:CustomWebHook`
 oder ein instant App-Trigger), MUSS mit Scheduling-Typ `immediately` laufen.
-`indefinitely` lässt die Aktivierung mit „Invalid interval" fehlschlagen —
-kein Grauzonen-Fall, sondern ein harter Fehler.
+
+**Der Fehler ist stumm, nicht laut.** Ein Intervall-Scheduling auf einem
+Webhook-Szenario wird von Make akzeptiert: das Szenario bleibt aktiv, die
+Liste zeigt es grün, und es sammelt sogar Executions. Was fehlt, ist die
+Zustellung — eingehende Calls landen in der Trigger-Queue und werden nur noch
+im Takt abgeholt. Jeder solche Zyklus endet mit
+
+    Trigger cannot be handled when processing an incomplete execution
+
+als Warnung: ein Lauf, 1 Operation, kein Durchlauf, keine Fehler-Mail (nur die
+Warnungs-Digest von Make). Der Nutzdaten-Call ist damit verloren. Nicht darauf
+verlassen, dass ein falsches Scheduling beim Aktivieren auffällt — es fällt
+nicht auf, und der Betrieb sieht wochenlang gesund aus, während die Execution-
+und Operations-Zähler still hochlaufen (96 Leerläufe/Tag bei 15-Min-Takt).
+
+**Häufigste Ursache: ein Blueprint-Import.** Der Import zieht das Scheduling
+aus dem Blueprint und überschreibt dabei den bis dahin richtigen Wert. Deshalb
+gehört die Nachkontrolle in die Import-Checkliste (B10), nicht in die
+Bau-Checkliste — beim Bauen stimmt es meist, es kippt später.
 
 ## Incomplete Executions
 
