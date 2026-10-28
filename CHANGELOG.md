@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.1](https://github.com/wemwi/skill-library/compare/v6.1.0...v6.1.1) (2026-10-28)
+
+
+### Bug Fixes
+
+* **global-workflow:** Skill-Updates auf main basieren, Abgleich per backup_check ([#220](https://github.com/wemwi/skill-library/issues/220)) ([cf6a20d](https://github.com/wemwi/skill-library/commit/cf6a20d8b013df23b2e6174d5ce59dbd644f5636))
+
 ## [6.1.0](https://github.com/wemwi/skill-library/compare/v6.0.0...v6.1.0) (2026-10-28)
 
 
