@@ -22,7 +22,7 @@ Enthaltenes Inventar:
 | `global-git-conventions` | Repo-Standard: README, SemVer, CHANGELOG, release-please. |
 | `global-make-conventions` | Konventionsstandard & Audit-Maßstab für Make-Szenarien: Architektur-Muster + MUST/SHOULD-Regelliste. |
 | `global-mcp-framework` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
-| `global-setup-audit` | Regelmäßige Prüfung des Claude-Setups (Skills, Konnektoren, Memory, Backup-Abgleich) mit Prüfbericht. |
+| `global-setup-audit` | Regelmäßige Prüfung des Claude-Setups (Skills, Konnektoren, Memory, Backup, Repos/Actions-Minuten) mit Prüfbericht. |
 | `global-stress-test` | Denk-Modus zum Härten von Konzepten/Architektur: Bruchstellen, Skalierbarkeit, blinde Winkel. |
 | `global-workflow` | Arbeitsprotokoll: wann planen, wann direkt umsetzen, Repo- und Skill-Änderungen, Fehler-Postmortem, Übergabe. |
 | `liftr-accordion` | Web Component liftr-accordion (LIFTR v4.9). |
