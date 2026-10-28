@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.0](https://github.com/wemwi/skill-library/compare/v6.2.1...v6.3.0) (2026-10-28)
+
+
+### Features
+
+* **liftr:** 32 Skills zu 5 zusammengelegt und gegen Theme korrigiert ([#226](https://github.com/wemwi/skill-library/issues/226)) ([af9ebfc](https://github.com/wemwi/skill-library/commit/af9ebfc7b0ffd1977e166a686a968a0f08a0acbc))
+
 ## [6.2.1](https://github.com/wemwi/skill-library/compare/v6.2.0...v6.2.1) (2026-10-28)
 
 
