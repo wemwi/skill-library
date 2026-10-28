@@ -83,7 +83,10 @@ Bei einer Änderung: `metadata.version` im SKILL.md erhöhen, committen — den 
 setzt release-please, danach neu packen und in claude.ai neu installieren.
 
 PRs werden automatisch gemergt, sobald die Inventar-Prüfung grün ist
-(`automerge.yml`). Ausnahmen: Entwürfe, Forks, Renovate und Label `kein-automerge`.
+(`inventory-check.yml`). Ausnahmen: Entwürfe, Forks, Renovate und Label `kein-automerge`.
+
+Wartung: Workflow **Branch-Aufräumen** löscht gemergte Branches in beliebigen eigenen
+Repos (Actions → Run workflow, erst als Probelauf).
 
 ## Gotchas
 
