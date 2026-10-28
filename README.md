@@ -25,6 +25,38 @@ Enthaltenes Inventar:
 | `global-mcp-framework` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
 | `global-stress-test` | Denk-Modus zum Härten von Konzepten/Architektur: Bruchstellen, Skalierbarkeit, blinde Winkel. |
 | `global-workflow` | Universelles Arbeitsprotokoll: Task-Analyse, Modell-Routing, Nachfragen, Planung. |
+| `liftr-accordion` | Web Component liftr-accordion (LIFTR v4.9). |
+| `liftr-audit` | Audit-Checkliste für LIFTR-Theme-Code (HTML, CSS, JS, Schema). |
+| `liftr-block` | Shopify-Blocks im LIFTR-Theme anlegen (Section Blocks und Theme Blocks). |
+| `liftr-button-group` | Theme-Block Button Group. |
+| `liftr-card-architecture` | Gemeinsame Card-Architektur des LIFTR-Themes. |
+| `liftr-card-density` | Dichte-System für alle LIFTR-Cards. |
+| `liftr-components` | LIFTR-Web-Components in Liquid-Sections und -Blocks einsetzen. |
+| `liftr-copyclip` | Web Component liftr-copyclip (LIFTR v4.9). |
+| `liftr-core` | Grundlage des LIFTR-Frameworks: LiftrModule, Core-Exports, CSS-Layer, Attribut- und Event-System. |
+| `liftr-css-system` | CSS-Architektur des LIFTR-Themes. |
+| `liftr-custom-colors` | Farb-Overrides für Merchants. |
+| `liftr-debug` | Systematisches Debugging von CSS und JavaScript. |
+| `liftr-fx` | LIFTR-FX-System (Effekte). |
+| `liftr-heading-group` | Theme-Block Heading Group. |
+| `liftr-i18n` | Übersetzung und Internationalisierung im LIFTR-Theme. |
+| `liftr-icons` | Icon-System mit drei Render-Modi (SVG-Sprite, CSS-Mask, CSS-only). |
+| `liftr-images` | Bilder im LIFTR-Theme. |
+| `liftr-list` | List-Ökosystem: liftr-list, -list-filter, -list-sort, liftr-range. |
+| `liftr-marquee` | Web Component liftr-marquee (LIFTR v4.9). |
+| `liftr-merchant-ux` | UX-Qualität der Theme-Editor-Schemas für Merchants. |
+| `liftr-notification` | Notification-System (api.notification.js + ui.notification.js). |
+| `liftr-panel` | Web Component liftr-panel (LIFTR v4.9). |
+| `liftr-rating` | Rating-Snippet. |
+| `liftr-scroll` | Web Component liftr-scroll (LIFTR v4.9). |
+| `liftr-section` | Shopify-Sections im LIFTR-Theme anlegen. |
+| `liftr-section-rendering` | API-Sections erstellen und nutzen (Section Rendering). |
+| `liftr-shop` | Shop-API (api.shop.js). |
+| `liftr-slider` | Web Component liftr-slider (LIFTR v4.9). |
+| `liftr-snippet` | Wiederverwendbare Liquid-Snippets im LIFTR-Theme. |
+| `liftr-status` | Status-Dot-Snippet. |
+| `liftr-sticky` | Web Component liftr-sticky (LIFTR v4.9). |
+| `liftr-store` | Store-Snippet und liftr_store-Metaobject. |
 | `selectedleafs-brand` | Style-Kit der selectedleafs-Marke (Farben, Typo, Mockups, Icons). |
 | `selectedleafs-city-content` | Content-Strategie für lokale City Landing Pages. |
 | `selectedleafs-figma` | Regeln für alle selectedleafs-Figma-Dateien (Variablen, Modi, Audit, MCP-Lehren, Icons). |
