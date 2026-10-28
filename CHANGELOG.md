@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.5.0](https://github.com/wemwi/skill-library/compare/v6.4.0...v6.5.0) (2026-10-28)
+
+
+### Features
+
+* **global-git-conventions:** Renovate wöchentlich bündeln ([#232](https://github.com/wemwi/skill-library/issues/232)) ([3f28e8d](https://github.com/wemwi/skill-library/commit/3f28e8d8b6dc43e7440b9c307f4bbfbff959bab2))
+
 ## [6.4.0](https://github.com/wemwi/skill-library/compare/v6.3.0...v6.4.0) (2026-10-28)
 
 
