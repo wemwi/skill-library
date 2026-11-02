@@ -1,8 +1,8 @@
 ---
 name: "global-workflow"
-description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover und autonomen Laeufen (bin weg, Nachtschicht). Nicht noetig bei reinen Fragen oder Lookups.
+description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover und autonomen Laeufen (unbeaufsichtigt, bin weg). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.1.0"
+  version: "2.1.1"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -85,7 +85,7 @@ Volatiles (Versionsnummern, Modellnamen, Feature-Listen von Tools) nicht in Alwa
 
 ## 10. Unbeaufsichtigt
 
-Gilt, wenn ein Auftrag ohne Joscha läuft: Signal „bin weg" / „läuft allein", geplanter Task (z. B. Nachtschicht) oder Handover mit `Status: bereit`.
+Gilt, wenn ein Auftrag ohne Joscha läuft: Signal „bin weg" / „läuft allein" oder geplanter Task.
 
 **Eignung** — alle drei nötig:
 - klar spezifiziert (Handover nach `references/handover.md`),
