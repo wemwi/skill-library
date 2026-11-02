@@ -3,7 +3,7 @@
 Vorlage für die Übergabe an eine **frische Session**, die diesen Chat nie gesehen hat. Drei Ziele, gleiches Skelett:
 - **Claude Code** — ausgelöst durch einen 🧰-Werkzeugwechsel (global-workflow §4, §7)
 - **frischer Chat** — ausgelöst durch einen 🔄-Kontextwechsel (global-workflow §7, „ein Task, ein Chat")
-- **unbeaufsichtigter Lauf / Nachtschicht** — Umsetzung ohne Joscha (global-workflow §10); braucht zusätzlich `Status:`, `## Bei Blocker` und `## Für Joscha (manuell)`
+- **unbeaufsichtigter Lauf** — Umsetzung ohne Joscha (global-workflow §10); braucht zusätzlich `## Bei Blocker` und `## Für Joscha (manuell)`
 
 ## Leitgedanke
 
@@ -24,9 +24,6 @@ Die Felder WAS/WO/REGELN/OUTPUT sind die Prompt-Vollständigkeit aus global-work
 
 ```
 # Handover → [Claude Code | frischer Chat | unbeaufsichtigt]
-
-Status: [Entwurf | bereit | läuft | erledigt | blockiert]
-(`bereit` nur nach Freigabe durch Joscha im Chat, sonst `Entwurf`)
 
 ## Auftrag (WAS)
 [Ein Satz: was gebaut/geändert wird]
@@ -61,4 +58,4 @@ Betroffen: [exakte Pfade — keine „die Datei von vorhin"]
 - Steht unter **Entschieden** ein Outcome oder eine Abwägung? → auf das Outcome reduzieren.
 - Gibt es eine harte Stop-Grenze? Ohne sie schleift eine Code-Session weiter als gewollt.
 - Wird ein Skill-Inhalt zitiert statt nur genannt? → auf den Namen kürzen.
-- Hat ein unbeaufsichtigter Handover eine Blocker-Regel und eine maschinell prüfbare DoD? → sonst ergänzen, vorher nicht `bereit`.
+- Hat ein unbeaufsichtigter Handover eine Blocker-Regel und eine maschinell prüfbare DoD? → sonst ergänzen.
