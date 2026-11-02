@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.0](https://github.com/wemwi/skill-library/compare/v6.5.0...v6.6.0) (2026-11-02)
+
+
+### Features
+
+* **global-workflow:** unbeaufsichtigte Läufe ([#235](https://github.com/wemwi/skill-library/issues/235)) ([8e6c3f9](https://github.com/wemwi/skill-library/commit/8e6c3f9c6b1a2a1c741516a5e9220bcdfb1ab42e))
+
 ## [6.5.0](https://github.com/wemwi/skill-library/compare/v6.4.0...v6.5.0) (2026-10-28)
 
 
