@@ -24,7 +24,7 @@ Enthaltenes Inventar:
 | `global-mcp-framework` | Custom-MCP-Server als Cloudflare Worker (OAuth 2.1, Foundation-Tag). |
 | `global-setup-audit` | Regelmäßige Prüfung des Claude-Setups (Skills, Konnektoren, Memory, Backup, Repos/Actions-Minuten) mit Prüfbericht und Vorschlägen für neue Skills und Konnektoren. |
 | `global-stress-test` | Denk-Modus zum Härten von Konzepten/Architektur: Bruchstellen, Skalierbarkeit, blinde Winkel. |
-| `global-workflow` | Arbeitsprotokoll: wann planen, wann direkt umsetzen, Repo- und Skill-Änderungen, Fehler-Postmortem, Übergabe. |
+| `global-workflow` | Arbeitsprotokoll: wann planen, wann direkt umsetzen, Repo- und Skill-Änderungen, Fehler-Postmortem, Übergabe, unbeaufsichtigte Läufe. |
 | `liftr-audit` | Prüf-Checkliste für LIFTR-Theme-Code (nur auf ausdrückliche Anfrage). |
 | `liftr-commerce` | LIFTR-Theme: Shop-API, Store-Finder, Card-Architektur und Density. |
 | `liftr-components` | LIFTR-Theme: Web Components (Markup, CSS Settings, Events, API). |

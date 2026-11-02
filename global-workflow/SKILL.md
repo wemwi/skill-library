@@ -1,8 +1,8 @@
 ---
 name: "global-workflow"
-description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Session-Uebergabe an frischen Chat oder Claude Code. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates und Handover. Nicht noetig bei reinen Fragen oder Lookups.
+description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover und autonomen Laeufen (bin weg, Nachtschicht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.0.1"
+  version: "2.1.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -82,3 +82,29 @@ Dokumentieren: **Was** · **Warum** (Root Cause) · **Vermeidung** — bei wiede
 | Projektweite Referenz | Project-Knowledge |
 
 Volatiles (Versionsnummern, Modellnamen, Feature-Listen von Tools) nicht in Always-on-Wissen — driftet.
+
+## 10. Unbeaufsichtigt
+
+Gilt, wenn ein Auftrag ohne Joscha läuft: Signal „bin weg" / „läuft allein", geplanter Task (z. B. Nachtschicht) oder Handover mit `Status: bereit`.
+
+**Eignung** — alle drei nötig:
+- klar spezifiziert (Handover nach `references/handover.md`),
+- umkehrbar: PR + CI + Auto-Merge, nur lesend oder nur vorbereitend,
+- Definition of Done maschinell prüfbar.
+
+Nicht geeignet: Live-Schreiben mit Geld- oder Datenwirkung (Make-Szenarien, Airtable-Schema, Lexware, Shopify-Bestand); Konzept, Gestaltung, Texte an Dritte; Aufgaben ohne prüfbares Ende. Bei kritischen Aufgaben läuft nur die Vorbereitung unbeaufsichtigt (z. B. Import-JSON bauen und validieren), die Ausführung macht Joscha.
+
+**Ablauf**
+1. Eignung in einer Zeile nennen.
+2. Offene Fragen vorab in einem Block (§1), danach ohne Rückfragen durchlaufen.
+3. Nach „bin weg" / „läuft allein" keine Fragen mehr: naheliegendste Lesart nehmen und im Bericht nennen.
+
+**Blocker:** nicht raten, nicht anhalten — Entwurf (Draft-PR) mit Begründung, weiter mit dem Rest. Ausnahme: nicht umkehrbare Entscheidung, die in beide Richtungen gehen kann → vorbereiten, Entscheidung darlegen, dort stoppen.
+
+**Für Joscha:** Handgriffe, die nur er kann (`.skill` mounten, Branches löschen, Repo-Einstellungen, Freigaben nach Sicherheitsregeln), nicht einzeln erfragen, sondern in dieser Liste bündeln.
+
+**Abschlussbericht:** DoD Punkt für Punkt erfüllt / nicht erfüllt · Abweichungen und Blocker · Für Joscha · Links (PRs).
+
+**Geplante Tasks** mit automatischer Freigabe nur mit den Konnektoren, die sie brauchen.
+
+**Tokens:** §6; unabhängige Stränge parallel in eigenen Worktrees.
