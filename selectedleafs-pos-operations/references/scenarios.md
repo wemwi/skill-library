@@ -26,7 +26,11 @@ Trigger: **lexoffice `watchEvents`**. Aufgabe: Voucher-Events aufnehmen, per **A
 Rückholprotokoll (Gegenstück zu Delivery, `dry_run`-fähig) → nutzt `[Resolve] Positions` mit `purchase_source = stock_avg` (Rückhol-Zweig, Bewertung zum gleitenden Ø-EK aus `Bestände`); schreibt die Rückhol-Zeilen. *Exakte Aufruf-Kette live prüfen (`scenarios_get 7062902`).*
 
 **`[Process] Upload PDF (Inventory)` · 6729541**
-Bestandsprotokoll → schreibt **`Bestandsprüfungen`** + **`Bestandsprüfungspositionen`**. Der Bestand-Zweig von `[Resolve] Protocol` (Gemini-Raster + mehrstufige Reconciliation) gehört zu diesem Weg. Notify **`inventory.checked`**. *Genaue Resolver-Kette live.*
+Bestandsprotokoll → schreibt **`Bestandsprüfungen`** + **`Bestandsprüfungspositionen`**. In: `record_id`, `document_date`, `document_url`, `customer_no?`, `store_name?`, `document_type?`, **`protocol_layout?`** (gesetzt von `[Dispatch] Upload PDF`; entfällt mit P5). Verzweigt nach Layout:
+- **`table` oder leer** (JTL-Druck) — Bestand-Zweig von `[Resolve] Protocol` (Gemini-Raster + mehrstufige Reconciliation), wie bisher.
+- **`grid`** (freies Formular, seit P3) — liest über **`[Resolve] Protocol (Inventory)`**; SOLL kommt nicht vom Blatt, sondern aus der Base: lädt Vertriebler („Load salespeople“: `Name`, `Stores`, `Stores 2`), Bestände (inkl. `Store`) und die Lieferungen seit der letzten Prüfung („Load deliveries since last check“, `filterByFormula` über die 🟣-Felder von `Lieferpositionen`). Schreibt zusätzlich `Bestandsprüfungen.Poster im Schaufenster` (Modul „Write poster“, über die Feld-ID).
+
+Notify **`inventory.checked`**. *Genaue Resolver-Kette live.*
 
 **`[Process] Invoice (Store)` · 6633991**
 Ausgangsrechnung → löst über die `[Resolve]`-Kinder auf (Salesperson-Input = `partner` aus dem Lexware-Beleg; `[Resolve] Positions`-plus-Join produktiv) und schreibt **`Umsätze`** + **`Umsatzpositionen`**; wählt `Konditionen` (eff-dated). Notify **`invoice.created` / `.paid` / `.voided` / `.written_off`**; **`task.terms_missing`** wenn keine passende Konditionen-Version. *Genaue Resolver-Kette live.*
@@ -49,6 +53,8 @@ On-demand-Kinder (`Call a scenario` / `CallSubscenario`, synchron), je **eine** 
 - **Reader-Output wird am Modell schema-gebunden**, nicht per Make-Data-Structure: jeder LLM-Reader nutzt natives Structured-Output (Claude `json_schema`, Gemini `responseSchema`/`responseMimeType`), nullable für Unlesbares (`set null, do not guess`).
 
 **`[Resolve] Protocol` · 7054448** · Ordner 382196 — **LLM-Reader**. In: `document_type`, `document_url`. Lädt den Beleg, verzweigt nach Belegtyp: Claude (`claude-haiku-4-5`) für den Übergabe-Einspalter; Gemini (`gemini-3.1-pro`) als Raster-Leser für Bestand, inkl. mehrstufiger Reconciliation (Cross-check → Zweitlese „only on doubt" → Reconcile). Out: `ok`, `read_ok`, `read_error`, `person`, `checked_by`, `doc_number`, `commission_agent`, `signature_consignor`, `signature_commission_agent`, `positions[]` (`pos`/`no`/`label`/`qty`/`kg`/`grams`), `resolver_version`. Die Vereinheitlichung der drei Zweig-Formen macht je ein Code-`Normalize`/`Assemble` vor `ReturnData` — kein Schema kann das.
+
+**`[Resolve] Protocol (Inventory)` · 8329417** — **LLM-Reader** für das freie Bestandsprotokoll (grid-Zweig von `[Process] Upload PDF (Inventory)`). In: `document_url` (lädt selbst). Out: `ok`, `read_ok`, `read_error`, `checked_by`, `customer_no_read`, `date_read`, `poster`, `signature_consignor`, `signature_commission_agent`, `positions[]` (`pos`/`no`/`actual`/`uncertain`/`empty`), `notes[]` (`kat`/`pos`/`no`/`text`), `noteText`, `second_reading_ran`, `disputed_total`, `decided`, `open`, `resolver_version`. Liest nur IST — SOLL rechnet der Aufrufer aus der Base.
 
 **`[Resolve] Store` · 7049889** — Store über Kunden-Nr. **dann** Name (Kaskade). In: `customer_no?`, `store_name?` (beide optional; beide leer → `store_error`). Out: `store_ok`, `store_id`, `store_number`, `store_name`, `store_error`, `store_note`, `via`, `resolver_version`.
 

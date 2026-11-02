@@ -22,6 +22,7 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 - **`Nettoverkaufswert`** (Rollup, €) — Σ der **positiv** bewerteten Differenzen = **Schwundwert** (VK-Sicht).
 - **`Status`** (Select) — Abgeschlossen / In Bearbeitung / Teilgebucht / Ungültig (Make-String).
 - **`Unterschrieben`** / **`Inventar geprüft`** (Checkbox) — speisen die Warnzeilen der Meldung.
+- **`Poster im Schaufenster`** (Checkbox) — Zeile „Poster“ im freien Bestandsprotokoll (Zahl oder Haken = ja). Nur der grid-Zweig setzt es; kein Artikel, keine Position.
 - `Datum` (Lookup ← Beleg, EU) · `Store ID` (Lookup ← Stores.ID) · `Positionen` (Count) · `Hinweis`.
 
 ## Fallstricke
@@ -48,12 +49,13 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 | Differenz (Gesamt) | rollup | `fldu5g1stOUVfgf91` |
 | Positionen | count | `fldkeRTSxff0AdVIj` |
 | Nettoverkaufswert | rollup € | `fldIQQ71uz7zfOWN1` |
+| Poster im Schaufenster | checkbox (Nachtrag 2026-11-02) | `fldSusvZeXfKG9E3C` |
 
 *Neu ziehen: `list_tables_for_base` → Bestandsprüfungen; Formeln via `get_table_schema`.*
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **7** Felder und liest **11**. 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **8** Felder und liest **11** (Nachtrag 2026-11-02: `Poster im Schaufenster`). 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -66,9 +68,9 @@ Make schreibt **7** Felder und liest **11**. 2 davon matcht Make über den Klart
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Beleg` · `Hinweis` · `Inventar geprüft` · `Store` · `Unterschrieben` · `Vertriebler`  
+**Make schreibt:** `Beleg` · `Hinweis` · `Inventar geprüft` · `Poster im Schaufenster` (6729541, Modul „Write poster“) · `Store` · `Unterschrieben` · `Vertriebler`  
 **Make liest:** `Datum` · `Differenz (Gesamt)` · `Nettoverkaufswert` · `Positionen` · `Store ID`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
-*Ohne jeden Make-Zugriff: 1 von 14 Feldern.*
+*Ohne jeden Make-Zugriff: 1 von 15 Feldern.*

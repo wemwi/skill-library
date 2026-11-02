@@ -60,12 +60,13 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 | Stores | link → Stores (Akquise durch) | `fldkydrhcYuCqb4lq` |
 | Formularlink | formula | `flddGkcgwdmCvBEXF` |
 | Realprovision (Rollup) | rollup € | `fldxv77iZbz3QxLJJ` |
+| Stores 2 | link (Nachtrag 2026-11-02) | `fldYhWQgzt1WTTnCn` |
 
 *Neu ziehen: `list_tables_for_base` → Vertriebler; Formeln via `get_table_schema`.*
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **3** Felder und liest **10**. 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **3** Felder und liest **12** (Nachtrag 2026-11-02: `Stores`, `Stores 2` über „Load salespeople“ in 6729541; `Name` liest dieselbe Stelle). 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -79,7 +80,7 @@ Make schreibt **3** Felder und liest **10**. 2 davon matcht Make über den Klart
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Hinweis` · `Regelbesteuerung ab`  
-**Make liest:** `Besteuerung` · `Formularlink` · `Offen` · `Ort` · `Postleitzahl` · `Straße / Nr.` · `Telegram Channel ID`
+**Make liest:** `Besteuerung` · `Formularlink` · `Offen` · `Ort` · `Postleitzahl` · `Stores` · `Stores 2` · `Straße / Nr.` · `Telegram Channel ID`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
@@ -89,4 +90,4 @@ Der Airtable-Webhook lauscht per `watchDataInFieldIds` auf: `Name` · `Straße /
 
 Feld-IDs, kein Namensbezug — Umbenennen unkritisch. Wird eines gelöscht, fällt der Trigger für dieses Feld still aus.
 
-*Ohne jeden Make-Zugriff: 11 von 22 Feldern.*
+*Ohne jeden Make-Zugriff: 10 von 23 Feldern.*
