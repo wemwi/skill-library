@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.1](https://github.com/wemwi/skill-library/compare/v6.6.0...v6.6.1) (2026-11-02)
+
+
+### Bug Fixes
+
+* **global-workflow:** Nachtschicht-Reste und Status-Zeile entfernen ([#237](https://github.com/wemwi/skill-library/issues/237)) ([f8ea1da](https://github.com/wemwi/skill-library/commit/f8ea1dad9b76e6fd48df8afc08f20cee93cbbaaa))
+
 ## [6.6.0](https://github.com/wemwi/skill-library/compare/v6.5.0...v6.6.0) (2026-11-02)
 
 
