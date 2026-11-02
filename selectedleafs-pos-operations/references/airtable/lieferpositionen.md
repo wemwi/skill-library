@@ -54,12 +54,19 @@ Eine Zeile = **eine Sorte in einer Lieferung**. Hier entstehen **Kosten** und **
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make **schreibt** hier 8 Felder und liest keines. Kein Feld ist namens-gekoppelt — Umbenennen ist hier durchgehend folgenlos.
+Make **schreibt** hier 8 Felder und liest **3** (Nachtrag 2026-11-02, P3 Bestandsprotokoll). Seither sind 3 Felder namens-gekoppelt — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+
+### Namens-gekoppelt — trägt den 🟣-Marker am Feld (gesetzt 2026-11-02)
+
+- **`Bestand`** · **`Menge nach Prüfung`** · **`Geprüft am`** — 🟣 `make.com (KEY · Name)`.  
+  Stehen im `filterByFormula` von „Load deliveries since last check“ in `[Process] Upload PDF (Inventory)` (grid-Zweig). Szenarien: 6729541.  
+  ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Bestand` · `EK (netto)` · `Lieferung` · `Menge (Stück)` · `Menge (kg)` · `Position` · `Preis (VK)` · `Produkt`  
+**Make liest:** `Bestand` · `Geliefert am` · `Menge (Stück)` (6729541, „Load deliveries since last check“)  
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
-*Ohne jeden Make-Zugriff: 9 von 17 Feldern.*
+*Ohne jeden Make-Zugriff: 6 von 17 Feldern.*
