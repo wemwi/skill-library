@@ -3,9 +3,12 @@
 
 Nur lesend. Maßstab: global-git-conventions (references/ci.md, references/settings.md).
 
-Aufruf: python3 repo_check.py [--owner wemwi] repo1 repo2 …
-Braucht die gh-CLI mit Lesezugriff auf die Repos (in einer Claude-Sitzung vorher
-add_repo je privatem Repo). Ausgabe: Markdown für den Bericht. Exit-Code immer 0.
+Aufruf:
+  python3 repo_check.py [--owner wemwi] repo1 repo2 …   (Weg 1: gh-CLI)
+  python3 repo_check.py --from-json daten.json           (Weg 2: GitHub-MCP-Server)
+Weg 1 braucht die gh-CLI mit Lesezugriff auf die Repos. Weg 2 liest eine JSON-Liste
+von Datensätzen aus dem Werkzeug `get_repo_audit_data` (github-mcp); Bewertung und
+Ausgabe sind identisch. Ausgabe: Markdown für den Bericht. Exit-Code immer 0.
 
 Hinweise:
 - Die Runs-API liefert höchstens 1.000 Läufe; bei mehr wird über den abgedeckten
@@ -33,6 +36,11 @@ OWNER = "wemwi"
 if "--owner" in args:
     i = args.index("--owner")
     OWNER = args[i + 1]
+    del args[i : i + 2]
+FROM_JSON = None
+if "--from-json" in args:
+    i = args.index("--from-json")
+    FROM_JSON = args[i + 1]
     del args[i : i + 2]
 REPOS = args
 NOW = datetime.now(timezone.utc)
@@ -115,6 +123,54 @@ def workflow_findings(repo_full: str) -> list[str]:
     return found
 
 
+def findings_from_record(workflows: list) -> list[str]:
+    """Dieselben Regeln wie workflow_findings, aber auf dem Schema von get_repo_audit_data."""
+    found: list[str] = []
+    for wf in workflows:
+        name = wf.get("file", "?")
+        if wf.get("error"):
+            found.append(f"`{name}`: {wf['error']}")
+            continue
+        on = set(wf.get("on") or [])
+        jobs = wf.get("jobs") or []
+        no_timeout = [j["id"] for j in jobs if j.get("timeout_minutes") is None]
+        if no_timeout:
+            found.append(f"`{name}`: kein `timeout-minutes` ({', '.join(no_timeout)})")
+        if "pull_request" in on and not (wf.get("concurrency") or {}).get("present"):
+            found.append(f"`{name}`: keine `concurrency` mit Abbruch")
+        if "pull_request" in on and "push" in on and not any(k in name.lower() for k in ("deploy", "release")):
+            found.append(f"`{name}`: läuft auf PR **und** nach dem Merge auf `main` (Doppellauf)")
+        if wf.get("workflow_run"):
+            found.append(f"`{name}`: startet nach anderen Workflows (`workflow_run`)")
+        for cron in wf.get("schedule") or []:
+            hour = cron.split()[1] if len(cron.split()) > 1 else ""
+            if hour in ("*",) or hour.startswith("*/"):
+                found.append(f"`{name}`: Polling-Cron `{cron}`")
+        for j in jobs:
+            if os_of(j.get("runs_on", "")) != "linux":
+                found.append(f"`{name}`: Job `{j['id']}` auf {os_of(j.get('runs_on'))} — nur wo nötig?")
+    return found
+
+
+def from_record(rec: dict):
+    """Datensatz von get_repo_audit_data → (info, usage, hygiene, findings) wie im gh-Weg."""
+    info = rec["repo"]
+    runs = rec.get("runs") or {}
+    usage = None
+    if runs.get("total"):
+        m = rec.get("minutes") or {}
+        billed = {o: m[o] for o in RATE if m.get(o)} or None
+        usage = {
+            "runs": runs["total"], "capped": bool(runs.get("extrapolated")),
+            "top": [(f"{b['workflow']} [{b['event']}]", b["count"]) for b in (runs.get("by") or [])[:4]],
+            "factor": 1.0, "top_wf": m.get("workflow"), "billed": billed,
+        }
+    br = rec.get("branches") or {}
+    bc = Counter({"gemergt": br.get("merged", 0), "ohne PR": br.get("without_pr_total", len(br.get("without_pr") or []))})
+    hygiene = (br.get("total", 0), bc, br.get("without_pr") or [], (rec.get("pull_requests") or {}).get("open_renovate", 0))
+    return info, usage, hygiene, findings_from_record(rec.get("workflows") or [])
+
+
 def actions_usage(repo_full: str):
     since = (NOW - timedelta(days=30)).strftime("%Y-%m-%d")
     runs = pages(f"repos/{repo_full}/actions/runs?created=>={since}&per_page=100", key="workflow_runs", limit=10)
@@ -173,18 +229,36 @@ def branch_hygiene(repo_full: str, info: dict):
     return len(branches), c, no_pr, renovate_open
 
 
-def main() -> None:
-    rows, details = [], []
+def collect():
+    """Liefert je Repo (name, info, usage, hygiene, findings); info None = kein Zugriff."""
+    if FROM_JSON:
+        with open(FROM_JSON, encoding="utf-8") as fh:
+            data = json.load(fh)
+        for rec in data if isinstance(data, list) else [data]:
+            full = (rec.get("repo") or {}).get("full_name") or rec.get("full_name", "?")
+            name = full.split("/")[-1]
+            if rec.get("error") or "repo" not in rec:
+                yield name, None, None, None, None
+            else:
+                yield (name, *from_record(rec))
+        return
     for repo in REPOS:
         full = f"{OWNER}/{repo}"
         info = gh(f"repos/{full}")
         if not info:
+            yield repo, None, None, None, None
+            continue
+        yield repo, info, actions_usage(full), branch_hygiene(full, info), workflow_findings(full)
+
+
+def main() -> None:
+    rows, details = [], []
+    for repo, info, usage, hygiene, findings in collect():
+        if not info:
             rows.append(f"| {repo} | ? | kein Zugriff | | | | |")
             continue
         private = info.get("private", True)
-        usage = actions_usage(full)
-        total, bc, no_pr, ren = branch_hygiene(full, info)
-        findings = workflow_findings(full)
+        total, bc, no_pr, ren = hygiene
         cost = "–"
         runs = "0"
         if usage:

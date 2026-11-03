@@ -7,7 +7,7 @@ description: >-
   und bei Fragen, ob etwas noch zeitgemäß ist, stört, sich überschneidet oder ob sich
   ein neuer Skill oder Konnektor lohnt. Umsetzung: global-workflow.
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
 ---
 
 # Setup-Audit — das Claude-Setup prüfen
@@ -26,7 +26,9 @@ Ohne Referenzstand prüft Claude gegen das eigene Trainingswissen, und das ist s
    - **Skill-Liste der Session:** Welche Skills erscheinen dort ohne Beschreibung? Die Beschreibung in der Datei ist nicht automatisch die, die Claude sieht. Wird die Liste zu lang, fallen Beschreibungen weg, und der Trigger greift nicht mehr.
    - **Konnektoren/MCP-Server:** verfügbare Server, Zahl der Tools, Hinweise in den Server-Instructions (z. B. „deprecated").
    - **Backup-Abgleich:** `wemwi/skill-library` klonen (öffentlich, `git clone --depth 1`) und `python3 scripts/backup_check.py --mount /mnt/skills/plugins --repo <klon>` laufen lassen. Die Tabelle kommt unverändert in den Bericht (§5).
-   - **Repo-Check:** alle Repos per `list_repos` holen, private per `add_repo` (Lesezugriff) anhängen, dann `python3 scripts/repo_check.py <repo> …` — Actions-Läufe und geschätzte Minuten je Repo, Abweichungen von den CI-Sparregeln, Branch-Hygiene. Die Tabelle kommt unverändert in den Bericht (§5).
+   - **Repo-Check:** Actions-Läufe und geschätzte Minuten je Repo, Abweichungen von den CI-Sparregeln, Branch-Hygiene. Die Tabelle kommt unverändert in den Bericht (§5). Zwei Wege, gleiche Ausgabe:
+     - **Weg 1 – gh** (Sitzung hat gh-Zugriff auf die Repos): `python3 scripts/repo_check.py <repo> …`.
+     - **Weg 2 – GitHub-MCP-Server** (geplante Läufe, kein gh-Zugriff): Repos per `search_repositories` (`user:wemwi`) holen, je Repo `get_repo_audit_data` (`owner`, `repo`), die Ergebnisse als JSON-Liste in eine Datei schreiben, dann `python3 scripts/repo_check.py --from-json <datei>`. Der Server sammelt nur; bewertet wird allein im Skript.
    - **Geplante Tasks:** Liste mit letzter Ausführung.
    - **Produktstand:** Anthropic-Release-Notes und Claude-Hilfe seit dem letzten Lauf (WebSearch; Produktfakten über `product-self-knowledge`). Neue Fähigkeiten, Umbenennungen, Abkündigungen.
 3. **Mit dem letzten Inventar vergleichen** → „Was hat sich geändert". Das bestimmt den Fokus (§2).
