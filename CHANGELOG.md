@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.7.1](https://github.com/wemwi/skill-library/compare/v6.7.0...v6.7.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **global-setup-audit:** externe Skills über extern.json erkennen ([#242](https://github.com/wemwi/skill-library/issues/242)) ([67cd808](https://github.com/wemwi/skill-library/commit/67cd808c0b38d5753db4ba710cd00410ed240907))
+
 ## [6.7.0](https://github.com/wemwi/skill-library/compare/v6.6.1...v6.7.0) (2026-11-03)
 
 
