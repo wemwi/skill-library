@@ -59,3 +59,4 @@ Betroffen: [exakte Pfade — keine „die Datei von vorhin"]
 - Gibt es eine harte Stop-Grenze? Ohne sie schleift eine Code-Session weiter als gewollt.
 - Wird ein Skill-Inhalt zitiert statt nur genannt? → auf den Namen kürzen.
 - Hat ein unbeaufsichtigter Handover eine Blocker-Regel und eine maschinell prüfbare DoD? → sonst ergänzen.
+- Muss der Lauf auf etwas warten (CI, Release, andere Arbeit)? → Worauf, wie lange höchstens, was danach.
