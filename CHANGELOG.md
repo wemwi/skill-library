@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.7.0](https://github.com/wemwi/skill-library/compare/v6.6.1...v6.7.0) (2026-11-03)
+
+
+### Features
+
+* **global-setup-audit:** Repo-Check über den GitHub-MCP-Server ([#240](https://github.com/wemwi/skill-library/issues/240)) ([5d621f0](https://github.com/wemwi/skill-library/commit/5d621f0bcb091b5819c085a7d82e5255c6edcb50))
+
 ## [6.6.1](https://github.com/wemwi/skill-library/compare/v6.6.0...v6.6.1) (2026-11-02)
 
 
