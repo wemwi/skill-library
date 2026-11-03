@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.8.0](https://github.com/wemwi/skill-library/compare/v6.7.1...v6.8.0) (2026-11-03)
+
+
+### Features
+
+* **global-workflow:** Startsignal, Warten und Task-Rechte in §10 ([#244](https://github.com/wemwi/skill-library/issues/244)) ([bc4f89a](https://github.com/wemwi/skill-library/commit/bc4f89a8a8e8c192c1442f7867ae917824c06d25))
+
 ## [6.7.1](https://github.com/wemwi/skill-library/compare/v6.7.0...v6.7.1) (2026-11-03)
 
 
