@@ -1,0 +1,6 @@
+[
+  {"match": "make-*", "upstream": "Make"},
+  {"match": "airtable-*", "upstream": "Airtable"},
+  {"match": "dashboard-design", "upstream": "Drittanbieter"},
+  {"match": "cloudflare-security-audit", "upstream": "Cloudflare"}
+]

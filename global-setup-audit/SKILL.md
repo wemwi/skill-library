@@ -7,7 +7,7 @@ description: >-
   und bei Fragen, ob etwas noch zeitgemäß ist, stört, sich überschneidet oder ob sich
   ein neuer Skill oder Konnektor lohnt. Umsetzung: global-workflow.
 metadata:
-  version: "1.4.0"
+  version: "1.4.1"
 ---
 
 # Setup-Audit — das Claude-Setup prüfen
@@ -64,7 +64,7 @@ Alle übrigen Skills laufen nur über das Inventar (Version, Größe, Beschreibu
    | kein Backup | 🟡 | eigener Skill ohne Kopie im Repo |
    | nur im Repo | 🟡 | archivieren oder wieder mounten — Joscha entscheidet |
    | Dateien abweichend | ⚪ | z. B. Assets nur im Repo |
-   | extern | — | fremder Skill mit eigenem Upstream (`metadata.author`), gehört nicht ins Backup |
+   | extern | — | fremder Skill mit eigenem Upstream (`metadata.author` oder in `scripts/extern.json` gelistet), gehört nicht ins Backup |
 
 ### Konnektoren & MCP-Server
 

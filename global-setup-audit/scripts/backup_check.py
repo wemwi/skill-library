@@ -7,8 +7,10 @@ Version (metadata.version), Rumpf (SKILL.md ohne Frontmatter) und alle übrigen
 Dateien per Hash.
 
 Geprüft werden nur Skills, die Joscha selbst hochgeladen hat (manifest.json:
-source == "plugin"). Skills mit metadata.author (z. B. Make, Airtable) gelten
-als extern: Sie haben ein eigenes Upstream und gehören nicht ins Backup.
+source == "plugin"). Skills mit metadata.author oder mit Eintrag in extern.json
+(neben diesem Skript; Name oder Präfix mit *) gelten als extern: Sie haben ein
+eigenes Upstream und gehören nicht ins Backup. Fehlt extern.json, zählt nur
+metadata.author.
 
 Aufruf:
   python3 backup_check.py --mount /mnt/skills/plugins --repo <klon von skill-library>
@@ -18,6 +20,7 @@ Stdlib-only. Ausgabe: Markdown-Tabelle, Exit-Code immer 0.
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import hashlib
 import json
 import re
@@ -53,6 +56,21 @@ def skills(root: Path) -> dict[str, Path]:
     return {p.parent.name: p.parent for p in root.glob("*/SKILL.md")}
 
 
+def extern_list() -> list[tuple[str, str]]:
+    p = Path(__file__).with_name("extern.json")
+    if not p.exists():
+        return []
+    data = json.loads(p.read_text(encoding="utf-8"))
+    return [(e["match"], e.get("upstream", "")) for e in data]
+
+
+def extern_upstream(name: str, entries: list[tuple[str, str]]) -> str:
+    for pattern, upstream in entries:
+        if fnmatch.fnmatchcase(name, pattern):
+            return upstream or pattern
+    return ""
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--mount", default="/mnt/skills/plugins")
@@ -66,6 +84,7 @@ def main() -> None:
         data = json.loads(manifest.read_text(encoding="utf-8"))
         own = {s["name"] for s in data.get("skills", []) if s.get("source") == "plugin"}
 
+    ext = extern_list()
     ms, rs = skills(mount), skills(repo)
     rows = []
     for name in sorted(set(ms) | set(rs)):
@@ -75,7 +94,7 @@ def main() -> None:
         mfm, mbody = split(m / "SKILL.md") if m else ("", "")
         rfm, rbody = split(r / "SKILL.md") if r else ("", "")
         mv, rv = field(mfm, "version"), field(rfm, "version")
-        author = field(mfm or rfm, "author")
+        author = field(mfm or rfm, "author") or extern_upstream(name, ext)
 
         if author and not r:
             status, note = "extern", f"Upstream: {author}"
