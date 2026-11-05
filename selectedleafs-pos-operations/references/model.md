@@ -98,6 +98,16 @@ Achtung: der Saldo nutzt **`Realprovision`** (Provision auf den *tatsächlich be
 
 (Nebenwerte, nicht saldo-relevant: `Umsätze.Deckungsbeitrag`, `Stores.Storemarge`, `Realprovision` — Detail in `airtable/umsaetze.md` / `…/vertriebler.md`.)
 
+**Abrechnungsmodell je Store (`Stores.Modell`, seit 05.11.2026).** Für den Vertriebler rechnen beide Modelle gleich (Kostenanteil bei Lieferung, Provision bei Zahlung). Der Unterschied liegt im Beleg- und Bestandsweg:
+
+| | Kommission | Eigenbestand |
+|---|---|---|
+| Lieferung belegt durch | Übergabeprotokoll (unterschrieben) | JTL-Lieferschein (per Mail, `[Sync] JTL Delivery Note to Airtable`) |
+| Rechnung | nach Verkauf, Bestandsprüfung zugeordnet | JTL schickt sie kurz nach dem Lieferschein, keine Prüfzuordnung |
+| Bestandsprüfungen | Pflicht (Erinnerung) | entfallen |
+| Shop-Sorten | aus dem Bestand | Lieferschein fügt hinzu, nichts entfernt sie |
+| Umstellung | — | automatisch beim ersten Lieferschein ([[stores]]) |
+
 ---
 
 ## 4. Versionierung & Datum — money-critical

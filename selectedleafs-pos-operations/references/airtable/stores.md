@@ -21,7 +21,8 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 - **`Akquise durch`** (Link) — wird **ausschließlich** über den personalisierten Formularlink gesetzt (`prefill` + `hide`, Wert = Record-ID des Vertrieblers). `[Create] New Store Partner` prüft es als Pflichtfeld; `[Dispatch] Telegram Notifications` navigiert darüber. **Feld-ID nicht ändern, „Neue Datensätze erlauben" nicht einschalten** (sonst still ein zweiter Vertriebler).
 - **`Shopify GID`** (Metaobjekt-GID, voll inkl. Präfix) · **`Google Place ID`** (baut den Maps-Link der City-Posts; leer ⇒ Namenssuche).
 - `Storemarge (Jahr/Gesamt)` (Formel, €) — `Nettoumsatzerlös − Nettoumsatz` (Handelsmarge des Stores; Basis Umsätze, nicht Lieferungen).
-- `Status` (Aktiv/Inaktiv/Probezeit) · `Modell` (Kommission/Eigenbestand) · `Stufe` (Bronze … Diamant) · `Telegram ID` (Lookup ← Stadt) · `Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
+- **`Modell`** (Select: Kommission / Eigenbestand) — Abrechnungsmodell, siehe [[model]] §3. **Make schreibt es seit 05.11.2026:** der erste Lieferschein eines Kommission-Stores setzt `Eigenbestand` (`[Process] Upload PDF (Delivery)`, nur diese Richtung, meldet `store.model_changed`). Zurück auf Kommission nur von Hand. Bei Eigenbestand: keine Bestandsprüfungen und Erinnerungen, Rechnungen ohne Prüfzuordnung, der Shop behält die gelieferten Sorten, eine Rückholung ohne Rest setzt den Store nicht inaktiv.
+- `Status` (Aktiv/Inaktiv/Probezeit) · `Stufe` (Bronze … Diamant) · `Telegram ID` (Lookup ← Stadt) · `Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
 - **`Fällig gemeldet am`** (Datum) — **B2-Idempotenz-Marker** von `[Maintain] Overdue Inventory Checks` (→ `inventory.due`): der Emitter setzt ihn `= heute`, wenn er den Store als überfällig meldet, und meldet erst wieder, wenn der Marker älter als das wöchentliche Re-Nag-Fenster ist. Nur diese Klingel schreibt hier.
 
 ## Fallstricke
@@ -72,7 +73,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **7** Felder und liest **24**. 7 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **8** Felder (seit 05.11.2026 auch `Modell`) und liest **24**. 7 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -86,7 +87,7 @@ Make schreibt **7** Felder und liest **24**. 7 davon matcht Make über den Klart
   Kontakt → Store. Szenarien: 6633991, 6872775.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Modell`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fld8C3tgNKcDqBgdP`  
-  Kommission als String. Szenarien: 7001118.  
+  Kommission als String. Szenarien: 7001118. Seit 05.11.2026 zusätzlich: **schreibt** 6677862 („Eigenbestand" als Optionsname, `typecast: false`); liest 6633991, 6677862, 6805674, 7062902.  
   ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
 - **`Name`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fld7fbRS1BHvrqJrj`  
   LOWER({Name}) Kommissionär-Match. Szenarien: 6729541.  
