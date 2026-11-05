@@ -5,9 +5,9 @@ description: >-
   Web-App, CI und MCP-Server: anlegen, beim Aussteller benennen, Secret-Namen im Code,
   minimale Rechte, Ablage, Aufräumen. IMMER laden, sobald ein Token oder Secret angelegt,
   benannt, gesetzt, rotiert oder gelöscht wird. Trigger: wrangler secret, GitHub-Secret,
-  .dev.vars, Env-Variable, Scopes, neuer Worker.
+  .dev.vars, Env-Variable, Scopes, neuer Worker, Make-Schlüssel, Make-Verbindung.
 metadata:
-  version: "1.0.2"
+  version: "1.1.0"
 ---
 
 # global-credentials
@@ -39,6 +39,10 @@ eigener Build-Token. Grund: Nur so lässt sich ein Token gezielt rotieren oder l
 ohne eine fremde Anwendung zu brechen, und „Last used" bleibt einer Anwendung
 zuordenbar.
 
+In Make ist die Anwendung die Aufgabe, nicht das einzelne Szenario: Szenarien mit
+derselben Aufgabe (z. B. „Rechnungs-PDF an den Beleg hängen") teilen sich ein
+Credential, jede andere Aufgabe bekommt ein eigenes.
+
 ### 2. Name beim Aussteller: `<Zweck> · <Anwendung>`
 
 | Zweck | Name beim Aussteller |
@@ -46,10 +50,27 @@ zuordenbar.
 | Build (Cloudflare Workers Builds) | `Workers Builds · selectedleafs-app` |
 | CI (GitHub Actions) | `GitHub Actions · first-commerce-import-dashboard` |
 | Laufzeit (Worker liest Airtable) | `Worker · selectedleafs-app · Airtable` |
+| Make-Aufgabe (Szenarien schreiben in Airtable) | `make.com · Sync Invoice` |
 
 Ein dritter Teil `· <Ziel>` (das angesprochene System) ist optional, wenn der Zweck
 allein nicht eindeutig ist. Wird eine Anwendung umbenannt, die Token-Namen bei allen
 Ausstellern mitziehen.
+
+**Name beim Konsumenten:** Liegt ein Credential beim Nutzer unter eigenem Namen
+(Make-Schlüssel, Make-Verbindung mit API-Key oder Token), heißt es
+`<Aussteller> · <Anwendung>` — spiegelbildlich zum Namen beim Aussteller: vorn steht
+jeweils die Gegenseite, der zweite Teil ist auf beiden Seiten gleich.
+
+| Beim Aussteller | Beim Konsumenten |
+|---|---|
+| Airtable-PAT `make.com · Sync Invoice` | Make-Schlüssel `Airtable · Sync Invoice` |
+| Google-API-Key `make.com · Store Places` | Make-Schlüssel `Google · Store Places` |
+
+So zeigt jeder Name, wo das Credential rotiert wird, und das Gegenstück ist per Name
+zu finden. Vorn nie die Datenquelle des Ablaufs (`Lexware · …` für einen
+Airtable-Token) und nie die eigene Plattform (`make.com · …` in Make); hinten nie der
+Produkt- oder API-Name statt der Anwendung (`Google Place (New)`). OAuth-Verbindungen,
+die ein Konto autorisieren, fallen nicht darunter.
 
 ### 3. Secret-Namen im Code: `<AUSSTELLER>_<TYP>`
 
@@ -99,14 +120,16 @@ Account-Tokens.
 
 **Neue Anwendung**
 1. Zwecke festlegen (Build, Laufzeit, CI) — je Zweck ein eigenes Credential.
-2. Beim Aussteller anlegen: Name nach Regel 2, Rechte nach Regel 4.
+2. Beim Aussteller anlegen: Name nach Regel 2, Rechte nach Regel 4; Make-Schlüssel
+   oder Make-Verbindung mit dem Spiegelnamen (Regel 2).
 3. Secret-Namen nach Regel 3; vorhandene Namen anderer Konsumenten übernehmen.
 4. Wert direkt als Worker- bzw. Repository-Secret setzen; `.dev.vars.example` nur mit
    Namen.
 5. Ersten Build und ersten Lauf prüfen.
 
 **Umbenennung einer Anwendung**
-1. Alle Tokens der Anwendung bei jedem Aussteller umbenennen.
+1. Alle Tokens der Anwendung bei jedem Aussteller umbenennen, Spiegelnamen beim
+   Konsumenten mit.
 2. Secrets am Ziel prüfen — ein unter neuem Namen neu angelegter Worker hat keine.
 3. Ersetzte Tokens löschen.
 
