@@ -390,6 +390,18 @@ Danke für deine Arbeit! :)
 <i>Geprüft am {Datum}</i>
 ```
 
+### `task.jtl_return` · NEU 05.11.2026
+**Operations**
+```
+👉 Rückholung buchen (JTL)
+<i>{Store} · {ID}</i>
+
+• Lager Modul öffnen
+• Warenausgang buchen
+
+<i>Zurückgeholt am {Datum}</i>
+```
+
 ### `task.jtl_payment`
 **Operations**
 ```
@@ -536,6 +548,19 @@ Grund: keine Rechnung mit dieser Nummer in Airtable
 Folge: Zahlungsstatus nicht gesetzt — der Umsatz bleibt offen
 
 👉 Prüfen, ob {Rechnungsnummer} als Umsatz existiert
+```
+
+### `error.return_failed` · NEU 05.11.2026
+*Hängt an `Belege` (`{ID}` = BLG-Nummer); `{Grund}`, `{Positionen}`, `{Folge}` kommen als ctx vom Return-Gate.*
+```
+🛑 Rückholung nicht gebucht
+<i>{ID} · Buchungsprüfung</i>
+
+Grund: {Grund}
+Positionen: {Positionen}
+Folge: {Folge}
+
+👉 Hinweis im Beleg prüfen
 ```
 
 ---
