@@ -37,6 +37,19 @@ Akquiriert von {Vertriebler}
 <a href="{Maps-URL}">Google Maps öffnen</a>
 ```
 
+### `store.model_changed` · NEU 05.11.2026
+*Hängt am Store (`id` = Store); `{Modell}`, `{Vorher}`, `{Lieferschein}` kommen als ctx von `[Process] Upload PDF (Delivery)` (erster Lieferschein eines Kommission-Stores).*
+**Operations**
+```
+🔁 Modell umgestellt
+<i>{Store} · {Modell}</i>
+
+Vorher: {Vorher}
+Auslöser: Lieferschein {Lieferschein}
+
+ℹ️ Keine Bestandsprüfungen mehr für diesen Store.
+```
+
 ### `salesperson.created`
 **Operations**
 ```
@@ -79,6 +92,31 @@ Nettoverkaufswert: {Nettoverkaufswert}
 Gesamtkosten: {Kosten}
 
 {leer Unterschrieben}⚠️ Protokoll ohne Unterschrift.
+
+<i>Geliefert am {Datum}</i>
+```
+**Vertriebler**
+```
+📦 Lieferung erfasst
+<i>{Store} · {Menge (Stück)} Einheiten</i>
+
+Nettoverkaufswert: {Nettoverkaufswert}
+Dein Kostenanteil: <b>{Kostenanteil}</b>
+
+<i>Geliefert am {Datum}</i>
+```
+
+### `delivery.note_booked` · NEU 05.11.2026
+*Lieferung per Lieferschein (Eigenbestand). Ohne Unterschrifts-Vorbehalt, kein `task.jtl_stock`; Vertriebler-Text wie `delivery.booked`.*
+**Operations**
+```
+📦 Ware geliefert
+<i>{Vertriebler} bei {Store}</i>
+
+Nettoverkaufswert: {Nettoverkaufswert}
+Gesamtkosten: {Kosten}
+
+{gesetzt Inventar}ℹ️ Inklusive Inventar.
 
 <i>Geliefert am {Datum}</i>
 ```

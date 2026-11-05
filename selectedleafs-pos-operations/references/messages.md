@@ -41,6 +41,20 @@ Google Maps öffnen → https://maps.google.com/…
 ```
 **Begleitend** → 👉 `task.jtl_missing` · 🛑 `error.store_failed` · 🛑 `error.store_partial`
 
+### 🔁 `store.model_changed` — Modell umgestellt · `live` · NEU
+**Operations** — 📥 Vorgänge · 586
+```
+🔁 Modell umgestellt
+Kiosk Nordstern · Eigenbestand
+
+Vorher: Kommission
+Auslöser: Lieferschein AF-10163-1-001
+
+ℹ️ Keine Bestandsprüfungen mehr für diesen Store.
+```
+**Vertriebler** — — · **City** — —
+*Emitter: `[Process] Upload PDF (Delivery)`, nur beim ersten Lieferschein eines Kommission-Stores; kommt zusammen mit `delivery.note_booked`.*
+
 ### 🤝 `salesperson.created` — Neuer Vertriebler · `live`
 **Operations** — 📥 Vorgänge · 586
 ```
@@ -117,6 +131,21 @@ Java Spark (White) ab sofort vor Ort erhältlich
 Google Maps öffnen → https://maps.google.com/…
 ```
 **Begleitend** → 👉 `task.jtl_stock`
+
+### 📦 `delivery.note_booked` — Lieferung per Lieferschein · `live` · NEU
+**Operations** — 📥 Vorgänge · 586
+```
+📦 Ware geliefert
+Max Berger bei Kiosk Nordstern
+
+Nettoverkaufswert: 248,50 €
+Gesamtkosten: 96,00 €
+
+Geliefert am 12.08.2026
+```
+**Vertriebler** — wie `delivery.booked` („📦 Lieferung erfasst")
+**City** — wie `delivery.booked` (über `[Sync] Inventory to Shopify`, restock)
+**Begleitend** → beim ersten Lieferschein 🔁 `store.model_changed` · **kein** 👉 `task.jtl_stock` (JTL liefert aus dem eigenen Lager)
 
 ### 📥 `delivery.returned` — Rückholung · `live`
 **Operations** — 📥 Vorgänge · 586
@@ -583,4 +612,4 @@ Folge: keine Buchung, kein Offboarding
 
 ---
 
-*City-Channel hängt an genau zwei Anlässen: `delivery.booked` (→ `city.restock` / `city.strain_new`) und `store.created`.*
+*City-Channel hängt an genau zwei Anlässen: Lieferung (`delivery.booked` / `delivery.note_booked` → `city.restock` / `city.strain_new`) und `store.created`.*

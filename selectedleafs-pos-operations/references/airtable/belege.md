@@ -2,7 +2,7 @@
 
 `tbld7UQwDBbq9A8Xk` · Kategorie **Stammdaten** (Dokument-Drehscheibe)
 
-> Feld-Block: **Stand 2026-08-15**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
+> Feld-Block: **Stand 2026-11-05**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
 
 ## Zweck
 
@@ -17,6 +17,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 | Belegtyp | Ziel |
 |---|---|
 | Übergabeprotokoll | Lieferung (`delivery.booked`) |
+| Lieferschein | Lieferung (Eigenbestand, `delivery.note_booked`; erster Lieferschein eines Kommission-Stores stellt `Stores.Modell` um) · seit 05.11.2026 |
 | Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) |
 | Bestandsprotokoll | Bestandsprüfung |
 | Ausgangsrechnung | Umsatz |
@@ -28,17 +29,17 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 ## Tragende Felder
 
 - **`ID`** (Formel) — `"BLG-" & RIGHT("00000" & Belegnummer, 5)` (z. B. `BLG-00044`).
-- **`Belegtyp`** (Select) — die acht Typen oben; **`Unbekannt`** löst die Korrektur-Aufgabe aus (Make-String, nicht umbenennen).
+- **`Belegtyp`** (Select) — die neun Typen oben; **`Unbekannt`** löst die Korrektur-Aufgabe aus (Make-String, nicht umbenennen).
 - **`Datum`** (EU) — **Quelle des Leistungsdatums**; die Ereignis-Tabellen spiegeln es per Lookup.
 - **`Anhang`** (Attachments) — das PDF.
-- `Hinweis` (Freitext) · `Belegnummer` (autoNumber).
+- `Hinweis` (Freitext) · `Belegnummer` (autoNumber) · `Upload durch` (→ Vertriebler) / `Upload zu` (→ Stores) — Herkunft eines Uploads aus der Sales App, keine Fach-Links.
 
 ## Fallstricke
 
 - **`Datum` ist das Leistungsdatum** — ein falsches Belegdatum wählt die falsche Konditionen-/Preis-Version.
 - Genau **ein** Fach-Link je Beleg — der Belegtyp bestimmt welcher.
 
-## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
+## Feld-Block (Stand 2026-11-05 · `list_tables_for_base`)
 
 | Feld | Typ | fld-ID |
 |---|---|---|
@@ -51,7 +52,9 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 | Bestandsprüfung | link → Bestandsprüfungen | `fldbzOIOSaNcwdNAL` |
 | Hinweis | multilineText | `fldW8Gk8tDwDoJoJ8` |
 | Auszahlung | link → Auszahlungen | `fld0o0yQ9AS4iFYKN` |
-| Belegnummer | autoNumber | `fldUprNttE4qhl3ph` |
+| Belegnummer | autoNumber | `fldn5KrXi5x4werVB` |
+| Upload durch | link → Vertriebler | `fldS5BmsfqPi5TOdv` |
+| Upload zu | link → Stores | `fldPuVFi2iKbf9aeh` |
 
 *Neu ziehen: `list_tables_for_base` → Belege; Formeln via `get_table_schema`.*
 
@@ -62,7 +65,7 @@ Make schreibt **6** Felder und liest **7**. 3 davon matcht Make über den Klarte
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
 - **`Belegtyp`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldKSqryQHeRzUCMd`  
-  Option als String. Szenarien: 6633991, 6844567.  
+  Option als String. Szenarien: 6633991, 6844567, 8392806 (schreibt „Unbekannt", seit 05.11.2026).  
   ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
 - **`Datum`** — 🟣 `make.com (KEY · Name)` · date · `fldPoeEx87w0wF8w9`  
   Dubletten-Match + Vergabeliste-sort. Szenarien: 6633991, 6844567.  
@@ -73,7 +76,7 @@ Make schreibt **6** Felder und liest **7**. 3 davon matcht Make über den Klarte
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Anhang` · `Auszahlung` · `Hinweis`  
+**Make schreibt:** `Anhang` (auch `[Sync] JTL Delivery Note to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Hinweis`  
 **Make liest:** `Bestandsprüfung` · `ID`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
@@ -84,4 +87,4 @@ Der Airtable-Webhook lauscht per `watchDataInFieldIds` auf: `Anhang`.
 
 Feld-IDs, kein Namensbezug — Umbenennen unkritisch. Wird eines gelöscht, fällt der Trigger für dieses Feld still aus.
 
-*Ohne jeden Make-Zugriff: 2 von 10 Feldern.*
+*Ohne jeden Make-Zugriff: 2 von 10 Feldern (Scan 21.08.; `Upload durch` / `Upload zu` sind jünger und nicht gescannt).*

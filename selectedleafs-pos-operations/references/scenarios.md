@@ -12,7 +12,7 @@ Eingang (Mail/Webhook/Watch/Scheduled) → **`[Dispatch]`** klassifiziert → **
 
 **`[Dispatch] Upload PDF` · 6836167** · Ordner 370442
 Trigger: **Gateway-Webhook** (Airtable-Automation auf der Belege-View). Aufgabe: Belegtyp klassifizieren und an den passenden `[Process]` weiterreichen (native Call).
-Liest `Belege`; bei `Belegtyp = Unbekannt` → Notify **`task.doctype_unclear`**. → ruft `[Process] Upload PDF (Delivery|Inventory)` / `[Process] Invoice (Store)`.
+Liest `Belege`; bei `Belegtyp = Unbekannt` → Notify **`task.doctype_unclear`**. → ruft `[Process] Upload PDF (Delivery|Inventory)` / `[Process] Invoice (Store)`. Seit 05.11.2026 erkennt der Kopf-Leser auch **Lieferschein** (Titel „Lieferschein AF-…", Kunden-Nr., Datum) → Delivery; Lieferscheine laufen nie in den Gemini-Kopfzweig.
 
 **`[Dispatch] Lexware Voucher` · 6872775** · Ordner 370442
 Trigger: **lexoffice `watchEvents`**. Aufgabe: Voucher-Events aufnehmen, per **A2-Guard** (Modul 2) filtern und weiterleiten (Eingangsrechnung → Sales, Zahlung → Payments).
@@ -20,10 +20,11 @@ Trigger: **lexoffice `watchEvents`**. Aufgabe: Voucher-Events aufnehmen, per **A
 ## `[Process]` — Ereigniszeilen schreiben
 
 **`[Process] Upload PDF (Delivery)` · 6677862** · Ordner 382128 · chainingRole bridge
-**Nur Übergabeprotokoll** (Rückhol ist ausgezogen → `[Process] Upload PDF (Return)`). Orchestriert (verifiziert 25.08.): `[Resolve] Protocol` (Beleg lesen) → Validator (Code, liest nicht mehr, prüft nur) → `[Resolve] Store` → `[Resolve] Salesperson & Conditions` → Dedup (`ID`) → Verdikt; bei sauberem Verdikt `[Resolve] Positions` (`purchase_source = variant`, `create_missing_stock = true`), schreibt **`Lieferungen`** + **`Lieferpositionen`**, triggert `[Sync] Inventory to Shopify` (restock) und `[Archive] Document PDF`. Notify **`delivery.booked`** · **`task.jtl_stock`**.
+**Übergabeprotokoll (Kommission) und Lieferschein (Eigenbestand, seit 05.11.2026)** (Rückhol ist ausgezogen → `[Process] Upload PDF (Return)`). Orchestriert (verifiziert 25.08.): `[Resolve] Protocol` (Beleg lesen) → Validator (Code, liest nicht mehr, prüft nur) → `[Resolve] Store` → `[Resolve] Salesperson & Conditions` → Dedup (`ID`) → Verdikt; bei sauberem Verdikt `[Resolve] Positions` (`purchase_source = variant`, `create_missing_stock = true`), schreibt **`Lieferungen`** + **`Lieferpositionen`**, triggert `[Sync] Inventory to Shopify` (restock) und `[Archive] Document PDF`. Notify **`delivery.booked`** · **`delivery.note_booked`** (Lieferschein) · **`delivery.equipment`** · **`task.jtl_stock`** (nicht bei Lieferscheinen: JTL liefert aus dem eigenen Lager).
+**Lieferschein-Zweig:** keine Unterschriftsprüfung, Nummer `AF-…-…-…` = `Lieferungen.ID`, Vertriebler aus „Vertrieb und Betreuung". Vor der Buchung `Read store model` → `Model switch?`: Lieferschein auf einem Kommission-Store setzt **`Stores.Modell` = Eigenbestand** und meldet **`store.model_changed`**; nur diese Richtung, ein zweiter Lieferschein ändert nichts. Am Ende verteilt der Router „Task + archive" Lager-Aufgabe (Filter „Not for delivery notes") und Archiv auf getrennte Zweige — ein Filter direkt vor dem Archiv würde es für Lieferscheine mit anhalten (Stand 05.11.2026).
 
 **`[Process] Upload PDF (Return)` · 7062902**
-Rückholprotokoll (Gegenstück zu Delivery, `dry_run`-fähig) → nutzt `[Resolve] Positions` mit `purchase_source = stock_avg` (Rückhol-Zweig, Bewertung zum gleitenden Ø-EK aus `Bestände`); schreibt die Rückhol-Zeilen. Notify **`inventory.checked`** + **`task.jtl_inventory_date`** (nur wenn die Bestandsprüfung neu ist) · **`delivery.returned`** + **`task.jtl_return`** (nur wenn die Negativlieferung neu ist) · **`error.return_failed`** (Gate blockiert). Die Meldungen hängen in einem Router „Meldungen / Abschluss" vor Rest-Sortiment, Offboarding und Archiv, damit ein Wiederanlauf mit vorhandener Bestandsprüfung bis zum Archiv durchläuft (Stand 05.11.2026). *Exakte Aufruf-Kette live prüfen (`scenarios_get 7062902`).*
+Rückholprotokoll (Gegenstück zu Delivery, `dry_run`-fähig) → nutzt `[Resolve] Positions` mit `purchase_source = stock_avg` (Rückhol-Zweig, Bewertung zum gleitenden Ø-EK aus `Bestände`); schreibt die Rückhol-Zeilen. Notify **`inventory.checked`** + **`task.jtl_inventory_date`** (nur wenn die Bestandsprüfung neu ist) · **`delivery.returned`** + **`task.jtl_return`** (nur wenn die Negativlieferung neu ist) · **`error.return_failed`** (Gate blockiert). Die Meldungen hängen in einem Router „Meldungen / Abschluss" vor Rest-Sortiment, Offboarding und Archiv, damit ein Wiederanlauf mit vorhandener Bestandsprüfung bis zum Archiv durchläuft (Stand 05.11.2026). Bei `Stores.Modell = Eigenbestand` setzt „Kein Rest-Sortiment?" den Store **nicht** inaktiv und ruft kein `remove` (Rückholung der Kommissionsware beim Modellwechsel). *Exakte Aufruf-Kette live prüfen (`scenarios_get 7062902`).*
 
 **`[Process] Upload PDF (Inventory)` · 6729541**
 Bestandsprotokoll → schreibt **`Bestandsprüfungen`** + **`Bestandsprüfungspositionen`**. In: `record_id`, `document_date`, `document_url`, `customer_no?`, `store_name?`, `document_type?`, **`protocol_layout?`** (gesetzt von `[Dispatch] Upload PDF`; entfällt mit P5). Verzweigt nach Layout:
@@ -52,7 +53,7 @@ On-demand-Kinder (`Call a scenario` / `CallSubscenario`, synchron), je **eine** 
 - **Datum immer Text `YYYY-MM-DD`**, nie Datumstyp (Zeitzone kippt den Tag).
 - **Reader-Output wird am Modell schema-gebunden**, nicht per Make-Data-Structure: jeder LLM-Reader nutzt natives Structured-Output (Claude `json_schema`, Gemini `responseSchema`/`responseMimeType`), nullable für Unlesbares (`set null, do not guess`).
 
-**`[Resolve] Protocol` · 7054448** · Ordner 382196 — **LLM-Reader**. In: `document_type`, `document_url`. Lädt den Beleg, verzweigt nach Belegtyp: Claude (`claude-haiku-4-5`) für den Übergabe-Einspalter; Gemini (`gemini-3.1-pro`) als Raster-Leser für Bestand, inkl. mehrstufiger Reconciliation (Cross-check → Zweitlese „only on doubt" → Reconcile). Out: `ok`, `read_ok`, `read_error`, `person`, `checked_by`, `doc_number`, `commission_agent`, `signature_consignor`, `signature_commission_agent`, `positions[]` (`pos`/`no`/`label`/`qty`/`kg`/`grams`), `resolver_version`. Die Vereinheitlichung der drei Zweig-Formen macht je ein Code-`Normalize`/`Assemble` vor `ReturnData` — kein Schema kann das.
+**`[Resolve] Protocol` · 7054448** · Ordner 382196 — **LLM-Reader**. In: `document_type`, `document_url`. Lädt den Beleg, verzweigt nach Belegtyp: Claude (`claude-haiku-4-5`) für den Übergabe-Einspalter; Gemini (`gemini-3.1-pro`) als Raster-Leser für Bestand, inkl. mehrstufiger Reconciliation (Cross-check → Zweitlese „only on doubt" → Reconcile). Out: `ok`, `read_ok`, `read_error`, `person`, `checked_by`, `doc_number`, `commission_agent`, `signature_consignor`, `signature_commission_agent`, `positions[]` (`pos`/`no`/`label`/`qty`/`kg`/`grams`), `resolver_version`. Die Vereinheitlichung der drei Zweig-Formen macht je ein Code-`Normalize`/`Assemble` vor `ReturnData` — kein Schema kann das. Seit 05.11.2026 ein Zweig **Lieferschein** (Claude, „Read delivery note"): Nummer, Vertriebler aus „Vertrieb und Betreuung", Positionen; gleicher Ausgangsvertrag, keine Unterschriften. *Umbenennung in „[Resolve] Document" offen (F7 der Spec Eigenbestand).*
 
 **`[Resolve] Protocol (Inventory)` · 8329417** — **LLM-Reader** für das freie Bestandsprotokoll (grid-Zweig von `[Process] Upload PDF (Inventory)`). In: `document_url` (lädt selbst). Out: `ok`, `read_ok`, `read_error`, `checked_by`, `customer_no_read`, `date_read`, `poster`, `signature_consignor`, `signature_commission_agent`, `positions[]` (`pos`/`no`/`actual`/`uncertain`/`empty`), `notes[]` (`kat`/`pos`/`no`/`text`), `noteText`, `second_reading_ran`, `disputed_total`, `decided`, `open`, `resolver_version`. Liest nur IST — SOLL rechnet der Aufrufer aus der Base.
 
@@ -64,7 +65,7 @@ On-demand-Kinder (`Call a scenario` / `CallSubscenario`, synchron), je **eine** 
 
 ## `[Archive]` — PDF-Sicherung
 
-**`[Archive] Document PDF` · 7042723** — lädt das Original selbst (Binärdaten passen durch kein Interface) und ersetzt den Anhang `Belege.Beleg`. In: `document_url`, `filename` (ohne `.pdf`), `record_id`. Out: `ok`, `archiver_version`, `filename`. Aufrufer übergeht einen Fehler via `Ignore`.
+**`[Archive] Document PDF` · 7042723** — lädt das Original selbst (Binärdaten passen durch kein Interface) und ersetzt den Anhang `Belege.Anhang` durch eine mit iLovePDF komprimierte Kopie namens `<filename>.pdf`. In: `document_url`, `filename` (ohne `.pdf`), `record_id`. Out: `ok`, `archiver_version`, `filename`. Aufrufer übergeht einen Fehler via `Ignore`.
 
 ## `[Notify]`
 
@@ -73,7 +74,7 @@ On-demand-Kinder (`Call a scenario` / `CallSubscenario`, synchron), je **eine** 
 ## `[Sync]` — Spiegel nach außen
 
 **`[Sync] Inventory to Shopify` · 6805674**
-Push der Bestände nach Shopify; danach die **City-Posts** aus `Bestände` (`Letzte Lieferung` = Belegdatum-Gate). Notify **`sync.inventory`** (R26, Erfolgs-Report) · **`city.restock` / `city.strain_new`**; **`error.sync_aborted`**.
+Push der Bestände nach Shopify; danach die **City-Posts** aus `Bestände` (`Letzte Lieferung` = Belegdatum-Gate). Notify **`sync.inventory`** (R26, Erfolgs-Report) · **`city.restock` / `city.strain_new`**; **`error.sync_aborted`**. Liest `Stores.Modell`: bei **Eigenbestand** fügt `restock` die Sorten des Belegs zur Shop-Liste hinzu, alle anderen Typen ändern nichts; Kommission unverändert (seit 05.11.2026).
 
 **`[Sync] Shopify Products to Airtable` · 6795533** · wöchentl. **So 04:00**
 Upsert **`Produkte` / `Produktvarianten` / `Preise`** (Match über SKU). Notify **`sync.products`**; **`error.sync_aborted`**.
@@ -81,8 +82,11 @@ Upsert **`Produkte` / `Produktvarianten` / `Preise`** (Match über SKU). Notify 
 **`[Sync] Shopify Stores from Google Place API` · 6655783** · wöchentl. **So 05:00**
 Aktualisiert **`Stores`** (Öffnungszeiten/Bewertung via Place API). Notify **`sync.stores`**.
 
-**`[Sync] JTL Invoice to Lexware` · 6870495** · Ordner 377621
-Trigger: **Mailhook**. JTL-Ausgangsrechnung → Lexware.
+**`[Sync] JTL Invoice to Lexware` · 6870495** · Ordner 382407 (POS · Sync)
+Trigger: **Mailhook**. JTL-Ausgangsrechnung → Lexware. „Dokument wählen" nimmt nie ein PDF mit „lieferschein" oder „deliverynote" im Namen; ist es das einzige, endet der Lauf ohne Upload (Schutz, Stand 05.11.2026).
+
+**`[Sync] JTL Delivery Note to Airtable` · 8392806** · Ordner 382407 (POS · Sync) · seit 05.11.2026
+Trigger: **Mailhook** (eigene Adresse; JTL schickt den Lieferschein beim Anlegen). Prüft nur: Absender `kontakt@selectedleafs.com` (fremde Post still verwerfen), genau ein PDF, Dateiname beginnt mit „Lieferschein" oder „DeliveryNote" (JTL liefert `DeliveryNote AF-….pdf`) — sonst Make-Fehler. Legt **`Belege`** an (Belegtyp „Unbekannt") und hängt das PDF über den Airtable-Upload-Endpunkt an `Anhang` (Schlüssel „Airtable · Sync Delivery Note"). Lesen und Buchen macht der bestehende Eingang (Inbox-View → `[Dispatch] Upload PDF`). Sequenziell: eine offene unvollständige Ausführung hält weitere Lieferscheine an, bis sie gelöst ist. Scheitert der Upload, bleibt ein Beleg ohne PDF zurück.
 
 **`[Sync] Lexware Payments` · 6955541** · ohne Ordner
 Trigger: **lexoffice `watchEvents` (`payment.changed`)**. Setzt den Zahlungsstatus auf **`Umsätze` / `Auszahlungen`** (inkl. **Teilzahlung**). Der definierte Sonderfall gegen die INSERT-only-Regel. Notify **`error.payment_unmatched`** (R26, No-Match-Zweig).
