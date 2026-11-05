@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.11.0](https://github.com/wemwi/skill-library/compare/v6.10.0...v6.11.0) (2026-11-05)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Eigenbestand mit Lieferschein-Eingang und Modellwechsel ([#250](https://github.com/wemwi/skill-library/issues/250)) ([8952544](https://github.com/wemwi/skill-library/commit/8952544233adb013cc92f8c00c861cc06f6f3f0f))
+
 ## [6.10.0](https://github.com/wemwi/skill-library/compare/v6.9.0...v6.10.0) (2026-11-05)
 
 
