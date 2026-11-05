@@ -144,6 +144,7 @@ Die Kosten wurden deinem Saldo gutgeschrieben.
 Zurückgeholt am 12.08.2026
 ```
 **City** — — (Leerbestand nie im Feed)
+**Begleitend** → 👉 `task.jtl_return` · 👉 `task.jtl_inventory_date` (die Rückholung bucht auch eine Bestandsprüfung) · bei Gate-Blockade 🛑 `error.return_failed`
 *Beträge ohne Vorzeichen; Rückholungen buchen intern negativ (`{abs …}`).*
 
 ### 📋 `inventory.checked` — Bestandsprüfung · `live`
@@ -404,6 +405,18 @@ Kiosk Nordstern · 10132
 
 Geprüft am 12.08.2026
 ```
+*Emitter: `[Process] Upload PDF (Inventory)` und `[Process] Upload PDF (Return)`.*
+
+### 👉 `task.jtl_return` · `live` · NEU
+```
+👉 Rückholung buchen (JTL)
+Kiosk Nordstern · RETURN-10132-2026-08-12
+
+• Lager Modul öffnen
+• Warenausgang buchen
+
+Zurückgeholt am 12.08.2026
+```
 
 ### 👉 `task.jtl_payment` · `gebaut · Reimport 6633991 ausstehend` · NEU
 ```
@@ -553,6 +566,19 @@ Grund: keine Rechnung mit dieser Nummer in Airtable
 Folge: Zahlungsstatus nicht gesetzt — der Umsatz bleibt offen
 
 👉 Prüfen, ob RG-10128-1 als Umsatz existiert
+```
+
+### 🛑 `error.return_failed` · `live` · NEU
+*Gate-Blockade in `[Process] Upload PDF (Return)` (nicht alle Positionen auflösbar, Resolver-Fehler oder negatives Verdikt) — keine Buchung, Hinweis steht im Beleg.*
+```
+🛑 Rückholung nicht gebucht
+BLG-00077 · Buchungsprüfung
+
+Grund: Positionen nicht aufloesbar: 3, 7
+Positionen: 9 erwartet / 7 aufgeloest
+Folge: keine Buchung, kein Offboarding
+
+👉 Hinweis im Beleg prüfen
 ```
 
 ---
