@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.11.1](https://github.com/wemwi/skill-library/compare/v6.11.0...v6.11.1) (2026-11-05)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** [Resolve] Protocol behält seinen Namen ([#252](https://github.com/wemwi/skill-library/issues/252)) ([f45a7ba](https://github.com/wemwi/skill-library/commit/f45a7bae12bcba58223ee6e24d4674e94bf9a958))
+
 ## [6.11.0](https://github.com/wemwi/skill-library/compare/v6.10.0...v6.11.0) (2026-11-05)
 
 
