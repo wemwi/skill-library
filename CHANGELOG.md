@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.9.0](https://github.com/wemwi/skill-library/compare/v6.8.0...v6.9.0) (2026-11-05)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Rückholung meldet JTL-Aufgaben und Gate-Störung ([#246](https://github.com/wemwi/skill-library/issues/246)) ([ea02093](https://github.com/wemwi/skill-library/commit/ea02093bc3b34f386559b519e7da66bbf294d6ae))
+
 ## [6.8.0](https://github.com/wemwi/skill-library/compare/v6.7.1...v6.8.0) (2026-11-03)
 
 
