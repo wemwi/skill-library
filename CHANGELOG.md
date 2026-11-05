@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.10.0](https://github.com/wemwi/skill-library/compare/v6.9.0...v6.10.0) (2026-11-05)
+
+
+### Features
+
+* **global-credentials:** Spiegelname beim Konsumenten, Make-Anwendung = Aufgabe ([#248](https://github.com/wemwi/skill-library/issues/248)) ([fb546ed](https://github.com/wemwi/skill-library/commit/fb546edcf8cde7f98777bf361b089185625d98dc))
+
 ## [6.9.0](https://github.com/wemwi/skill-library/compare/v6.8.0...v6.9.0) (2026-11-05)
 
 
