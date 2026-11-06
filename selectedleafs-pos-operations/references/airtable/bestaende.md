@@ -58,7 +58,7 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **3** Felder und liest **10** (Nachtrag 2026-11-02: `Store` im grid-Zweig von 6729541). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **3** Felder und liest **11** (Nachtrag 2026-11-02: `Store` im grid-Zweig von 6729541; Nachtrag 2026-11-06: `Produkt` in „Load store stock“ für den Link der Korrektur). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -69,7 +69,7 @@ Make schreibt **3** Felder und liest **10** (Nachtrag 2026-11-02: `Store` im gri
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Erstlieferung am` · `Produkt` · `Store`  
-**Make liest:** `IST` · `Letzte Lieferung` · `Letzte Prüfung` · `SOLL` · `Store` · `Verkauft` · `Ø EK (netto)`
+**Make liest:** `IST` · `Letzte Lieferung` · `Letzte Prüfung` · `Produkt` · `SOLL` · `Store` · `Verkauft` · `Ø EK (netto)`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 

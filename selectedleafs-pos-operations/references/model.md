@@ -17,6 +17,7 @@ Make fügt ein, ändert nie. **Einziger definierter Sonderfall:** der Zahlungs-S
 **Positions-Tabellen — INSERT-only Kinder.** Die Zeilen unter einem Ereignis:
 `Lieferpositionen` · `Bestandsprüfungspositionen` · `Umsatzpositionen`.
 Hier entstehen die Positionswerte, die nach oben rollup-en. (`Auszahlungen` hat kein Positionskind.)
+Daneben **`Bestandsprüfungskorrekturen`** (Kind von `Bestandsprüfungen`, seit 06.11.2026): kein Ereignis, sondern der Antrag auf Nachbuchung offener Zählzeilen — Make und Hand schreiben, keine Geldwerte → [[bestandspruefungskorrekturen]].
 
 **Versions-Tabellen — append-only, eff-dated.** Nie editieren, nur neu versionieren:
 `Konditionen` (Provision % + Kostenanteil %) · `Preise` (VK je Produkt) · `Steuersätze`.
@@ -60,7 +61,7 @@ Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den M
 | **Eff-dated Versionswahl** | `Preise.Gültig ab` + `Preise.Produkt` · `Konditionen.Gültig ab` + `Konditionen.Gültig für` |
 | **Lexware-Brücken** | `Stores.Lexware ID` · `Vertriebler.Lexware ID` · `Auszahlungen.Lexware ID` |
 | **Namens-Match** | `Stores.Name` · `Vertriebler.Name` · `Städte.Name` · `Stadtteile.Name` |
-| **Options-Match** (Selects) | `Belege.Belegtyp` · `Bestandsprüfungen.Status` · `Stores.Status` · `Stores.Modell` · `Konditionen.Gültig für` |
+| **Options-Match** (Selects) | `Belege.Belegtyp` · `Bestandsprüfungen.Status` · `Bestandsprüfungskorrekturen.Status` · `Stores.Status` · `Stores.Modell` · `Konditionen.Gültig für` |
 | **Filter / Sort** | `Belege.Datum` · `Belege.Umsatz` · `Stores.Zuletzt geprüft` · `Stores.Fällig gemeldet am` |
 
 `Konditionen.Gültig für` steht bewusst in zwei Zeilen — Zweck ist die eff-dated Auswahl, Mechanismus der Options-Match. Die Tabelle nennt damit 27 Einträge für 26 Felder.

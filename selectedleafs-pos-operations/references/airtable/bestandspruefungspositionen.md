@@ -45,6 +45,7 @@ Eine Zeile = **eine Sorte in einer Bestandsprüfung** (SOLL vs. IST). Bewertet *
 | Store | lookup | `fld0IRQ14sjWPrh8k` |
 | Geprüft am | lookup | `fldBQjuphN88Xx0Oe` |
 | Prüfstempel | formula | `fldvsrzTPvaRNvmPo` |
+| Bestandsprüfungskorrekturen | link (Rückfeld von „Buchung“, Nachtrag 2026-11-06) | `fldImwoW8FuXxBGMy` |
 
 *Neu ziehen: `list_tables_for_base` → Bestandsprüfungspositionen; Formeln via `get_table_schema`.*
 
@@ -60,8 +61,8 @@ Make schreibt **7** Felder und liest **3**. Eines davon matcht Make über den Kl
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Bestand` · `Bestandsprüfung` · `IST` · `Position` · `Preis` · `Produkt` · `SOLL` (6729541 „Create line“; seit 06.11.2026 auch 8413130 „Create line“, gleiche Felder)  
-**Make liest:** `Differenz` · `Produkt` · `Position` (8413130 „Load booked lines“, `cellFormat=string` → `Produkt` = SKU)
+**Make schreibt:** `Bestand` · `Bestandsprüfung` · `IST` · `Position` · `Preis` · `Produkt` · `SOLL` (6729541 „Create line“; seit 06.11.2026 auch `[Process] Correction (Inventory)` 8413130 „Create line“, gleiche Felder)  
+**Make liest:** `Differenz` · `Produkt` · `Position` (`[Process] Correction (Inventory)` 8413130 „Load booked lines“, `cellFormat=string` → `Produkt` = SKU)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
