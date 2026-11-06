@@ -73,7 +73,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **8** Felder (seit 05.11.2026 auch `Modell`) und liest **24**. 7 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **8** Felder (seit 05.11.2026 auch `Modell`) und liest **25** (seit 2026-11-06 `Umsätze`). 7 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -102,7 +102,7 @@ Make schreibt **8** Felder (seit 05.11.2026 auch `Modell`) und liest **24**. 7 d
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Google Place ID` · `Hinweis` · `Shopify GID` · `Stadt` · `Stadtteil`  
-**Make liest:** `Akquise durch` · `Bild` · `Facebook` · `Instagram` · `Paketdienste` · `Postleitzahl` · `Sortiment` · `Straße / Nr.` · `Telefon` · `Telegram ID` · `TikTok` · `Webseite` · `WhatsApp`
+**Make liest:** `Akquise durch` · `Bild` · `Umsätze` (8413130 „Load store“, seit 2026-11-06) · `Facebook` · `Instagram` · `Paketdienste` · `Postleitzahl` · `Sortiment` · `Straße / Nr.` · `Telefon` · `Telegram ID` · `TikTok` · `Webseite` · `WhatsApp`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 

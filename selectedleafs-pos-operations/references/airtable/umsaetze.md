@@ -25,12 +25,14 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 - **`Deckungsbeitrag`** (Formel, €) — `Nettoumsatz − Provision`.
 - **`Zahlungsverlauf`** (Rollup ← `Belege.Belegtyp`) — »pünktlich« / »nach Zahlungserinnerung« / »nach Mahnung«; speist `{Zahlungsverlauf}` in der invoice.paid-Meldung.
 - **`Status`** (Select) — Offen / Bezahlt / **Teilgezahlt** / Überfällig / Angemahnt / Storniert / Ausgebucht. Teilzahlung ist ein definierter Zustand (Lexware-Payments-Sync).
+- **`Lexware ID`** (Text, seit 2026-11-06) — Voucher-ID der Rechnung in Lexware = `resource_id` für den Neuanstoß von `[Process] Invoice (Store)`. Nachgepflegt am 06.11.2026 für alle 41 Umsätze (Abgleich über die Rechnungsnummer).
 - **`Provisionssatz`** / **`MwSt.`** (Lookup %, ← Konditionen) · **`Fällig am`** (Datum) · `Datum` (Lookup ← Beleg, EU) · `Nettoumsatzerlös` (Rollup) · `Hinweis`.
 
 ## Fallstricke
 
 - **`Nettoumsatz` ist die Geldwahrheit, nicht `Nettoumsatzerlös`** (Endkunden-VK, liegt höher = Storemarge). Nur `Nettoumsatz` speist Provision/Saldo.
 - **Status wird von Make als String geschrieben** — Optionen nicht umbenennen (still).
+- **Bezahlt / Storniert / Ausgebucht setzt nur `[Process] Invoice (Store)`** (`[Sync] Lexware Payments` schreibt nur Teilgezahlt/Offen). Darauf beruht das Gate der Abschlussmeldung (vorher ≠ nachher). Ein zweiter Schreiber dieser Werte würde die Meldung verschlucken.
 - Provision ist nominal auf `Nettoumsatz`; die *ausgezahlt-relevante* Größe bei Teilzahlung ist `Realprovision`.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
@@ -59,12 +61,13 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 | Fällig am | date | `fldj7QHDMWnFxSTZn` |
 | Realprovision | formula € | `fldXTWtER7WgOIqd6` |
 | Zahlungsverlauf | rollup (← Belege.Belegtyp) | `fldVQODqhEZrbBNDm` |
+| Lexware ID | singleLineText (Voucher-ID, Nachtrag 2026-11-06) | `fldmTPQs0S1RTilAi` |
 
 *Neu ziehen: `list_tables_for_base` → Umsätze; Formeln via `get_table_schema`.*
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **8** Felder und liest **13**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **9** Felder und liest **14** (seit 2026-11-06 mit `Lexware ID`). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -74,7 +77,7 @@ Make schreibt **8** Felder und liest **13**. Eines davon matcht Make über den K
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Bezahlt` · `Fällig am` · `Hinweis` · `Konditionen` · `Status` · `Store` · `Vertriebler`  
+**Make schreibt:** `Bezahlt` · `Fällig am` · `Hinweis` · `Konditionen` · `Lexware ID` (6633991 „Umsatz anlegen“; „Status updaten“ füllt sie, wenn leer; gelesen von 8413130 „Load store sales“ zusammen mit `ID`, `Status`, `Hinweis`) · `Status` · `Store` · `Vertriebler`  
 **Make liest:** `Belege` · `Datum` · `Deckungsbeitrag` · `Nettoumsatz` · `Provision` · `Umsatzpositionen` · `Zahlungsverlauf`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**

@@ -20,6 +20,7 @@ Eine Zeile = **eine Sorte in einer Bestandsprüfung** (SOLL vs. IST). Bewertet *
 - **`Nettoverkaufswert`** (Formel, €) — `IF(Differenz > 0, Differenz × VK (netto), 0)` — **nur positiver Schwund** wird bewertet; Mehrbestand zählt 0.
 - **`Prüfstempel`** (Formel) — `IF(IST leer, BLANK(), VALUE(Geprüft am als YYYYMMDD) × 100000 + IST)` — kodiert Prüfdatum + IST in einer Zahl (Sortier-/Match-Stempel).
 - **`VK (netto)`** (Lookup ← [[preise]]).
+- **`Typ`** (Lookup ← `Produkt` → Produktvarianten.Typ ← Produkte.Typ, seit 2026-11-06) — „Inventar (POS)“ (Display, Vitrine) zählt in der Rechnungszuordnung nicht als „fehlt auf der Rechnung“.
 - `SOLL` / `IST` (Zahl) · Lookups `Store`, `Geprüft am`.
 
 ## Fallstricke
@@ -46,12 +47,13 @@ Eine Zeile = **eine Sorte in einer Bestandsprüfung** (SOLL vs. IST). Bewertet *
 | Geprüft am | lookup | `fldBQjuphN88Xx0Oe` |
 | Prüfstempel | formula | `fldvsrzTPvaRNvmPo` |
 | Bestandsprüfungskorrekturen | link (Rückfeld von „Buchung“, Nachtrag 2026-11-06) | `fldImwoW8FuXxBGMy` |
+| Typ | lookup (← Produkt → Typ, Nachtrag 2026-11-06) | `fld79OILwkJ3pCNp2` |
 
 *Neu ziehen: `list_tables_for_base` → Bestandsprüfungspositionen; Formeln via `get_table_schema`.*
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **7** Felder und liest **3**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **7** Felder und liest **4** (seit 2026-11-06 `Typ`). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -62,8 +64,8 @@ Make schreibt **7** Felder und liest **3**. Eines davon matcht Make über den Kl
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Bestand` · `Bestandsprüfung` · `IST` · `Position` · `Preis` · `Produkt` · `SOLL` (6729541 „Create line“; seit 06.11.2026 auch `[Process] Correction (Inventory)` 8413130 „Create line“, gleiche Felder)  
-**Make liest:** `Differenz` · `Produkt` · `Position` (`[Process] Correction (Inventory)` 8413130 „Load booked lines“, `cellFormat=string` → `Produkt` = SKU)
+**Make liest:** `Differenz` · `Produkt` · `Position` (`[Process] Correction (Inventory)` 8413130 „Load booked lines“, `cellFormat=string` → `Produkt` = SKU) · `Typ` (6633991 „Positionen der Bestandsprüfungen“, alle Felder per Feld-ID, `cellFormat=string` → Optionsname; seit 2026-11-06)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
-*Ohne jeden Make-Zugriff: 6 von 15 Feldern.*
+*Ohne jeden Make-Zugriff: 6 von 16 Feldern.*
