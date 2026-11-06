@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.18.1"
+  version: "1.19.0"
 ---
 
 # selectedleafs · POS Operations
@@ -44,8 +44,8 @@ Merksatz: **Airtable ist die Wahrheit, Make ist der Schreiber, die Formeln sind 
 Der Grund, warum Historie verlässlich bleibt. **Strukturell nicht erzwungen** — getragen von Disziplin und Wächter-Views:
 
 1. **Versionen sind append-only.** `Konditionen` und `Kalkulationen` werden nie editiert, nur neu versioniert (`Gültig ab`). Wer eine alte Version ändert, verschiebt rückwirkend Geld — spurlos.
-2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Auszahlungen` nur ein, ändert nie. **Einziger definierter Sonderfall:** der Zahlungseingang setzt einen Status (jetzt über `[Sync] Lexware Payments`).
-3. **Make-/Formel-Felder sind unantastbar.** Was Make auflöst oder per Name matcht, gehört Make/den Formeln, nicht der Hand.
+2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Auszahlungen` nur ein, ändert nie. **Zwei definierte Sonderfälle:** der Zahlungseingang setzt einen Status (`[Sync] Lexware Payments`); der Nachtrag einer Bestandsprüfung legt fehlende Positionen an und setzt `Status`, `Hinweis` und `Nachtrag buchen` (`[Process] Inventory Amendment`, seit 06.11.2026).
+3. **Make-/Formel-Felder sind unantastbar.** Was Make auflöst oder per Name matcht, gehört Make/den Formeln, nicht der Hand. **Umgekehrt gehört `Bestandsprüfungen.Nachtrag` der Hand:** Make schreibt es einmal im Prüflauf vor, danach ergänzt nur Joscha.
 
 → `references/operations.md` (Wächter-Views, ein Bearbeiter, keine Testbase)
 

@@ -25,17 +25,20 @@ Drei Bausteine, situationsabhängig:
 
 Airtable-Webhooks **verfallen** und müssen erneuert werden. **`[Maintain] Airtable Webhooks` (6830404, tägl. 04:30)** hält die Registry frisch. Ein abgelaufener Webhook = ein Trigger, der still nicht mehr feuert.
 
+Die Registrierungs-Liste steht im Modul „Code: Soll-Ist-Abgleich“ (nirgends sonst). Stand 06.11.2026 vier Hooks, alle auf einem View-Scope mit `changeTypes ['add']`: **Stores Inbox** · **Vertriebler Inbox** · **Belegeingang** · **Inventory amendment** (View „Korrektur (make.com)“ auf `Bestandsprüfungen`, beobachtet `Nachtrag buchen`). Beim letzten nimmt Make das gelauschte Feld selbst zurück — begründete Ausnahme zur Regel „kein gelauschtes Feld zurückschreiben“: der Record verlässt dabei die View, und `remove` ist nicht abonniert. Neuer Hook = Eintrag in der Liste, Webhook-Adresse trägt Joscha selbst ein (Zugangsschlüssel, nie durch den Chat).
+
 ## Tragende Views (Wächter)
 
 Views sind **load-bearing**, nicht Kosmetik:
 
 - Die **Belege-View** treibt den Gateway-Trigger von `[Dispatch] Upload PDF`.
+- Die View **„Korrektur (make.com)“** auf `Bestandsprüfungen` (Filter: `Nachtrag buchen` ist an) treibt `[Process] Inventory Amendment`; dessen Modul „Load checks to amend“ liest sie zusätzlich per View-ID.
 - Die **gefilterte View** ist der Circuit-Breaker der Idempotenz (nur „offene"/„neue" Datensätze werden vom Lauf gesehen).
 - **Umbenennen/Umfiltern bricht den Trigger still** — Views wie Produktionscode behandeln.
 
 ## Freeze-Invarianten sind disziplin-getragen
 
-Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Der **einzige** definierte INSERT-only-Bruch ist der Zahlungs-Status über `[Sync] Lexware Payments`.
+Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Definierte INSERT-only-Brüche gibt es **zwei**: den Zahlungs-Status über `[Sync] Lexware Payments` und den Nachtrag über `[Process] Inventory Amendment` (legt Positionen einer bestehenden Bestandsprüfung nach, setzt `Status`, `Hinweis`, `Nachtrag buchen`; seit 06.11.2026). `Bestandsprüfungen.Nachtrag` schreibt Make nur einmal vor, danach die Hand.
 
 ## Harte Regeln
 

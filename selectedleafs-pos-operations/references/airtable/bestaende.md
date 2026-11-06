@@ -29,6 +29,7 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 - **`Letzte Lieferung` (MAX) steuert die City-Posts** — Rollup nicht anfassen.
 - **`Erstlieferung am` nie zurücksetzen** — es ist der Dedup gegen doppelte 🌿-Posts.
 - `IST`/`SOLL`/`Differenz` liefern bei fehlender Prüfung `"-"` (String) — nicht als Zahl weiterrechnen ohne Guard.
+- **`IST` kann veraltet sein, `SOLL` nicht:** Wurde eine Prüfung nicht (oder nur teilweise) gebucht, aber trotzdem berechnet, sinkt `SOLL` über `Verkauft`, während `IST` beim alten Zählstand bleibt. Wer daraus das SOLL einer neuen Prüfung ableitet, bucht dann zu viel (Spätkauf 05.11.2026: 45 statt 14). Deshalb der SOLL-Abgleich im grid-Zweig ([[scenarios]]). „Abrechnung offen“ (`Differenz`) zeigte am 05.11. trotzdem richtig 14.
 
 ## Feld-Block (Stand 2026-08-21 · `list_tables_for_base`)
 
