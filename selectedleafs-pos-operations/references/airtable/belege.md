@@ -18,7 +18,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 |---|---|
 | Übergabeprotokoll | Lieferung (`delivery.booked`) |
 | Lieferschein | Lieferung (Eigenbestand, `delivery.note_booked`; erster Lieferschein eines Kommission-Stores stellt `Stores.Modell` um) · seit 05.11.2026 |
-| Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) |
+| Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) **und** Bestandsprüfung (Rückhol-Prüfung) |
 | Bestandsprotokoll | Bestandsprüfung |
 | Ausgangsrechnung | Umsatz |
 | Eingangsrechnung | Auszahlung (Provisionsrechnung des Vertrieblers) |
@@ -37,7 +37,8 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 ## Fallstricke
 
 - **`Datum` ist das Leistungsdatum** — ein falsches Belegdatum wählt die falsche Konditionen-/Preis-Version.
-- Genau **ein** Fach-Link je Beleg — der Belegtyp bestimmt welcher.
+- Der Belegtyp bestimmt den Fach-Link beim Anlegen — einer je Beleg, nur das **Rückholprotokoll** trägt zwei (Lieferung + Bestandsprüfung).
+- **Protokoll-Belege bekommen später den `Umsatz`.** Bestands- und Rückholprotokoll sind die **Vergabeliste** der Rechnungszuordnung: `[Process] Invoice (Store)` hängt die Rechnung an den Protokoll-Beleg der passenden Prüfung; ein Beleg mit `Umsatz` gilt als vergeben (→ [[scenarios]], „Bestandsprüfung zuordnen"). Ein Rückholprotokoll ohne Differenz bleibt ohne Umsatz — es gibt nichts abzurechnen.
 
 ## Feld-Block (Stand 2026-11-05 · `list_tables_for_base`)
 
@@ -60,7 +61,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **6** Felder und liest **7**. 3 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **6** Felder und liest **7**. 4 davon matcht Make über den Klartext-Namen (Nachtrag 2026-11-06: `Bestandsprüfung`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -73,11 +74,14 @@ Make schreibt **6** Felder und liest **7**. 3 davon matcht Make über den Klarte
 - **`Umsatz`** — 🟣 `make.com (KEY · Name)` · link · `fldI5lU4NQ7ymG4d0`  
   Dubletten-Match. Szenarien: 6844567.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Bestandsprüfung`** — 🟣 `make.com (KEY · Name)` · link · `fldbzOIOSaNcwdNAL` (gesetzt 2026-11-06)  
+  Vergabeliste je Store: `FIND("BSP-<Kundennr>-", {Bestandsprüfung}) = 1`, zusammen mit `Belegtyp` (Bestands- oder Rückholprotokoll). Szenarien: 6633991.  
+  ⚠ Umbenennen bricht den Match still — die Vergabeliste käme leer zurück, jede Rechnung bliebe unverknüpft.
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Anhang` (auch `[Sync] JTL Delivery Note to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Hinweis`  
-**Make liest:** `Bestandsprüfung` · `ID`
+**Make liest:** `ID`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
