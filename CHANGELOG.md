@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.12.0](https://github.com/wemwi/skill-library/compare/v6.11.1...v6.12.0) (2026-11-06)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** SOLL-Abgleich und Nachtrag offener Prüfzeilen ([#254](https://github.com/wemwi/skill-library/issues/254)) ([c23e759](https://github.com/wemwi/skill-library/commit/c23e7599851339fb52e50159b655d50ad023944d))
+
 ## [6.11.1](https://github.com/wemwi/skill-library/compare/v6.11.0...v6.11.1) (2026-11-05)
 
 
