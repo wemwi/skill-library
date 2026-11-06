@@ -60,8 +60,8 @@ Make schreibt **7** Felder und liest **3**. Eines davon matcht Make über den Kl
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Bestand` · `Bestandsprüfung` · `IST` · `Position` · `Preis` · `Produkt` · `SOLL`  
-**Make liest:** `Differenz`
+**Make schreibt:** `Bestand` · `Bestandsprüfung` · `IST` · `Position` · `Preis` · `Produkt` · `SOLL` (6729541 „Create line“; seit 06.11.2026 auch 8413130 „Create line“, gleiche Felder)  
+**Make liest:** `Differenz` · `Produkt` · `Position` (8413130 „Load booked lines“, `cellFormat=string` → `Produkt` = SKU)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
