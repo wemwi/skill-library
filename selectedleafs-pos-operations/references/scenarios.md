@@ -46,6 +46,14 @@ Trigger: Airtable-Webhook **„Inventory amendment“** (View „Korrektur (make
 
 **`[Process] Invoice (Store)` · 6633991**
 Ausgangsrechnung → löst über die `[Resolve]`-Kinder auf (Salesperson-Input = `partner` aus dem Lexware-Beleg; `[Resolve] Positions`-plus-Join produktiv) und schreibt **`Umsätze`** + **`Umsatzpositionen`**; wählt `Konditionen` (eff-dated). Notify **`invoice.created` / `.paid` / `.voided` / `.written_off`**; **`task.terms_missing`** wenn keine passende Konditionen-Version. *Genaue Resolver-Kette live.*
+**Zuordnung zum Beleg (Stand 06.11.2026):** Die **Auftragsnummer** der Rechnung (`orderNumbers` aus `extract_voucher_positions`) entscheidet, nicht `Stores.Modell`. Ohne AF-Nummer → Route **„Bestandsprüfung zuordnen"** (Kommission), mit AF-Nummer → Lieferschein-Zuordnung (Eigenbestand). So erreicht auch die Abschlussrechnung nach einem Modellwechsel die richtige Route.
+- **Vergabeliste:** Bestands- **und** Rückholprotokolle des Stores (`Belege`, gefiltert über `Belegtyp` + `Bestandsprüfung` = `BSP-<Kundennr>-…`). Ein Protokoll-Beleg mit `Umsatz` ist vergeben.
+- **Abgleich über die Positionen, nie über das Datum:** Rechnungsmenge = Differenz der Prüfung. Warenzeile gegen die positive Differenz, **Gutschriftzeile** (negative Menge = Mehrbestand) gegen die Differenz mit Vorzeichen. Treffer nur bei genau einer widerspruchsfreien Prüfung mit ≥ 2 belegten Positionen — sonst „unklar", nie geraten.
+- **Gegenprobe:** keine AF-Nummer, aber Rechnungstext „Abrechnung … Partnerkatalog" → keine Verknüpfung, Meldung „Modell der Rechnung prüfen".
+- **Hinweis am Umsatz:** genau **eine** eigene Zeile — „Bestandsprüfung nicht verknüpft: …" (unklar) oder „Bestandsprüfung verknüpft: …" (ersetzt eine frühere Meldung). Fremde Zeilen bleiben; geschrieben wird nur bei Änderung. Ein Lauf auf eine schon verknüpfte Rechnung verknüpft nichts neu.
+- **Neu anstoßen** (`resource_id` = Lexware-Voucher-ID) ist für offene, überfällige und angemahnte Rechnungen ohne Seiteneffekt — Status, Bezahlt und Positionen bleiben. **Bezahlte/stornierte nicht neu anstoßen:** der Lauf sendet `invoice.paid`/`.voided` und `task.jtl_payment` erneut.
+- **Lücke:** Die Zuordnung läuft nur beim Rechnungsereignis. Kommt das Protokoll **nach** der Rechnung, bleibt sie unverknüpft, bis die Rechnung erneut durchläuft.
+- Spec: Projekt „selectedleafs.com · Technik", `claude/spec-zuordnung-rechnung-pruefung.md`.
 
 **`[Process] Invoice (Sales)` · 6872651**
 Eingangsrechnung (Provisionsrechnung des Vertrieblers) → schreibt **`Auszahlungen`** (Idempotenz über `Lexware ID`) + Gegen-`Beleg`. Notify **`payout.created` / `.settled`**; **`error.lexware_orphan`**.

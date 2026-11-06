@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.20.0"
+  version: "1.21.0"
 ---
 
 # selectedleafs · POS Operations
