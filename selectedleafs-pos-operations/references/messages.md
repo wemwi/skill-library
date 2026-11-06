@@ -187,6 +187,7 @@ Nettoverkaufswert: 41,00 €
 
 ⚠️ Inventar nicht geprüft.
 ⚠️ Protokoll ohne Unterschrift.
+⚠️ 1 Zeile unklar
 
 Geprüft am 12.08.2026
 ```
@@ -200,11 +201,40 @@ Nettoverkaufswert: 41,00 €
 
 ⚠️ Inventar nicht geprüft.
 ⚠️ Protokoll ohne Unterschrift.
+⚠️ 1 Zeile unklar
 
 Geprüft am 12.08.2026
 ```
 **City** — —
 **Begleitend** → 👉 `task.jtl_inventory_date`
+
+### 📋 `inventory.corrected` — Bestand nachgetragen · `gebaut · Import ausstehend`
+*Auslöser `[Process] Correction (Inventory)` nach Buchung oder Statuswechsel (06.11.2026).*
+**Operations** — 📥 Vorgänge · 586
+```
+📋 Bestand nachgetragen
+Max Berger bei Kiosk Nordstern
+
+Gesamtdifferenz: 14 Einheiten
+Nettoverkaufswert: 48,50 €
+
+⚠️ 1 Zeile unklar
+
+Geprüft am 12.08.2026
+```
+**Vertriebler**
+```
+📋 Bestandsprüfung nachgetragen
+Kiosk Nordstern · Linden
+
+Gesamtdifferenz: 14 Einheiten
+Nettoverkaufswert: 48,50 €
+
+⚠️ 1 Zeile unklar
+
+Geprüft am 12.08.2026
+```
+**City** — —
 
 ### ⏳ `inventory.due` — Prüfung fällig · `gebaut · Import ausstehend`
 *Auslöser ist das eigene Szenario `[Maintain] Overdue Inventory Checks` (Schedule tgl. ~07:00, gebaut 18.08.2026 — Import + Schedule-Aktivierung noch offen). Vertrag siehe [[scenarios]].*

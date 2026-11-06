@@ -38,6 +38,7 @@ Die verkaufte Einheit (SKU-Ebene). Trägt SKU, Variant-GID und den **wöchentlic
 | Lieferpositionen | link → Lieferpositionen | `fldUBk3fSQnNPUkG7` |
 | Umsatzpositionen | link → Umsatzpositionen | `fldoLUxgCSsTNOWUr` |
 | Bestandsprüfungspositionen | link → …positionen | `fldIHyJBvrfO6Y5iO` |
+| Bestandsprüfungskorrekturen | link (Rückfeld von „Produkt“, Nachtrag 2026-11-06) | `fldTD1xKu6bnI3hIL` |
 | Typ | lookup | `fld6i3bS5YerX40fq` |
 | Produktname | lookup | `fld9VWoWA0QLHTpnP` |
 | EK (netto) | currency (Wochenspiegel) | `fldjVBRtbovK3Ky92` |

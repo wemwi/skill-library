@@ -168,6 +168,7 @@ Nettoverkaufswert: {⚙ Nettoverkaufswert}
 
 {leer Inventar geprüft}⚠️ Inventar nicht geprüft.
 {leer Unterschrieben}⚠️ Protokoll ohne Unterschrift.
+{gesetzt Unklar}⚠️ {Unklar}
 
 <i>Geprüft am {Datum}</i>
 ```
@@ -181,6 +182,34 @@ Nettoverkaufswert: <b>{⚙ Nettoverkaufswert}</b>
 
 {leer Inventar geprüft}⚠️ Inventar nicht geprüft.
 {leer Unterschrieben}⚠️ Protokoll ohne Unterschrift.
+{gesetzt Unklar}⚠️ {Unklar}
+
+<i>Geprüft am {Datum}</i>
+```
+
+### `inventory.corrected`
+*Nach `[Process] Correction (Inventory)`, wenn der Lauf gebucht oder den Status der Prüfung geändert hat (seit 06.11.2026). Zeigt den Endstand der Prüfung.*
+**Operations**
+```
+📋 Bestand nachgetragen
+<i>{Vertriebler} bei {Store}</i>
+
+Gesamtdifferenz: {⚙ Differenz (Gesamt)} Einheiten
+Nettoverkaufswert: {⚙ Nettoverkaufswert}
+
+{gesetzt Unklar}⚠️ {Unklar}
+
+<i>Geprüft am {Datum}</i>
+```
+**Vertriebler**
+```
+📋 Bestandsprüfung nachgetragen
+<i>{Store} · {Stadtteil}</i>
+
+Gesamtdifferenz: {⚙ Differenz (Gesamt)} Einheiten
+Nettoverkaufswert: <b>{⚙ Nettoverkaufswert}</b>
+
+{gesetzt Unklar}⚠️ {Unklar}
 
 <i>Geprüft am {Datum}</i>
 ```
