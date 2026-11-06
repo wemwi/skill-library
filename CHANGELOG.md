@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.14.0](https://github.com/wemwi/skill-library/compare/v6.13.0...v6.14.0) (2026-11-06)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Rechnungszuordnung über Auftragsnummer und Rückholprotokolle ([#258](https://github.com/wemwi/skill-library/issues/258)) ([ceeadd2](https://github.com/wemwi/skill-library/commit/ceeadd233099e8e1b4e58575f683c28b7909a7ac))
+
 ## [6.13.0](https://github.com/wemwi/skill-library/compare/v6.12.0...v6.13.0) (2026-11-06)
 
 
