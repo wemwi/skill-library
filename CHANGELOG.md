@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.13.0](https://github.com/wemwi/skill-library/compare/v6.12.0...v6.13.0) (2026-11-06)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Bestandsprüfungskorrekturen statt Nachtrag-Text ([#256](https://github.com/wemwi/skill-library/issues/256)) ([509d5e9](https://github.com/wemwi/skill-library/commit/509d5e9c300f4a6c4bc47cdc2fdac626dae75c23))
+
 ## [6.12.0](https://github.com/wemwi/skill-library/compare/v6.11.1...v6.12.0) (2026-11-06)
 
 
