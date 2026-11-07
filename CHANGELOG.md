@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.18.0](https://github.com/wemwi/skill-library/compare/v6.17.0...v6.18.0) (2026-11-07)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** geparkte Belege ohne Kundennummer (Hinweis, Automation, Wächter-View) ([#266](https://github.com/wemwi/skill-library/issues/266)) ([0b96e24](https://github.com/wemwi/skill-library/commit/0b96e245b4cfe568e450c11b129e6d4f856e2b61))
+
 ## [6.17.0](https://github.com/wemwi/skill-library/compare/v6.16.0...v6.17.0) (2026-11-07)
 
 
