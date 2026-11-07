@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.15.0](https://github.com/wemwi/skill-library/compare/v6.14.0...v6.15.0) (2026-11-07)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Nachlauf der Rechnungszuordnung ([#260](https://github.com/wemwi/skill-library/issues/260)) ([ea5d27e](https://github.com/wemwi/skill-library/commit/ea5d27e2392cbb7e6864a30e5f4c3796145e7d73))
+
 ## [6.14.0](https://github.com/wemwi/skill-library/compare/v6.13.0...v6.14.0) (2026-11-06)
 
 
