@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.17.0](https://github.com/wemwi/skill-library/compare/v6.16.0...v6.17.0) (2026-11-07)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Bestände.Differenz zeigt zu viel Berechnetes als Gutschrift ([#264](https://github.com/wemwi/skill-library/issues/264)) ([586f796](https://github.com/wemwi/skill-library/commit/586f796329cdd48b6185587fc8337caeea049968))
+
 ## [6.16.0](https://github.com/wemwi/skill-library/compare/v6.15.0...v6.16.0) (2026-11-07)
 
 
