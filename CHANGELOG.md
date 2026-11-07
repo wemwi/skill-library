@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.16.0](https://github.com/wemwi/skill-library/compare/v6.15.0...v6.16.0) (2026-11-07)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Mehrbestand in den Bestandsprüfungskorrekturen buchen ([#262](https://github.com/wemwi/skill-library/issues/262)) ([3ce93ff](https://github.com/wemwi/skill-library/commit/3ce93ff128f4c9d89b389007e92774382b2b1e57))
+
 ## [6.15.0](https://github.com/wemwi/skill-library/compare/v6.14.0...v6.15.0) (2026-11-07)
 
 
