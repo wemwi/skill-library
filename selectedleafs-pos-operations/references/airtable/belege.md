@@ -33,10 +33,12 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 - **`Datum`** (EU) — **Quelle des Leistungsdatums**; die Ereignis-Tabellen spiegeln es per Lookup.
 - **`Anhang`** (Attachments) — das PDF.
 - `Hinweis` (Freitext) · `Belegnummer` (autoNumber) · `Upload durch` (→ Vertriebler) / `Upload zu` (→ Stores) — Herkunft eines Uploads aus der Sales App, keine Fach-Links.
+- **`Hinweis` = „Wartet auf Kundennummer“** (seit 07.11.2026, Spec `claude/spec-beleg-ohne-kundennummer.md`): fester Wert, den die **Sales App** beim Anlegen setzt, wenn der gewählte Store (`Upload zu`) keine `Stores.ID` hat. Der Beleg ist damit **geparkt** — außerhalb der View „Inbox (make.com)“ (Filter u. a. `Hinweis` leer). Sobald `Stores.ID` gesetzt ist, leert die Airtable-Automation **„Belege freigeben, wenn Kundennummer da“** (Tabelle Stores) diesen Hinweis an den verknüpften Belegen, ältester zuerst; der Beleg rutscht per Feldänderung in die Inbox und läuft wie gewohnt durch `[Dispatch] Upload PDF`. Hängen gebliebene zeigt die View **„Wartet auf Kundennummer“** (Wächter, → [[operations]]). In der App gilt dieser Hinweis nicht als Problem („In Bearbeitung“, löschbar).
 
 ## Fallstricke
 
 - **`Datum` ist das Leistungsdatum** — ein falsches Belegdatum wählt die falsche Konditionen-/Preis-Version.
+- **„Wartet auf Kundennummer“ ist zeichengenau gekoppelt:** Sales App (Konstante `BELEG_HINWEIS.wartetAufKundennummer`), Skript der Automation „Belege freigeben, wenn Kundennummer da“ und Filter der View „Wartet auf Kundennummer“. Wortlaut nur an allen drei Stellen zugleich ändern. Einen geparkten Beleg nicht von Hand freigeben, solange `Stores.ID` leer ist — Make findet sonst keinen Store.
 - Der Belegtyp bestimmt den Fach-Link beim Anlegen — einer je Beleg, nur das **Rückholprotokoll** trägt zwei (Lieferung + Bestandsprüfung).
 - **Protokoll-Belege bekommen später den `Umsatz`.** Bestands- und Rückholprotokoll sind die **Vergabeliste** der Rechnungszuordnung: `[Process] Invoice (Store)` hängt die Rechnung an den Protokoll-Beleg der passenden Prüfung; ein Beleg mit `Umsatz` gilt als vergeben (→ [[scenarios]], „Bestandsprüfung zuordnen"). Ein Rückholprotokoll ohne Differenz bleibt ohne Umsatz — es gibt nichts abzurechnen.
 
