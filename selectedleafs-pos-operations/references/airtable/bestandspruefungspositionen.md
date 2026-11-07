@@ -26,6 +26,7 @@ Eine Zeile = **eine Sorte in einer Bestandsprüfung** (SOLL vs. IST). Bewertet *
 ## Fallstricke
 
 - **Nur positive Differenzen** fließen in den Wert — die Gesamtsumme auf [[bestandspruefungen]] ist damit ein **Schwund**-Wert, kein Netto-Saldo.
+- **Mehrbestand** (IST > SOLL) ist eine gültige Position mit negativer Differenz: `[Process] Correction (Inventory)` bucht sie nach bestätigter Zählung (seit 07.11.2026), die Rechnung zur Prüfung trägt dafür eine **Gutschriftzeile** (Zuordnung vergleicht sie mit Vorzeichen, → [[scenarios]]).
 - `Prüfstempel` ist ein zusammengesetzter Schlüssel — Datumsformat/Faktor nicht ändern.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
@@ -46,7 +47,6 @@ Eine Zeile = **eine Sorte in einer Bestandsprüfung** (SOLL vs. IST). Bewertet *
 | Store | lookup | `fld0IRQ14sjWPrh8k` |
 | Geprüft am | lookup | `fldBQjuphN88Xx0Oe` |
 | Prüfstempel | formula | `fldvsrzTPvaRNvmPo` |
-| Bestandsprüfungskorrekturen | link (Rückfeld von „Buchung“, Nachtrag 2026-11-06) | `fldImwoW8FuXxBGMy` |
 | Typ | lookup (← Produkt → Typ, Nachtrag 2026-11-06) | `fld79OILwkJ3pCNp2` |
 
 *Neu ziehen: `list_tables_for_base` → Bestandsprüfungspositionen; Formeln via `get_table_schema`.*

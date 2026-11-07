@@ -58,7 +58,7 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **3** Felder und liest **11** (Nachtrag 2026-11-02: `Store` im grid-Zweig von 6729541; Nachtrag 2026-11-06: `Produkt` in „Load store stock“ für den Link der Korrektur). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **3** Felder und liest **11** (Nachtrag 2026-11-02: `Store` im grid-Zweig von 6729541; Nachtrag 2026-11-07: `ID` und `Verkauft` in 8413130 „Load store stock“ für die Mehrbestand-Regel; `Produkt` liest 6729541 seit 07.11. nicht mehr). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
