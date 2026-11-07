@@ -34,7 +34,7 @@ Make spricht Airtable auf **zwei** Wegen an — und nur einer davon ist zerbrech
 - **Über die Feld-ID** (`returnFieldsByFieldId`, `fields[]`, `useColumnId:true`, `record`-Maps). Die ID ist unveränderlich; das Feld darf beliebig heißen. **Umbenennen ist folgenlos.**
 - **Über den Klartext-Namen** — ausschließlich dort, wo Airtable keine Feld-IDs zulässt: in `filterByFormula` und in `sort`. Plus in den dort gematchten **Options-Werten** von Selects. **Umbenennen bricht den Match still** — kein Fehler, kein Log, nur ein Treffer weniger.
 
-Der zweite Fall ist selten (32 Felder, Stand 2026-11-06), aber er trägt die Idempotenz, die eff-dated Versionswahl und die Brücken zu Lexware. Deshalb bekommt genau er den Marker.
+Der zweite Fall ist selten (33 Felder, Stand 2026-11-06), aber er trägt die Idempotenz, die eff-dated Versionswahl und die Brücken zu Lexware. Deshalb bekommt genau er den Marker.
 
 ### Der 🟣-Marker (Stand 2026-08-21)
 
@@ -49,11 +49,11 @@ Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den M
 
 **Was der Marker NICHT trägt: die Richtung.** Ob Make ein Feld liest oder schreibt, ändert an der Handlung nichts, die der Marker auslöst — Namen einfrieren gilt so oder so. Die Richtung steht vollständig in `airtable/<tabelle>.md`, je Tabelle mit Zählung und Feldliste.
 
-**Die Base trägt ausschließlich diese 32 Feld-Marker** (live gezählt 2026-11-06). Keine Tabellenbeschreibungen, keine Zusatztexte — alles Erklärende lebt im Skill, wo es versioniert ist und im Review auffällt.
+**Die Base trägt ausschließlich diese 33 Feld-Marker** (Stand 2026-11-06, `Produkte.Typ` nachgetragen). Keine Tabellenbeschreibungen, keine Zusatztexte — alles Erklärende lebt im Skill, wo es versioniert ist und im Review auffällt.
 
 **Prozess-Gegenmaßnahme:** neuer `filterByFormula`- oder `sort`-Zugriff auf ein Feld → 🟣-Marker im selben Zug setzen.
 
-### Die 32 namens-gekoppelten Felder
+### Die 33 namens-gekoppelten Felder
 
 | Zweck | Felder |
 |---|---|
@@ -61,10 +61,12 @@ Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den M
 | **Eff-dated Versionswahl** | `Preise.Gültig ab` + `Preise.Produkt` · `Konditionen.Gültig ab` + `Konditionen.Gültig für` |
 | **Lexware-Brücken** | `Stores.Lexware ID` · `Vertriebler.Lexware ID` · `Auszahlungen.Lexware ID` |
 | **Namens-Match** | `Stores.Name` · `Vertriebler.Name` · `Städte.Name` · `Stadtteile.Name` |
-| **Options-Match** (Selects) | `Belege.Belegtyp` · `Bestandsprüfungen.Status` · `Bestandsprüfungskorrekturen.Status` · `Stores.Status` · `Stores.Modell` · `Konditionen.Gültig für` |
+| **Options-Match** (Selects) | `Belege.Belegtyp` · `Bestandsprüfungen.Status` · `Bestandsprüfungskorrekturen.Status` · `Stores.Status` · `Stores.Modell` · `Konditionen.Gültig für` · `Produkte.Typ` |
 | **Filter / Sort** | `Belege.Datum` · `Belege.Umsatz` · `Belege.Bestandsprüfung` · `Stores.Zuletzt geprüft` · `Stores.Fällig gemeldet am` · `Lieferpositionen.Bestand` · `Lieferpositionen.Menge nach Prüfung` · `Lieferpositionen.Geprüft am` · `Umsatzpositionen.Bestand` |
 
-`Konditionen.Gültig für` steht bewusst in zwei Zeilen — Zweck ist die eff-dated Auswahl, Mechanismus der Options-Match. Die Tabelle nennt damit 33 Einträge für 32 Felder.
+`Konditionen.Gültig für` steht bewusst in zwei Zeilen — Zweck ist die eff-dated Auswahl, Mechanismus der Options-Match. Die Tabelle nennt damit 34 Einträge für 33 Felder.
+
+`Produkte.Typ` koppelt nur den Optionswert, nicht den Feldnamen: „Bestandsprüfung zuordnen“ vergleicht „Inventar (POS)“ im Code, gelesen über das Lookup `Bestandsprüfungspositionen.Typ` per Feld-ID. Der Marker ist trotzdem `KEY · Options`, weil Umbenennen der Option den Vergleich still bricht.
 
 Feld-Detail (fld-ID, Szenarien, Bruchmodus) je Tabelle in `airtable/<tabelle>.md`, Sektion „🟣 Make-Zugriff".
 

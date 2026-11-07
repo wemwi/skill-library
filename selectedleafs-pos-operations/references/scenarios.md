@@ -42,6 +42,8 @@ Trigger: Airtable-Webhook **„Inventory amendment“** (View „Korrektur (make
 - **Status der Prüfung:** angenommen bei Teilgebucht, Abgeschlossen, Ungültig; „In Bearbeitung“, fehlendes Prüfdatum/Kundennummer, Listen über 100 oder **keine Korrekturen** → nichts ändern, nur Hinweis. Keine Zeile mehr Offen/Abgelehnt → Abgeschlossen (auch durch Verworfen); sonst Teilgebucht; Ungültig ohne gebuchte Zeile bleibt Ungültig (ohne jede Position auch dann, wenn alles verworfen ist).
 - **Fehler:** Fehlerweg an `[Resolve] Positions`, „Create line“, „Mark correction booked“ und den beiden PATCH-Modulen schreibt den Fehler in den `Hinweis` und hält die Ausführung als unvollständig (2 Wiederholungen, 15 Min.).
 - Notify **`inventory.corrected`** — nach einer Buchung immer, sonst nur bei Statuswechsel der Prüfung (höchstens eine Meldung je Prüfung und Lauf).
+- **Neuanstoß der Rechnungen (seit 06.11.2026):** vierte Route am Router „Anything to book?“, läuft nach den anderen: „Reload check“ (GET per Record-ID) → Filter „Status changed“ (Status nachher ≠ Status aus „Load checks to correct“) → „Load store“ → „Load store sales“ (`Stores.Umsätze` per `RECORD_ID()`) → Code „Pick invoices to retry“ (Hinweis-Zeile beginnt mit „Bestandsprüfung nicht verknüpft:“, Status nicht Storniert/Ausgebucht, mit `Lexware ID`) → je Rechnung `[Process] Invoice (Store)` (`resource_id` = Lexware ID), nacheinander mit Warten. Lesefehler Break (2×, 15 Min.), Aufruffehler Resume. Kein eigenes Szenario, kein Wettlauf-Schutz (Entscheid 06.11.2026).
+- **Zeitplan:** sofort (am 06.11.2026 nach einem Import wieder von „alle 15 Minuten“ zurückgestellt). Nach jedem Import prüfen (B10).
 - Spec: Projekt „selectedleafs.com · Technik“, `claude/spec-bestandspruefungskorrekturen.md` (baut auf `claude/spec-soll-abgleich-nachtrag.md` auf).
 
 **`[Process] Invoice (Store)` · 6633991**
@@ -51,9 +53,13 @@ Ausgangsrechnung → löst über die `[Resolve]`-Kinder auf (Salesperson-Input =
 - **Abgleich über die Positionen, nie über das Datum:** Rechnungsmenge = Differenz der Prüfung. Warenzeile gegen die positive Differenz, **Gutschriftzeile** (negative Menge = Mehrbestand) gegen die Differenz mit Vorzeichen. Treffer nur bei genau einer widerspruchsfreien Prüfung mit ≥ 2 belegten Positionen — sonst „unklar", nie geraten.
 - **Gegenprobe:** keine AF-Nummer, aber Rechnungstext „Abrechnung … Partnerkatalog" → keine Verknüpfung, Meldung „Modell der Rechnung prüfen".
 - **Hinweis am Umsatz:** genau **eine** eigene Zeile — „Bestandsprüfung nicht verknüpft: …" (unklar) oder „Bestandsprüfung verknüpft: …" (ersetzt eine frühere Meldung). Fremde Zeilen bleiben; geschrieben wird nur bei Änderung. Ein Lauf auf eine schon verknüpfte Rechnung verknüpft nichts neu.
-- **Neu anstoßen** (`resource_id` = Lexware-Voucher-ID) ist für offene, überfällige und angemahnte Rechnungen ohne Seiteneffekt — Status, Bezahlt und Positionen bleiben. **Bezahlte/stornierte nicht neu anstoßen:** der Lauf sendet `invoice.paid`/`.voided` und `task.jtl_payment` erneut.
-- **Lücke:** Die Zuordnung läuft nur beim Rechnungsereignis. Kommt das Protokoll **nach** der Rechnung, bleibt sie unverknüpft, bis die Rechnung erneut durchläuft.
-- Spec: Projekt „selectedleafs.com · Technik", `claude/spec-zuordnung-rechnung-pruefung.md`.
+- **POS-Inventar (seit 06.11.2026):** Positionen mit `Bestandsprüfungspositionen.Typ` = „Inventar (POS)“ (Display, Vitrine) zählen nicht als „fehlt auf der Rechnung“; steht so ein Artikel auf der Rechnung, wird normal verglichen. Der Optionsname ist 🟣 an `Produkte.Typ`.
+- **Lexware ID:** „Umsatz anlegen“ schreibt `Umsätze.Lexware ID` (Voucher-ID), „Status updaten“ füllt sie, wenn leer.
+- **Neu anstoßen** (`resource_id` = `Umsätze.Lexware ID`) ist für jede Rechnung ohne Seiteneffekt — Status, Bezahlt und Positionen bleiben. **Gate (seit 06.11.2026):** Im Update-Zweig senden „Call: dispatch“ (`invoice.paid`/`.voided`/`.written_off`) und „Call: task.jtl_payment“ nur, wenn sich der Status ändert (`Umsatz existiert?` vorher ≠ `Status updaten` nachher). Trägt nur, solange Bezahlt/Storniert/Ausgebucht allein dieses Szenario setzt.
+- **Aufrufer:** `[Dispatch] Lexware Voucher` (Rechnungsereignis) und `[Process] Correction (Inventory)` (Neuanstoß nach Statuswechsel einer Prüfung, wartet auf das Ende).
+- **Lücke (bewusst offen):** Kommt das Protokoll **nach** der Rechnung, stößt nichts neu an. Mit dem freien Protokoll (Upload im Store) erwartet selten; Rückholung und alte JTL-Bögen → Neuanstoß von Hand.
+- **Konstante:** Die Zeile „Bestandsprüfung nicht verknüpft:“ steht in zwei Codestellen („Bestandsprüfung zuordnen“ hier, „Pick invoices to retry“ in Correction). Wer sie ändert, ändert beide; ein Test vergleicht sie.
+- Spec: Projekt „selectedleafs.com · Technik", `claude/spec-zuordnung-rechnung-pruefung.md` und `claude/spec-zuordnung-nachlauf.md`.
 
 **`[Process] Invoice (Sales)` · 6872651**
 Eingangsrechnung (Provisionsrechnung des Vertrieblers) → schreibt **`Auszahlungen`** (Idempotenz über `Lexware ID`) + Gegen-`Beleg`. Notify **`payout.created` / `.settled`**; **`error.lexware_orphan`**.
