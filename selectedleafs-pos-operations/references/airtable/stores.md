@@ -16,7 +16,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 
 ## Tragende Felder
 
-- **`ID`** (Text) — **JTL-Kundennummer**; trägt den Bestands-Schlüssel (`Bestände.ID = "BST-" & ID & "-" & SKU`). Inhalt nicht umwidmen.
+- **`ID`** (Text) — **JTL-Kundennummer**; trägt den Bestands-Schlüssel (`Bestände.ID = "BST-" & ID & "-" & SKU`). Inhalt nicht umwidmen. Über die Sales App angelegte Stores haben sie zunächst nicht (App: „Kundennummer folgt“, Beleg wird geparkt, → [[belege]]). **Wird `ID` gesetzt (nicht leer), feuert die Airtable-Automation „Belege freigeben, wenn Kundennummer da“** (Auslöser „Datensatz erfüllt Bedingung“, seit 07.11.2026): Sie leert `Hinweis` = „Wartet auf Kundennummer“ an den verknüpften Belegen (Rückfeld `Belege`). Erst die richtige Nummer eintragen — schon ein vorläufiger Wert gibt die Belege frei.
 - **`Name`** (Text) — **Restock-Match läuft zeichengenau** hierüber. Umbenennen bricht still.
 - **`Akquise durch`** (Link) — wird **ausschließlich** über den personalisierten Formularlink gesetzt (`prefill` + `hide`, Wert = Record-ID des Vertrieblers). `[Create] New Store Partner` prüft es als Pflichtfeld; `[Dispatch] Telegram Notifications` navigiert darüber. **Feld-ID nicht ändern, „Neue Datensätze erlauben" nicht einschalten** (sonst still ein zweiter Vertriebler).
 - **`Shopify GID`** (Metaobjekt-GID, voll inkl. Präfix) · **`Google Place ID`** (baut den Maps-Link der City-Posts; leer ⇒ Namenssuche).
@@ -68,6 +68,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 | Zuletzt geprüft | rollup date | `fld36tZGPVPcuqOJU` |
 | Akquise durch | link → Vertriebler | `fldMF3vhN0mNklbkb` |
 | Fällig gemeldet am | date | `fldzaj0Ai31RqgqnU` |
+| Belege | link → Belege (Rückfeld von `Belege.Upload zu`; Nachtrag 2026-11-07) | `fldmG4IXjoLtmpNxL` |
 
 *Neu ziehen: `list_tables_for_base` → Stores; Formeln via `get_table_schema`.*
 

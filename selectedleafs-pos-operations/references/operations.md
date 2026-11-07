@@ -32,6 +32,7 @@ Die Registrierungs-Liste steht im Modul „Code: Soll-Ist-Abgleich“ (nirgends 
 Views sind **load-bearing**, nicht Kosmetik:
 
 - Die **Belege-View** treibt den Gateway-Trigger von `[Dispatch] Upload PDF`.
+- Die View **„Wartet auf Kundennummer“** auf `Belege` (Filter: `Hinweis` = „Wartet auf Kundennummer“, nach Alter sortiert; seit 07.11.2026) ist der **Wächter** für geparkte Sales-App-Belege eines Stores ohne `Stores.ID`. Freigabe macht die Airtable-Automation **„Belege freigeben, wenn Kundennummer da“** (Stores, Auslöser `ID` nicht leer, Skript leert den Hinweis, ältester zuerst). Ein Beleg, der hier länger als 3 Tage steht, gehört in die Make-Überwachung (Meldung ab 3 Tagen): JTL-Kunde fehlt noch oder der Store wurde abgebrochen.
 - Die View **„Korrektur (make.com)“** auf `Bestandsprüfungen` (Filter: `Korrekturen buchen` ist an) treibt `[Process] Correction (Inventory)`; dessen Modul „Load checks to correct“ liest sie zusätzlich per View-ID.
 - Die **gefilterte View** ist der Circuit-Breaker der Idempotenz (nur „offene"/„neue" Datensätze werden vom Lauf gesehen).
 - **Umbenennen/Umfiltern bricht den Trigger still** — Views wie Produktionscode behandeln.
