@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.19.0](https://github.com/wemwi/skill-library/compare/v6.18.0...v6.19.0) (2026-11-08)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Beispiele freies Bestandsprotokoll und Rückholprotokoll ([#268](https://github.com/wemwi/skill-library/issues/268)) ([1b0607a](https://github.com/wemwi/skill-library/commit/1b0607a36b61400ed249246a6a09bae11aa3c53f))
+
 ## [6.18.0](https://github.com/wemwi/skill-library/compare/v6.17.0...v6.18.0) (2026-11-07)
 
 
