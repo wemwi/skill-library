@@ -2,7 +2,7 @@
 
 `tbld7UQwDBbq9A8Xk` · Kategorie **Stammdaten** (Dokument-Drehscheibe)
 
-> Feld-Block: **Stand 2026-11-05**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
+> Feld-Block: **Stand 2026-11-08**, aus `list_tables_for_base`. Verify-live — im Zweifel gewinnt die Base.
 
 ## Zweck
 
@@ -33,16 +33,19 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 - **`Datum`** (EU) — **Quelle des Leistungsdatums**; die Ereignis-Tabellen spiegeln es per Lookup.
 - **`Anhang`** (Attachments) — das PDF.
 - `Hinweis` (Freitext) · `Belegnummer` (autoNumber) · `Upload durch` (→ Vertriebler) / `Upload zu` (→ Stores) — Herkunft eines Uploads aus der Sales App, keine Fach-Links.
+- **`Zuordnung bestätigt`** (Checkbox, seit 08.11.2026, Spec `claude/spec-store-aus-app.md`) — der Vertriebler hat den Store in der App bestätigt oder neu zugeordnet. Schreibt nur die Sales App (`POST /belege/:id/zuordnen`, in denselben Fällen wie „Beleg löschen“), liest nur `[Dispatch] Upload PDF`.
+- **`Hinweis` = „Zuordnung prüfen“ / „Store bestätigen“ / „Store fehlt“** (seit 08.11.2026): setzt `[Dispatch] Upload PDF`. Nur an den Vertriebler, keine Meldung an Operations (→ [[scenarios]], Store-Regel). In der App: „Neu zuordnen“, bei „Store bestätigen“ zusätzlich „Bestätigen“. Beides setzt `Upload zu`, `Zuordnung bestätigt`, leert `Hinweis`, setzt `Belegtyp` auf „Unbekannt“ und löscht einen fehlerhaften Fach-Datensatz; der Beleg rutscht zurück in die Inbox.
 - **`Hinweis` = „Wartet auf Kundennummer“** (seit 07.11.2026, Spec `claude/spec-beleg-ohne-kundennummer.md`): fester Wert, den die **Sales App** beim Anlegen setzt, wenn der gewählte Store (`Upload zu`) keine `Stores.ID` hat. Der Beleg ist damit **geparkt** — außerhalb der View „Inbox (make.com)“ (Filter u. a. `Hinweis` leer). Sobald `Stores.ID` gesetzt ist, leert die Airtable-Automation **„Belege freigeben, wenn Kundennummer da“** (Tabelle Stores) diesen Hinweis an den verknüpften Belegen, ältester zuerst; der Beleg rutscht per Feldänderung in die Inbox und läuft wie gewohnt durch `[Dispatch] Upload PDF`. Hängen gebliebene zeigt die View **„Wartet auf Kundennummer“** (Wächter, → [[operations]]). In der App gilt dieser Hinweis nicht als Problem („In Bearbeitung“, löschbar).
 
 ## Fallstricke
 
 - **`Datum` ist das Leistungsdatum** — ein falsches Belegdatum wählt die falsche Konditionen-/Preis-Version.
+- **„Zuordnung prüfen“, „Store bestätigen“, „Store fehlt“ sind zeichengenau gekoppelt:** Sales App (Konstanten `BELEG_HINWEIS`, Vergleich für „Bestätigen“) und Code im Modul „Verdict: check type + date“. Wortlaut nur an beiden Stellen zugleich ändern.
 - **„Wartet auf Kundennummer“ ist zeichengenau gekoppelt:** Sales App (Konstante `BELEG_HINWEIS.wartetAufKundennummer`), Skript der Automation „Belege freigeben, wenn Kundennummer da“ und Filter der View „Wartet auf Kundennummer“. Wortlaut nur an allen drei Stellen zugleich ändern. Einen geparkten Beleg nicht von Hand freigeben, solange `Stores.ID` leer ist — Make findet sonst keinen Store.
 - Der Belegtyp bestimmt den Fach-Link beim Anlegen — einer je Beleg, nur das **Rückholprotokoll** trägt zwei (Lieferung + Bestandsprüfung).
 - **Protokoll-Belege bekommen später den `Umsatz`.** Bestands- und Rückholprotokoll sind die **Vergabeliste** der Rechnungszuordnung: `[Process] Invoice (Store)` hängt die Rechnung an den Protokoll-Beleg der passenden Prüfung; ein Beleg mit `Umsatz` gilt als vergeben (→ [[scenarios]], „Bestandsprüfung zuordnen"). Ein Rückholprotokoll ohne Differenz bleibt ohne Umsatz — es gibt nichts abzurechnen.
 
-## Feld-Block (Stand 2026-11-05 · `list_tables_for_base`)
+## Feld-Block (Stand 2026-11-08 · `list_tables_for_base`)
 
 | Feld | Typ | fld-ID |
 |---|---|---|
@@ -58,6 +61,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 | Belegnummer | autoNumber | `fldn5KrXi5x4werVB` |
 | Upload durch | link → Vertriebler | `fldS5BmsfqPi5TOdv` |
 | Upload zu | link → Stores | `fldPuVFi2iKbf9aeh` |
+| Zuordnung bestätigt | checkbox | `fldSSg5dfKRujzXHP` |
 
 *Neu ziehen: `list_tables_for_base` → Belege; Formeln via `get_table_schema`.*
 
@@ -83,7 +87,7 @@ Make schreibt **6** Felder und liest **7**. 4 davon matcht Make über den Klarte
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Anhang` (auch `[Sync] JTL Delivery Note to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Hinweis`  
-**Make liest:** `ID`
+**Make liest:** `ID` · `Zuordnung bestätigt` (seit 08.11.2026)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
