@@ -18,7 +18,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 |---|---|
 | Übergabeprotokoll | Lieferung (`delivery.booked`) |
 | Lieferschein | Lieferung (Eigenbestand, `delivery.note_booked`; erster Lieferschein eines Kommission-Stores stellt `Stores.Modell` um) · seit 05.11.2026 |
-| Gutschrift | Umsatz mit negativen Positionen (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026; läuft nicht durch die Inbox |
+| Gutschrift | Umsatz mit negativen Positionen (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026; legt `[Process] Refund (Store)` bei neuem Umsatz an, läuft nicht durch die Inbox |
 | Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) **und** Bestandsprüfung (Rückhol-Prüfung) |
 | Bestandsprotokoll | Bestandsprüfung |
 | Ausgangsrechnung | Umsatz |

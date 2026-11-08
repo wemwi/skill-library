@@ -27,7 +27,7 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 - **`Status`** (Select) — Offen / Bezahlt / **Teilgezahlt** / Überfällig / Angemahnt / Storniert / Ausgebucht. Teilzahlung ist ein definierter Zustand (Lexware-Payments-Sync).
 - **`Lexware ID`** (Text, seit 2026-11-06) — Voucher-ID der Rechnung in Lexware = `resource_id` für den Neuanstoß von `[Process] Invoice (Store)`. Nachgepflegt am 06.11.2026 für alle 41 Umsätze (Abgleich über die Rechnungsnummer).
 - **Gutschrift-Umsätze** (`ID` = `RK-…`, seit 08.11.2026): Positionen negativ, damit `Nettoumsatz`, `Provision` und `Offen` negativ (`Offen` = Guthaben des Stores). `Bezahlt` wird erst bei der Verrechnung gesetzt, erst dann sinken `Realprovision` und Saldo. Nicht von selbst verrechnet: Gutschrift länger als 30 Tage Offen ist ein Signal.
-- **`Provisionssatz`** / **`MwSt.`** (Lookup %, ← Konditionen) · **`Fällig am`** (Datum) · `Datum` (Lookup ← Beleg, EU) · `Nettoumsatzerlös` (Rollup) · `Hinweis`.
+- **`Provisionssatz`** / **`MwSt.`** (Lookup %, ← Konditionen) · **`Fällig am`** (Datum) · `Datum` (Lookup ← Beleg, EU; nur Belegtyp Ausgangsrechnung oder Gutschrift, Mahnstufen zählen nicht) · `Nettoumsatzerlös` (Rollup) · `Hinweis`.
 
 ## Fallstricke
 
