@@ -18,6 +18,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 |---|---|
 | Übergabeprotokoll | Lieferung (`delivery.booked`) |
 | Lieferschein | Lieferung (Eigenbestand, `delivery.note_booked`; erster Lieferschein eines Kommission-Stores stellt `Stores.Modell` um) · seit 05.11.2026 |
+| Gutschrift | Umsatz mit negativen Positionen (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026; läuft nicht durch die Inbox |
 | Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) **und** Bestandsprüfung (Rückhol-Prüfung) |
 | Bestandsprotokoll | Bestandsprüfung |
 | Ausgangsrechnung | Umsatz |
@@ -29,7 +30,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 ## Tragende Felder
 
 - **`ID`** (Formel) — `"BLG-" & RIGHT("00000" & Belegnummer, 5)` (z. B. `BLG-00044`).
-- **`Belegtyp`** (Select) — die neun Typen oben; **`Unbekannt`** löst die Korrektur-Aufgabe aus (Make-String, nicht umbenennen).
+- **`Belegtyp`** (Select) — die zehn Typen oben; **`Unbekannt`** löst die Korrektur-Aufgabe aus (Make-String, nicht umbenennen).
 - **`Datum`** (EU) — **Quelle des Leistungsdatums**; die Ereignis-Tabellen spiegeln es per Lookup.
 - **`Anhang`** (Attachments) — das PDF.
 - `Hinweis` (Freitext) · `Belegnummer` (autoNumber) · `Upload durch` (→ Vertriebler) / `Upload zu` (→ Stores) — Herkunft eines Uploads aus der Sales App, keine Fach-Links.

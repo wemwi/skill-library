@@ -26,13 +26,14 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 - **`Zahlungsverlauf`** (Rollup ← `Belege.Belegtyp`) — »pünktlich« / »nach Zahlungserinnerung« / »nach Mahnung«; speist `{Zahlungsverlauf}` in der invoice.paid-Meldung.
 - **`Status`** (Select) — Offen / Bezahlt / **Teilgezahlt** / Überfällig / Angemahnt / Storniert / Ausgebucht. Teilzahlung ist ein definierter Zustand (Lexware-Payments-Sync).
 - **`Lexware ID`** (Text, seit 2026-11-06) — Voucher-ID der Rechnung in Lexware = `resource_id` für den Neuanstoß von `[Process] Invoice (Store)`. Nachgepflegt am 06.11.2026 für alle 41 Umsätze (Abgleich über die Rechnungsnummer).
+- **Gutschrift-Umsätze** (`ID` = `RK-…`, seit 08.11.2026): Positionen negativ, damit `Nettoumsatz`, `Provision` und `Offen` negativ (`Offen` = Guthaben des Stores). `Bezahlt` wird erst bei der Verrechnung gesetzt, erst dann sinken `Realprovision` und Saldo. Nicht von selbst verrechnet: Gutschrift länger als 30 Tage Offen ist ein Signal.
 - **`Provisionssatz`** / **`MwSt.`** (Lookup %, ← Konditionen) · **`Fällig am`** (Datum) · `Datum` (Lookup ← Beleg, EU) · `Nettoumsatzerlös` (Rollup) · `Hinweis`.
 
 ## Fallstricke
 
 - **`Nettoumsatz` ist die Geldwahrheit, nicht `Nettoumsatzerlös`** (Endkunden-VK, liegt höher = Storemarge). Nur `Nettoumsatz` speist Provision/Saldo.
 - **Status wird von Make als String geschrieben** — Optionen nicht umbenennen (still).
-- **Bezahlt / Storniert / Ausgebucht setzt nur `[Process] Invoice (Store)`** (`[Sync] Lexware Payments` schreibt nur Teilgezahlt/Offen). Darauf beruht das Gate der Abschlussmeldung (vorher ≠ nachher). Ein zweiter Schreiber dieser Werte würde die Meldung verschlucken.
+- **Bezahlt / Storniert / Ausgebucht setzt nur `[Process] Invoice (Store)`, bei Gutschriften `[Process] Refund (Store)`** (`[Sync] Lexware Payments` schreibt nur Teilgezahlt/Offen). Darauf beruht das Gate der Abschlussmeldung (vorher ≠ nachher). Ein zweiter Schreiber dieser Werte würde die Meldung verschlucken.
 - Provision ist nominal auf `Nettoumsatz`; die *ausgezahlt-relevante* Größe bei Teilzahlung ist `Realprovision`.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)

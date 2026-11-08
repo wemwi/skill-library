@@ -26,7 +26,7 @@ Eine Zeile = **eine Sorte in einer Bestandsprüfung** (SOLL vs. IST). Bewertet *
 ## Fallstricke
 
 - **Nur positive Differenzen** fließen in den Wert — die Gesamtsumme auf [[bestandspruefungen]] ist damit ein **Schwund**-Wert, kein Netto-Saldo.
-- **Mehrbestand** (IST > SOLL) ist eine gültige Position mit negativer Differenz: `[Process] Correction (Inventory)` bucht sie nach bestätigter Zählung (seit 07.11.2026), die Rechnung zur Prüfung trägt dafür eine **Gutschriftzeile** (Zuordnung vergleicht sie mit Vorzeichen, → [[scenarios]]).
+- **Mehrbestand** (IST > SOLL) ist eine gültige Position mit negativer Differenz: `[Process] Correction (Inventory)` bucht sie nach bestätigter Zählung (seit 07.11.2026), korrigiert wird mit einer **freien Gutschrift in JTL** je Prüfung (→ [[bestaende]]). Alte Rechnungen mit Gutschriftzeile vergleicht die Zuordnung weiter mit Vorzeichen (→ [[scenarios]]).
 - `Prüfstempel` ist ein zusammengesetzter Schlüssel — Datumsformat/Faktor nicht ändern.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
