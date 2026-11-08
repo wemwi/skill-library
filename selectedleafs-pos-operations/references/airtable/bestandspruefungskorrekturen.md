@@ -23,12 +23,12 @@ Eine Zeile = eine **offene Kratom-Zählzeile** einer Bestandsprüfung, die noch 
 
 1. Prüflauf (`[Process] Upload PDF (Inventory)`, grid-Zweig): jede offene Kratom-Zeile → Status Offen. Nur bei sauberem Verdikt, nie bei Beleg-Problem.
 2. Joscha ergänzt `IST` (oder `SOLL`), setzt `Verworfen` oder lässt die Zeile stehen, und setzt an der Prüfung `Korrekturen buchen`.
-3. `[Process] Correction (Inventory)`: gebucht → Gebucht; sonst Abgelehnt mit Grund; IST leer → unverändert. **Mehrbestand** (IST > SOLL) wird gebucht, wenn der Store die Sorte im Bestand hat und der Überschuss ≤ `Bestände.Verkauft`; Differenz negativ, der Hinweis an der Prüfung fordert die **Gutschriftzeile** auf der Rechnung. Keine Zeile mehr Offen/Abgelehnt → Prüfung Abgeschlossen. Regeln im Vertrag → [[scenarios]].
+3. `[Process] Correction (Inventory)`: gebucht → Gebucht; sonst Abgelehnt mit Grund; IST leer → unverändert. **Mehrbestand** (IST > SOLL) wird gebucht, wenn der Store die Sorte im Bestand hat und der Überschuss ≤ `Bestände.Verkauft`; Differenz negativ, der Hinweis an der Prüfung nennt die Gutschrift: „Gutschrift in JTL über: <Sorte> <N> Stück, …“. Keine Zeile mehr Offen/Abgelehnt → Prüfung Abgeschlossen. Regeln im Vertrag → [[scenarios]].
 
 ## Fallstricke
 
 - **Doppelte Werte gewollt:** SOLL/IST stehen nach der Buchung in Korrektur und Position. Die Korrektur ist der Antrag, die Position die Buchung (gleiche Prüfung und Sorte). Doppelschutz: Status Gebucht wird nie neu gebucht, je Prüfung und Sorte höchstens eine Position.
-- **Mehrbestand nie über SOLL „passend machen“:** SOLL ist die Buchhaltung (geliefert − berechnet). Mehr gezählt heißt zu viel berechnet (→ Gutschrift) oder Lieferung fehlt (→ Lieferung buchen, dann SOLL der Korrektur anpassen). Die Gutschriftzeile setzt die Hand in JTL, als Zeile auf der nächsten Rechnung; „Abrechnung offen“ zeigt sie seit 07.11.2026 als negative `Bestände.Differenz` (→ [[bestaende]]).
+- **Mehrbestand nie über SOLL „passend machen“:** SOLL ist die Buchhaltung (geliefert − berechnet). Mehr gezählt heißt zu viel berechnet (→ Gutschrift) oder Lieferung fehlt (→ Lieferung buchen, dann SOLL der Korrektur anpassen). Die freie Gutschrift legt die Hand in JTL an, eine je Prüfung (→ [[bestaende]]); „Abrechnung offen“ zeigt sie seit 07.11.2026 als negative `Bestände.Differenz` (→ [[bestaende]]).
 - Eine Korrektur für eine Sorte, die in der Prüfung schon eine Position hat, wird „schon gebucht“ abgelehnt — die Position korrigiert man nicht über diese Tabelle.
 - **Status-Optionen nicht umbenennen** (🟣 Options) — Make schreibt und liest die Namen.
 

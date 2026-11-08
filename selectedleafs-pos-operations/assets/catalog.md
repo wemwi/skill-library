@@ -278,6 +278,45 @@ Deine Provision: +{Provision}
 Dein Saldo (offen): <b>{Offen}</b>
 ```
 
+### `refund.created` · NEU 08.11.2026
+**Operations**
+```
+↩️ Gutschrift erstellt
+<i>{Store} · {ID}</i>
+
+Gutschrift netto: {abs Nettoumsatz}
+Provision: −{abs Provision}
+
+<i>Mit der nächsten Rechnung verrechnen</i>
+```
+**Vertriebler**
+```
+↩️ Gutschrift erstellt
+<i>{Store} · {ID}</i>
+
+Gutschrift netto: {abs Nettoumsatz}
+
+Deine Provision sinkt bei der Verrechnung um {abs Provision}.
+```
+
+### `refund.settled` · NEU 08.11.2026
+**Operations**
+```
+✅ Gutschrift verrechnet
+<i>{Store} · {ID}</i>
+
+Gutschrift netto: {abs Nettoumsatz}
+Saldo {Vorname} (offen): {Offen}
+```
+**Vertriebler**
+```
+✅ Gutschrift verrechnet
+<i>{Store} · {ID}</i>
+
+Deine Provision: −{abs Provision}
+Dein Saldo (offen): <b>{Offen}</b>
+```
+
 ### `invoice.reminder_filed`
 **Operations**
 ```
@@ -481,6 +520,16 @@ Danke für deine Arbeit! :)
 <i>Bezahlt am {Datum}</i>
 ```
 
+### `task.jtl_refund` · NEU 08.11.2026
+**Operations**
+```
+👉 Gutschrift verrechnen (JTL)
+<i>{Store} · {ID}</i>
+
+• Zahlung „Verrechnung Gutschrift“ an der Rechnung eintragen (Anmerkung {ID})
+• In der Gutschrift Status „verrechnet mit RG-…“ setzen
+```
+
 ### `task.terms_missing`
 **Operations**
 ```
@@ -628,6 +677,17 @@ Positionen: {Positionen}
 Folge: {Folge}
 
 👉 Hinweis im Beleg prüfen
+```
+
+### `error.refund_blocked` · NEU 08.11.2026
+*Nur ctx: `{Beleg}` = RK-Nummer, `{Grund}` kommt vom Verdikt. Der Schutz über `Bestände.Differenz` und falsche Kopfdaten laufen hier auf.*
+```
+🛑 Gutschrift nicht gebucht
+<i>{Beleg} · Buchungsprüfung</i>
+
+Grund: {Grund}
+
+👉 Beleg prüfen
 ```
 
 ---
