@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.20.1](https://github.com/wemwi/skill-library/compare/v6.20.0...v6.20.1) (2026-11-08)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Live-Namen des Gutschrift-Eingangs ([#273](https://github.com/wemwi/skill-library/issues/273)) ([46f6469](https://github.com/wemwi/skill-library/commit/46f6469231031a8bda2464fd74e32fe9b65af675))
+
 ## [6.20.0](https://github.com/wemwi/skill-library/compare/v6.19.0...v6.20.0) (2026-11-08)
 
 
