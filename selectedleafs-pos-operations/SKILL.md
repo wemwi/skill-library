@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.25.0"
+  version: "1.26.0"
 ---
 
 # selectedleafs · POS Operations
@@ -107,6 +107,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 | eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) + `references/messages.md` (ausgefüllte Übersicht) |
 | an Airtable-/Make-MCP-Eigenheiten scheiterst | `references/tools.md` |
 | Idempotenz, Fehlerpfad, Registry, Wächter brauchst | `references/operations.md` |
+| Aussagen über Papier-Inhalte machst (was auf einem Beleg steht) | `assets/examples/` (echte Belege, `README.md` mit Tabelle je Belegtyp) |
 
 ---
 
