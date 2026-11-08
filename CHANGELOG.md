@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.20.0](https://github.com/wemwi/skill-library/compare/v6.19.0...v6.20.0) (2026-11-08)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Gutschrift bei Mehrbestand als eigener Beleg ([#271](https://github.com/wemwi/skill-library/issues/271)) ([3228461](https://github.com/wemwi/skill-library/commit/3228461a9a1cf9c36e35f71136afb5e3c681ee81))
+
 ## [6.19.0](https://github.com/wemwi/skill-library/compare/v6.18.0...v6.19.0) (2026-11-08)
 
 
