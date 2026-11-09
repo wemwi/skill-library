@@ -288,16 +288,15 @@ Dein Saldo (offen): <b>{Offen}</b>
 Gutschrift netto: {Nettobetrag}
 Provision: −{Provision}
 
-<i>Mit der nächsten Rechnung verrechnen</i>
+👉 Mit der nächsten Rechnung verrechnen
 ```
 **Vertriebler**
 ```
-↩️ Gutschrift erstellt
+↩️ Gutschrift erfasst
 <i>{Store} · {ID}</i>
 
 Gutschrift netto: {Nettobetrag}
-
-Deine Provision sinkt bei der Verrechnung um {Provision}.
+Provision bei Verrechnung: <b>−{Provision}</b>
 ```
 
 ### `refund.settled` · NEU 08.11.2026
