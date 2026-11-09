@@ -12,7 +12,7 @@ Versionierter **Verkaufspreis je Produktvariante**. Eine Zeile = ein ab `Gültig
 
 - **→ `Produkt`** (Einzel, → Produktvarianten).
 - **→ `Steuersatz`** (Einzel, → [[steuersaetze]]) — liefert die `MwSt.`.
-- **→ `Umsatzpositionen`** / **→ `Lieferpositionen`** / **→ `Bestandsprüfungspositionen`** — die Positionen, die diesen Preis gewählt haben.
+- **→ `Umsatzpositionen`** / **→ `Gutschriftspositionen`** / **→ `Lieferpositionen`** / **→ `Bestandsprüfungspositionen`** — die Positionen, die diesen Preis gewählt haben.
 
 ## Tragende Felder
 
@@ -41,6 +41,7 @@ Versionierter **Verkaufspreis je Produktvariante**. Eine Zeile = ein ab `Gültig
 | Umsatzpositionen | link → Umsatzpositionen | `fldU1uDEOoNvrj1CY` |
 | Lieferpositionen | link → Lieferpositionen | `fldoFc0cajTjg8wbz` |
 | Bestandsprüfungspositionen | link → …positionen | `fld83vKlDZTYdiie7` |
+| Gutschriftspositionen | link → Gutschriftspositionen (Nachtrag 2026-11-09) | `fldOIkdtq1miukoJJ` |
 
 *Neu ziehen: `list_tables_for_base` → Preise; Formeln via `get_table_schema`.*
 

@@ -5,9 +5,9 @@ description: >-
   Airtable (Kommissionsware an Kiosk-Partner-Stores). IMMER laden bei Arbeit an Base,
   Make-Szenarien, Feldern, Formeln, Konditionen, Kalkulationen, Auszahlungen oder Salden —
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
-  Provision, Leistungsdatum, Belegeingang, Lexware-Sync.
+  Provision, Gutschriften, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.28.1"
+  version: "1.29.0"
 ---
 
 # selectedleafs · POS Operations
@@ -44,7 +44,7 @@ Merksatz: **Airtable ist die Wahrheit, Make ist der Schreiber, die Formeln sind 
 Der Grund, warum Historie verlässlich bleibt. **Strukturell nicht erzwungen** — getragen von Disziplin und Wächter-Views:
 
 1. **Versionen sind append-only.** `Konditionen` und `Kalkulationen` werden nie editiert, nur neu versioniert (`Gültig ab`). Wer eine alte Version ändert, verschiebt rückwirkend Geld — spurlos.
-2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Auszahlungen` nur ein, ändert nie. **Zwei definierte Sonderfälle:** der Zahlungseingang setzt einen Status (`[Sync] Lexware Payments`); die Korrektur einer Bestandsprüfung legt fehlende Positionen an und setzt `Status`, `Hinweis` und `Korrekturen buchen` (`[Process] Correction (Inventory)`, seit 06.11.2026).
+2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Gutschriften`/`Auszahlungen` nur ein, ändert nie. **Drei definierte Sonderfälle:** der Zahlungseingang setzt einen Status (`[Sync] Lexware Payments`); `[Process] Refund (Store)` setzt `Gutschriften.Status`; die Korrektur einer Bestandsprüfung legt fehlende Positionen an und setzt `Status`, `Hinweis` und `Korrekturen buchen` (`[Process] Correction (Inventory)`, seit 06.11.2026).
 3. **Make-/Formel-Felder sind unantastbar.** Was Make auflöst oder per Name matcht, gehört Make/den Formeln, nicht der Hand. **Umgekehrt gehören in `Bestandsprüfungskorrekturen` die Zahlen der Hand:** Make legt die Zeilen im Prüflauf an, Joscha ergänzt `SOLL`/`IST` und setzt als Einziger `Status = Verworfen`.
 
 → `references/operations.md` (Wächter-Views, ein Bearbeiter, keine Testbase)
@@ -57,7 +57,7 @@ Zwei Geldwerte, an **zwei verschiedenen** Tabellen — das ist die Stelle, an de
 
 - **Kostenanteil** sitzt auf **`Lieferungen`** und wird **bei der Lieferung** abgezogen (der Vertriebler trägt seinen fairen Anteil an den Warenkosten).
 - **Provision** sitzt auf **`Umsätzen`** und wird **bei der Zahlung** gutgeschrieben (Provision auf den bezahlten Store-Umsatz).
-- Daraus: **`Saldo = Realprovision − Kostenanteil`**, **`Offen = Saldo − Ausgezahlt`**. Der Saldo nutzt **Realprovision** (Provision auf den *bezahlten* Betrag), nicht die nominale Provision; `Ausgezahlt` = Σ `Auszahlungen.Bezahlt`.
+- Daraus: **`Saldo = Realprovision − Gutschriften Realprovision − Kostenanteil`**, **`Offen = Saldo − Ausgezahlt`**. Der Saldo nutzt **Realprovision** (Provision auf den *bezahlten* Betrag), nicht die nominale Provision; `Ausgezahlt` = Σ `Auszahlungen.Bezahlt`.
 - Alles **brutto gegen brutto** (0 % bei Kleinunternehmern, sonst latente Fehler).
 - **250 € ist Betriebs-Policy, kein System-Gate.** Es gibt keine „Auszahlung möglich"-Meldung; die Schwelle steht nur in der Onboarding-Kommunikation.
 
@@ -69,7 +69,7 @@ Die konkreten Formeln stehen **nicht hier**, sondern in der jeweiligen Tabellen-
 
 Jede Geschäftshandlung ist eine **Haupttabelle mit Positions-Kindtabelle**. Die Ereignis-Trias:
 
-**`Lieferungen` · `Bestandsprüfungen` · `Umsätze`** (+ `Auszahlungen`) — je mit Positionszeilen darunter.
+**`Lieferungen` · `Bestandsprüfungen` · `Umsätze`** (+ `Gutschriften` mit Positionszeilen, `Auszahlungen` ohne) — je mit Positionszeilen darunter. `Umsätze` enthält nur Rechnungen.
 
 Manche Felder/Tabellen werden von Make aufgelöst oder per Name gematcht. Drei Bruchmodi, nach Sichtbarkeit:
 

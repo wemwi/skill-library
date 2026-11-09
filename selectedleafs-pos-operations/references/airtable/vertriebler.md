@@ -10,16 +10,17 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 
 ## Beziehungen
 
-- **→ `Umsätze`** (Provision) · **→ `Lieferungen`** (Kostenanteil) · **→ `Auszahlungen`** (Ausgezahlt) · **→ `Bestandsprüfungen`**.
+- **→ `Umsätze`** (Provision) · **→ `Gutschriften`** (mindern die Provision) · **→ `Lieferungen`** (Kostenanteil) · **→ `Auszahlungen`** (Ausgezahlt) · **→ `Bestandsprüfungen`**.
 - **→ `Stores`** — die von ihm akquirierten Stores (`Stores.Akquise durch`, → [[stores]]).
 
 ## Tragende Felder — die Geldkette
 
-- **`Nettoumsatz`** (Rollup ← Umsätze) · **`Kostenanteil`** (Rollup ← `Lieferungen.Kostenanteil`).
+- **`Nettoumsatz`** (Rollup ← Umsätze, nur Rechnungen) · **`Kostenanteil`** (Rollup ← `Lieferungen.Kostenanteil`).
 - **`Provision`** (Rollup ← `Umsätze.Provision`) — **nominal**, auf den vollen Nettoumsatz. Anzeige.
 - **`Realprovision`** (Rollup ← `Umsätze.Realprovision`) — Provision auf den **tatsächlich Bezahlten** Betrag. **Das ist die saldo-relevante Größe.**
+- **`Gutschriften Realprovision`** (Rollup ← `Gutschriften.Realprovision`, ohne Storniert, seit 09.11.2026) — mindert den Saldo, sobald eine Gutschrift verrechnet ist.
 - **`Ausgezahlt`** (Rollup ← `Auszahlungen.Bezahlt`) — Σ der real überwiesenen Beträge (nicht statusgefiltert; `Bezahlt` ist bis zur Zahlung 0).
-- **`Saldo`** (Formel, €) — **`Realprovision − Kostenanteil`**. ⚠️ nutzt **Realprovision**, nicht die nominale Provision.
+- **`Saldo`** (Formel, €) — **`Realprovision − Gutschriften Realprovision − Kostenanteil`**. ⚠️ nutzt **Realprovision**, nicht die nominale Provision.
 - **`Offen`** (Formel, €) — `Saldo − Ausgezahlt`. Der Betrag, der noch aussteht.
 
 ## Weitere tragende Felder
@@ -31,7 +32,7 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 
 ## Fallstricke
 
-- **`Saldo` = Realprovision − Kostenanteil**, nicht `Provision − Kostenanteil`. Die nominale `Provision` ist nur Anzeige; wer damit rechnet, überschätzt den Saldo bei offenen/teilbezahlten Umsätzen.
+- **`Saldo` = Realprovision − Gutschriften Realprovision − Kostenanteil**, nicht `Provision − Kostenanteil`. Die nominale `Provision` ist nur Anzeige; wer damit rechnet, überschätzt den Saldo bei offenen/teilbezahlten Umsätzen.
 - `Ausgezahlt` rollt `Auszahlungen.Bezahlt` (real), nicht `Betrag` (beantragt) — Teilzahlungen zählen anteilig.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
@@ -62,6 +63,8 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 | Formularlink | formula | `flddGkcgwdmCvBEXF` |
 | Realprovision (Rollup) | rollup € | `fldxv77iZbz3QxLJJ` |
 | Stores 2 | link (Nachtrag 2026-11-02) | `fldYhWQgzt1WTTnCn` |
+| Gutschriften | link → Gutschriften (Nachtrag 2026-11-09) | `fldvABXCWaAHAJrcR` |
+| Gutschriften Realprovision | rollup € (Nachtrag 2026-11-09) | `fldzGvvhhMa9Zece4` |
 
 *Neu ziehen: `list_tables_for_base` → Vertriebler; Formeln via `get_table_schema`.*
 

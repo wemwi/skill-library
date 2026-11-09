@@ -11,7 +11,7 @@ Versionierte **Provision** und **Kostenanteil** (in %), **nach Steuerstatus getr
 ## Beziehungen
 
 - **→ `Steuersatz`** (Einzel, → [[steuersaetze]]) — liefert die `MwSt.` dieser Kondition.
-- **→ `Umsätze`** / **→ `Lieferungen`** — die Ereignisse, die diese Version gewählt haben.
+- **→ `Umsätze`** / **→ `Gutschriften`** / **→ `Lieferungen`** — die Ereignisse, die diese Version gewählt haben.
 
 ## Tragende Felder
 
@@ -38,6 +38,7 @@ Versionierte **Provision** und **Kostenanteil** (in %), **nach Steuerstatus getr
 | MwSt. | lookup % (← Steuersätze) | `flddkHRd0uT4PLRAX` |
 | Umsätze | link → Umsätze | `fldxStBzEHMBXhgpD` |
 | Lieferungen | link → Lieferungen | `fldaG7zFSh44if4T6` |
+| Gutschriften | link → Gutschriften (Nachtrag 2026-11-09) | `fldY8B7imrSmWCYaW` |
 
 *Neu ziehen: `list_tables_for_base` → Konditionen; Formeln via `get_table_schema`.*
 

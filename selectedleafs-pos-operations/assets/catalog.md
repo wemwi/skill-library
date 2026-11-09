@@ -279,13 +279,14 @@ Dein Saldo (offen): <b>{Offen}</b>
 ```
 
 ### `refund.created` · NEU 08.11.2026
+*Felder seit 09.11.2026 aus `Gutschriften`, Beträge dort positiv.*
 **Operations**
 ```
 ↩️ Gutschrift erstellt
 <i>{Store} · {ID}</i>
 
-Gutschrift netto: {abs Nettoumsatz}
-Provision: −{abs Provision}
+Gutschrift netto: {Nettobetrag}
+Provision: −{Provision}
 
 <i>Mit der nächsten Rechnung verrechnen</i>
 ```
@@ -294,18 +295,19 @@ Provision: −{abs Provision}
 ↩️ Gutschrift erstellt
 <i>{Store} · {ID}</i>
 
-Gutschrift netto: {abs Nettoumsatz}
+Gutschrift netto: {Nettobetrag}
 
-Deine Provision sinkt bei der Verrechnung um {abs Provision}.
+Deine Provision sinkt bei der Verrechnung um {Provision}.
 ```
 
 ### `refund.settled` · NEU 08.11.2026
+*Felder seit 09.11.2026 aus `Gutschriften`, Beträge dort positiv.*
 **Operations**
 ```
 ✅ Gutschrift verrechnet
 <i>{Store} · {ID}</i>
 
-Gutschrift netto: {abs Nettoumsatz}
+Gutschrift netto: {Nettobetrag}
 Saldo {Vorname} (offen): {Offen}
 ```
 **Vertriebler**
@@ -313,7 +315,7 @@ Saldo {Vorname} (offen): {Offen}
 ✅ Gutschrift verrechnet
 <i>{Store} · {ID}</i>
 
-Deine Provision: −{abs Provision}
+Deine Provision: −{Provision}
 Dein Saldo (offen): <b>{Offen}</b>
 ```
 

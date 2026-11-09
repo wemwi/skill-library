@@ -6,22 +6,23 @@
 
 ## Zweck
 
-Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den laufenden Bestand aus Lieferungen, Verkäufen und der letzten Prüfung — und trägt die Trigger für die City-Posts.
+Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den laufenden Bestand aus Lieferungen, Verkäufen, Gutschriften und der letzten Prüfung — und trägt die Trigger für die City-Posts.
 
 ## Beziehungen
 
 - **→ `Store`** (→ [[stores]]) / **→ `Produkt`** (→ [[produktvarianten]]) — die beiden Achsen des Silos.
-- **→ `Lieferpositionen` / `Umsatzpositionen` / `Bestandsprüfungspositionen`** — die Bewegungen, die hier zusammenlaufen.
+- **→ `Lieferpositionen` / `Umsatzpositionen` / `Gutschriftspositionen` / `Bestandsprüfungspositionen`** — die Bewegungen, die hier zusammenlaufen.
 
 ## Tragende Felder
 
 - **`ID`** (Formel) — `"BST-" & Store & "-" & Produkt` = `BST-<JTL-Nr>-<SKU>`. Der Bestands-Schlüssel; Positionen upserten dagegen.
 - **`IST`** (Formel) — laufender Bestand: `Prüfstand` **+** `Geliefert seit Prüfung`.
-- **`SOLL`** (Formel) — `Geliefert − Verkauft`.
+- **`SOLL`** (Formel) — `Geliefert − Verkauft + Gutgeschrieben`.
 - **`Differenz`** (Formel) — die **Rechnungsmenge**, Grundlage von „Abrechnung offen“: `SOLL − IST`. Positiv = berechnen. **Negativ = zu viel berechnet → freie Gutschrift in JTL** (seit 08.11.2026; 07.11. noch als Gutschriftzeile), aber nur, wenn die Sorte bei der letzten Prüfung des Stores gezählt und gebucht wurde (`Letzte Prüfung (Sorte)` = `Letzte Prüfung (Store)`); sonst `MAX(SOLL − IST, 0)` wie vorher. Der Schutz hält veraltete Zählstände aus der Rechnung (Alero Kiosk 07.11.: IST 10 vom 12.10. gegen SOLL 0 nach dem Modellwechsel wäre sonst −10).
 - **`Letzte Lieferung`** (Rollup **MAX** ← `Lieferpositionen.Geliefert am`) — **der Owner-Sync postet nur die Sorten, deren letzte Lieferung exakt aufs Belegdatum fällt.** Rollup-Konfiguration (Link, Zielfeld, MAX) **nicht ändern** — sonst fallen City-Posts still aus.
 - **`Erstlieferung am`** (Datum) — Datum des 🌿-Neuheits-Posts. **Einmal gesetzt, nie zurückgesetzt** (auch nicht bei Rückholung). Löschen ⇒ erneuter Neuheits-Post.
 - **`Ø EK (netto)`** (Formel) — `Warenkosten / Geliefert` (Durchschnitts-EK).
+- **`Gutgeschrieben`** (Rollup, seit 09.11.2026) — Σ `Gutschriftspositionen.Menge (Stück)`, ohne Storniert. `Verkauft` bleibt die Stückzahl auf Rechnungen.
 - Rollups: `Geliefert` · `Verkauft` · `Prüfstand` · `Geliefert seit Prüfung` · `Warenkosten` · `Letzte Prüfung (Sorte)` (MAX `Geprüft am` der Positionen, nur Abgeschlossen/Teilgebucht; bis 07.11. „Letzte Prüfung“). Lookup `Letzte Prüfung (Store)` ← `Stores.Zuletzt geprüft` (seit 07.11.2026, nur für `Differenz`).
 
 ## Fallstricke
@@ -30,10 +31,10 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 - **`Erstlieferung am` nie zurücksetzen** — es ist der Dedup gegen doppelte 🌿-Posts.
 - `IST`/`SOLL`/`Differenz` liefern bei fehlender Prüfung `"-"` (String) — nicht als Zahl weiterrechnen ohne Guard.
 - **`IST` kann veraltet sein, `SOLL` nicht:** Wurde eine Prüfung nicht (oder nur teilweise) gebucht, aber trotzdem berechnet, sinkt `SOLL` über `Verkauft`, während `IST` beim alten Zählstand bleibt. Wer daraus das SOLL einer neuen Prüfung ableitet, bucht dann zu viel (Spätkauf 05.11.2026: 45 statt 14). Deshalb der SOLL-Abgleich im grid-Zweig ([[scenarios]]). „Abrechnung offen“ (`Differenz`) zeigte am 05.11. trotzdem richtig 14.
-- **Gutschrift als eigener Beleg, eine je Bestandsprüfung** (seit 08.11.2026, Nummernkreis `RK-`, `Belege.Belegtyp` Gutschrift): `[Process] Refund (Store)` schreibt einen Umsatz mit negativer `Umsatzpositionen.Menge`, das senkt `Verkauft`, hebt `SOLL` und löscht die negative `Differenz`. **Schutz:** je Sorte höchstens so viele Stück, wie `Differenz` negativ ist, sonst wird nichts gebucht. `Differenz` ist eine **Textformel** („-1“, „0“, „-“), vor dem Vergleich in eine Zahl wandeln. Eine negative Warenzeile auf einer Rechnung (RG-10146-1) liest der Leser weiterhin, für Mehrbestand ist dieser Weg aber nicht mehr vorgesehen.
+- **Gutschrift als eigener Beleg, eine je Bestandsprüfung** (seit 08.11.2026, Nummernkreis `RK-`, `Belege.Belegtyp` Gutschrift): `[Process] Refund (Store)` schreibt [[gutschriften]] mit positiver `Gutschriftspositionen.Menge (Stück)` (seit 09.11.2026), das hebt `Gutgeschrieben` und `SOLL` und löscht die negative `Differenz`. **Schutz:** je Sorte höchstens so viele Stück, wie `Differenz` negativ ist, sonst wird nichts gebucht. `Differenz` ist eine **Textformel** („-1“, „0“, „-“), vor dem Vergleich in eine Zahl wandeln. Eine negative Warenzeile auf einer Rechnung (RG-10146-1) liest der Leser weiterhin, für Mehrbestand ist dieser Weg aber nicht mehr vorgesehen.
 - **Schutz greift streng:** Ist die letzte Prüfung des Stores Ungültig oder wird eine ältere Prüfung korrigiert, bleibt eine echte Gutschrift unsichtbar (0 wie früher), bis die Sorte in der letzten Prüfung gebucht ist. Der Hinweis an der Prüfung nennt sie trotzdem.
 
-## Feld-Block (Stand 2026-11-07 · `list_tables_for_base`)
+## Feld-Block (Stand 2026-11-09 · `list_tables_for_base`)
 
 | Feld | Typ | fld-ID |
 |---|---|---|
@@ -46,10 +47,12 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 | Letzte Prüfung (Store) | lookup ← Stores.Zuletzt geprüft (seit 07.11.2026) | `fldf0kmzRrrCc4wi1` |
 | Lieferpositionen | link → Lieferpositionen | `fldsvFGwel4mmJYvK` |
 | Umsatzpositionen | link → Umsatzpositionen | `fldjydjHapLsTlnit` |
+| Gutschriftspositionen | link → Gutschriftspositionen | `fldQYutw2G9W6U3uJ` |
 | Bestandsprüfungspositionen | link → …positionen | `fldDuRv23YyncvwGQ` |
 | Store | link → Stores | `fldhvkGD2RkmYOMKz` |
 | Geliefert | rollup | `fldmOWd6beQiTnZF5` |
 | Verkauft | rollup | `fldXBX7L99gnBo9Tl` |
+| Gutgeschrieben | rollup (ohne Storniert) | `fldF4vWIGdQubj31t` |
 | Prüfstand | rollup (← Prüfstempel) | `fldfho1EkQTGY6kVG` |
 | Geliefert seit Prüfung | rollup | `fldYgA2UNNdGkYHEb` |
 | Warenkosten | rollup € | `flduhECzrxvABE7vH` |
@@ -61,7 +64,7 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **3** Felder und liest **11** (Nachtrag 2026-11-02: `Store` im grid-Zweig von 6729541; Nachtrag 2026-11-07: `ID` und `Verkauft` in 8413130 „Load store stock“ für die Mehrbestand-Regel; `Produkt` liest 6729541 seit 07.11. nicht mehr). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **3** Felder und liest **13** (Nachtrag 2026-11-09: `Gutgeschrieben` in 8413130 „Load store stock“, `Differenz` in 8450345 „Read stock lines“; Nachtrag 2026-11-02: `Store` im grid-Zweig von 6729541; Nachtrag 2026-11-07: `ID` und `Verkauft` in 8413130 „Load store stock“ für die Mehrbestand-Regel; `Produkt` liest 6729541 seit 07.11. nicht mehr). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -72,7 +75,7 @@ Make schreibt **3** Felder und liest **11** (Nachtrag 2026-11-02: `Store` im gri
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Erstlieferung am` · `Produkt` · `Store`  
-**Make liest:** `IST` · `Letzte Lieferung` · `Letzte Prüfung (Sorte)` · `Produkt` · `SOLL` · `Store` · `Verkauft` · `Ø EK (netto)`
+**Make liest:** `Differenz` · `Gutgeschrieben` · `IST` · `Letzte Lieferung` · `Letzte Prüfung (Sorte)` · `Produkt` · `SOLL` · `Store` · `Verkauft` · `Ø EK (netto)`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 

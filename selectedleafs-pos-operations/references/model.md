@@ -11,11 +11,11 @@ Wie die Base **denkt** — Tabellen-Kategorien, die Make-Kopplung, wo Geldwerte 
 Jede Tabelle fällt in genau eine Rolle. Wer die Rolle kennt, weiß, was er anfassen darf:
 
 **Ereignis-Tabellen — INSERT-only.** Eine Zeile = eine Geschäftshandlung, unveränderlich:
-`Lieferungen` · `Bestandsprüfungen` · `Umsätze` · `Auszahlungen`.
-Make fügt ein, ändert nie. **Einziger definierter Sonderfall:** der Zahlungs-Status auf `Umsätze`/`Auszahlungen` (jetzt über `[Sync] Lexware Payments`).
+`Lieferungen` · `Bestandsprüfungen` · `Umsätze` · `Gutschriften` · `Auszahlungen`.
+Make fügt ein, ändert nie. **Definierte Sonderfälle:** der Zahlungs-Status auf `Umsätze`/`Auszahlungen` (`[Sync] Lexware Payments`) und `Gutschriften.Status` (`[Process] Refund (Store)`).
 
 **Positions-Tabellen — INSERT-only Kinder.** Die Zeilen unter einem Ereignis:
-`Lieferpositionen` · `Bestandsprüfungspositionen` · `Umsatzpositionen`.
+`Lieferpositionen` · `Bestandsprüfungspositionen` · `Umsatzpositionen` · `Gutschriftspositionen`.
 Hier entstehen die Positionswerte, die nach oben rollup-en. (`Auszahlungen` hat kein Positionskind.)
 Daneben **`Bestandsprüfungskorrekturen`** (Kind von `Bestandsprüfungen`, seit 06.11.2026): kein Ereignis, sondern der Antrag auf Nachbuchung offener Zählzeilen — Make und Hand schreiben, keine Geldwerte → [[bestandspruefungskorrekturen]].
 
@@ -23,7 +23,7 @@ Daneben **`Bestandsprüfungskorrekturen`** (Kind von `Bestandsprüfungen`, seit 
 `Konditionen` (Provision % + Kostenanteil %) · `Preise` (VK je Produkt) · `Steuersätze`.
 Die Wahl fällt am **Leistungsdatum** (§4).
 
-**Stammdaten & Silos.** `Stores` · `Vertriebler` · `Produkte` · `Produktvarianten` · `Städte` · `Stadtteile` · `Bestände` (abgeleiteter Silo, make-getrieben) · `Belege` (Dokument-Drehscheibe mit vier Fach-Links: Umsatz/Lieferung/Bestandsprüfung/Auszahlung).
+**Stammdaten & Silos.** `Stores` · `Vertriebler` · `Produkte` · `Produktvarianten` · `Städte` · `Stadtteile` · `Bestände` (abgeleiteter Silo, make-getrieben) · `Belege` (Dokument-Drehscheibe mit fünf Fach-Links: Umsatz/Gutschrift/Lieferung/Bestandsprüfung/Auszahlung).
 
 ---
 
@@ -34,7 +34,7 @@ Make spricht Airtable auf **zwei** Wegen an — und nur einer davon ist zerbrech
 - **Über die Feld-ID** (`returnFieldsByFieldId`, `fields[]`, `useColumnId:true`, `record`-Maps). Die ID ist unveränderlich; das Feld darf beliebig heißen. **Umbenennen ist folgenlos.**
 - **Über den Klartext-Namen** — ausschließlich dort, wo Airtable keine Feld-IDs zulässt: in `filterByFormula` und in `sort`. Plus in den dort gematchten **Options-Werten** von Selects. **Umbenennen bricht den Match still** — kein Fehler, kein Log, nur ein Treffer weniger.
 
-Der zweite Fall ist selten (33 Felder, Stand 2026-11-06), aber er trägt die Idempotenz, die eff-dated Versionswahl und die Brücken zu Lexware. Deshalb bekommt genau er den Marker.
+Der zweite Fall ist selten (35 Felder, Stand 2026-11-09), aber er trägt die Idempotenz, die eff-dated Versionswahl und die Brücken zu Lexware. Deshalb bekommt genau er den Marker.
 
 ### Der 🟣-Marker (Stand 2026-08-21)
 
@@ -55,18 +55,18 @@ Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den M
 
 **Prozess-Gegenmaßnahme:** neuer `filterByFormula`- oder `sort`-Zugriff auf ein Feld → 🟣-Marker im selben Zug setzen.
 
-### Die 33 namens-gekoppelten Felder
+### Die 35 namens-gekoppelten Felder
 
 | Zweck | Felder |
 |---|---|
-| **Dedup / Idempotenz** | `Umsätze.ID` · `Lieferungen.ID` · `Bestandsprüfungen.ID` · `Bestandsprüfungspositionen.ID` · `Bestände.ID` · `Produktvarianten.ID` · `Stores.ID` |
+| **Dedup / Idempotenz** | `Umsätze.ID` · `Gutschriften.ID` · `Lieferungen.ID` · `Bestandsprüfungen.ID` · `Bestandsprüfungspositionen.ID` · `Bestände.ID` · `Produktvarianten.ID` · `Stores.ID` |
 | **Eff-dated Versionswahl** | `Preise.Gültig ab` + `Preise.Produkt` · `Konditionen.Gültig ab` + `Konditionen.Gültig für` |
 | **Lexware-Brücken** | `Stores.Lexware ID` · `Vertriebler.Lexware ID` · `Auszahlungen.Lexware ID` |
 | **Namens-Match** | `Stores.Name` · `Vertriebler.Name` · `Städte.Name` · `Stadtteile.Name` |
 | **Options-Match** (Selects) | `Belege.Belegtyp` · `Bestandsprüfungen.Status` · `Bestandsprüfungskorrekturen.Status` · `Stores.Status` · `Stores.Modell` · `Konditionen.Gültig für` · `Produkte.Typ` |
-| **Filter / Sort** | `Belege.Datum` · `Belege.Umsatz` · `Belege.Bestandsprüfung` · `Stores.Zuletzt geprüft` · `Stores.Fällig gemeldet am` · `Lieferpositionen.Bestand` · `Lieferpositionen.Menge nach Prüfung` · `Lieferpositionen.Geprüft am` · `Umsatzpositionen.Bestand` |
+| **Filter / Sort** | `Belege.Datum` · `Belege.Umsatz` · `Belege.Bestandsprüfung` · `Stores.Zuletzt geprüft` · `Stores.Fällig gemeldet am` · `Lieferpositionen.Bestand` · `Lieferpositionen.Menge nach Prüfung` · `Lieferpositionen.Geprüft am` · `Umsatzpositionen.Bestand` · `Gutschriftspositionen.Bestand` |
 
-`Konditionen.Gültig für` steht bewusst in zwei Zeilen — Zweck ist die eff-dated Auswahl, Mechanismus der Options-Match. Die Tabelle nennt damit 34 Einträge für 33 Felder.
+`Konditionen.Gültig für` steht bewusst in zwei Zeilen — Zweck ist die eff-dated Auswahl, Mechanismus der Options-Match. Die Tabelle nennt damit 36 Einträge für 35 Felder.
 
 `Produkte.Typ` koppelt nur den Optionswert, nicht den Feldnamen: „Bestandsprüfung zuordnen“ vergleicht „Inventar (POS)“ im Code, gelesen über das Lookup `Bestandsprüfungspositionen.Typ` per Feld-ID. Der Marker ist trotzdem `KEY · Options`, weil Umbenennen der Option den Vergleich still bricht.
 
@@ -90,8 +90,19 @@ Zwei Geldwerte, an **zwei verschiedenen** Ereignis-Tabellen — die Stelle, an d
 | **Provision** | `Umsätze.Provision` (Formel) | **Zahlung** (bezahlter Umsatz) | Rollup → `Vertriebler.Provision` |
 
 Daraus, alles auf `Vertriebler` (live verifiziert):
-**`Saldo = Realprovision − Kostenanteil`** · **`Offen = Saldo − Ausgezahlt`**.
+**`Saldo = Realprovision − Gutschriften Realprovision − Kostenanteil`** · **`Offen = Saldo − Ausgezahlt`**.
 Achtung: der Saldo nutzt **`Realprovision`** (Provision auf den *tatsächlich bezahlten* Betrag), **nicht** die nominale `Provision` (auf den vollen Nettoumsatz — die ist nur Anzeige). `Ausgezahlt` = Σ `Auszahlungen.Bezahlt` (real überwiesen). Detail: [[vertriebler]].
+
+**Summen mit zwei Quellen (seit 09.11.2026).** Gutschriften stehen mit positiven Beträgen in eigenen Tabellen ([[gutschriften]]). Abgezogen werden sie nur dort, wo eine Zahl stimmen muss:
+
+| Summe | Zweite Quelle |
+|---|---|
+| `Bestände.SOLL` | `+ Gutgeschrieben` |
+| `Vertriebler.Saldo` | `− Gutschriften Realprovision` |
+| `Stores.Storemarge (Jahr/Gesamt)` | `− Gutschriften Storemarge` |
+| Kennzahlen und Konto der Sales App | eigene Zeilen, im App-Code |
+
+`Nettoumsatz` und `Bestände.Verkauft` zählen nur Rechnungen. Ein Airtable-Rollup läuft nur über ein Link-Feld: **Eine neue Summe über `Umsätze` (Partner-App, Jahresbonus) muss die Gutschriften ausdrücklich mitdenken**, sonst stimmt sie still nicht.
 
 **Drei Fallstricke, die hier live sichtbar sind:**
 

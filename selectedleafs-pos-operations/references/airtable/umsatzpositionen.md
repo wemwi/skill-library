@@ -6,7 +6,7 @@
 
 ## Zweck
 
-Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positionsbetrag (`Nettoumsatz`) — die Geldwahrheit, aus der `Umsätze.Nettoumsatz` rollt.
+Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positionsbetrag (`Nettoumsatz`) — die Geldwahrheit, aus der `Umsätze.Nettoumsatz` rollt. Gutschriftzeilen stehen seit 09.11.2026 in [[gutschriftspositionen]].
 
 ## Beziehungen
 
