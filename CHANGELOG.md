@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.21.1](https://github.com/wemwi/skill-library/compare/v6.21.0...v6.21.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Base trägt nur Marker, Texte in den Skill ([#277](https://github.com/wemwi/skill-library/issues/277)) ([ac35c9e](https://github.com/wemwi/skill-library/commit/ac35c9eec57ed36598284eff900ae5f03fb07a2e))
+
 ## [6.21.0](https://github.com/wemwi/skill-library/compare/v6.20.1...v6.21.0) (2026-11-09)
 
 
