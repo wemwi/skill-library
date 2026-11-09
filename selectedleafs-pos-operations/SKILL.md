@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.28.0"
+  version: "1.28.1"
 ---
 
 # selectedleafs · POS Operations
@@ -126,6 +126,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 - **Keine Testbase.** Es gibt nur die Produktivbase.
 - **Altstand-Base `appAFFDgesKLltBtd` nie anfassen** (eingefroren).
 - **Keine volatile `fld…`-ID/Formel als Fakt in Prosa** (Drift-Firewall).
+- **Keine Beschreibungen in der Base außer den Markern** (🟣 Make, 🟢 App): keine Tabellenbeschreibungen, keine Zusatztexte, auch nicht hinter einem Marker. Erklärendes gehört in `references/airtable/<tabelle>.md` (→ `references/model.md` §2).
 
 ---
 

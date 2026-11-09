@@ -49,7 +49,9 @@ Bewusst in der Beschreibung, nicht im Namen — ein Glyph im Namen bräche den M
 
 **Was der Marker NICHT trägt: die Richtung.** Ob Make ein Feld liest oder schreibt, ändert an der Handlung nichts, die der Marker auslöst — Namen einfrieren gilt so oder so. Die Richtung steht vollständig in `airtable/<tabelle>.md`, je Tabelle mit Zählung und Feldliste.
 
-**Die Base trägt ausschließlich diese 33 Feld-Marker** (Stand 2026-11-06, `Produkte.Typ` nachgetragen). Keine Tabellenbeschreibungen, keine Zusatztexte — alles Erklärende lebt im Skill, wo es versioniert ist und im Review auffällt.
+**Der 🟢-Marker** (seit 03.11.2026) kennzeichnet Felder, an denen die Sales App hängt. `🟢 App (KEY · Name)`: Die App bindet über den Feldnamen. `🟢 App (KEY · Options)`: Die App vergleicht oder schreibt Optionsnamen, beides einfrieren. Trägt ein Feld beide Marker, steht 🟣 in der ersten Zeile. Die vollständige Liste der App-Felder steht in `src/config/airtable.ts` (Repo `selectedleafs-app`); Löschen oder Umtypisieren bricht die App.
+
+**Die Base trägt ausschließlich diese Marker** (🟣 und 🟢). Keine Tabellenbeschreibungen, keine Zusatztexte, auch nicht hinter einem Marker — alles Erklärende lebt im Skill, wo es versioniert ist und im Review auffällt.
 
 **Prozess-Gegenmaßnahme:** neuer `filterByFormula`- oder `sort`-Zugriff auf ein Feld → 🟣-Marker im selben Zug setzen.
 

@@ -33,6 +33,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 - **`Belegtyp`** (Select) — die zehn Typen oben; **`Unbekannt`** löst die Korrektur-Aufgabe aus (Make-String, nicht umbenennen).
 - **`Datum`** (EU) — **Quelle des Leistungsdatums**; die Ereignis-Tabellen spiegeln es per Lookup.
 - **`Anhang`** (Attachments) — das PDF.
+- **`Zuordnung bestätigt`** (Checkbox, 🟢 `App (KEY · Name)`) — der Vertriebler hat den Store in der App bestätigt oder neu zugeordnet. Schreibt nur der Worker (Weg „zuordnen“), liest nur `[Dispatch] Upload PDF`.
 - `Hinweis` (Freitext) · `Belegnummer` (autoNumber) · `Upload durch` (→ Vertriebler) / `Upload zu` (→ Stores) — Herkunft eines Uploads aus der Sales App, keine Fach-Links.
 - **`Hinweis` = „Wartet auf Kundennummer“** (seit 07.11.2026, Spec `claude/spec-beleg-ohne-kundennummer.md`): fester Wert, den die **Sales App** beim Anlegen setzt, wenn der gewählte Store (`Upload zu`) keine `Stores.ID` hat. Der Beleg ist damit **geparkt** — außerhalb der View „Inbox (make.com)“ (Filter u. a. `Hinweis` leer). Sobald `Stores.ID` gesetzt ist, leert die Airtable-Automation **„Belege freigeben, wenn Kundennummer da“** (Tabelle Stores) diesen Hinweis an den verknüpften Belegen, ältester zuerst; der Beleg rutscht per Feldänderung in die Inbox und läuft wie gewohnt durch `[Dispatch] Upload PDF`. Hängen gebliebene zeigt die View **„Wartet auf Kundennummer“** (Wächter, → [[operations]]). In der App gilt dieser Hinweis nicht als Problem („In Bearbeitung“, löschbar).
 
