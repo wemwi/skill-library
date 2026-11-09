@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.22.2](https://github.com/wemwi/skill-library/compare/v6.22.1...v6.22.2) (2026-11-09)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Texte von refund.created nach Meldungs-Grammatik ([#283](https://github.com/wemwi/skill-library/issues/283)) ([71da470](https://github.com/wemwi/skill-library/commit/71da4707f0e7baedbea61b9e19bf3421799c3fdf))
+
 ## [6.22.1](https://github.com/wemwi/skill-library/compare/v6.22.0...v6.22.1) (2026-11-09)
 
 
