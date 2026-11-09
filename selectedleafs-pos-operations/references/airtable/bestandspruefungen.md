@@ -25,13 +25,13 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 - **`Poster im Schaufenster`** (Checkbox) — Zeile „Poster“ im freien Bestandsprotokoll (Zahl oder Haken = ja). Nur der grid-Zweig setzt es; kein Artikel, keine Position.
 - **`Bestandsprüfungskorrekturen`** (Link, Rückfeld) — offene Zählzeilen dieser Prüfung als Datensätze → [[bestandspruefungskorrekturen]]. Ersetzt seit 06.11.2026 das Textfeld `Nachtrag` (nach der Übernahme gelöscht).
 - **`Offene Korrekturen`** (Anzahl mit Filter Status Offen oder Abgelehnt) · **`Unklar`** (Formel: „4 Zeilen unklar“ / „1 Zeile unklar“ / leer) — speist die Zeile „⚠️ {Unklar}“ in `inventory.checked` und `inventory.corrected`.
-- **`Korrekturen buchen`** (Checkbox, bis 06.11.2026 `Nachtrag buchen`, gleiches Feld) — Joscha setzt sie, `[Process] Correction (Inventory)` bucht und nimmt sie zurück. Erneut setzen = erneut versuchen (gebuchte Sorten werden abgelehnt, Gebucht/Verworfen nicht angefasst).
+- **`Korrekturen buchen`** (Checkbox, bis 06.11.2026 `Nachtrag buchen`, gleiches Feld) — Joscha setzt sie, `[Process] Manual Action (Inventory Correction)` bucht und nimmt sie zurück. Erneut setzen = erneut versuchen (gebuchte Sorten werden abgelehnt, Gebucht/Verworfen nicht angefasst).
 - `Datum` (Lookup ← Beleg, EU) · `Store ID` (Lookup ← Stores.ID) · `Positionen` (Count) · `Hinweis`.
 
 ## Fallstricke
 
 - **Dedup über `ID`** (Store-Nr + Prüfdatum): zwei Prüfungen desselben Stores am selben Tag kollidieren bewusst.
-- **`[Maintain] Overdue Inventory Checks` (→ `inventory.due`) nutzt denselben Präfix als Sortier-Schlüssel:** jüngste Prüfung je Store per `FIND("BSP-{JTL}-", {ID}) = 1` + Sort `ID` **desc**, max 1 — weil das Datum im `ID` steckt, ist `ID` desc = Datum desc innerhalb des Stores (kein separates Datumsfeld nötig).
+- **`[Maintain] Inventory Check Reminder` (→ `inventory.due`) nutzt denselben Präfix als Sortier-Schlüssel:** jüngste Prüfung je Store per `FIND("BSP-{JTL}-", {ID}) = 1` + Sort `ID` **desc**, max 1 — weil das Datum im `ID` steckt, ist `ID` desc = Datum desc innerhalb des Stores (kein separates Datumsfeld nötig).
 - Nur **positive** Differenzen fließen in den `Nettoverkaufswert` (Schwund); Mehrbestand wird nicht als negativer Wert gezählt (siehe [[bestandspruefungspositionen]]).
 - **Teilgebucht / Ungültig mit `Offene Korrekturen` > 0** heißt: offene Zählzeilen warten auf die Korrektur (keine Vertriebler-Aufgabe, neu hochladen hilft nicht). Ungültig entsteht auch, wenn der SOLL-Abgleich alle Kratom-Zeilen anhält und nur Display/Vitrine gebucht sind.
 - Die View **„Korrektur (make.com)“** (Filter `Korrekturen buchen` ist an) ist Trigger-Scope eines Webhooks — nicht umfiltern oder umbenennen ([[operations]]).
@@ -64,7 +64,7 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **9** Felder und liest **11** (Nachtrag 2026-11-02: `Poster im Schaufenster`; Stand 06.11.2026: schreibt `Korrekturen buchen` und liest `Hinweis`, `Bestandsprüfungspositionen`, `Bestandsprüfungskorrekturen` in `[Process] Correction (Inventory)` 8413130; der Notify-Hub liest `Unklar`; `Nachtrag` entfällt). 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **9** Felder und liest **11** (Nachtrag 2026-11-02: `Poster im Schaufenster`; Stand 06.11.2026: schreibt `Korrekturen buchen` und liest `Hinweis`, `Bestandsprüfungspositionen`, `Bestandsprüfungskorrekturen` in `[Process] Manual Action (Inventory Correction)` 8413130; der Notify-Hub liest `Unklar`; `Nachtrag` entfällt). 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 

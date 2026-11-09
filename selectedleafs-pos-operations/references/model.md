@@ -12,7 +12,7 @@ Jede Tabelle fällt in genau eine Rolle. Wer die Rolle kennt, weiß, was er anfa
 
 **Ereignis-Tabellen — INSERT-only.** Eine Zeile = eine Geschäftshandlung, unveränderlich:
 `Lieferungen` · `Bestandsprüfungen` · `Umsätze` · `Gutschriften` · `Auszahlungen`.
-Make fügt ein, ändert nie. **Definierte Sonderfälle:** der Zahlungs-Status auf `Umsätze`/`Auszahlungen` (`[Sync] Lexware Payments`) und `Gutschriften.Status` (`[Process] Refund (Store)`).
+Make fügt ein, ändert nie. **Definierte Sonderfälle:** Status und Rohbeträge auf `Umsätze`/`Auszahlungen` (`[Process] Lexware Voucher`-Worker, `[Process] Lexware Payment`-Worker, `[Process] Upload PDF (Reminder)`) und `Gutschriften.Status` (`[Process] Lexware Voucher (Refund · Store)`). `Umsätze.Bezahlt` ist seit 09.11.2026 eine Formel.
 
 **Positions-Tabellen — INSERT-only Kinder.** Die Zeilen unter einem Ereignis:
 `Lieferpositionen` · `Bestandsprüfungspositionen` · `Umsatzpositionen` · `Gutschriftspositionen`.
@@ -76,7 +76,7 @@ Feld-Detail (fld-ID, Szenarien, Bruchmodus) je Tabelle in `airtable/<tabelle>.md
 
 Die Karte ist **vollständig**: alle 17 Szenarien des Teams 2174024 wurden am 2026-08-21 per Make-MCP `scenarios_get` gegen die Live-Blueprints gescannt. Ergebnis: 156 der 250 Felder werden von Make berührt — 26 namens-gekoppelt (Marker am Feld), 130 rein fld-ID-fest (Zählung auf Tabellenebene, kein Marker). 94 Felder haben **keinen** Make-Bezug und sind frei.
 
-Drei Tabellen sind **rein lesend** — Make schreibt dort nie: `Konditionen`, `Städte`, `Steuersätze`. Drei sind **rein schreibend**: `Lieferpositionen`, `Umsatzpositionen` (INSERT-only) sowie `Produkte`.
+Drei Tabellen sind **rein lesend** — Make schreibt dort nie: `Konditionen`, `Städte`, `Steuersätze`. `Lieferpositionen`, `Umsatzpositionen` (INSERT-only) und `Produkte` schreibt Make und liest sie in einzelnen Szenarien (`[Process] Upload PDF (Inventory)`, `[Sync] Shopify to Airtable`).
 
 Bruchmodi: Name/Option geändert = **still** · Feld gelöscht oder umtypisiert = **laut** (422) · Bedeutung gewandert = **unsichtbar**. Der Marker deckt den ersten Fall ab. Für den zweiten gibt es kein Signal in der Base — wer ein Feld löschen oder umtypisieren will, prüft `airtable/<tabelle>.md`, Sektion „🟣 Make-Zugriff".
 
@@ -116,7 +116,7 @@ Achtung: der Saldo nutzt **`Realprovision`** (Provision auf den *tatsächlich be
 
 | | Kommission | Eigenbestand |
 |---|---|---|
-| Lieferung belegt durch | Übergabeprotokoll (unterschrieben) | JTL-Lieferschein (per Mail, `[Sync] JTL Delivery Note to Airtable`) |
+| Lieferung belegt durch | Übergabeprotokoll (unterschrieben) | JTL-Lieferschein (per Mail, `[Sync] JTL to Airtable`) |
 | Rechnung | nach Verkauf, Bestandsprüfung zugeordnet | JTL schickt sie kurz nach dem Lieferschein, keine Prüfzuordnung |
 | Bestandsprüfungen | Pflicht (Erinnerung) | entfallen |
 | Shop-Sorten | aus dem Bestand | Lieferschein fügt hinzu, nichts entfernt sie |

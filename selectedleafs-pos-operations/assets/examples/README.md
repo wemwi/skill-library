@@ -12,10 +12,10 @@ Ein PDF je Belegtyp, benannt nach dem Belegtyp. Maßstab ist die Options-Liste v
 | `rueckholprotokoll.pdf` | Rückholprotokoll | `[Process] Upload PDF (Delivery)` |
 | `bestandsprotokoll.pdf` | Bestandsprotokoll (alter JTL-Druck) | `[Process] Upload PDF (Inventory)` |
 | `bestandsprotokoll-frei.pdf` | Bestandsprotokoll (freies Formular, BLG-00182) | `[Process] Upload PDF (Inventory)` |
-| `ausgangsrechnung.pdf` | Ausgangsrechnung | `[Process] Invoice (Store)` |
+| `ausgangsrechnung.pdf` | Ausgangsrechnung | `[Process] Lexware Voucher (Invoice · Store)` |
 | `lieferschein.pdf` | Lieferschein (BLG-00181) | `[Process] Upload PDF (Delivery)` |
-| `gutschrift.pdf` | Gutschrift (RK-10002-1, BLG-00198) | `[Process] Refund (Store)` |
-| fehlt noch | Eingangsrechnung: bisher keine echte in `Belege` oder von einem Vertriebler in Lexware (Stand 09.11.2026) | `[Process] Invoice (Sales)` |
+| `gutschrift.pdf` | Gutschrift (RK-10002-1, BLG-00198) | `[Process] Lexware Voucher (Refund · Store)` |
+| fehlt noch | Eingangsrechnung: bisher keine echte in `Belege` oder von einem Vertriebler in Lexware (Stand 09.11.2026) | `[Process] Lexware Voucher (Invoice · Salesperson)` |
 | `zahlungserinnerung.pdf` | Zahlungserinnerung | `[Process] Payment Reminder (Store)` |
 | `mahnung.pdf` | Mahnung | `[Process] Payment Reminder (Store)` |
 

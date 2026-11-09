@@ -33,13 +33,13 @@ Views sind **load-bearing**, nicht Kosmetik:
 
 - Die **Belege-View** treibt den Gateway-Trigger von `[Dispatch] Upload PDF`.
 - Die View **„Wartet auf Kundennummer“** auf `Belege` (Filter: `Hinweis` = „Wartet auf Kundennummer“, nach Alter sortiert; seit 07.11.2026) ist der **Wächter** für geparkte Sales-App-Belege eines Stores ohne `Stores.ID`. Freigabe macht die Airtable-Automation **„Belege freigeben, wenn Kundennummer da“** (Stores, Auslöser `ID` nicht leer, Skript leert den Hinweis, ältester zuerst). Ein Beleg, der hier länger als 3 Tage steht, gehört in die Make-Überwachung (Meldung ab 3 Tagen): JTL-Kunde fehlt noch oder der Store wurde abgebrochen.
-- Die View **„Korrektur (make.com)“** auf `Bestandsprüfungen` (Filter: `Korrekturen buchen` ist an) treibt `[Process] Correction (Inventory)`; dessen Modul „Load checks to correct“ liest sie zusätzlich per View-ID.
+- Die View **„Korrektur (make.com)“** auf `Bestandsprüfungen` (Filter: `Korrekturen buchen` ist an) treibt `[Process] Manual Action (Inventory Correction)`; dessen Modul „Load checks to correct“ liest sie zusätzlich per View-ID.
 - Die **gefilterte View** ist der Circuit-Breaker der Idempotenz (nur „offene"/„neue" Datensätze werden vom Lauf gesehen).
 - **Umbenennen/Umfiltern bricht den Trigger still** — Views wie Produktionscode behandeln.
 
 ## Freeze-Invarianten sind disziplin-getragen
 
-Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Definierte INSERT-only-Brüche gibt es **zwei**: den Zahlungs-Status über `[Sync] Lexware Payments` und die Korrektur über `[Process] Correction (Inventory)` (legt Positionen einer bestehenden Bestandsprüfung nach, setzt `Status`, `Hinweis`, `Korrekturen buchen`; seit 06.11.2026). In `Bestandsprüfungskorrekturen` schreiben Make und Hand: Make legt an und setzt Offen/Gebucht/Abgelehnt, die Hand ergänzt die Zahlen und setzt Verworfen.
+Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Definierte INSERT-only-Brüche: siehe `SKILL.md`, Invariante 2.
 
 ## Harte Regeln
 

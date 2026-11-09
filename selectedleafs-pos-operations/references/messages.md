@@ -144,7 +144,7 @@ Gesamtkosten: 96,00 €
 Geliefert am 12.08.2026
 ```
 **Vertriebler** — wie `delivery.booked` („📦 Lieferung erfasst")
-**City** — wie `delivery.booked` (über `[Sync] Inventory to Shopify`, restock)
+**City** — wie `delivery.booked` (über `[Sync] Airtable to Shopify`, restock)
 **Begleitend** → beim ersten Lieferschein 🔁 `store.model_changed` · **kein** 👉 `task.jtl_stock` (JTL liefert aus dem eigenen Lager)
 
 ### 📥 `delivery.returned` — Rückholung · `live`
@@ -209,7 +209,7 @@ Geprüft am 12.08.2026
 **Begleitend** → 👉 `task.jtl_inventory_date`
 
 ### 📋 `inventory.corrected` — Bestand nachgetragen · `gebaut · Import ausstehend`
-*Auslöser `[Process] Correction (Inventory)` nach Buchung oder Statuswechsel (06.11.2026).*
+*Auslöser `[Process] Manual Action (Inventory Correction)` nach Buchung oder Statuswechsel (06.11.2026).*
 **Operations** — 📥 Vorgänge · 586
 ```
 📋 Bestand nachgetragen
@@ -237,7 +237,7 @@ Geprüft am 12.08.2026
 **City** — —
 
 ### ⏳ `inventory.due` — Prüfung fällig · `gebaut · Import ausstehend`
-*Auslöser ist das eigene Szenario `[Maintain] Overdue Inventory Checks` (Schedule tgl. ~07:00, gebaut 18.08.2026 — Import + Schedule-Aktivierung noch offen). Vertrag siehe [[scenarios]].*
+*Auslöser ist das eigene Szenario `[Maintain] Inventory Check Reminder` (Schedule tgl. ~07:00, gebaut 18.08.2026 — Import + Schedule-Aktivierung noch offen). Vertrag siehe [[scenarios]].*
 **Operations** — 📥 Vorgänge · 586
 ```
 ⏳ Bestandsprüfung fällig
@@ -576,12 +576,12 @@ Folge: der nächste Lauf legt eine Dublette an
 ### 🛑 `error.sync_aborted` · `live`
 ```
 🛑 Sync abgebrochen
-[Sync] Inventory to Shopify · Belegdatum
+[Sync] Airtable to Shopify · Belegdatum
 
 Grund: Belegdatum fehlt im Beleg
 Folge: kein Bestands-Push, keine City-Posts
 
-👉 [Sync] Inventory to Shopify prüfen, wenn der Fehler bleibt
+👉 [Sync] Airtable to Shopify prüfen, wenn der Fehler bleibt
 ```
 
 ### 🛑 `error.store_failed` · `live`
@@ -616,7 +616,7 @@ Grund: Steuernummer fehlt am Vertriebler
 ```
 
 ### 🛑 `error.payment_unmatched` · `gebaut · Hub-Reimport ausstehend` · NEU
-*No-Match-Zweig von `[Sync] Lexware Payments` (6955541) klingelt den Key; deckt Sales + Store (ein Key, `{Rechnungsnummer}` als Kennung).*
+*No-Match-Zweig von `[Dispatch] Lexware Payment` (6955541) klingelt den Key; deckt Sales + Store (ein Key, `{Rechnungsnummer}` als Kennung).*
 ```
 🛑 Zahlung ohne Treffer
 RG-10128-1
