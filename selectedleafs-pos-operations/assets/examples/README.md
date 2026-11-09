@@ -4,7 +4,7 @@ Echte Belege als Anschauungsmaterial — je ein PDF pro Belegtyp, damit ein Agen
 
 ## Ablage
 
-Ein PDF je Belegtyp, benannt nach dem Belegtyp:
+Ein PDF je Belegtyp, benannt nach dem Belegtyp. Maßstab ist die Options-Liste von `Belege.Belegtyp` ([[belege]]), außer „Unbekannt“. Neuer Belegtyp: PDF im selben PR.
 
 | Datei | Belegtyp | Ziel-Szenario |
 |---|---|---|
@@ -13,7 +13,9 @@ Ein PDF je Belegtyp, benannt nach dem Belegtyp:
 | `bestandsprotokoll.pdf` | Bestandsprotokoll (alter JTL-Druck) | `[Process] Upload PDF (Inventory)` |
 | `bestandsprotokoll-frei.pdf` | Bestandsprotokoll (freies Formular, BLG-00182) | `[Process] Upload PDF (Inventory)` |
 | `ausgangsrechnung.pdf` | Ausgangsrechnung | `[Process] Invoice (Store)` |
-| `eingangsrechnung.pdf` | Eingangsrechnung | `[Process] Invoice (Sales)` |
+| `lieferschein.pdf` | Lieferschein (BLG-00181) | `[Process] Upload PDF (Delivery)` |
+| `gutschrift.pdf` | Gutschrift (RK-10002-1, BLG-00198) | `[Process] Refund (Store)` |
+| fehlt noch | Eingangsrechnung: bisher keine echte in `Belege` oder von einem Vertriebler in Lexware (Stand 09.11.2026) | `[Process] Invoice (Sales)` |
 | `zahlungserinnerung.pdf` | Zahlungserinnerung | `[Process] Payment Reminder (Store)` |
 | `mahnung.pdf` | Mahnung | `[Process] Payment Reminder (Store)` |
 
@@ -28,6 +30,7 @@ Ein PDF je Belegtyp, benannt nach dem Belegtyp:
 | Bestandsprotokoll, alter Druck | JTL-Druck | gedruckt („Kunden-Nr.“ im Kopf) | JTL-Kundenname | bleibt im Kiosk |
 | Bestandsprotokoll, freies Formular | gedrucktes Formular, von Hand ausgefüllt | von Hand im Kopfkasten „Kundennummer“; bisher steht dort meist ein Name („AR 1“, „SPÄTKAUF“) | keiner | bleibt im Kiosk |
 | Lieferschein | JTL, kommt per Mail | gedruckt | JTL-Kundenname | PDF aus der Mail |
+| Gutschrift | JTL, kommt per Mail, wird zu Lexware hochgeladen | gedruckt („Kunden-Nr.“ im Kopf) | JTL-Kundenname | PDF in Lexware |
 
 Der Store kommt aus der App, der Name vom Papier spielt keine Rolle. Die Kundennummer auf dem Beleg bestätigt nur die Wahl. Ein neuer Scan ist nicht möglich, das Original bleibt im Kiosk.
 
