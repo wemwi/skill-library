@@ -12,7 +12,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 
 - **→ `Stadt`** / **→ `Stadtteil`** (→ [[staedte]] / [[stadtteile]]) — Standort; `Telegram ID` (City-Channel) kommt per Lookup aus der **Stadt**.
 - **→ `Akquise durch`** (Einzel, → [[vertriebler]]) — wer den Store akquiriert hat.
-- **→ `Umsätze` / `Lieferungen` / `Bestände` / `Bestandsprüfungen`**.
+- **→ `Umsätze` / `Gutschriften` / `Lieferungen` / `Bestände` / `Bestandsprüfungen`**.
 
 ## Tragende Felder
 
@@ -20,7 +20,8 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 - **`Name`** (Text) — **Restock-Match läuft zeichengenau** hierüber. Umbenennen bricht still.
 - **`Akquise durch`** (Link) — wird **ausschließlich** über den personalisierten Formularlink gesetzt (`prefill` + `hide`, Wert = Record-ID des Vertrieblers). `[Create] New Store Partner` prüft es als Pflichtfeld; `[Dispatch] Telegram Notifications` navigiert darüber. **Feld-ID nicht ändern, „Neue Datensätze erlauben" nicht einschalten** (sonst still ein zweiter Vertriebler).
 - **`Shopify GID`** (Metaobjekt-GID, voll inkl. Präfix) · **`Google Place ID`** (baut den Maps-Link der City-Posts; leer ⇒ Namenssuche).
-- `Storemarge (Jahr/Gesamt)` (Formel, €) — `Nettoumsatzerlös − Nettoumsatz` (Handelsmarge des Stores; Basis Umsätze, nicht Lieferungen, sonst zählte unverkaufter Regalbestand als Verdienst mit).
+- `Storemarge (Jahr/Gesamt)` (Formel, €) — `Nettoumsatzerlös − Nettoumsatz − Gutschriften Storemarge` (Handelsmarge des Stores; Basis Umsätze, nicht Lieferungen, sonst zählte unverkaufter Regalbestand als Verdienst mit).
+- `Gutschriften Storemarge (Jahr/Gesamt)` (Rollup ← `Gutschriften.Storemarge`, ohne Storniert, seit 09.11.2026; das Jahr über `Datum`). `Nettoumsatz (Jahr/Gesamt)` zählt nur Rechnungen.
 - **`Modell`** (Select: Kommission / Eigenbestand) — Abrechnungsmodell, siehe [[model]] §3. **Make schreibt es seit 05.11.2026:** der erste Lieferschein eines Kommission-Stores setzt `Eigenbestand` (`[Process] Upload PDF (Delivery)`, nur diese Richtung, meldet `store.model_changed`). Zurück auf Kommission nur von Hand. Bei Eigenbestand: keine Bestandsprüfungen und Erinnerungen, Rechnungen ohne Prüfzuordnung, der Shop behält die gelieferten Sorten, eine Rückholung ohne Rest setzt den Store nicht inaktiv.
 - `Status` (Aktiv/Inaktiv/Probezeit) · `Stufe` (Bronze … Diamant) · `Telegram ID` (Lookup ← Stadt) · `Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
 - **`Fällig gemeldet am`** (Datum) — **B2-Idempotenz-Marker** von `[Maintain] Overdue Inventory Checks` (→ `inventory.due`): der Emitter setzt ihn `= heute`, wenn er den Store als überfällig meldet, und meldet erst wieder, wenn der Marker älter als das wöchentliche Re-Nag-Fenster ist. Nur diese Klingel schreibt hier.
@@ -69,6 +70,9 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 | Akquise durch | link → Vertriebler | `fldMF3vhN0mNklbkb` |
 | Fällig gemeldet am | date | `fldzaj0Ai31RqgqnU` |
 | Belege | link → Belege (Rückfeld von `Belege.Upload zu`; Nachtrag 2026-11-07) | `fldmG4IXjoLtmpNxL` |
+| Gutschriften | link → Gutschriften (Nachtrag 2026-11-09) | `fldMmuahibd8mDfj4` |
+| Gutschriften Storemarge (Jahr) | rollup € (Nachtrag 2026-11-09) | `fldKB4y4WjCNEsqnC` |
+| Gutschriften Storemarge (Gesamt) | rollup € (Nachtrag 2026-11-09) | `fldHUUgOZvTDrJXtk` |
 
 *Neu ziehen: `list_tables_for_base` → Stores; Formeln via `get_table_schema`.*
 

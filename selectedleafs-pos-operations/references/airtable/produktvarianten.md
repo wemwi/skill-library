@@ -11,7 +11,7 @@ Die verkaufte Einheit (SKU-Ebene). Trägt SKU, Variant-GID und den **wöchentlic
 ## Beziehungen
 
 - **→ `Produkt`** (→ [[produkte]]) · **→ `Preise`** (→ [[preise]]) · **→ `Bestände`** (→ [[bestaende]]).
-- Positionen: `Lieferpositionen` · `Umsatzpositionen` · `Bestandsprüfungspositionen`.
+- Positionen: `Lieferpositionen` · `Umsatzpositionen` · `Gutschriftspositionen` · `Bestandsprüfungspositionen`.
 
 ## Tragende Felder
 
@@ -38,6 +38,7 @@ Die verkaufte Einheit (SKU-Ebene). Trägt SKU, Variant-GID und den **wöchentlic
 | Lieferpositionen | link → Lieferpositionen | `fldUBk3fSQnNPUkG7` |
 | Umsatzpositionen | link → Umsatzpositionen | `fldoLUxgCSsTNOWUr` |
 | Bestandsprüfungspositionen | link → …positionen | `fldIHyJBvrfO6Y5iO` |
+| Gutschriftspositionen | link → Gutschriftspositionen (Nachtrag 2026-11-09) | `fldNYVDSNDcrwzVwD` |
 | Typ | lookup | `fld6i3bS5YerX40fq` |
 | Produktname | lookup | `fld9VWoWA0QLHTpnP` |
 | EK (netto) | currency (Wochenspiegel) | `fldjVBRtbovK3Ky92` |

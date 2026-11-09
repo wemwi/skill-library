@@ -8,9 +8,9 @@
 
 Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, das PDF und je **einen** Fach-Link in die passende Ereignis-Tabelle. Das `Datum` eines Belegs ist das **Leistungsdatum** des daraus entstehenden Ereignisses.
 
-## Beziehungen (vier Fach-Links)
+## Beziehungen (fünf Fach-Links)
 
-- **→ `Umsatz`** (→ [[umsaetze]]) · **→ `Lieferung`** (→ [[lieferungen]]) · **→ `Bestandsprüfung`** (→ [[bestandspruefungen]]) · **→ `Auszahlung`** (→ [[auszahlungen]]).
+- **→ `Umsatz`** (→ [[umsaetze]]) · **→ `Gutschrift`** (→ [[gutschriften]], seit 09.11.2026) · **→ `Lieferung`** (→ [[lieferungen]]) · **→ `Bestandsprüfung`** (→ [[bestandspruefungen]]) · **→ `Auszahlung`** (→ [[auszahlungen]]).
 
 ## Klassifikator-Vertrag: `Belegtyp` → Zieltabelle
 
@@ -18,7 +18,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 |---|---|
 | Übergabeprotokoll | Lieferung (`delivery.booked`) |
 | Lieferschein | Lieferung (Eigenbestand, `delivery.note_booked`; erster Lieferschein eines Kommission-Stores stellt `Stores.Modell` um) · seit 05.11.2026 |
-| Gutschrift | Umsatz mit negativen Positionen (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026; legt `[Process] Refund (Store)` bei neuem Umsatz an, läuft nicht durch die Inbox |
+| Gutschrift | Gutschrift (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026, ab 09.11. in [[gutschriften]]; legt `[Process] Refund (Store)` bei neuer Gutschrift an, läuft nicht durch die Inbox |
 | Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) **und** Bestandsprüfung (Rückhol-Prüfung) |
 | Bestandsprotokoll | Bestandsprüfung |
 | Ausgangsrechnung | Umsatz |
@@ -60,12 +60,13 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 | Belegnummer | autoNumber | `fldn5KrXi5x4werVB` |
 | Upload durch | link → Vertriebler | `fldS5BmsfqPi5TOdv` |
 | Upload zu | link → Stores | `fldPuVFi2iKbf9aeh` |
+| Gutschrift | link → Gutschriften (Nachtrag 2026-11-09) | `fldVonEfpTqDOQbM5` |
 
 *Neu ziehen: `list_tables_for_base` → Belege; Formeln via `get_table_schema`.*
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **6** Felder und liest **7**. 4 davon matcht Make über den Klartext-Namen (Nachtrag 2026-11-06: `Bestandsprüfung`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **7** Felder und liest **7**. 4 davon matcht Make über den Klartext-Namen (Nachtrag 2026-11-06: `Bestandsprüfung`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -84,7 +85,7 @@ Make schreibt **6** Felder und liest **7**. 4 davon matcht Make über den Klarte
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Anhang` (auch `[Sync] JTL Delivery Note to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Hinweis`  
+**Make schreibt:** `Anhang` (auch `[Sync] JTL Delivery Note to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Gutschrift` (8450345 „Create document“, seit 09.11.2026) · `Hinweis`  
 **Make liest:** `ID`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
