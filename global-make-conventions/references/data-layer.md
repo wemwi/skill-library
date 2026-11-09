@@ -34,8 +34,9 @@ false` und schreiben ausschließlich Konstanten, die als Option bereits
 existieren.
 
 Zusätzlich wird der Wert eines produktiven Select-Writes als Options-**ID**
-gesetzt (`{ "fld…": { "id": "sel…" } }` im REST-Body bzw. das ID-Objekt im
-nativen Modul), nicht als Options-Name. Options-IDs (`sel…`) sind in
+gesetzt, als einfacher Text (`"fld…": "sel…"`, bei `typecast: false`, im
+nativen Modul am 09.11.2026 getestet), nicht als Options-Name. Ausdrücke
+übersetzen über `switch(wert; "Name"; "sel…"; …; wert)`. Options-IDs (`sel…`) sind in
 Airtable permanent — ein Umbenennen der Option lässt den Write unberührt.
 Ein namensbasierter Write bricht bei einem Options-Rename *still*: Airtable
 zieht Select-Optionen, anders als Feld-IDs in Formelfeldern/Views, nicht

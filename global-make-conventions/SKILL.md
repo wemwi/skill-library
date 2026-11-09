@@ -7,7 +7,7 @@ description: >-
   wenn ein Make-Szenario entworfen, gebaut, geprüft oder auditiert wird. Ergänzt
   make-scenario-building (das WIE) um das WELCHE.
 metadata:
-  version: "1.7.2"
+  version: "1.7.3"
 ---
 
 # global-make-conventions
@@ -125,7 +125,7 @@ Referenz.
 - **MUST** Datum als reiner `YYYY-MM-DD`-String, kein `parseDate`, keine implizite Zeitzonen-Umrechnung.
 - **MUST** REST-Reads gegen Airtable setzen `cellFormat`, `timeZone`, `userLocale` explizit über die Query-Parameter des HTTP-Moduls (nicht in die URL konkateniert) — sonst liefern Link-Felder inkonsistent Record-IDs oder Klartext.
 - **MUST** `typecast: false` als Default bei Writes — `typecast: true` legt unbekannte Select-Optionen still neu an.
-- **MUST** Select-Writes setzen den Wert als Options-**ID** (`{ "fld…": { "id": "sel…" } }`), nicht als Options-Namen — `sel…`-IDs sind permanent, ein namensbasierter Write bricht bei Options-Rename still (Airtable zieht Optionen nicht nach). Check: kein Select-Write mit Klartext-Options-Namen als Wert; jeder referenziert eine `sel…`-ID (direkt oder über eine sichtbare Name→ID-Mapping-Quelle).
+- **MUST** Select-Writes setzen den Wert als Options-**ID** als einfachen Text (`"fld…": "sel…"` bei `typecast: false`, getestet am 09.11.2026), nicht als Options-Namen und nicht als Objekt — `sel…`-IDs sind permanent, ein namensbasierter Write bricht bei Options-Rename still (Airtable zieht Optionen nicht nach). Check: kein Select-Write mit Klartext-Options-Namen als Wert; jeder referenziert eine `sel…`-ID (direkt oder über eine sichtbare Name→ID-Mapping-Quelle).
 - **MUST** nie auf ein Formelfeld schreiben (führt zu 422) — Formelfelder sind reine Lesequellen.
 - **MUST** `filterByFormula` bindet an Feldnamen, nicht IDs — jede Feldumbenennung ist potenziell eine Szenario-Änderung; vor jeder Umbenennung wird geprüft, welche Szenarien den alten Namen referenzieren.
 - **SHOULD** ein Seitenlimit-Wächter degradiert hart in die Richtung, die keinen falschen Write erzeugen kann (z.B. „unklar" statt eines Treffers bei abgeschnittener Trefferliste).
