@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.22.0](https://github.com/wemwi/skill-library/compare/v6.21.1...v6.22.0) (2026-11-09)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Gutschriften in eigenen Tabellen ([#279](https://github.com/wemwi/skill-library/issues/279)) ([e31e3fa](https://github.com/wemwi/skill-library/commit/e31e3fa8b1dd2e5214466d43dc3f1e5a3f6e3194))
+
 ## [6.21.1](https://github.com/wemwi/skill-library/compare/v6.21.0...v6.21.1) (2026-11-09)
 
 
