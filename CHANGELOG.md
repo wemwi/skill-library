@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.21.0](https://github.com/wemwi/skill-library/compare/v6.20.1...v6.21.0) (2026-11-09)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Gutschriften laufen wie Rechnungen ([#275](https://github.com/wemwi/skill-library/issues/275)) ([4434ba7](https://github.com/wemwi/skill-library/commit/4434ba7d4017b9a5e7f6cfce27d7f1f101f7500a))
+
 ## [6.20.1](https://github.com/wemwi/skill-library/compare/v6.20.0...v6.20.1) (2026-11-08)
 
 
