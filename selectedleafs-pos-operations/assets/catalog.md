@@ -188,7 +188,7 @@ Nettoverkaufswert: <b>{⚙ Nettoverkaufswert}</b>
 ```
 
 ### `inventory.corrected`
-*Nach `[Process] Correction (Inventory)`, wenn der Lauf gebucht oder den Status der Prüfung geändert hat (seit 06.11.2026). Zeigt den Endstand der Prüfung.*
+*Nach `[Process] Manual Action (Inventory Correction)`, wenn der Lauf gebucht oder den Status der Prüfung geändert hat (seit 06.11.2026). Zeigt den Endstand der Prüfung.*
 **Operations**
 ```
 📋 Bestand nachgetragen

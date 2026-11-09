@@ -18,7 +18,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 |---|---|
 | Übergabeprotokoll | Lieferung (`delivery.booked`) |
 | Lieferschein | Lieferung (Eigenbestand, `delivery.note_booked`; erster Lieferschein eines Kommission-Stores stellt `Stores.Modell` um) · seit 05.11.2026 |
-| Gutschrift | Gutschrift (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026, ab 09.11. in [[gutschriften]]; legt `[Process] Refund (Store)` bei neuer Gutschrift an, läuft nicht durch die Inbox |
+| Gutschrift | Gutschrift (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026, ab 09.11. in [[gutschriften]]; legt `[Process] Lexware Voucher (Refund · Store)` bei neuer Gutschrift an, läuft nicht durch die Inbox |
 | Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) **und** Bestandsprüfung (Rückhol-Prüfung) |
 | Bestandsprotokoll | Bestandsprüfung |
 | Ausgangsrechnung | Umsatz |
@@ -42,7 +42,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 - **`Datum` ist das Leistungsdatum** — ein falsches Belegdatum wählt die falsche Konditionen-/Preis-Version.
 - **„Wartet auf Kundennummer“ ist zeichengenau gekoppelt:** Sales App (Konstante `BELEG_HINWEIS.wartetAufKundennummer`), Skript der Automation „Belege freigeben, wenn Kundennummer da“ und Filter der View „Wartet auf Kundennummer“. Wortlaut nur an allen drei Stellen zugleich ändern. Einen geparkten Beleg nicht von Hand freigeben, solange `Stores.ID` leer ist — Make findet sonst keinen Store.
 - Der Belegtyp bestimmt den Fach-Link beim Anlegen — einer je Beleg, nur das **Rückholprotokoll** trägt zwei (Lieferung + Bestandsprüfung).
-- **Protokoll-Belege bekommen später den `Umsatz`.** Bestands- und Rückholprotokoll sind die **Vergabeliste** der Rechnungszuordnung: `[Process] Invoice (Store)` hängt die Rechnung an den Protokoll-Beleg der passenden Prüfung; ein Beleg mit `Umsatz` gilt als vergeben (→ [[scenarios]], „Bestandsprüfung zuordnen"). Ein Rückholprotokoll ohne Differenz bleibt ohne Umsatz — es gibt nichts abzurechnen.
+- **Protokoll-Belege bekommen später den `Umsatz`.** Bestands- und Rückholprotokoll sind die **Vergabeliste** der Rechnungszuordnung: `[Process] Lexware Voucher (Invoice · Store)` hängt die Rechnung an den Protokoll-Beleg der passenden Prüfung; ein Beleg mit `Umsatz` gilt als vergeben (→ [[scenarios]], „Bestandsprüfung zuordnen"). Ein Rückholprotokoll ohne Differenz bleibt ohne Umsatz — es gibt nichts abzurechnen.
 
 ## Feld-Block (Stand 2026-11-05 · `list_tables_for_base`)
 
@@ -85,7 +85,7 @@ Make schreibt **7** Felder und liest **7**. 4 davon matcht Make über den Klarte
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Anhang` (auch `[Sync] JTL Delivery Note to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Gutschrift` (8450345 „Create document“, seit 09.11.2026) · `Hinweis`  
+**Make schreibt:** `Anhang` (auch `[Sync] JTL to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Gutschrift` (8450345 „Create document“, seit 09.11.2026) · `Hinweis`  
 **Make liest:** `ID`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**

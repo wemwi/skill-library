@@ -6,7 +6,7 @@
 
 ## Zweck
 
-Eine Zeile = eine **offene Kratom-Zählzeile** einer Bestandsprüfung, die noch nicht gebucht ist. Der Prüflauf legt sie an, Joscha ergänzt die Zahlen oder verwirft sie, `[Process] Correction (Inventory)` bucht sie als Position. Ersetzt seit 06.11.2026 das Textfeld `Bestandsprüfungen.Nachtrag`.
+Eine Zeile = eine **offene Kratom-Zählzeile** einer Bestandsprüfung, die noch nicht gebucht ist. Der Prüflauf legt sie an, Joscha ergänzt die Zahlen oder verwirft sie, `[Process] Manual Action (Inventory Correction)` bucht sie als Position. Ersetzt seit 06.11.2026 das Textfeld `Bestandsprüfungen.Nachtrag`.
 
 ## Beziehungen
 
@@ -23,7 +23,7 @@ Eine Zeile = eine **offene Kratom-Zählzeile** einer Bestandsprüfung, die noch 
 
 1. Prüflauf (`[Process] Upload PDF (Inventory)`, grid-Zweig): jede offene Kratom-Zeile → Status Offen. Nur bei sauberem Verdikt, nie bei Beleg-Problem.
 2. Joscha ergänzt `IST` (oder `SOLL`), setzt `Verworfen` oder lässt die Zeile stehen, und setzt an der Prüfung `Korrekturen buchen`.
-3. `[Process] Correction (Inventory)`: gebucht → Gebucht; sonst Abgelehnt mit Grund; IST leer → unverändert. **Mehrbestand** (IST > SOLL) wird gebucht, wenn der Store die Sorte im Bestand hat und der Überschuss ≤ `Bestände.Verkauft` − `Gutgeschrieben`; Differenz negativ, der Hinweis an der Prüfung nennt die Gutschrift: „Gutschrift in JTL über: <Sorte> <N> Stück, …“. Keine Zeile mehr Offen/Abgelehnt → Prüfung Abgeschlossen. Regeln im Vertrag → [[scenarios]].
+3. `[Process] Manual Action (Inventory Correction)`: gebucht → Gebucht; sonst Abgelehnt mit Grund; IST leer → unverändert. **Mehrbestand** (IST > SOLL) wird gebucht, wenn der Store die Sorte im Bestand hat und der Überschuss ≤ `Bestände.Verkauft` − `Gutgeschrieben`; Differenz negativ, der Hinweis an der Prüfung nennt die Gutschrift: „Gutschrift in JTL über: <Sorte> <N> Stück, …“. Keine Zeile mehr Offen/Abgelehnt → Prüfung Abgeschlossen. Regeln im Vertrag → [[scenarios]].
 
 ## Fallstricke
 

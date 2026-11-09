@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Gutschriften, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.29.2"
+  version: "1.30.0"
 ---
 
 # selectedleafs · POS Operations
@@ -44,7 +44,7 @@ Merksatz: **Airtable ist die Wahrheit, Make ist der Schreiber, die Formeln sind 
 Der Grund, warum Historie verlässlich bleibt. **Strukturell nicht erzwungen** — getragen von Disziplin und Wächter-Views:
 
 1. **Versionen sind append-only.** `Konditionen` und `Kalkulationen` werden nie editiert, nur neu versioniert (`Gültig ab`). Wer eine alte Version ändert, verschiebt rückwirkend Geld — spurlos.
-2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Gutschriften`/`Auszahlungen` nur ein, ändert nie. **Drei definierte Sonderfälle:** der Zahlungseingang setzt einen Status (`[Sync] Lexware Payments`); `[Process] Refund (Store)` setzt `Gutschriften.Status`; die Korrektur einer Bestandsprüfung legt fehlende Positionen an und setzt `Status`, `Hinweis` und `Korrekturen buchen` (`[Process] Correction (Inventory)`, seit 06.11.2026).
+2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Gutschriften`/`Auszahlungen` nur ein, ändert nie. **Definierte Sonderfälle:** die `[Process] Lexware Voucher`-Worker setzen `Status` (und `Bruttobetrag`); `[Process] Lexware Payment (Invoice · Store)` setzt `Status` und `Gezahlt brutto`, `(Invoice · Salesperson)` setzt `Auszahlungen.Bezahlt`; `[Process] Upload PDF (Reminder)` setzt `Umsätze.Status`; `[Process] Lexware Voucher (Refund · Store)` setzt `Gutschriften.Status`; die Korrektur einer Bestandsprüfung legt fehlende Positionen an und setzt `Status`, `Hinweis` und `Korrekturen buchen` (`[Process] Manual Action (Inventory Correction)`, seit 06.11.2026).
 3. **Make-/Formel-Felder sind unantastbar.** Was Make auflöst oder per Name matcht, gehört Make/den Formeln, nicht der Hand. **Umgekehrt gehören in `Bestandsprüfungskorrekturen` die Zahlen der Hand:** Make legt die Zeilen im Prüflauf an, Joscha ergänzt `SOLL`/`IST` und setzt als Einziger `Status = Verworfen`.
 
 → `references/operations.md` (Wächter-Views, ein Bearbeiter, keine Testbase)
@@ -93,9 +93,9 @@ Versioniert wird **ereignisbasiert**: die jüngste Version mit `Gültig ab ≤ L
 
 Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach dem Auslöser):
 
-`[Sync]` · `[Create]` · `[Process]` · `[Resolve]` · `[Archive]` · `[Dispatch]` · `[Notify]` · `[Maintain]` — `[Report]` reserviert, `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
+`[Sync]` · `[Create]` · `[Process]` · `[Resolve]` · `[Archive]` · `[Dispatch]` · `[Notify]` · `[Maintain]` — `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
 
-`[Process]` orchestriert nur noch: das Lesen und Auflösen ist in native Subscenarios ausgezogen (`[Resolve]` = Beleg lesen + Store/Vertriebler/Kondition/Positionen auflösen, `[Archive]` = PDF sichern). Verträge in **[[scenarios]]**.
+`[Process]` orchestriert nur noch: das Lesen und Auflösen ist in native Subscenarios ausgezogen (`[Resolve]` = Beleg lesen + Store/Vertriebler/Kondition/Positionen auflösen, `[Archive]` = PDF sichern). Was jede Rolle darf und nicht darf, das Namensschema und die Ausnahmeliste stehen in **[[scenarios]]**, ebenso die Verträge.
 
 **Dispatch — welche reference wofür:**
 

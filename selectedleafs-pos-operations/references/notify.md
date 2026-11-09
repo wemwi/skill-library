@@ -1,6 +1,6 @@
 # Benachrichtigungen (Telegram)
 
-> Quelle: `[Notify] Telegram` (Szenario **6862968**), live gelesen **Stand 2026-08-14**. Die **Meldetexte** stehen ausschließlich im `assets/catalog.md` (Text-SSoT) — hier steht die **Mechanik**, nicht die Wortlaute.
+> Quelle: `[Notify] Telegram Channels` (Szenario **6862968**), live gelesen **Stand 2026-08-14**. Die **Meldetexte** stehen ausschließlich im `assets/catalog.md` (Text-SSoT) — hier steht die **Mechanik**, nicht die Wortlaute.
 
 ## Zweck & Form
 

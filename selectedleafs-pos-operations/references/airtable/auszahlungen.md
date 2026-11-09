@@ -20,7 +20,7 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 - **`Betrag`** (€) / **`Bezahlt`** (€) — beantragt vs. tatsächlich überwiesen.
 - **`Offen`** (Formel, €) — `Betrag − Bezahlt`.
 - **`Status`** (Select) — In Bearbeitung / Teilzahlung / Abgeschlossen / Storniert. `Vertriebler.Ausgezahlt` rollt **`Bezahlt`** (nicht statusgefiltert; `Bezahlt` ist bis zur Zahlung 0, Teilzahlung zählt anteilig).
-- **`Lexware ID`** (Text) — **Voucher-UUID der Lexware-Eingangsrechnung; Idempotenz-Klammer.** `[Process] Invoice (Sales)` sucht darüber, ob zu diesem Beleg schon eine Auszahlung existiert: beim **Erfassen** entsteht der Datensatz, beim **Bezahlen** wird nur der Status aktualisiert. Nicht manuell ändern.
+- **`Lexware ID`** (Text) — **Voucher-UUID der Lexware-Eingangsrechnung; Idempotenz-Klammer.** `[Process] Lexware Voucher (Invoice · Salesperson)` sucht darüber, ob zu diesem Beleg schon eine Auszahlung existiert: beim **Erfassen** entsteht der Datensatz, beim **Bezahlen** wird nur der Status aktualisiert. Nicht manuell ändern.
 - `Rechnungsnummer` (Text) · `Auszahlungsnummer` (autoNumber) · `Datum` (EU).
 
 ## Fallstricke

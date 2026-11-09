@@ -19,7 +19,7 @@ Eine Zeile = eine **Gutschrift an den Store** (JTL-Nummernkreis `RK-`). Beträge
 ## Tragende Felder
 
 - **`Nettobetrag`** (Rollup, €, positiv) — Σ `Gutschriftspositionen.Nettobetrag`. **Die Geldwahrheit.**
-- **`Status`** (Select) — Offen / Verrechnet / Storniert. Setzt nur `[Process] Refund (Store)`; ein Storniert bleibt Storniert. Make schreibt an einer Gutschrift **keinen Betrag**: Der Status entscheidet, die Formel rechnet.
+- **`Status`** (Select) — Offen / Verrechnet / Storniert. Setzt nur `[Process] Lexware Voucher (Refund · Store)`; ein Storniert bleibt Storniert. Make schreibt an einer Gutschrift **keinen Betrag**: Der Status entscheidet, die Formel rechnet.
 - **`Provision`** (Formel, €) — `(Nettobetrag × Provisionssatz) × (1 + MwSt.)`, wie an `Umsätze`.
 - **`Realprovision`** (Formel, €) — `Status = Verrechnet`: `Provision`, sonst 0. Rollt ohne Storniert zu `Vertriebler.Gutschriften Realprovision` und mindert dort den Saldo. Ganz oder gar nicht, es gibt keine Teilverrechnung.
 - **`Nettoverkaufswert`** (Rollup, €) — zum Endkunden-VK.
@@ -62,7 +62,7 @@ Anders als an `Umsätze` gibt es kein `Bezahlt`, `Offen`, `Fällig am`, `Menge (
 
 ## 🟣 Make-Zugriff (Stand 2026-11-09)
 
-Make schreibt **7** Felder und liest **7**, alle in `[Process] Refund (Store)` (8450345) und `[Notify] Telegram Channels` (6862968). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **7** Felder und liest **7**, alle in `[Process] Lexware Voucher (Refund · Store)` (8450345) und `[Notify] Telegram Channels` (6862968). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
