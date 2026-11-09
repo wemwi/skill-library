@@ -17,7 +17,7 @@ Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positi
 
 - **`ID`** (Formel) — `{Umsatz} & "#" & {Position}`.
 - **`Nettoumsatz`** (€, von **Make** geschrieben) — der **abgerechnete** Positionsbetrag (mit Partnerrabatt). **Geldwahrheit**, rollt zu `Umsätze.Nettoumsatz`.
-- **`Nettoumsatzerlös`** (Formel, €) — `Menge (Stück) × VK (netto)` — Wert zum **Endkunden-VK**, liegt systematisch **über** `Nettoumsatz`. Die Lücke ist die **Storemarge**, kein Fehler; fließt in **keine** Provisions-/Saldoformel.
+- **`Nettoumsatzerlös`** (Formel, €) — `Menge (Stück) × VK (netto)` — Wert zum **Endkunden-VK**, liegt systematisch **über** `Nettoumsatz`. Die Lücke ist die **Storemarge**, kein Fehler; fließt in **keine** Provisions-/Saldoformel. `Menge (kg)` fließt bewusst nicht ein (VK ist stückbezogen).
 - **`VK (netto)`** (Lookup ← [[preise]]).
 - `Menge (Stück)` / `Menge (kg)` (Zahl) · Lookups `Datum`, `Status`, `Typ`.
 

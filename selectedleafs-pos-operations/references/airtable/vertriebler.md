@@ -27,6 +27,7 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 - **`Besteuerung`** (Select: Kleinunternehmer / Regelbesteuerung) + **`Regelbesteuerung ab`** (Datum) — **wählt die passende [[konditionen]]-Version** (`Gültig für`). Kleinunternehmer ⇒ 0 % MwSt.
 - **`Formularlink`** (Formel) — personalisierter Link auf das „Store anlegen"-Formular; belegt `Stores.Akquise durch` mit `RECORD_ID()` vor und blendet das Feld aus. Wird als `{Formularlink}` im Onboarding-Post ausgegeben. Bricht still, wenn Feld-ID von `Akquise durch` oder die Formular-Page-ID sich ändert.
 - `Lexware ID` (Kreditor) · `Telegram Channel ID` (Sales-Channel) · PLZ / Ort / Straße · `Hinweis`.
+- **`Belege (eingereicht)`** (Link, Rückfeld von `Belege.Upload durch`) — Belege, die dieser Vertriebler über die Sales App hochgeladen hat.
 
 ## Fallstricke
 
