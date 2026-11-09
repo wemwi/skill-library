@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.23.0](https://github.com/wemwi/skill-library/compare/v6.22.2...v6.23.0) (2026-11-09)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Rollen, Namen und Verträge nach dem Make-Umbau ([#285](https://github.com/wemwi/skill-library/issues/285)) ([9b4effd](https://github.com/wemwi/skill-library/commit/9b4effdd0658d2d7c2d4a493ebf7acb648dc5a8a))
+
+
+### Bug Fixes
+
+* **global-make-conventions:** Options-ID in B9 als Text statt Objekt ([#286](https://github.com/wemwi/skill-library/issues/286)) ([16249eb](https://github.com/wemwi/skill-library/commit/16249ebf149a899aa37a5f151b1fcf7108a65e57))
+
 ## [6.22.2](https://github.com/wemwi/skill-library/compare/v6.22.1...v6.22.2) (2026-11-09)
 
 
