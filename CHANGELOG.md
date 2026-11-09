@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.22.1](https://github.com/wemwi/skill-library/compare/v6.22.0...v6.22.1) (2026-11-09)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Beispielbelege Lieferschein und Gutschrift ([#281](https://github.com/wemwi/skill-library/issues/281)) ([293c9f6](https://github.com/wemwi/skill-library/commit/293c9f6337400af620eb0447985f72d2ebfbcbd6))
+
 ## [6.22.0](https://github.com/wemwi/skill-library/compare/v6.21.1...v6.22.0) (2026-11-09)
 
 
