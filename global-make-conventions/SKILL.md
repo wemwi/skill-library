@@ -7,7 +7,7 @@ description: >-
   wenn ein Make-Szenario entworfen, gebaut, geprüft oder auditiert wird. Ergänzt
   make-scenario-building (das WIE) um das WELCHE.
 metadata:
-  version: "1.8.0"
+  version: "1.9.0"
 ---
 
 # global-make-conventions
@@ -88,7 +88,7 @@ Referenz.
 
 ### B2 — Szenario-Settings (`references/settings.md`)
 - **MUST** Webhook-getriggerte Szenarien laufen mit Scheduling-Typ `immediately`, nie `indefinitely`. Ein Blueprint-Import kann das still zurücksetzen — die Nachkontrolle steht in B10. Check: jedes Szenario mit `hookId` zeigt `scheduling.type = immediately`.
-- **MUST** `Store incomplete executions` ist aktiviert, wo ein Fehler sonst spurlos verschwindet (jedes Szenario mit Write-Seiteneffekten).
+- **MUST** `Store incomplete executions` ist aktiviert, wo ein Fehler sonst spurlos verschwindet (jedes Szenario mit Write-Seiteneffekten). In einem mit Warten gerufenen Szenario wirkt die Einstellung nur bei einem Direktstart (B8).
 - **SHOULD** Sequenzielle vs. parallele Ausführung ist eine bewusste Entscheidung (Datenintegrität bei geteiltem State vs. Durchsatz), nicht der Default.
 - **SHOULD** Auto-Deaktivierung nach N Folgefehlern ist konfiguriert, wo ein durchlaufender Fehler sonst unbemerkt Buchungen anhäuft.
 
@@ -121,6 +121,8 @@ Referenz.
 - **MUST** kein globales Ignore/Resume ohne Logging — ein grüner Lauf muss heißen, dass die Arbeit tatsächlich passiert ist.
 - **MUST** die Error-Handler-Direktive passt zum Modul (Break/Commit/Ignore/Resume/Rollback je nach Kritikalität) — kein pauschales Ignore auf einem Pflicht-Write.
 - **MUST** Retry hat einen Cap und Backoff — kein unbegrenzter Retry-Loop.
+- **MUST** Ein Szenario, das mit Warten gerufen wird („Wait for the scenario to finish“ an), legt keine unvollständige Ausführung an: Der Fehler geht an den Aufrufer zurück, Make wiederholt dort nichts von selbst. Der Fehlerweg für ein solches Szenario gehört deshalb an das Call-Modul des Aufrufers. Check: jeder Call mit Warten auf ein Szenario mit Write-Seiteneffekten hat im Aufrufer eine Fehlerroute, die den Fehler sichtbar macht.
+- **SHOULD** `Retry + park` und `Park run` stehen nur dort, wo Make parken kann: im auslösenden Szenario und in Szenarien, die ohne Warten gerufen werden. Check: kein Break-Handler als einzige Absicherung in einem Szenario, das nur mit Warten gerufen wird.
 - **SHOULD** ein DLQ/Incomplete-Executions-Eintrag wird aktiv abgearbeitet — er heilt nicht von selbst.
 
 ### B9 — Datenlayer (Airtable) *(gekapselt — nur bei Airtable-Backend relevant)* (`references/data-layer.md`)

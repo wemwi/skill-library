@@ -33,6 +33,15 @@ spurlos, ohne Queue, ohne Replay-Möglichkeit. Ein DLQ-Eintrag heilt dabei
 nicht von selbst (siehe `errors.md`) — die Einstellung allein reicht nicht,
 der Eintrag muss auch abgearbeitet werden.
 
+**Grenze:** In einem Szenario, das mit Warten gerufen wird, wirkt die
+Einstellung nicht, solange es über seinen Aufrufer läuft: Make legt für
+diesen Lauf keine unvollständige Ausführung an (`errors.md`, „Mit Warten
+gerufen"). Sie bleibt trotzdem an, weil sie bei einem Direktstart greift.
+Ist „Process data in order" dort zugleich an, hält eine unvollständige
+Ausführung aus einem Direktstart alle folgenden Aufrufe an. Ruft der
+Aufrufer sequenziell und mit Warten, sichert er die Reihenfolge schon
+selbst, und „Process data in order" kann am gerufenen Szenario aus bleiben.
+
 ## Sequenziell vs. parallel
 
 Standardmäßig läuft Make sequenziell pro Szenario. Parallele Ausführung
