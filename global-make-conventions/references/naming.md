@@ -97,7 +97,7 @@ Wort *nicht* ins Label gehört.
 | Variable (Set/Get) | dass es eine Variablen-Op ist | die Bedeutung | `Set idempotency key` |
 | Transformer (Parse/Compose) | generischer Transform | Verb + Format | `Parse payload (JSON)` |
 | HTTP / API-Call (Escape-Hatch, B3) | dass es ein HTTP-Call ist, Methode + Pfad | die Wirkung wie bei Read/Write, der Grund steht in der Modul-Note | `Load revenue (by month)` |
-| Call a scenario | dass es aufruft, und das Zielszenario (zweite Zeile) | der Zweck aus Sicht des Aufrufers; an einen Hub mit Schlüssel-Eingang nur der Schlüssel | `Set payment (store)` · `error.sync_aborted` |
+| Call a scenario | dass es aufruft, und das Zielszenario (zweite Zeile) | der Zweck aus Sicht des Aufrufers, ohne das Ziel zu wiederholen; an einen Hub mit Schlüssel-Eingang nur der Schlüssel | `Set payment` · `error.sync_aborted` |
 | Start scenario / Return output | Typ und Position (erstes / letztes Modul) | nichts: fest `Start` und `Return`, bei mehreren Returns der Fall in der Klammer | `Start` · `Return (no match)` |
 | Error-Handler-Route | dass es eine Fehlerroute ist, die Direktive (Icon) | die Folge für den Lauf: fester Name je Muster (siehe unten), sonst der Fall | `Retry + park` · `Not a voucher` |
 
@@ -110,11 +110,12 @@ kostet, die ein sprechendes Label gespart hätte.
 
 Die Klammer hinter einem Label trägt einheitlich den *einen* Zusatz, der diesen
 Knoten von einem gleichartigen unterscheidet: den Match-Key bei Reads
-(`Find store (by UL number)`), die Variante bei zwei gleichartigen Aufrufen
-(`Set payment (store)`) oder den Fall bei mehreren Returns
+(`Find store (by UL number)`) oder den Fall bei mehreren Returns
 (`Return (no match)`). Nicht mehrere Zusätze stapeln. Der Grund für einen
 HTTP-Escape gehört in die Modul-Note, nicht in die Klammer — dort konkurriert er
-mit dem Match-Key um denselben Platz.
+mit dem Match-Key um denselben Platz. Auch die Klammer wiederholt die zweite
+Zeile nicht: Zwei Aufrufe mit demselben Zweck und verschiedenen Zielszenarien
+tragen dasselbe Label (`Set payment`), die zweite Zeile unterscheidet sie.
 
 ## Filter- und Routennamen — kurz, Unterschied vorn
 
