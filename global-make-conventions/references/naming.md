@@ -13,8 +13,17 @@ zerreißt, die das Naming sein soll.
 Ein Modul zeigt seinen Typ bereits selbst: über das App-Icon, den Default-Namen
 und (beim Trigger) die Position an Stelle 1. Ein Label trägt deshalb genau das,
 was der Default *nicht* schon sagt — nie den Typ wiederholen. Konkret kein
-`Webhook:`, `Watch:`, `Router:`, `Var:` oder `Error:` als Präfix: redundant und
-kostet Breite auf dem Canvas.
+`Webhook:`, `Watch:`, `Router:`, `Var:`, `Call:` oder `Error:` als Präfix:
+redundant und kostet Breite auf dem Canvas.
+
+Zum Default zählt auch die **zweite Zeile**, die Make bei manchen Modulen selbst
+unter das Label setzt: bei `Call a scenario` den Namen des Zielszenarios, bei
+API-Calls (`Make an API Call`, HTTP) Methode und Pfad (im Editor belegt am
+10.11.2026). Ein Label, das den Szenarionamen oder die HTTP-Methode trägt, zeigt
+dieselbe Information doppelt — und veraltet, sobald das Ziel umbenannt wird,
+während die zweite Zeile mitzieht. Das Label muss trotzdem allein lesbar
+bleiben: Die zweite Zeile steht nur am Canvas (Annahme: History und
+Mapping-Panel zeigen sie nicht).
 
 Das Grammatik-Muster ist nicht für alle Typen dasselbe, weil die Rolle nicht
 dieselbe ist. **Verb + Objekt** (die Wirkung) ist der Default für jeden Knoten,
@@ -78,18 +87,19 @@ Wort *nicht* ins Label gehört.
 | Instant-Trigger (Webhook) | Typ + Position 1 | das Event | `Receipt received` |
 | Polling-Trigger (Watch) | Typ + Position 1 | die Entität | `New revenue row` |
 | Write (Create/Update/Delete) | Write auf App X | die Wirkung | `Create receipt` · `Set revenue status` |
-| Search / Read | Read auf App X | Objekt + Match-Key | `Find store (by UL number)` |
+| Search / Read (nativ oder per API-Call) | Read auf App X, beim API-Call Methode + Pfad | Objekt + Match-Key, keine HTTP-Methode | `Find store (by UL number)` · `Get voucher (by id)` |
 | Router | dass es ein Router ist | die Entscheidung | `Split by receipt type` |
 | Route (Zweig) | dass es ein Zweig ist | der Fall | `Invoice` · `Credit note` |
-| Filter (auf einer Kante) | nichts (leer) | die Bedingung | `Only if store exists` |
+| Filter (auf einer Kante) | nichts (leer) | die Bedingung, kurz (siehe unten) | `Store found` |
 | Aggregator | dass aggregiert wird | was gebündelt wird | `Bundle line items` |
 | Iterator | dass ein Array gesplittet wird | was iteriert wird | `Iterate receipt lines` |
 | Flow-Control (Sleep/Repeat/Break) | das Steuer-Verb | der Zweck | `Sleep for rate limit` · `Repeat pages` |
 | Variable (Set/Get) | dass es eine Variablen-Op ist | die Bedeutung | `Set idempotency key` |
 | Transformer (Parse/Compose) | generischer Transform | Verb + Format | `Parse payload (JSON)` |
-| HTTP (Escape-Hatch, B3) | dass es ein HTTP-Call ist | Wirkung + Grund | `Load revenue via REST (cellFormat)` |
-| Call a scenario / Return | dass es aufruft/zurückgibt | Ziel / Output | `Notify dispatcher` · `Return receipt id` |
-| Error-Handler-Route | dass es eine Fehlerroute ist | Direktive + Fall | `Retry on 429` · `Ignore (already processed)` |
+| HTTP / API-Call (Escape-Hatch, B3) | dass es ein HTTP-Call ist, Methode + Pfad | die Wirkung wie bei Read/Write, der Grund steht in der Modul-Note | `Load revenue (by month)` |
+| Call a scenario | dass es aufruft, und das Zielszenario (zweite Zeile) | der Zweck aus Sicht des Aufrufers; an einen Hub mit Schlüssel-Eingang nur der Schlüssel | `Set payment (store)` · `error.sync_aborted` |
+| Start scenario / Return output | Typ und Position (erstes / letztes Modul) | nichts: fest `Start` und `Return`, bei mehreren Returns der Fall in der Klammer | `Start` · `Return (no match)` |
+| Error-Handler-Route | dass es eine Fehlerroute ist, die Direktive (Icon) | die Folge für den Lauf: fester Name je Muster (siehe unten), sonst der Fall | `Retry + park` · `Not a voucher` |
 
 Ein Default-Label wie `Airtable - Search Records` an einer flussentscheidenden
 Stelle (Dedup-Gate, Route-Entscheidung) ist ein Audit-Befund — nicht weil der
@@ -100,16 +110,42 @@ kostet, die ein sprechendes Label gespart hätte.
 
 Die Klammer hinter einem Label trägt einheitlich den *einen* Zusatz, der diesen
 Knoten von einem gleichartigen unterscheidet: den Match-Key bei Reads
-(`Find store (by UL number)`), den Grund bei einem HTTP-Escape
-(`Load revenue via REST (cellFormat)`) oder den Fehlerfall bei einer
-Fehlerroute (`Retry on 429`). Nicht mehrere Zusätze stapeln.
+(`Find store (by UL number)`), die Variante bei zwei gleichartigen Aufrufen
+(`Set payment (store)`) oder den Fall bei mehreren Returns
+(`Return (no match)`). Nicht mehrere Zusätze stapeln. Der Grund für einen
+HTTP-Escape gehört in die Modul-Note, nicht in die Klammer — dort konkurriert er
+mit dem Match-Key um denselben Platz.
 
-## Namespacing bei vielen gleichartigen Modulen
+## Filter- und Routennamen — kurz, Unterschied vorn
 
-Macht ein Szenario mehrere Writes/Reads auf verschiedene Tabellen oder
-Entitäten, wird die Entität als Präfix vorangestellt: `Revenues.Append note`,
-`Receipts.Create`. Das zeigt auf einen Blick, welche Entität ein Modul anfasst
-— sinnvoll ab dem Punkt, wo sonst mehrere Labels gleich aussähen.
+Der Canvas kürzt einen Filternamen nach rund 15 Zeichen (im Editor belegt am
+10.11.2026: `Purchase invoic…`). Der Name trägt deshalb die Bedingung in
+möglichst höchstens 15 Zeichen, das unterscheidende Wort vorn: `Store found`,
+nicht `Only if store exists`; `Fields missing` und `Fields complete`, nicht
+`Gate 1 · Required fields incomplete` und `Gate 1 · Required fields complete`.
+Kein Füllwort (`Only if`), kein Zähler vorn (`Gate 1 ·`). Prüft der Filter einen
+festen Wert, darf der Wert selbst der Name sein (`salesinvoice`).
+
+**Check beim Audit:** keine zwei Filter eines Szenarios mit denselben ersten 15
+Zeichen.
+
+## Fehlerrouten — feste Namen je Muster
+
+Das Icon zeigt die Direktive, das Label die Folge für den Lauf. Wiederkehrende
+Muster tragen überall denselben Namen, damit dieselbe Folge nicht unter vier
+Bezeichnungen läuft:
+
+| Muster | Direktive | Label |
+|---|---|---|
+| Wiederholen, danach als unvollständige Ausführung parken | Break, Retry an | `Retry + park` |
+| Ohne Wiederholung parken | Break, Retry aus | `Park run` |
+| Die Meldung über einen Fehler scheitert selbst, der Lauf geht weiter | Resume | `Skip notify error` |
+| Lauf nach der Meldung beenden | Commit | `Stop` |
+| Dieses Bundle beenden, mit dem nächsten weiter | Ignore | `Next <Objekt>`, z. B. `Next document` |
+| Erwarteter, stiller Fall | Ignore oder Resume | der Fall: `Not a voucher` · `Continue without PDF` |
+
+**Check beim Audit:** dieselbe Direktive mit derselben Einstellung trägt im
+Portfolio nicht zwei Namen.
 
 ## Immer labeln vs. Schwelle
 
