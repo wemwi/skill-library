@@ -16,10 +16,27 @@ Kein Ereignis wird doppelt geschrieben — der Schutz sitzt in **Dedup-Schlüsse
 Drei Bausteine, situationsabhängig:
 
 - **`builtin:Resume`** — Lesefehler **übergehen** (leeres Ergebnis weiterreichen), wenn ein fehlender Nachschlag den Lauf nicht kippen soll (Notify-Nachlesen).
-- **`builtin:Break`** mit **Retry** — Zustellung wiederholen (Ops/Vertriebler-Posts: **3× / 15 s**), danach in die **DLQ** parken. Szenarien laufen mit `dlq:true`, `maxErrors:3`.
+- **`builtin:Break`** mit **Retry** — Zustellung wiederholen (Ops/Vertriebler-Posts: **3× / 15 s**), danach in die **DLQ** parken. Szenarien laufen mit `dlq:true`, `maxErrors:3`. Parken kann nur ein Szenario, das nicht mit Warten gerufen wird (`global-make-conventions` B8).
 - **`builtin:Ignore`** — bewusst **fallenlassen**, wo ein Ausfall folgenlos ist (öffentlicher **City-Broadcast**).
 
 **Problem-Route:** harte Störungen enden als **`error.*`-Notify** im 🛑-Topic **584** (`error.sync_aborted`, `error.store_failed`, `error.lexware_orphan` …). Prinzip: **still abbrechen + melden**, nie halb schreiben und schweigen. Der **unbekannte Notify-Key** geht roh nach ⁉️ Unsortiert (nichts verwerfen).
+
+### Upload-Belegeingang: ein Neuanstoß-Weg, der Beleg (seit 10.11.2026)
+
+`[Dispatch] Upload PDF` ruft Kopf-Leser, `(Leftovers)` und die Worker mit Warten. Ein mit Warten gerufenes Szenario legt keine unvollständige Ausführung an, Make wiederholt dort nichts. Deshalb gibt es für diese Kette genau einen Neuanstoß:
+
+| Fehlerort | Was passiert | Neuanstoß |
+|---|---|---|
+| Kopf-Leser scheitert | Hinweis am Beleg, Störung, nächster Beleg | `Belege.Hinweis` leeren (Belegtyp steht noch auf Unbekannt) |
+| Aufräumen, Worker oder Start des Mahnlaufs scheitert | wie oben | `Belege.Hinweis` leeren, `Belege.Belegtyp` auf Unbekannt |
+| Fehler im Mahnlauf selbst (ohne Warten gerufen) | unvollständige Ausführung in `(Reminder)` | in Make fortsetzen |
+| Fehler im Dispatcher selbst | unvollständige Ausführung im Dispatcher, der Eingang wartet, Make wiederholt | in Make fortsetzen |
+
+- **Zurücksetzen** heißt immer dasselbe: Hinweis leeren und Belegtyp auf Unbekannt. Die View „Inbox (make.com)“ verlangt beides.
+- **Nie „erneut hochladen“:** Ein zweiter Beleg desselben Dokuments bucht daneben oder endet als Duplikat.
+- **Reste räumt der Neulauf weg.** Ein Abbruch mitten im Schreiben lässt Zeilen mit Status In Bearbeitung stehen, deren Positionen sofort im Bestand zählen (Rollups ohne Statusfilter). `[Process] Upload PDF (Leftovers)` entfernt sie vor dem Worker. In Bearbeitung heißt damit: läuft gerade oder ist Rest. Eine solche Zeile ohne laufenden Lauf ist ein Befund.
+- **Der Hinweis am Beleg** nennt Stufe, Fehler und den Neuanstoß-Satz, derselbe Satz steht in der Zeile „Folge“ von `error.sync_aborted`.
+- **Keine Direktstarts** der Worker und von `(Leftovers)` → [[scenarios]].
 
 ## Registry & Webhooks
 
@@ -39,7 +56,7 @@ Views sind **load-bearing**, nicht Kosmetik:
 
 ## Freeze-Invarianten sind disziplin-getragen
 
-Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Definierte INSERT-only-Brüche: siehe `SKILL.md`, Invariante 2.
+Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Definierte INSERT-only-Brüche: siehe `SKILL.md`, Invariante 2. Dort steht auch die einzige Lösch-Ausnahme: `[Process] Upload PDF (Leftovers)` löscht unfertige Zeilen eines Belegs vor dessen Neulauf. Von Hand werden Ereigniszeilen weiter nicht gelöscht. Wer nur die Zeile löscht, lässt Positionen ohne Eltern zurück, die weiter zählen.
 
 ## Harte Regeln
 
