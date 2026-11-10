@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.25.0](https://github.com/wemwi/skill-library/compare/v6.24.0...v6.25.0) (2026-11-10)
+
+
+### Features
+
+* **global-make-conventions:** mit Warten gerufene Szenarien parken nicht ([#290](https://github.com/wemwi/skill-library/issues/290)) ([659fc3e](https://github.com/wemwi/skill-library/commit/659fc3e8b2cc0b675fbe2c9aa354936155144e8b))
+
 ## [6.24.0](https://github.com/wemwi/skill-library/compare/v6.23.0...v6.24.0) (2026-11-10)
 
 
