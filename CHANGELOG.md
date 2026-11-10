@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.24.0](https://github.com/wemwi/skill-library/compare/v6.23.0...v6.24.0) (2026-11-10)
+
+
+### Features
+
+* **global-make-conventions:** Bezeichnungsregeln für zweite Zeile, Filter und Fehlerrouten ([#288](https://github.com/wemwi/skill-library/issues/288)) ([de6ca17](https://github.com/wemwi/skill-library/commit/de6ca175aa86de932a2ab3f89a822dafd5bcb0a9))
+
 ## [6.23.0](https://github.com/wemwi/skill-library/compare/v6.22.2...v6.23.0) (2026-11-09)
 
 
