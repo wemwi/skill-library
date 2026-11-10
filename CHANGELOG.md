@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.26.0](https://github.com/wemwi/skill-library/compare/v6.25.0...v6.26.0) (2026-11-10)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Neuanstoß über den Beleg und Worker (Leftovers) ([#291](https://github.com/wemwi/skill-library/issues/291)) ([0c8ab22](https://github.com/wemwi/skill-library/commit/0c8ab223559a9d3119ead90defb92c4a477e99ed))
+
 ## [6.25.0](https://github.com/wemwi/skill-library/compare/v6.24.0...v6.25.0) (2026-11-10)
 
 
