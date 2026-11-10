@@ -107,6 +107,14 @@ kein Durchlauf, der eingehende Call ist weg. Details in `references/settings.md`
 jedes Szenario mit `hookId` muss dort `{"type": "immediately"}` stehen. Nicht
 annehmen, es sei durchgekommen — genau wie beim Interface.
 
+**Ein `scheduling`-Block im Import-JSON schützt nicht** (beobachtet am
+10.11.2026): Das Import-JSON eines Webhook-Szenarios trug top-level
+`"scheduling": {"type": "immediately"}`, der Editor zeigte nach dem Import
+trotzdem „Every 15 minutes". Beim Import über die Oberfläche deshalb vor dem
+Speichern die Anzeige oben rechts lesen und in den „Schedule settings" auf
+„Immediately" stellen (Runs je Minute wie vorher), danach wie oben per
+`scenarios_get` prüfen.
+
 **Praktisch: die Nachkontrolle ist eine Liste, kein Einzelcheck.** `scenarios_list`
 gibt `hookId` und `scheduling` in derselben Antwort zurück. Ein Abgleich über den
 ganzen Team-Bestand („jedes Szenario mit `hookId` ≠ null hat

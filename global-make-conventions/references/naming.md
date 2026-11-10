@@ -148,6 +148,10 @@ Bezeichnungen läuft:
 **Check beim Audit:** dieselbe Direktive mit derselben Einstellung trägt im
 Portfolio nicht zwei Namen.
 
+`Retry + park` und `Park run` setzen voraus, dass das Szenario eine
+unvollständige Ausführung anlegen kann. In einem mit Warten gerufenen
+Szenario kann es das nicht (B8, `errors.md`).
+
 ## Immer labeln vs. Schwelle
 
 Vier Knotentypen werden **immer** gelabelt, unabhängig von der Modulzahl, weil
