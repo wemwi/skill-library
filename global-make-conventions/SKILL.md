@@ -7,7 +7,7 @@ description: >-
   wenn ein Make-Szenario entworfen, gebaut, geprüft oder auditiert wird. Ergänzt
   make-scenario-building (das WIE) um das WELCHE.
 metadata:
-  version: "1.7.3"
+  version: "1.8.0"
 ---
 
 # global-make-conventions
@@ -78,8 +78,10 @@ Referenz.
 ### B1 — Naming & Lesbarkeit (`references/naming.md`)
 - **MUST** Alle Bezeichner sind englisch und projektweit einheitlich — Szenario-Namen, Modul-Labels, Ordner, Variablennamen (die IML-Referenz) und Doku/Kommentare. Check: kein nicht-englischer oder gemischtsprachiger Bezeichner im Blueprint.
 - **MUST** Szenarien tragen handlungsbasierte Namen: Verb + Objekt (+ Ziel-App, wenn nicht eindeutig), nie eine ID oder ein generischer Platzhalter (`Sync New Gmail Contacts to CRM`, nicht `Scenario 3`). Check: Name enthält Aktion + Objekt, nicht nur die App.
-- **MUST** Modul-Labels tragen nur das Delta zum Default — das Icon (beim Trigger auch die Position) zeigt den Typ bereits, also kein Typ-Wort im Label (kein `Webhook:`/`Watch:`/`Router:`/`Var:`/`Error:`-Präfix). Verb + Objekt ist der Default; Trigger = Event, Router-Zweig = Fall, Filter = Bedingung sind die begründeten Ausnahmen. Je-Typ-Tabelle in der Referenz. Check: kein Typ-Präfix und kein unverändertes Default-Label an den Knoten, die das Delta tragen sollen.
+- **MUST** Modul-Labels tragen nur das Delta zum Default — das Icon (beim Trigger auch die Position) zeigt den Typ bereits, also kein Typ-Wort im Label (kein `Webhook:`/`Watch:`/`Router:`/`Var:`/`Call:`/`Error:`-Präfix). Zum Default zählt auch die zweite Zeile, die Make unter dem Label selbst füllt (Zielszenario bei `Call a scenario`, Methode + Pfad bei API-Calls): ein Label wiederholt sie nicht. Verb + Objekt ist der Default; Trigger = Event, Router-Zweig = Fall, Filter = Bedingung sind die begründeten Ausnahmen. Je-Typ-Tabelle in der Referenz. Check: kein Typ-Präfix und kein unverändertes Default-Label an den Knoten, die das Delta tragen sollen; kein Call-Label mit dem Namen des Zielszenarios, keine HTTP-Methode im Label.
 - **MUST** Trigger, Router-Zweige, Write- und Fehlerrouten werden immer gelabelt, unabhängig von der Modulzahl; alle übrigen Module spätestens ab ~5 Modulen im Szenario. Check: Blueprint-Diff zeigt keine unveränderten Default-Labels an diesen Stellen.
+- **SHOULD** Filter- und Routennamen tragen die Bedingung in möglichst höchstens 15 Zeichen, das unterscheidende Wort vorn — der Canvas kürzt danach. Check: keine zwei Filter eines Szenarios mit denselben ersten 15 Zeichen.
+- **SHOULD** Wiederkehrende Fehlerrouten tragen einen festen Namen je Muster (`Retry + park`, `Park run`, `Skip notify error`, `Stop`, `Next <Objekt>`), Tabelle in der Referenz. Check: dieselbe Direktive mit derselben Einstellung trägt im Portfolio nicht zwei Namen.
 - **SHOULD** Ordnerstruktur in Make spiegelt Projekt/Teilsystem, nicht Chronologie.
 - **SHOULD** Das führende Verb eines Szenario-Namens darf als `[Rolle]`-Präfix in eckige Klammern gezogen werden, um Szenarien im UI nach Rolle zu gruppieren — aber nur aus einer geschlossenen, **einachsigen** (Rolle, nicht Trigger/Kadenz), projektweit einmal definierten Menge; das Präfix *ersetzt* das Verb, es tritt nicht neben eins (`[Sync] Inventory to Shopify`, nicht `[Scheduled] Sync …`). Ein Präfix wird erst eingeführt, wenn ein Szenario dieser Rolle live existiert; das konkrete Set gehört in den `<projekt>-operations-*`-Skill. Check: kein Präfix-Set mit mehr als einer Achse (ein Trigger-/Kadenz-Präfix wie `[Scheduled]` neben Rollen-Präfixen ist ein Befund), jedes verwendete Präfix ist im Projekt-Skill definiert und hat ≥1 lebendes Mitglied.
 - **SHOULD** Die Szenario-Beschreibung (`description`) trägt den Trigger-Kontrakt in einer Zeile — wer/was triggert, welche Inputs, was zurückgegeben wird —, nicht die Wiederholung des Namens. Check: bei `Call a scenario`-Zielen (on-demand) ist die Beschreibung nicht leer, dort ist der Kontrakt die einzige Inline-Doku.
