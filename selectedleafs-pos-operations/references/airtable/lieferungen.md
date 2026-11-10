@@ -18,14 +18,14 @@ Eine Zeile = eine **Warenübergabe (Kommission)** an einen Store, belegt durch d
 
 ## Tragende Felder
 
-- **`ID`** (Text) — **Dedup-Schlüssel = Belegnummer aus dem PDF.** Ein zweiter Beleg mit gleicher Nummer wird abgewiesen. Make schreibt den Wert (kein Formelfeld).
+- **`ID`** (Text) — **Dedup-Schlüssel = Belegnummer aus dem PDF.** Ein zweiter Beleg mit gleicher Nummer wird abgewiesen. Make schreibt den Wert (kein Formelfeld). **Zeitpunkt (seit 10.11.2026):** `[Process] Upload PDF (Delivery)` schreibt die Nummer schon mit dem sauberen Verdikt, vor der ersten Position, und leert sie wieder, wenn die Zeile Fehlerhaft wird. Eine Zeile In Bearbeitung trägt also ihre Nummer, eine fehlerhafte nie. Rückhol-Lieferungen (`RETURN-…`) bekommen ihre Nummer weiter erst beim Abschluss. Die Sales App zeigt die `ID` als Titel, auch bei In Bearbeitung (entschieden 10.11.2026).
 - **`Kostenanteil`** (Formel, €) — **der Geldwert dieser Tabelle.** Live:
   `Kosten × Kostensatz × (1 + MwSt.)` → also **brutto**. Rollt zu `Vertriebler.Kostenanteil`. Entsteht **bei der Lieferung**.
 - **`Kosten`** (Rollup, €) — Σ `Lieferpositionen.Kosten` (EK × Menge, mit **eingefrorenem** EK).
 - **`Nettoverkaufswert`** (Rollup, €) — Σ `Lieferpositionen.Nettoverkaufswert` (VK-Sicht).
 - **`Kostensatz`** (Lookup %) / **`MwSt.`** (Lookup %) — aus der verknüpften `Konditionen`-Version; speisen die Kostenanteil-Formel.
 - **`Konditionen`** (Link) — die eff-dated gewählte Version.
-- **`Status`** (Select: Abgeschlossen / In Bearbeitung / Fehlerhaft) — von Make als **String** geschrieben; Option umbenennen bricht still.
+- **`Status`** (Select: Abgeschlossen / In Bearbeitung / Fehlerhaft) — von Make als **String** geschrieben; Option umbenennen bricht still. **In Bearbeitung** heißt: läuft gerade oder ist Rest eines Abbruchs. Nur solche Zeilen löscht `[Process] Upload PDF (Leftovers)` vor dem Neulauf des Belegs.
 - **`Datum`** (Lookup aus `Beleg.Datum`) — das **Leistungsdatum**, im **EU-Format D/M/YYYY** (Datum-Fallstrick, [[model]] §4).
 - Nebenfelder: `Unterschrieben` (Checkbox) · `Menge (kg)`/`Menge (Stück)` (Rollups) · `Positionen` (Count) · `Hinweis` (Freitext, Make).
 
@@ -62,17 +62,21 @@ Eine Zeile = eine **Warenübergabe (Kommission)** an einen Store, belegt durch d
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **8** Felder und liest **10**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **8** Felder und liest **10**. Zwei davon matcht Make über den Klartext (Nachtrag 2026-11-10: `Status`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
 - **`ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldRZt5ook8jiiXaX`  
   Belegnummer = Dedup. Szenarien: 6677862.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldCDruCnZNbtWoTp` (gesetzt 2026-11-10, steht über 🟢 `App (KEY · Options)`)  
+  8495399 vergleicht den Optionsnamen „In Bearbeitung“ im Code „Pick leftovers“. Geschrieben wird der Status weiter über die Options-ID.  
+  ⚠ Option umbenennen: Reste werden nicht mehr erkannt und nicht entfernt (still).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Beleg` · `Hinweis` · `Konditionen` · `Status` · `Store` · `Unterschrieben` · `Vertriebler`  
+**Make löscht:** ganze Zeilen mit Status In Bearbeitung (8495399, nur am selben Beleg)  
 **Make liest:** `Datum` · `Kosten` · `Kostenanteil` · `Menge (Stück)` · `Nettoverkaufswert` · `Positionen`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
