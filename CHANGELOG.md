@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.33.0](https://github.com/wemwi/skill-library/compare/v6.32.0...v6.33.0) (2026-11-11)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Fehlerwege der Zahlungs-Worker und Marker an Status ([#308](https://github.com/wemwi/skill-library/issues/308)) ([9bc60df](https://github.com/wemwi/skill-library/commit/9bc60dfbff9d8c2282d0a31db4a4dfd4085cfe28))
+
 ## [6.32.0](https://github.com/wemwi/skill-library/compare/v6.31.0...v6.32.0) (2026-11-11)
 
 
