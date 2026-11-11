@@ -10,7 +10,7 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 
 ## Beziehungen
 
-- **→ `Vertriebler`** (Einzel) — an wen. `Ausgezahlt` auf [[vertriebler]] rollt aus **abgeschlossenen** Auszahlungen.
+- **→ `Vertriebler`** (Einzel) — an wen. `Ausgezahlt` auf [[vertriebler]] summiert `Bezahlt` aller Auszahlungen außer Storniert.
 - **→ `Beleg`** (Einzel) — die gespiegelte Eingangsrechnung (Belegtyp Eingangsrechnung, PDF aus Lexware); Gegenfeld `Belege.Auszahlung`.
 - Rückwege: `Vertriebler.Auszahlungen`.
 
@@ -19,7 +19,7 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 - **`ID`** (Formel) — `"ASZ-" & RIGHT("00000" & Auszahlungsnummer, 5)` (z. B. `ASZ-00005`).
 - **`Betrag`** (€) / **`Bezahlt`** (€) — beantragt vs. tatsächlich überwiesen.
 - **`Offen`** (Formel, €) — `Betrag − Bezahlt`.
-- **`Status`** (Select) — In Bearbeitung / Teilzahlung / Abgeschlossen / Storniert. `Vertriebler.Ausgezahlt` rollt **`Bezahlt`** (nicht statusgefiltert; `Bezahlt` ist bis zur Zahlung 0, Teilzahlung zählt anteilig).
+- **`Status`** (Select) — In Bearbeitung / Teilzahlung / Abgeschlossen / Storniert. `Vertriebler.Ausgezahlt` rollt **`Bezahlt`** ohne stornierte Zeilen (live 11.11.2026; `Bezahlt` ist bis zur Zahlung 0, Teilzahlung zählt anteilig). Wer welchen Status setzt: [[scenarios]], `[Process] Lexware Voucher (Invoice · Salesperson)` und `[Process] Lexware Payment (Invoice · Salesperson)`.
 - **`Lexware ID`** (Text) — **Voucher-UUID der Lexware-Eingangsrechnung; Idempotenz-Klammer.** `[Process] Lexware Voucher (Invoice · Salesperson)` sucht darüber, ob zu diesem Beleg schon eine Auszahlung existiert: beim **Erfassen** entsteht der Datensatz, beim **Bezahlen** wird nur der Status aktualisiert. Nicht manuell ändern.
 - `Rechnungsnummer` (Text) · `Auszahlungsnummer` (autoNumber) · `Datum` (EU).
 
@@ -27,6 +27,7 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 
 - **`Lexware ID` ist die Idempotenz** — ohne sie legt der nächste Lauf eine Dublette an.
 - `Vertriebler.Offen` sinkt um `Bezahlt` (real überwiesen), nicht um `Betrag` (beantragt) — Teilzahlung wirkt anteilig.
+- **Optionsnamen gekoppelt:** Beide Worker vergleichen `Status` über die Optionsnamen „Teilzahlung“ und „In Bearbeitung“. Umbenennen bricht das still; der Marker 🟣 `make.com (KEY · Options)` fehlt am Feld noch (offen im Projekt, `claude/status-make.md`).
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
 

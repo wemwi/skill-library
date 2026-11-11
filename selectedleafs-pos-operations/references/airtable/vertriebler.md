@@ -19,7 +19,7 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 - **`Provision`** (Rollup ← `Umsätze.Provision`) — **nominal**, auf den vollen Nettoumsatz. Anzeige.
 - **`Realprovision`** (Rollup ← `Umsätze.Realprovision`) — Provision auf den **tatsächlich Bezahlten** Betrag. **Das ist die saldo-relevante Größe.**
 - **`Gutschriften Realprovision`** (Rollup ← `Gutschriften.Realprovision`, ohne Storniert, seit 09.11.2026) — mindert den Saldo, sobald eine Gutschrift verrechnet ist.
-- **`Ausgezahlt`** (Rollup ← `Auszahlungen.Bezahlt`) — Σ der real überwiesenen Beträge (nicht statusgefiltert; `Bezahlt` ist bis zur Zahlung 0).
+- **`Ausgezahlt`** (Rollup ← `Auszahlungen.Bezahlt`) — Σ der real überwiesenen Beträge (ohne stornierte Auszahlungen, live 11.11.2026; `Bezahlt` ist bis zur Zahlung 0).
 - **`Saldo`** (Formel, €) — **`Realprovision − Gutschriften Realprovision − Kostenanteil`**. ⚠️ nutzt **Realprovision**, nicht die nominale Provision.
 - **`Offen`** (Formel, €) — `Saldo − Ausgezahlt`. Der Betrag, der noch aussteht.
 
