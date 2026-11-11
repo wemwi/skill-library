@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Gutschriften, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.33.0"
+  version: "1.33.1"
 ---
 
 # selectedleafs · POS Operations
@@ -95,7 +95,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 
 `[Sync]` · `[Create]` · `[Process]` · `[Resolve]` · `[Archive]` · `[Dispatch]` · `[Notify]` · `[Maintain]` — `[Scheduled]` ist **bewusst keine** Achse (ein Zeitplan ist ein Trigger, keine Rolle).
 
-`[Process]` orchestriert nur noch: das Lesen und Auflösen ist in native Subscenarios ausgezogen (`[Resolve]` = Beleg lesen + Store/Vertriebler/Kondition/Positionen auflösen, `[Archive]` = PDF sichern). Was jede Rolle darf und nicht darf, das Namensschema und die Ausnahmeliste stehen in **[[scenarios]]**, ebenso die Verträge.
+`[Process]` orchestriert: Beleg lesen und Store, Vertriebler, Kondition und Positionen auflösen sind in native Subscenarios ausgezogen (`[Resolve]`), das PDF sichert `[Archive]`. Im Worker bleiben Dedup- und Gate-Suchen; mehr Lese- und Rechenlogik dort ist Altbestand, kein Vorbild. Was jede Rolle darf und nicht darf, das Namensschema und die Ausnahmeliste stehen in **[[scenarios]]**, ebenso die Verträge.
 
 **Dispatch — welche reference wofür:**
 

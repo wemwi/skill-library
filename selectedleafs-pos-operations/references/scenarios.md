@@ -24,12 +24,14 @@ Eingang (Mail/Webhook/Zeitplan) → **`[Sync]`** überträgt von A nach B, auch 
 | `[Sync]` | Daten von A nach B übertragen | Eingangsprüfung, Mapping, Diff gegen das Ziel, Meldung an `[Notify]` | Status oder Geld ableiten, Store oder Vertriebler auflösen, in Ereignistabellen schreiben, Fachliches auslösen, `[Process]`, `[Resolve]` oder `[Dispatch]` aufrufen | Schreibziele; Aufrufliste nur `[Notify]` |
 | `[Sync]` in `General` | wie oben, allgemein | wie oben | zusätzlich POS-Base und POS-Szenarien | keine Airtable-Module, keine Aufrufe |
 | `[Dispatch]` | Eingang annehmen, prüfen, Art bestimmen, an den passenden `[Process]` geben | Stempel am Eingangsdatensatz, Empfänger prüfen, `[Resolve]` für den Belegkopf | Ereignis- und Geldtabellen schreiben, über das Buchen entscheiden, Beleginhalt lesen | schreibt höchstens am Eingangsdatensatz; ruft mindestens einen `[Process]`; kein KI-Modul |
-| `[Process]` | Vorfall verarbeiten: `[Resolve]` rufen, Verdikt, Zeilen schreiben | dokumentierte Folgeänderung am Stammsatz, dokumentierter Neuanstoß | Beleg selbst lesen, berechneten Geldwert schreiben, eigener Trigger | kein KI- oder Lesemodul; Geldfelder nur als Rohwert; Start per Aufruf |
+| `[Process]` | Vorfall verarbeiten: `[Resolve]` rufen, Verdikt, Zeilen schreiben | Dedup- und Gate-Suchen, dokumentierte Folgeänderung am Stammsatz, dokumentierter Neuanstoß | Beleg selbst lesen, berechneten Geldwert schreiben, eigener Trigger | kein KI-Modul; Lesemodule nur für Dedup, Gate oder Folgeänderung; Geldfelder nur als Rohwert; Start per Aufruf |
 | `[Resolve]` | genau eine Auflösung, gibt ein Ergebnis zurück | lesen, auch per KI; weiches Verdikt; anderen `[Resolve]` aufrufen | schreiben, melden, eigener Trigger | Start per Aufruf, Rückgabe mit `resolver_version`, keine Schreibmodule |
 | `[Create]` | Stammdatensatz in allen Systemen anlegen | Stammtabellen, Lexware-Kontakt, Shopify-Metaobjekt | Ereignistabellen | Schreibziele |
 | `[Maintain]` | Wartung, zeitgesteuerte Erinnerung | eigener Marker, Meldung | Geschäftsdaten | Schreibziele |
 | `[Archive]` | PDF sichern | `Belege.Anhang` | alles andere | Schreibziele |
 | `[Notify]` | Meldung zustellen | Base lesen, Telegram | Base schreiben | keine Schreibmodule |
+
+**Altbestand `[Process]` (Audit 10.11.2026):** Mehr Lese- und Rechenlogik als Dedup und Gate steckt noch im Raster-Zweig von `[Process] Upload PDF (Inventory)` (Audit C6), in den Zuordnungen von `[Process] Lexware Voucher (Invoice · Store)` (C7) und im Lesen der Prüfung und ihrer Korrekturen in `[Process] Manual Action (Inventory Correction)`. Kein Vorbild für Neues; umgezogen wird nur mit einem ohnehin fälligen Umbau des Workers.
 
 Ereignistabellen: `Umsätze`, `Auszahlungen`, `Lieferungen`, `Bestandsprüfungen`, `Gutschriften` und ihre Positionstabellen. Ein `[Sync]` darf nach Airtable schreiben, wenn der Wert unverändert aus der Quelle kommt, das Ziel keine Ereignistabelle ist und nichts Fachliches ausgelöst wird.
 
@@ -56,7 +58,7 @@ Liest `Belege`; bei `Belegtyp = Unbekannt` → Notify **`task.doctype_unclear`**
 **Rechnungssuche (seit 11.11.2026):** vierte Route in „Route by target“, Filter `Booked` (Ziel delivery, inventory oder return), läuft je Beleg nach der Buchungsroute: „Resolve open invoices“ ruft `[Resolve] Open Invoices` mit Warten (`record_id` des Belegs, `document_date`), danach je Treffer „Retry invoice“: `[Process] Lexware Voucher (Invoice · Store)` mit `resource_id` = Lexware ID, ohne Warten. Fehlerwege „Continue without retry“ und „Skip invoice error“ übergehen still, ohne Meldung und ohne Hinweis: Der Beleg bleibt gebucht, nur der Neuanstoß fehlt → [[operations]]. Ausnahme zur Rolle → Ausnahmeliste.
 
 **`[Dispatch] Lexware Voucher` · 6872775**
-Trigger: **lexoffice `watchEvents`**. Voucher-Events per **A2-Guard** filtern, Empfänger prüfen (Store oder Vertriebler zum Kontakt) und starten: Ausgangsrechnung → `[Process] Lexware Voucher (Invoice · Store)`, Provisionsrechnung → `(Invoice · Salesperson)`, Gutschrift → `(Refund · Store)`. Eine Rechnung mit Nummer `RK-…` geht nie an `(Invoice · Store)`, sondern meldet `error.refund_blocked`. Scheitert ein Worker-Aufruf: Wiederholung, danach Störung über `[Notify]`, Lauf geparkt (Break). Schreibt nichts.
+Trigger: **lexoffice `watchEvents`**. Voucher-Events per **A2-Guard** filtern, Empfänger prüfen (Store oder Vertriebler zum Kontakt) und starten: Ausgangsrechnung → `[Process] Lexware Voucher (Invoice · Store)`, Provisionsrechnung → `(Invoice · Salesperson)`, Gutschrift → `(Refund · Store)`. Eine Rechnung mit Nummer `RK-…` geht nie an `(Invoice · Store)`, sondern meldet `error.refund_blocked`. Scheitert „Get voucher“: Störung **`error.sync_aborted`** über `[Notify]`, Lauf geparkt („Park run“, Neuanstoß per Replay). Die Worker ruft er ohne Warten: Scheitert der Start, wiederholt „Retry + park“ dreimal im Abstand von 15 Minuten und parkt den Lauf, ohne Meldung. Fehler im Lauf des Workers sieht der Dispatcher nicht (Audit B8, entschieden 10.11.2026: bleibt ohne Warten), sie zeigt der Stack Monitor. Schreibt nichts.
 
 **`[Dispatch] Lexware Payment` · 6955541**
 Trigger: **lexoffice `watchEvents` (`payment.changed`)**. Lädt den Beleg, prüft Art und Kontakt und startet `[Process] Lexware Payment (Invoice · Store)` bzw. `(Invoice · Salesperson)`. Notify **`error.payment_unmatched`**. Schreibt nichts.
@@ -137,7 +139,7 @@ Wie oben für Provisionsrechnungen. **Einziger Schreiber von `Auszahlungen.Bezah
 
 On-demand-Kinder (`Call a scenario` / `CallSubscenario`, synchron), je **eine** Auflösungs-Aufgabe, aufgerufen von den `[Process]`-Workern. Gemeinsamer Kontrakt:
 
-- **Weiches Verdikt statt Wurf.** Jedes Kind gibt `*_ok` + `*_error` zurück und wirft **nie** einen ValidationError — ein harter Wurf würde den Eltern-Lauf killen, *bevor* dessen Verdikt geschrieben ist. Eingaben sind darum bewusst optional/tolerant.
+- **Weiches Verdikt für Inhaltliches, Wurf für Technisches.** Inhaltliche Befunde (nichts gefunden, unlesbar, unklar) kommen als `*_ok` + `*_error` bzw. `note` zurück, nie als ValidationError; Eingaben sind darum bewusst optional/tolerant. Technische Fehler (API, Download, KI-Aufruf) werfen dagegen: Die meisten Lesemodule haben keinen eigenen Fehlerweg (live 11.11.2026 in `[Resolve] Positions`, `[Resolve] Lexware Voucher`, `[Resolve] Upload PDF (Header)`), und `[Resolve] Positions` wirft bewusst, wenn die Inventar-Option in `Produkte.Typ` fehlt. Ob ein Wurf den Lauf des Aufrufers stoppt, entscheidet dessen Fehlerweg am Aufruf-Modul.
 - **`resolver_version` ist Pflicht-Output.** Kommt sie leer an, ist das Kind-Interface geleert (Import-Falle, → [[operations]]/B10) — der Eltern-Guard meldet dann **Verdrahtungsfehler**, nicht Datenfehler (INCIDENT-2026-08-22).
 - **Datum immer Text `YYYY-MM-DD`**, nie Datumstyp (Zeitzone kippt den Tag).
 - **Reader-Output wird am Modell schema-gebunden**, nicht per Make-Data-Structure: jeder LLM-Reader nutzt natives Structured-Output (Claude `json_schema`, Gemini `responseSchema`/`responseMimeType`), nullable für Unlesbares (`set null, do not guess`).
@@ -192,7 +194,7 @@ Trigger: **Mailhook** (eigene Adresse für Rechnungen und Gutschriften aus JTL).
 ## `[Create]` — Onboarding
 
 **`[Create] Store` · 6820980**
-Trigger: **Formular** (personalisierter Link, `Akquise durch` vorbelegt; Eingangs-Guard Modul 2). Legt `Stores` + Shopify-Metaobjekt + Lexware-Kontakt an. Notify **`store.created`**; **`task.jtl_missing`**; **`error.store_failed` / `.store_partial`**.
+Trigger: **Airtable-Webhook** „Stores Inbox“ (View „Inbox (make.com)“ von `Stores`, nur `add`; registriert über `[Maintain] Airtable Webhooks`). Den Datensatz legt das Formular an (personalisierter Link, `Akquise durch` vorbelegt). Eingangs-Guard: „Check input“ nach „Read inbox record“. Legt `Stores` + Shopify-Metaobjekt + Lexware-Kontakt an. Notify **`store.created`**; **`task.jtl_missing`**; **`error.store_failed` / `.store_partial`**.
 
 **`[Create] Salesperson` · 6821121**
 Trigger: **Airtable-Webhook**. Legt den Lexware-Kreditor an und ergänzt `Vertriebler`. Notify **`salesperson.created` / `.onboarded`**; **`error.salesperson_failed`**.
