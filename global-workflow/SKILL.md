@@ -1,8 +1,8 @@
 ---
 name: "global-workflow"
-description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover und autonomen Laeufen (unbeaufsichtigt, bin weg). Nicht noetig bei reinen Fragen oder Lookups.
+description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.3.0"
+  version: "2.4.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -117,10 +117,20 @@ Nicht geeignet: Live-Schreiben mit Geld- oder Datenwirkung (Make-Szenarien, Airt
 
 **Für Joscha:** Handgriffe, die nur er kann (`.skill` mounten, Branches löschen, Repo-Einstellungen, Freigaben nach Sicherheitsregeln), nicht einzeln erfragen, sondern in dieser Liste bündeln.
 
-**Abschlussbericht:** DoD Punkt für Punkt erfüllt / nicht erfüllt · Abweichungen und Blocker · Für Joscha · Links (PRs).
+**Abschlussbericht:** DoD Punkt für Punkt erfüllt / nicht erfüllt · Abweichungen und Blocker · Für Joscha · Links (PRs). Im Statusformat nach §11.
 
 **Geplante Tasks**
 - Das Werkzeug für geplante Tasks kann keine Konnektoren auswählen, neue Tasks erhalten alle. Bei automatischer Freigabe die nötigen Konnektoren unter „Für Joscha" nennen („in den Task-Einstellungen nur … behalten").
 - Nach dem Anlegen per list_triggers prüfen, ob der Task am Projekt hängt. Braucht er Projekt-Docs und hängt nicht daran: unter „Für Joscha" (Task dem Projekt zuordnen). Bis dahin setzt der Prompt die Docs nicht voraus.
 
 **Tokens:** §6; unabhängige Stränge parallel in eigenen Worktrees.
+
+## 11. Status zeigen
+
+Gilt für jede Statusübersicht („was ist offen?“, „Stand?“) und für jeden Abschlussbericht.
+
+- **Ein Punkt, eine Zeile**, mit Kennung und Namen (`B7 Webhook-Wartung`). Nie zu Gruppen zusammenfassen („B1 bis B6 zurückgestellt“).
+- **Legende:** ✅ erledigt · 🔶 teilweise · ⏳ wartet auf einen Lauf oder Joschas Go · ⏸ zurückgestellt · ➖ entfällt · ❓ Joschas Entscheidung. Die Legende steht unter der Liste.
+- **❓ zuerst**, je mit Vorschlag. Danach nach Herkunft gegliedert (Audit-Abschnitt, Spec, Bau-Runde).
+- **Statusdatei je Thema** im Projekt (`claude/status-<thema>.md`): die vollständige Liste, zurückgestellte Punkte nach Szenario oder Komponente geordnet, damit ein Import die offenen Punkte seines Szenarios mitnimmt. Jeder Abschlussbericht und jeder Handover schreibt sie fort.
+- **Im Abschlussbericht** nur, was sich geändert hat, dazu alle ❓ und ⏳ und der Verweis auf die Statusdatei. Die ganze Liste, wenn Joscha nach dem Stand fragt.
