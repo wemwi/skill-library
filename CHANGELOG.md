@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.35.0](https://github.com/wemwi/skill-library/compare/v6.34.0...v6.35.0) (2026-11-11)
+
+
+### Features
+
+* **global-make-conventions:** kein Router in einem If-else-Zweig ([#312](https://github.com/wemwi/skill-library/issues/312)) ([37c3bb4](https://github.com/wemwi/skill-library/commit/37c3bb4fd84dfd5f8288df1eb84e831f0f25b351))
+
 ## [6.34.0](https://github.com/wemwi/skill-library/compare/v6.33.0...v6.34.0) (2026-11-11)
 
 
