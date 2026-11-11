@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover und autonomen Laeufen (unbeaufsichtigt, bin weg). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -19,6 +19,13 @@ Gilt projektübergreifend. Die Grundregeln für *jede* Nachricht stehen in Josch
 | **OUTPUT** — Plan, Code, Diff, Import-JSON? | Default nach §2 |
 
 Höchstens 3–4 gezielte Fragen auf einmal.
+
+Vor jeder Rückfrage:
+- **Nur fragen, was ich nicht selbst klären kann.** Was per MCP, Repo oder Memory nachprüfbar ist (z. B. welche Ereignisse ein Hook abonniert), selbst nachsehen.
+- **Keine Fragen auf Vorrat.** Hängt eine Frage an einer noch offenen Entscheidung („nur falls …"), erst stellen, wenn die gefallen ist.
+- **Folgen und Gewissheit nennen.** Pro Vorschlag ein Halbsatz: umkehrbar oder nicht, live geprüft oder Annahme.
+
+Form der Frage (1–2 Sätze, worum es geht und warum ich frage, keine eigenen Kürzel, Entscheidung zuerst, „ok" = Vorschläge angenommen) regeln die Präferenzen.
 
 ## 2. Plan oder direkt?
 
