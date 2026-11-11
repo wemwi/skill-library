@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.32.0](https://github.com/wemwi/skill-library/compare/v6.31.0...v6.32.0) (2026-11-11)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Statusregel der Auszahlungen und Rollup Ausgezahlt ([#306](https://github.com/wemwi/skill-library/issues/306)) ([c7f36d0](https://github.com/wemwi/skill-library/commit/c7f36d0b3e8a09b3a1990800c14c9ac94f87125a))
+
 ## [6.31.0](https://github.com/wemwi/skill-library/compare/v6.30.0...v6.31.0) (2026-11-11)
 
 
