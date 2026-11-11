@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.27.0](https://github.com/wemwi/skill-library/compare/v6.26.0...v6.27.0) (2026-11-11)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Korrektur-Kette mit einem Fehlerweg, Rechnung zählt nur fertige Vorgänge ([#294](https://github.com/wemwi/skill-library/issues/294)) ([e380900](https://github.com/wemwi/skill-library/commit/e380900f5667f7860890b586499dac4735e708b8))
+
 ## [6.26.0](https://github.com/wemwi/skill-library/compare/v6.25.0...v6.26.0) (2026-11-10)
 
 
