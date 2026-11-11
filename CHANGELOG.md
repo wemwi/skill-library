@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.30.0](https://github.com/wemwi/skill-library/compare/v6.29.1...v6.30.0) (2026-11-11)
+
+
+### Features
+
+* **global-workflow:** Statusübersicht Punkt für Punkt mit Legende und Statusdatei ([#301](https://github.com/wemwi/skill-library/issues/301)) ([e0efae7](https://github.com/wemwi/skill-library/commit/e0efae7c15244ec6be696520cebeb0367f1c11a0))
+
 ## [6.29.1](https://github.com/wemwi/skill-library/compare/v6.29.0...v6.29.1) (2026-11-11)
 
 
