@@ -122,6 +122,7 @@ Ausgangsrechnung → liest über `[Resolve] Lexware Voucher` (Positionen, Positi
 
 **`[Process] Lexware Voucher (Invoice · Salesperson)` · 6872651**
 Provisionsrechnung des Vertrieblers → schreibt **`Auszahlungen`** (Idempotenz über `Lexware ID`) + Gegen-`Beleg`, bei Zahlung ruft es `[Process] Lexware Payment (Invoice · Salesperson)`. Notify **`payout.created` / `.settled`**.
+**Status (seit 11.11.2026):** storniert → Storniert, bezahlt oder verrechnet → Abgeschlossen, sonst In Bearbeitung; steht die Zeile auf Teilzahlung, bleibt sie (wie Teilgezahlt im Store-Worker). „Create payout“ setzt den Status ohne Blick auf Zahlungen. Teilzahlung setzt und nimmt nur `[Process] Lexware Payment (Invoice · Salesperson)` zurück. Der Vergleich läuft über den Optionsnamen aus „Find payout (by Lexware ID)“. Spec: Projekt „selectedleafs.com · Technik“, `claude/spec-c17-auszahlung-status.md`.
 
 **`[Process] Upload PDF (Reminder)` · 8473888** · seit 09.11.2026
 Aufruf von `[Dispatch] Upload PDF`. In: `record_id`, `subject`. Zahlungserinnerung/Mahnung → findet den `Umsatz` aus dem Betreff, verknüpft den `Beleg`, setzt `Umsätze.Status` (Mahnstufe). Notify **`invoice.reminder_filed` / `.dunning_filed`**; **`error.reminder_unmatched`**. Gerufen ohne Warten, „Process data in order“ aus (seit 11.11.2026): Ein Fehler im Lauf bleibt als unvollständige Ausführung im Worker stehen und hält weitere Mahnungen nicht an.
@@ -133,7 +134,7 @@ JTL-Gutschrift (`RK-…`) → **`Gutschriften`** + **`Gutschriftspositionen`** (
 Aufruf von `[Dispatch] Lexware Payment` und vom Rechnungs-Worker. In: `resource_id`, `voucher_number`, `voucher_status`. **Einziger Schreiber von `Umsätze.Gezahlt brutto`**, setzt `Status` auf Teilgezahlt oder Offen. `Bezahlt` ist seit 09.11.2026 eine Formel.
 
 **`[Process] Lexware Payment (Invoice · Salesperson)` · 8474172** · seit 09.11.2026
-Wie oben für Provisionsrechnungen. **Einziger Schreiber von `Auszahlungen.Bezahlt`.**
+Wie oben für Provisionsrechnungen. **Einziger Schreiber von `Auszahlungen.Bezahlt`**, setzt `Status` von In Bearbeitung auf Teilzahlung (mindestens eine Zahlung) und zurück (keine Zahlung mehr), nie Abgeschlossen oder Storniert.
 
 ## `[Resolve]` — Auflösung (native Subscenarios)
 
