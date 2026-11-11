@@ -30,6 +30,7 @@ Drei Bausteine, situationsabhängig:
 | Kopf-Leser scheitert | Hinweis am Beleg, Störung, nächster Beleg | `Belege.Hinweis` leeren (Belegtyp steht noch auf Unbekannt) |
 | Aufräumen, Worker oder Start des Mahnlaufs scheitert | wie oben | `Belege.Hinweis` leeren, `Belege.Belegtyp` auf Unbekannt |
 | Fehler im Mahnlauf selbst (ohne Warten gerufen) | unvollständige Ausführung in `(Reminder)` | in Make fortsetzen |
+| Rechnungssuche nach der Buchung scheitert (`[Resolve] Open Invoices` oder Start des Rechnungs-Workers, seit 11.11.2026) | still übergangen, keine Meldung, kein Hinweis; der Beleg bleibt gebucht | Rechnung mit „… nicht verknüpft:“ neu anstoßen (`resource_id` = Lexware ID) |
 | Fehler im Dispatcher selbst | unvollständige Ausführung im Dispatcher, der Eingang wartet, Make wiederholt | in Make fortsetzen |
 
 - **Zurücksetzen** heißt immer dasselbe: Hinweis leeren und Belegtyp auf Unbekannt. Die View „Inbox (make.com)“ verlangt beides.
