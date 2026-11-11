@@ -33,7 +33,7 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 
 - **`Nettoumsatz` ist die Geldwahrheit, nicht `Nettoumsatzerlös`** (Endkunden-VK, liegt höher = Storemarge). Nur `Nettoumsatz` speist Provision/Saldo.
 - **Status wird von Make als String geschrieben** — Optionen nicht umbenennen (still).
-- **Bezahlt / Storniert / Ausgebucht setzt nur `[Process] Lexware Voucher (Invoice · Store)`** (`[Dispatch] Lexware Payment` schreibt nur Teilgezahlt/Offen). Darauf beruht das Gate der Abschlussmeldung (vorher ≠ nachher). Ein zweiter Schreiber dieser Werte würde die Meldung verschlucken.
+- **Bezahlt / Storniert / Ausgebucht setzt nur `[Process] Lexware Voucher (Invoice · Store)`** (`[Process] Lexware Payment (Invoice · Store)` schreibt nur Teilgezahlt/Offen). Darauf beruht das Gate der Abschlussmeldung (vorher ≠ nachher). Ein zweiter Schreiber dieser Werte würde die Meldung verschlucken.
 - Provision ist nominal auf `Nettoumsatz`; die *ausgezahlt-relevante* Größe bei Teilzahlung ist `Realprovision`.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
@@ -70,13 +70,16 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **9** Felder und liest **14** (seit 2026-11-06 mit `Lexware ID`). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **9** Felder und liest **14** (seit 2026-11-06 mit `Lexware ID`). Zwei davon matcht Make über den Klartext (Nachtrag 2026-11-11: `Status`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
 - **`ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `flda4tTUPnyeuQbDP`  
-  Rechnungsnummer = Dedup. Szenarien: 6633991, 6955541, 6844567.  
+  Rechnungsnummer = Dedup. Szenarien: `[Process] Lexware Voucher (Invoice · Store)`, `[Process] Lexware Payment (Invoice · Store)` („Find invoice row (by ID)“), `[Process] Invoice (Store) · REMINDER` (Altlast, abgeschaltet).  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldBavq4sjk2A1swZ` (gesetzt 2026-11-11)  
+  `[Process] Lexware Payment (Invoice · Store)` vergleicht Offen, Überfällig, Angemahnt und Teilgezahlt im Code „Decide (store)“, `[Process] Lexware Voucher (Invoice · Store)` Teilgezahlt, Angemahnt und Überfällig in „Update status“ und den Filter „Not terminal“, „Load store sales“ in `[Process] Manual Action (Inventory Correction)` und `[Resolve] Open Invoices` Storniert und Ausgebucht. Geschrieben wird der Status über die Options-ID.  
+  ⚠ Option umbenennen: Diese Vergleiche greifen nicht mehr (still).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 

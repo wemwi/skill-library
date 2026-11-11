@@ -616,7 +616,7 @@ Grund: Steuernummer fehlt am Vertriebler
 ```
 
 ### 🛑 `error.payment_unmatched` · `gebaut · Hub-Reimport ausstehend` · NEU
-*No-Match-Zweig von `[Dispatch] Lexware Payment` (6955541) klingelt den Key; deckt Sales + Store (ein Key, `{Rechnungsnummer}` als Kennung).*
+*Zweig „No match“ von `[Process] Lexware Payment (Invoice · Store)` und `(Invoice · Salesperson)` klingelt den Key, nur wenn das Lesen gelang und keine Zeile passt; deckt Sales + Store (ein Key, `{Rechnungsnummer}` als Kennung).*
 ```
 🛑 Zahlung ohne Treffer
 RG-10128-1
