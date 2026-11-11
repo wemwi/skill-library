@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.4.0"
+  version: "2.5.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -134,3 +134,4 @@ Gilt für jede Statusübersicht („was ist offen?“, „Stand?“) und für je
 - **❓ zuerst**, je mit Vorschlag. Danach nach Herkunft gegliedert (Audit-Abschnitt, Spec, Bau-Runde).
 - **Statusdatei je Thema** im Projekt (`claude/status-<thema>.md`): die vollständige Liste, zurückgestellte Punkte nach Szenario oder Komponente geordnet, damit ein Import die offenen Punkte seines Szenarios mitnimmt. Jeder Abschlussbericht und jeder Handover schreibt sie fort.
 - **Im Abschlussbericht** nur, was sich geändert hat, dazu alle ❓ und ⏳ und der Verweis auf die Statusdatei. Die ganze Liste, wenn Joscha nach dem Stand fragt.
+- **Jeder offene Punkt an seiner Quelle geprüft**, bevor er als ⏳ oder ❓ erscheint: Stand-Abschnitt der Spec, Live-Szenario, Laufliste. Nie aus einer älteren Liste oder einem „Offen“-Block übernehmen, der einen späteren Stand nicht kennt. Nicht prüfbar → so kennzeichnen.
