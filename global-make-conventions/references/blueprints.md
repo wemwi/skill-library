@@ -124,6 +124,26 @@ ein Execution-Zähler, der zur fachlichen Häufigkeit nicht passt (vierstellig b
 einem Szenario, das ein paar Mal pro Woche laufen sollte) — das sind die
 Leerzyklen.
 
+## Kein Router in einem If-else-Zweig
+
+Der Make-Editor lehnt einen Router ab, der zwischen einem If-else und seinem
+Merge steht oder im Zweig eines If-else ohne Merge: „Routers can't be used
+between If-else and Merge modules“ und „This Router is inside an If-else branch
+that hasn't been closed with a Merge module, so the scenario can't run“.
+`validate_blueprint_schema` prüft das nicht und meldet „Blueprint is valid“
+(Realfall 11.11.2026: Import im Editor abgelehnt, die Prüfung vorher grün).
+
+**Statt des Routers** ein eigenes If-else mit Merge im Zweig (Make: Nested
+If-else and Merge). Die Bedingung steht am Zweig, nicht als Filter am ersten
+Modul des Zweigs. Ein leerer Sonst-Zweig trägt einen Platzhalter
+(`placeholder:Placeholder`), damit das Bündel den Merge erreicht. If-else und
+Merge kosten laut Make Operationen, aber keine Credits.
+
+**Prüfung vor der Lieferung**, im Bauskript oder Test: den Fluss rekursiv
+durchgehen; unter `branches[].flow` eines `builtin:BasicIfElse` darf kein
+`builtin:BasicRouter` stehen, auch nicht in verschachtelten Zweigen. Ein If-else
+in einer Router-Route ist erlaubt (geprüft am Live-Stand).
+
 ## Bytes nie mehrfach durch den Kontext
 
 Ein Blueprint-Inhalt sollte innerhalb eines Chat-/Agent-Kontexts nicht
