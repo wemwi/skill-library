@@ -73,7 +73,7 @@ Make schreibt **7** Felder und liest **7**, alle in `[Process] Lexware Voucher (
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Status` · `Hinweis` · `Vertriebler` · `Store` · `Konditionen` · `Lexware ID`  
-**Make liest:** `Status` · `Gutschriftspositionen` (8450345 „Verdict“) · `Vertriebler` · `Store` · `Nettobetrag` · `Provision` (6862968 „Ereignis-Landkarte“)
+**Make liest:** `Status` · `Gutschriftspositionen` (8450345 „Verdict“) · `Vertriebler` · `Store` · `Nettobetrag` · `Provision` (6862968 „Map event“)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 

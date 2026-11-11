@@ -16,8 +16,8 @@ Kein Ereignis wird doppelt geschrieben — der Schutz sitzt in **Dedup-Schlüsse
 Drei Bausteine, situationsabhängig:
 
 - **`builtin:Resume`** — Lesefehler **übergehen** (leeres Ergebnis weiterreichen), wenn ein fehlender Nachschlag den Lauf nicht kippen soll (Notify-Nachlesen).
-- **`builtin:Break`** mit **Retry** — Zustellung wiederholen (Ops/Vertriebler-Posts: **3× / 15 s**), danach in die **DLQ** parken. Szenarien laufen mit `dlq:true`, `maxErrors:3`. Parken kann nur ein Szenario, das nicht mit Warten gerufen wird (`global-make-conventions` B8).
-- **`builtin:Ignore`** — bewusst **fallenlassen**, wo ein Ausfall folgenlos ist (öffentlicher **City-Broadcast**).
+- **`builtin:Break`** mit **Retry** — Zustellung wiederholen (alle Posts des Hubs, seit 11.11.2026 auch City: **3 Versuche im Abstand von 15 Minuten**), danach in die **DLQ** parken. Szenarien laufen mit `dlq:true`, `maxErrors:3`. Parken kann nur ein Szenario, das nicht mit Warten gerufen wird (`global-make-conventions` B8).
+- **`builtin:Ignore`** — bewusst **fallenlassen**, wo ein Ausfall folgenlos ist („Keep original“ in `[Archive] Document PDF`: scheitert die Komprimierung, bleibt das Original am Beleg).
 
 **Problem-Route:** harte Störungen enden als **`error.*`-Notify** im 🛑-Topic **584** (`error.sync_aborted`, `error.store_failed`, `error.lexware_orphan` …). Prinzip: **still abbrechen + melden**, nie halb schreiben und schweigen. Der **unbekannte Notify-Key** geht roh nach ⁉️ Unsortiert (nichts verwerfen).
 

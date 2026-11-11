@@ -1,7 +1,7 @@
 # Nachrichtenkatalog
 
 > **Runde 26** · **Stand 2026-08-18** · alle Familien auf R26-Wortlaut. ⚙️ System + 🛑 Störungen aus `POS-Meldungen_System-Stoerungen_R26-final.md`, 📥 Vorgänge + 👉 Aufgaben aus `POS-Meldungen_Liste_Format-A.md`. **Q1: Infozeile (Zeile 2) durchgängig kursiv `<i>…</i>`.** Noch offen im Wortlaut: `invoice.reminder_filed` (Richtung).
-> **Achtung — dem Hub VORAUS:** dieser Satz wurde im Wortlaut-Durchgang festgelegt und ist die neue Text-SSoT. Der Hub (`[Report/Notify] Telegram Notifications` 6862968, Modul 2 „Ereignis-Landkarte") ist **noch nicht angeglichen** — die Angleichung läuft als Import-JSON. Bis dahin gilt: **diese Datei ist die Wahrheit, der Hub zieht nach**, nicht umgekehrt.
+> **Achtung — dem Hub VORAUS:** dieser Satz wurde im Wortlaut-Durchgang festgelegt und ist die neue Text-SSoT. Der Hub (`[Report/Notify] Telegram Notifications` 6862968, Modul 2 „Map event“) ist **noch nicht angeglichen** — die Angleichung läuft als Import-JSON. Bis dahin gilt: **diese Datei ist die Wahrheit, der Hub zieht nach**, nicht umgekehrt.
 > Mechanik (Renderer, Token, Channels, Empfänger-Logik) steht in [[notify]] — hier nur die Wortlaute.
 
 **Register je Meldung:** `text` → Operations · `vtext` → Vertriebler · `ctext` → City. Fehlt ein Register, gibt es dorthin keine Meldung. Token-Regeln (`{abs}`, `{Vorname}`, `{Maps-URL}`, `{Saldoabruf}`, `{leer …}`/`{gesetzt …}`) siehe [[notify]].
