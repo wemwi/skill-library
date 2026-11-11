@@ -27,7 +27,7 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 
 - **`Lexware ID` ist die Idempotenz** — ohne sie legt der nächste Lauf eine Dublette an.
 - `Vertriebler.Offen` sinkt um `Bezahlt` (real überwiesen), nicht um `Betrag` (beantragt) — Teilzahlung wirkt anteilig.
-- **Optionsnamen gekoppelt:** Beide Worker vergleichen `Status` über die Optionsnamen „Teilzahlung“ und „In Bearbeitung“. Umbenennen bricht das still; der Marker 🟣 `make.com (KEY · Options)` fehlt am Feld noch (offen im Projekt, `claude/status-make.md`).
+- **Optionsnamen gekoppelt:** Beide Worker vergleichen `Status` über die Optionsnamen „Teilzahlung“ und „In Bearbeitung“. Umbenennen bricht das still; das Feld trägt deshalb den Marker 🟣 `make.com (KEY · Options)`.
 
 ## Feld-Block (Stand 2026-08-15 · `list_tables_for_base`)
 
@@ -49,13 +49,16 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **6** Felder und liest **6**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **6** Felder und liest **6**. Zwei davon matcht Make über den Klartext (Nachtrag 2026-11-11: `Status`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
-- **`Lexware ID`** — 🟣 `make.com (KEY · Name)` · lookup · `fldgfj7Wr3OxjY2Zz`  
-  Beleg → Auszahlung. Szenarien: 6955541, 6872651.  
+- **`Lexware ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldgfj7Wr3OxjY2Zz`  
+  Beleg → Auszahlung. Szenarien: `[Process] Lexware Voucher (Invoice · Salesperson)` und `[Process] Lexware Payment (Invoice · Salesperson)`, je „Find payout (by Lexware ID)“.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
+- **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldd9jOWUYEpcwA4c` (gesetzt 2026-11-11)  
+  `[Process] Lexware Payment (Invoice · Salesperson)` vergleicht „In Bearbeitung“ und „Teilzahlung“ im Code „Decide (salesperson)“, `[Process] Lexware Voucher (Invoice · Salesperson)` vergleicht „Teilzahlung“ in „Update status“. Geschrieben wird der Status über die Options-ID.  
+  ⚠ Option umbenennen: Teilzahlung wird nicht mehr gesetzt und nicht mehr erhalten (still).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
