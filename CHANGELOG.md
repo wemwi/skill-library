@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.31.0](https://github.com/wemwi/skill-library/compare/v6.30.0...v6.31.0) (2026-11-11)
+
+
+### Features
+
+* **global-workflow:** offene Punkte vor dem Melden an der Quelle prüfen ([#304](https://github.com/wemwi/skill-library/issues/304)) ([92d4314](https://github.com/wemwi/skill-library/commit/92d43147006a311b695197502cd31c9ad4de2673))
+
 ## [6.30.0](https://github.com/wemwi/skill-library/compare/v6.29.1...v6.30.0) (2026-11-11)
 
 
