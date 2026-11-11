@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.28.0](https://github.com/wemwi/skill-library/compare/v6.27.0...v6.28.0) (2026-11-11)
+
+
+### Features
+
+* **global-workflow:** Rückfragen nur, wenn nicht selbst klärbar, ohne Vorrat, mit Folgen und Gewissheit ([#296](https://github.com/wemwi/skill-library/issues/296)) ([30e2ff2](https://github.com/wemwi/skill-library/commit/30e2ff23b1e8c6e1f19ab1fadf5542007d2d3f6e))
+
 ## [6.27.0](https://github.com/wemwi/skill-library/compare/v6.26.0...v6.27.0) (2026-11-11)
 
 
