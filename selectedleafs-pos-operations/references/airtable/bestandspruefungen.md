@@ -72,7 +72,7 @@ Make schreibt **9** Felder und liest **11** (Nachtrag 2026-11-02: `Poster im Sch
   BSP-Dedup-Schlüssel + sort. Szenarien: 6633991, 6729541, 7001118.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldVx19XWUNiag4yJ`  
-  {Status} != "Ungültig". Szenarien: 6633991; 8413130 vergleicht und schreibt die Optionsnamen (Teilgebucht · Abgeschlossen · Ungültig · In Bearbeitung) im Code „Parse corrections“ / „Close corrections“; 8495399 vergleicht „In Bearbeitung“ im Code „Pick leftovers“ und löscht nur solche Zeilen (seit 10.11.2026); 6633991 vergleicht „Abgeschlossen“ und „Teilgebucht“ im Code „Assign inventory check“ (seit 11.11.2026).  
+  {Status} != "Ungültig". Szenarien: 6633991; 8413130 vergleicht und schreibt die Optionsnamen (Teilgebucht · Abgeschlossen · Ungültig · In Bearbeitung) im Code „Parse corrections“ / „Close corrections“; 8495399 vergleicht „In Bearbeitung“ im Code „Pick leftovers“ und löscht nur solche Zeilen (seit 10.11.2026); 6633991 vergleicht „Abgeschlossen“ und „Teilgebucht“ im Code „Assign inventory check“ (seit 11.11.2026); 8511487 vergleicht dieselben im Code „Pick invoices to retry“ und stößt nur dann Rechnungen neu an (seit 11.11.2026).  
   ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher

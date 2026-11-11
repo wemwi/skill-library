@@ -80,7 +80,7 @@ Make schreibt **9** Felder und liest **14** (seit 2026-11-06 mit `Lexware ID`). 
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Bruttobetrag` · `Gezahlt brutto` · `Fällig am` · `Hinweis` · `Konditionen` · `Lexware ID` (6633991 „Umsatz anlegen“; „Status updaten“ füllt sie, wenn leer; gelesen von 8413130 „Load store sales“ zusammen mit `ID`, `Status`, `Hinweis`) · `Status` · `Store` · `Vertriebler`  
+**Make schreibt:** `Bruttobetrag` · `Gezahlt brutto` · `Fällig am` · `Hinweis` · `Konditionen` · `Lexware ID` (6633991 „Umsatz anlegen“; „Status updaten“ füllt sie, wenn leer; gelesen von 8413130 „Load store sales“ zusammen mit `ID`, `Status`, `Hinweis`, ebenso von 8511487 „Load store sales“, dazu `Datum`; beide vergleichen im Code die Optionsnamen Storniert und Ausgebucht und die Marke am Anfang einer Hinweiszeile) · `Status` · `Store` · `Vertriebler`  
 **Make liest:** `Belege` · `Datum` · `Deckungsbeitrag` · `Nettoumsatz` · `Provision` · `Umsatzpositionen` · `Zahlungsverlauf`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**

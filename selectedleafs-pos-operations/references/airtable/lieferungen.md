@@ -70,7 +70,7 @@ Make schreibt **8** Felder und liest **10**. Zwei davon matcht Make über den Kl
   Belegnummer = Dedup. Szenarien: 6677862.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldCDruCnZNbtWoTp` (gesetzt 2026-11-10, steht über 🟢 `App (KEY · Options)`)  
-  8495399 vergleicht den Optionsnamen „In Bearbeitung“ im Code „Pick leftovers“. 6633991 vergleicht „Abgeschlossen“ im Code „Assign delivery note“ (seit 2026-11-11): Nur solche Lieferungen ordnet die Rechnung einem Lieferschein zu. Geschrieben wird der Status weiter über die Options-ID.  
+  8495399 vergleicht den Optionsnamen „In Bearbeitung“ im Code „Pick leftovers“. 6633991 vergleicht „Abgeschlossen“ im Code „Assign delivery note“ (seit 2026-11-11): Nur solche Lieferungen ordnet die Rechnung einem Lieferschein zu. 8511487 vergleicht „Abgeschlossen“ im Code „Pick invoices to retry“ (seit 2026-11-11): Nur nach solchen Lieferungen stößt `[Dispatch] Upload PDF` Rechnungen neu an. Geschrieben wird der Status weiter über die Options-ID.  
   ⚠ Option umbenennen: Reste werden nicht mehr erkannt und nicht entfernt (still), und die Rechnung ordnet keinen Lieferschein mehr zu (sichtbar am Hinweis des Umsatzes).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
