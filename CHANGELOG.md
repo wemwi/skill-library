@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.34.0](https://github.com/wemwi/skill-library/compare/v6.33.0...v6.34.0) (2026-11-11)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Positionen und Beleg nach Abbruch nachholen, Retry + park an Set payment ([#310](https://github.com/wemwi/skill-library/issues/310)) ([218f9c9](https://github.com/wemwi/skill-library/commit/218f9c9aab7f5414cda85503ed5d237fec4abe97))
+
 ## [6.33.0](https://github.com/wemwi/skill-library/compare/v6.32.0...v6.33.0) (2026-11-11)
 
 
