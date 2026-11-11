@@ -66,7 +66,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **7** Felder und liest **7**. 4 davon matcht Make über den Klartext-Namen (Nachtrag 2026-11-06: `Bestandsprüfung`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **7** Felder und liest **9** (Nachtrag 2026-11-11: `Anhang`, `Hinweis`). 4 davon matcht Make über den Klartext-Namen (Nachtrag 2026-11-06: `Bestandsprüfung`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -86,7 +86,7 @@ Make schreibt **7** Felder und liest **7**. 4 davon matcht Make über den Klarte
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Anhang` (auch `[Sync] JTL to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Gutschrift` (8450345 „Create document“, seit 09.11.2026) · `Hinweis`  
-**Make liest:** `ID`
+**Make liest:** `ID` · `Anhang` · `Hinweis` (6872651 „Read document (by ID)“, Filter „PDF missing“ und „PDF attached“, seit 11.11.2026)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
