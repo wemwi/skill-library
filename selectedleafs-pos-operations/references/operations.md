@@ -38,6 +38,19 @@ Drei Bausteine, situationsabhängig:
 - **Der Hinweis am Beleg** nennt Stufe, Fehler und den Neuanstoß-Satz, derselbe Satz steht in der Zeile „Folge“ von `error.sync_aborted`.
 - **Keine Direktstarts** der Worker und von `(Leftovers)` → [[scenarios]].
 
+### Korrektur: ein Neuanstoß-Weg, der Haken (seit 11.11.2026)
+
+`[Dispatch] Manual Action` ruft `[Process] Manual Action (Inventory Correction)` mit Warten und läuft sequenziell. Im Worker gibt es keinen Break mehr, jeder Fehler geht an den Dispatcher.
+
+| Fehlerort | Was passiert | Neuanstoß |
+|---|---|---|
+| Fehler im Worker vor dem Abschluss | Zeile „KORREKTUR <Datum>: abgebrochen (…)“ in `Bestandsprüfungen.Hinweis`, Haken `Korrekturen buchen` zurück, Störung `error.sync_aborted`, nächste Prüfung | Haken neu setzen |
+| Fehler im Rechnungs-Neuanstoß (Korrektur schon abgeschlossen) | Zeile „KORREKTUR <Datum>: durchgelaufen, Rechnungen nicht neu angestoßen (…)“, Störung | Rechnungen mit „Bestandsprüfung nicht verknüpft“ neu anstoßen (`resource_id` = Lexware ID), ein neuer Haken holt das nicht nach |
+| Fehler im Dispatcher selbst | unvollständige Ausführung im Dispatcher, weitere Korrekturen warten | in Make fortsetzen |
+
+- Eine halb gebuchte Korrektur setzt ohne Doppelbuchung fort (Status je Korrekturzeile, je Prüfung und Sorte höchstens eine Position) → [[scenarios]].
+- **Keine Direktstarts** des Korrektur-Workers.
+
 ## Registry & Webhooks
 
 Airtable-Webhooks **verfallen** und müssen erneuert werden. **`[Maintain] Airtable Webhooks` (6830404, tägl. 04:30)** hält die Registry frisch. Ein abgelaufener Webhook = ein Trigger, der still nicht mehr feuert.

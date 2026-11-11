@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Gutschriften, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.31.0"
+  version: "1.32.0"
 ---
 
 # selectedleafs · POS Operations
@@ -44,7 +44,7 @@ Merksatz: **Airtable ist die Wahrheit, Make ist der Schreiber, die Formeln sind 
 Der Grund, warum Historie verlässlich bleibt. **Strukturell nicht erzwungen** — getragen von Disziplin und Wächter-Views:
 
 1. **Versionen sind append-only.** `Konditionen` und `Kalkulationen` werden nie editiert, nur neu versioniert (`Gültig ab`). Wer eine alte Version ändert, verschiebt rückwirkend Geld — spurlos.
-2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Gutschriften`/`Auszahlungen` nur ein, ändert nie. **Definierte Sonderfälle:** die `[Process] Lexware Voucher`-Worker setzen `Status` (und `Bruttobetrag`); `[Process] Lexware Payment (Invoice · Store)` setzt `Status` und `Gezahlt brutto`, `(Invoice · Salesperson)` setzt `Auszahlungen.Bezahlt`; `[Process] Upload PDF (Reminder)` setzt `Umsätze.Status`; `[Process] Lexware Voucher (Refund · Store)` setzt `Gutschriften.Status`; die Korrektur einer Bestandsprüfung legt fehlende Positionen an und setzt `Status`, `Hinweis` und `Korrekturen buchen` (`[Process] Manual Action (Inventory Correction)`, seit 06.11.2026). **Einzige Lösch-Ausnahme:** `[Process] Upload PDF (Leftovers)` löscht unfertige Zeilen (Status In Bearbeitung) in `Lieferungen` und `Bestandsprüfungen` samt Positionen und Korrekturen, nur am selben Beleg und nur vor dessen Neulauf (seit 10.11.2026).
+2. **Ereigniszeilen sind INSERT-only.** Make fügt in `Lieferungen`/`Bestandsprüfungen`/`Umsätze`/`Gutschriften`/`Auszahlungen` nur ein, ändert nie. **Definierte Sonderfälle:** die `[Process] Lexware Voucher`-Worker setzen `Status` (und `Bruttobetrag`); `[Process] Lexware Payment (Invoice · Store)` setzt `Status` und `Gezahlt brutto`, `(Invoice · Salesperson)` setzt `Auszahlungen.Bezahlt`; `[Process] Upload PDF (Reminder)` setzt `Umsätze.Status`; `[Process] Lexware Voucher (Refund · Store)` setzt `Gutschriften.Status`; die Korrektur einer Bestandsprüfung legt fehlende Positionen an und setzt `Status`, `Hinweis` und `Korrekturen buchen` (`[Process] Manual Action (Inventory Correction)`, seit 06.11.2026); scheitert dessen Aufruf, hängt `[Dispatch] Manual Action` eine Zeile an `Hinweis` und nimmt `Korrekturen buchen` zurück (seit 11.11.2026). **Einzige Lösch-Ausnahme:** `[Process] Upload PDF (Leftovers)` löscht unfertige Zeilen (Status In Bearbeitung) in `Lieferungen` und `Bestandsprüfungen` samt Positionen und Korrekturen, nur am selben Beleg und nur vor dessen Neulauf (seit 10.11.2026).
 3. **Make-/Formel-Felder sind unantastbar.** Was Make auflöst oder per Name matcht, gehört Make/den Formeln, nicht der Hand. **Umgekehrt gehören in `Bestandsprüfungskorrekturen` die Zahlen der Hand:** Make legt die Zeilen im Prüflauf an, Joscha ergänzt `SOLL`/`IST` und setzt als Einziger `Status = Verworfen`.
 
 → `references/operations.md` (Wächter-Views, ein Bearbeiter, keine Testbase)
