@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.29.0](https://github.com/wemwi/skill-library/compare/v6.28.0...v6.29.0) (2026-11-11)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Rechnungssuche nach der Buchung über Resolve Open Invoices ([#298](https://github.com/wemwi/skill-library/issues/298)) ([24ea000](https://github.com/wemwi/skill-library/commit/24ea000585176c54dd46300a5c423a6adf054c2b))
+
 ## [6.28.0](https://github.com/wemwi/skill-library/compare/v6.27.0...v6.28.0) (2026-11-11)
 
 
