@@ -20,7 +20,7 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 - **`ID`** (Formel) — **Dedup-Schlüssel:** `"BSP-" & Store ID & "-" & DATETIME_FORMAT(Datum,'YYYY-MM-DD')`. Make baut denselben Wert als `dedupkey` und sucht per `filterByFormula`. **Präfix/Format nicht anfassen.**
 - **`Differenz (Gesamt)`** (Rollup) — Σ `Bestandsprüfungspositionen.Differenz` (SOLL − IST).
 - **`Nettoverkaufswert`** (Rollup, €) — Σ der **positiv** bewerteten Differenzen = **Schwundwert** (VK-Sicht).
-- **`Status`** (Select) — Abgeschlossen / In Bearbeitung / Teilgebucht / Ungültig (Make-String).
+- **`Status`** (Select) — Abgeschlossen / In Bearbeitung / Teilgebucht / Ungültig (Make-String). Eine neue Zeile ohne Status steht von selbst auf In Bearbeitung (Vorgabewert des Felds, beobachtet 11.11.2026). Die Rechnung ordnet nur Abgeschlossen und Teilgebucht zu.
 - **`Unterschrieben`** / **`Inventar geprüft`** (Checkbox) — speisen die Warnzeilen der Meldung.
 - **`Poster im Schaufenster`** (Checkbox) — Zeile „Poster“ im freien Bestandsprotokoll (Zahl oder Haken = ja). Nur der grid-Zweig setzt es; kein Artikel, keine Position.
 - **`Bestandsprüfungskorrekturen`** (Link, Rückfeld) — offene Zählzeilen dieser Prüfung als Datensätze → [[bestandspruefungskorrekturen]]. Ersetzt seit 06.11.2026 das Textfeld `Nachtrag` (nach der Übernahme gelöscht).
@@ -72,12 +72,12 @@ Make schreibt **9** Felder und liest **11** (Nachtrag 2026-11-02: `Poster im Sch
   BSP-Dedup-Schlüssel + sort. Szenarien: 6633991, 6729541, 7001118.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldVx19XWUNiag4yJ`  
-  {Status} != "Ungültig". Szenarien: 6633991; 8413130 vergleicht und schreibt die Optionsnamen (Teilgebucht · Abgeschlossen · Ungültig · In Bearbeitung) im Code „Parse corrections“ / „Close corrections“; 8495399 vergleicht „In Bearbeitung“ im Code „Pick leftovers“ und löscht nur solche Zeilen (seit 10.11.2026).  
+  {Status} != "Ungültig". Szenarien: 6633991; 8413130 vergleicht und schreibt die Optionsnamen (Teilgebucht · Abgeschlossen · Ungültig · In Bearbeitung) im Code „Parse corrections“ / „Close corrections“; 8495399 vergleicht „In Bearbeitung“ im Code „Pick leftovers“ und löscht nur solche Zeilen (seit 10.11.2026); 6633991 vergleicht „Abgeschlossen“ und „Teilgebucht“ im Code „Assign inventory check“ (seit 11.11.2026).  
   ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Beleg` · `Hinweis` · `Inventar geprüft` · `Korrekturen buchen` (8413130, nur zurücksetzen) · `Poster im Schaufenster` (6729541, Modul „Write poster“) · `Store` · `Unterschrieben` · `Vertriebler`  
+**Make schreibt:** `Beleg` · `Hinweis` · `Inventar geprüft` · `Korrekturen buchen` (8413130 und 8475632 im Fehlerweg, nur zurücksetzen) · `Poster im Schaufenster` (6729541, Modul „Write poster“) · `Store` · `Unterschrieben` · `Vertriebler`  
 **Make liest:** `Bestandsprüfungskorrekturen` · `Bestandsprüfungspositionen` · `Datum` · `Differenz (Gesamt)` · `Hinweis` · `Nettoverkaufswert` · `Positionen` · `Store ID` · `Unklar` (Notify-Hub 6862968)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
