@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.29.1](https://github.com/wemwi/skill-library/compare/v6.29.0...v6.29.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** vier Aussagen an den Live-Stand angeglichen ([#300](https://github.com/wemwi/skill-library/issues/300)) ([25522c3](https://github.com/wemwi/skill-library/commit/25522c370acd96c319ae2ef635b3cf91cbd54c99))
+
 ## [6.29.0](https://github.com/wemwi/skill-library/compare/v6.28.0...v6.29.0) (2026-11-11)
 
 
