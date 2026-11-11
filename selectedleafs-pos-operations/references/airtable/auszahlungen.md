@@ -49,7 +49,7 @@ Eine Zeile = eine **Auszahlung an den Vertriebler** gegen seinen offenen Saldo, 
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **6** Felder und liest **6**. Zwei davon matcht Make über den Klartext (Nachtrag 2026-11-11: `Status`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **6** Felder und liest **7** (Nachtrag 2026-11-11: `Beleg`). Zwei davon matcht Make über den Klartext (Nachtrag 2026-11-11: `Status`) — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -63,6 +63,7 @@ Make schreibt **6** Felder und liest **6**. Zwei davon matcht Make über den Kla
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Betrag` · `Bezahlt` · `Datum` · `Rechnungsnummer` · `Status` · `Vertriebler`  
+**Make liest:** `Beleg` (6872651 „Document exists?“ und „Read document (by ID)“, seit 11.11.2026)  
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 

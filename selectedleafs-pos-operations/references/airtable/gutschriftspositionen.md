@@ -48,7 +48,7 @@ Eine Zeile = **eine Sorte in einer Gutschrift**. Menge und Betrag stehen **posit
 
 ## 🟣 Make-Zugriff (Stand 2026-11-09)
 
-Make schreibt **7** Felder und liest **4**. Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **7** Felder und liest **5** (Nachtrag 2026-11-11: `Position`). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -59,6 +59,6 @@ Make schreibt **7** Felder und liest **4**. Eines davon matcht Make über den Kl
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Gutschrift` · `Position` · `Produkt` · `Preis` · `Bestand` · `Menge (Stück)` · `Nettobetrag` (8450345 „Create credit note line“)  
-**Make liest:** `Bestand` · `Menge (Stück)` · `Datum` · `Status` (6729541, „Load credit notes since check day“; `Status` = Storniert zählt nicht)
+**Make liest:** `Bestand` · `Menge (Stück)` · `Datum` · `Status` (6729541, „Load credit notes since check day“; `Status` = Storniert zählt nicht) · `Position` (8450345 „Read credit note lines (by ID)“ für „Verdict“, seit 11.11.2026)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**

@@ -49,7 +49,7 @@ Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positi
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make **schreibt** hier 8 Felder und liest **4** (Nachtrag 2026-11-06, SOLL-Abgleich). Seither ist 1 Feld namens-gekoppelt — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make **schreibt** hier 8 Felder und liest **5** (Nachtrag 2026-11-06, SOLL-Abgleich; 2026-11-11 `Position`). Seither ist 1 Feld namens-gekoppelt — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld (gesetzt 2026-11-06)
 
@@ -60,7 +60,7 @@ Make **schreibt** hier 8 Felder und liest **4** (Nachtrag 2026-11-06, SOLL-Abgle
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Bestand` · `Menge (Stück)` · `Menge (kg)` · `Nettoumsatz` · `Position` · `Preis` · `Produkt` · `Umsatz`  
-**Make liest:** `Bestand` · `Menge (Stück)` · `Datum` · `Status` (6729541, „Load invoices since check day“; `Status` = Storniert zählt nicht)  
+**Make liest:** `Bestand` · `Menge (Stück)` · `Datum` · `Status` (6729541, „Load invoices since check day“; `Status` = Storniert zählt nicht) · `Position` (6633991 „Read invoice lines (by ID)“ für „Pick missing lines“, seit 11.11.2026)  
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
