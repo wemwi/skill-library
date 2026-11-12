@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.39.0](https://github.com/wemwi/skill-library/compare/v6.38.0...v6.39.0) (2026-11-12)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Rechnungs-Worker über den Leser, Zuordnung als [Resolve] Invoice Match, Beleg-Route, Meldungspaare ([#322](https://github.com/wemwi/skill-library/issues/322)) ([f133ee9](https://github.com/wemwi/skill-library/commit/f133ee93fb10fe476a43907e996a707b43e7c777))
+
 ## [6.38.0](https://github.com/wemwi/skill-library/compare/v6.37.1...v6.38.0) (2026-11-12)
 
 
