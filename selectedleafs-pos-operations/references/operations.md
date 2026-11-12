@@ -19,7 +19,7 @@ Drei Bausteine, situationsabhängig:
 - **`builtin:Break`** mit **Retry** — Zustellung wiederholen (alle Posts des Hubs, seit 11.11.2026 auch City: **3 Versuche im Abstand von 15 Minuten**), danach in die **DLQ** parken. Szenarien laufen mit `dlq:true`, `maxErrors:3`. Parken kann nur ein Szenario, das nicht mit Warten gerufen wird (`global-make-conventions` B8).
 - **`builtin:Ignore`** — bewusst **fallenlassen**, wo ein Ausfall folgenlos ist („Keep original“ in `[Archive] Document PDF`: scheitert die Komprimierung, bleibt das Original am Beleg).
 
-**Problem-Route:** harte Störungen enden als **`error.*`-Notify** im 🛑-Topic **584** (`error.sync_aborted`, `error.store_failed`, `error.lexware_orphan` …). Prinzip: **still abbrechen + melden**, nie halb schreiben und schweigen. Der **unbekannte Notify-Key** geht roh nach ⁉️ Unsortiert (nichts verwerfen).
+**Problem-Route:** harte Störungen enden als **`error.*`-Notify** im 🛑-Topic **584** (`error.sync_aborted`, `error.store_failed`, `error.lexware_orphan` …). Prinzip: **still abbrechen + melden**, nie halb schreiben und schweigen. Der **unbekannte Notify-Key** und ein nicht zuordenbares `task_key` gehen roh in dasselbe Topic (nichts verwerfen; seit 12.11.2026, vorher ein eigenes Thema, das Telegram ablehnte).
 
 ### Upload-Belegeingang: ein Neuanstoß-Weg, der Beleg (seit 10.11.2026)
 

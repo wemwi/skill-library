@@ -692,12 +692,10 @@ Grund: {Grund}
 👉 Beleg prüfen
 ```
 
----
+### Rohtexte des Hubs bei einem Fehler im Aufruf · im Thema Störungen seit 12.11.2026
+*Keine Vorlagen der Landkarte: Sie stehen im Code von „Map event“. Nichts wird verworfen, ein falscher Schlüssel ist eine Störung. Der Wortlaut ist unverändert.*
 
-## ⁉️ Unsortiert · Topic 1
-*Rohtexte des Hubs, keine Vorlagen der Landkarte: Sie stehen im Code von „Map event“. Nichts wird verworfen.*
-
-### Unbekannter `key`
+#### Unbekannter `key`
 *Die Zeile `tokens:` erscheint nur, wenn der Aufruf `tokens` mitbringt.*
 ```
 ⁉️ Unbekannter Schlüssel
@@ -708,7 +706,7 @@ ctx: {ctx als JSON}
 tokens: {tokens als JSON}
 ```
 
-### `task_key` nicht zuordenbar · NEU 12.11.2026
+#### `task_key` nicht zuordenbar · NEU 12.11.2026
 *`{Grund}`: unbekannter Schlüssel · keine Aufgabe (Schlüssel beginnt nicht mit task.) · Ereignis unbekannt · andere Tabelle als das Ereignis. Das Ereignis selbst wird gesendet wie ohne `task_key`.*
 ```
 ⁉️ Aufgabe nicht gesendet

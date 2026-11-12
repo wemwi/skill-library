@@ -62,7 +62,7 @@ Anders als an `Umsätze` gibt es kein `Bezahlt`, `Offen`, `Fällig am`, `Menge (
 
 ## 🟣 Make-Zugriff (Stand 2026-11-09)
 
-Make schreibt **7** Felder und liest **7**, alle in `[Process] Lexware Voucher (Refund · Store)` (8450345) und `[Notify] Telegram Channels` (6862968). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
+Make schreibt **7** Felder und liest **8**, alle in `[Process] Lexware Voucher (Refund · Store)` (8450345) und `[Notify] Telegram Channels` (6862968). Eines davon matcht Make über den Klartext-Namen — es trägt den 🟣-Marker in der Feldbeschreibung der Base und darf nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
@@ -73,7 +73,7 @@ Make schreibt **7** Felder und liest **7**, alle in `[Process] Lexware Voucher (
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Status` · `Hinweis` · `Vertriebler` · `Store` · `Konditionen` · `Lexware ID`  
-**Make liest:** `Status` · `Gutschriftspositionen` (8450345 „Verdict“) · `Vertriebler` · `Store` · `Nettobetrag` · `Provision` (6862968 „Map event“)
+**Make liest:** `Status` · `Gutschriftspositionen` (8450345 „Verdict“) · `Belege` (8450345 „Reload credit note (by number)“, für „Document exists?“ und „Read document (by ID)“, Nachtrag 2026-11-12) · `Vertriebler` · `Store` · `Nettobetrag` · `Provision` (6862968 „Map event“)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
