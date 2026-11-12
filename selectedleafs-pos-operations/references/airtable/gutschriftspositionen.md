@@ -53,12 +53,12 @@ Make schreibt **7** Felder und liest **5** (Nachtrag 2026-11-11: `Position`). Ei
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
 - **`Bestand`** — 🟣 `make.com (KEY · Name)` · link · `fldiGIBKsjmVOg2CR`  
-  Steht im `filterByFormula` von „Load credit notes since check day“ in `[Process] Upload PDF (Inventory)` (grid-Zweig), zusammen mit `CREATED_TIME()`. Szenarien: 6729541.  
+  Steht im `filterByFormula` von „Load credit notes since check day“ in `[Resolve] Upload PDF (Grid)` (seit 12.11.2026, vorher im Worker 6729541), zusammen mit `CREATED_TIME()`. Szenarien: 8329417.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Gutschrift` · `Position` · `Produkt` · `Preis` · `Bestand` · `Menge (Stück)` · `Nettobetrag` (8450345 „Create credit note line“)  
-**Make liest:** `Bestand` · `Menge (Stück)` · `Datum` · `Status` (6729541, „Load credit notes since check day“; `Status` = Storniert zählt nicht) · `Position` (8450345 „Read credit note lines (by ID)“ für „Verdict“, seit 11.11.2026)
+**Make liest:** `Bestand` · `Menge (Stück)` · `Datum` · `Status` (8329417, „Load credit notes since check day“; `Status` = Storniert zählt nicht) · `Position` (8450345 „Read credit note lines (by ID)“ für „Verdict“, seit 11.11.2026)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
