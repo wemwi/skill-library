@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.38.0](https://github.com/wemwi/skill-library/compare/v6.37.1...v6.38.0) (2026-11-12)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Rohtexte des Hubs nach Störungen, Meldungspaare in einem Aufruf, Beleg-Route der Gutschrift ([#320](https://github.com/wemwi/skill-library/issues/320)) ([6d46d94](https://github.com/wemwi/skill-library/commit/6d46d944bd44a518e3a184aeb92c7f5256e8896c))
+
 ## [6.37.1](https://github.com/wemwi/skill-library/compare/v6.37.0...v6.37.1) (2026-11-12)
 
 
