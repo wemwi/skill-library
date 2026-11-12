@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.41.0](https://github.com/wemwi/skill-library/compare/v6.40.0...v6.41.0) (2026-11-12)
+
+
+### Features
+
+* **global-workflow:** Skill mounten und Projektanweisungen per Claude in Chrome ([#326](https://github.com/wemwi/skill-library/issues/326)) ([3c04e27](https://github.com/wemwi/skill-library/commit/3c04e276f737f651d09ea950e32a9b1683408778))
+
 ## [6.40.0](https://github.com/wemwi/skill-library/compare/v6.39.0...v6.40.0) (2026-11-12)
 
 
