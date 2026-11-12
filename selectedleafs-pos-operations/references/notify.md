@@ -12,7 +12,7 @@
 - **`tokens`** — dieselben Zusatzwerte als Liste aus `name` und `value`, ohne JSON (optional, seit 12.11.2026).
 - **`task_key`** — Schlüssel der Aufgabe, die zum Ereignis in `key` gehört: Ereignis und Aufgabe in einem Lauf (optional, seit 12.11.2026).
 
-Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel, ID und Zusatzwerte. **Unbekannter `key`** wird nie verworfen, sondern roh nach **⁉️ Unsortiert** (Topic 1) gepostet. Aufrufe mit nur `key`, `id`, `ctx` laufen unverändert. *Stand 12.11.2026: `tokens` senden die Störungsmeldungen von acht Szenarien (Liste im nächsten Abschnitt), `task_key` noch kein Aufrufer.*
+Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel, ID und Zusatzwerte. **Unbekannter `key`** wird nie verworfen, sondern roh in das Thema **🛑 Störungen** (584) gepostet: Ein falscher Schlüssel ist eine Störung (seit 12.11.2026; das frühere eigene Thema mit der Nummer 1 lehnte Telegram ab, „message thread not found“). Aufrufe mit nur `key`, `id`, `ctx` laufen unverändert. *Stand 12.11.2026: `tokens` senden die Störungsmeldungen von acht Szenarien, `task_key` drei Worker (Listen in den nächsten beiden Abschnitten).*
 
 ### `tokens` — Platzhalter ohne JSON
 
@@ -29,10 +29,14 @@ Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel, I
 ### `task_key` — Ereignis und Aufgabe in einem Lauf
 
 - Der Hub liest den Datensatz **einmal** (über die Zeile des Ereignisses) und sendet die Aufgabe als **zweite Meldung**: nur Operations, im Thema der Aufgabe, Vorlage = `text` der Aufgabe, gerendert mit den Feldern und Lesungen des Ereignisses.
-- Gültig ist ein `task_key`, wenn er in der Landkarte steht, mit `task.` beginnt, `key` bekannt ist und beide zur **selben Tabelle** gehören. Sonst geht der Rohtext „⁉️ Aufgabe nicht gesendet“ mit Grund, `key` und `id` nach **⁉️ Unsortiert**, auch wenn der Fachdatensatz fehlt. Das Ereignis selbst bleibt davon unberührt.
+- Gültig ist ein `task_key`, wenn er in der Landkarte steht, mit `task.` beginnt, `key` bekannt ist und beide zur **selben Tabelle** gehören. Sonst geht der Rohtext „⁉️ Aufgabe nicht gesendet“ mit Grund, `key` und `id` in das Thema **🛑 Störungen**, auch wenn der Fachdatensatz fehlt. Das Ereignis selbst bleibt davon unberührt.
 - Leer heißt: keine zweite Meldung. Der Aufrufer setzt `task_key` fest oder über seine Zusatzbedingung (z. B. nur beim Übergabeprotokoll).
 - Eine gültige Aufgabe ohne Fachdatensatz wird wie das Ereignis nicht gesendet.
 - **Neue Aufgabe für `task_key`:** Sie braucht dieselbe Feldzuordnung (`felder`, `vfelder`, `sfelder`) und dieselben Link-Felder wie ihr Ereignis; die `geld`-Liste des Ereignisses gilt auch für die Aufgabe. Für alle 45 Verbindungen aus Schlüssel und Aufgabe gleicher Tabelle ist am 12.11.2026 per Test belegt: Die zweite Meldung ist wortgleich mit der Aufgabe allein.
+- **Wer `task_key` sendet (seit 12.11.2026, 4 Aufrufe):** `[Process] Lexware Voucher (Refund · Store)` (Aufruf „refund.settled“ mit `task.jtl_refund`, fest) · `[Process] Upload PDF (Delivery)` (Aufruf „delivery.*“ mit `task.jtl_stock`, nur beim Übergabeprotokoll, auch bei reiner Ausstattung) · `[Process] Upload PDF (Return)` (Aufruf „inventory.checked“ mit `task.jtl_inventory_date`, Aufruf „delivery.returned“ mit `task.jtl_return`, beide fest). Der zweite Aufruf des Hubs samt „Skip notify error“ ist dort entfallen, die Meldetexte sind gleich geblieben. Noch als zwei Aufrufe: `[Process] Lexware Voucher (Invoice · Store)` (`invoice.*` mit `task.jtl_payment`, zweimal) und `[Process] Upload PDF (Inventory)` (`inventory.checked` mit `task.jtl_inventory_date`); sie folgen mit dem nächsten Import dieser Szenarien.
+- **Zusatzbedingung als Ausdruck:** Trug die Aufgabe einen eigenen Filter, wird er zum Ausdruck am Eingang. In `(Delivery)` wurde aus dem Filter „Protocol only“ (`4.result.kind` ungleich „Lieferschein“) `{{if(4.result.kind = "Lieferschein"; ""; "task.jtl_stock")}}`; der leere Text kommt als leeres `task_key` an. Über alle Fälle (Lieferschein, Übergabeprotokoll, nur Ausstattung, Belegart leer) am 12.11.2026 per Test gegen den Filter belegt.
+- **Form am Aufruf-Modul (Blueprint):** `mapper.data.task_key`. Trägt das Modul eine Eingabenform (`metadata.expect`), steht der Eingang dort als `{ "name": "task_key", "type": "text", "required": false }`; ohne Eingabenform liest der Editor sie aus dem Interface des Hubs. Beide Formen hat der Editor am 12.11.2026 beim Import angenommen.
+- **Preis des einen Laufs:** Scheitert der Aufruf oder der Hub vor dem Senden, fehlen Ereignis und Aufgabe zusammen statt einzeln. Beide Sendeschritte parken und wiederholen.
 
 ## Drei Register / Channels
 
@@ -44,7 +48,7 @@ Welcher Text im Meldesatz **gesetzt** ist, entscheidet über den Empfänger:
 | **`vtext`** | Vertriebler | `Vertriebler.Telegram Channel ID` | 9664308 (Sales) | — (kein Forum) |
 | **`ctext`** | City (öffentlich) | `Stores.Telegram ID` (aus der Stadt) | 9307335 (Broadcast) | — |
 
-**Operations-Topics:** 📥 Vorgänge **586** · 👉 Aufgaben **585** · 🛑 Störungen **584** · ⚙️ System **583** · ⁉️ Unsortiert **1**.
+**Operations-Topics:** 📥 Vorgänge **586** · 👉 Aufgaben **585** · 🛑 Störungen **584** · ⚙️ System **583**. Ein fünftes Thema gibt es nicht: Die beiden Rohtexte für einen Fehler im Aufruf (unbekannter `key`, nicht zuordenbares `task_key`) und der Rückfall für eine Zeile der Landkarte ohne Thema gehen in 🛑 Störungen (seit 12.11.2026).
 
 **Router „Split by channel“ (5 Wege, `builtin:BasicRouter`):** „Send to Operations“ · „Send to salesperson“ · „Send photo to city channel“ (`SendPhoto`, wenn `foto` gesetzt) · „Send text to city channel“ · „Send second message“ (die Aufgabe zu `task_key`, Operations, Topic aus `topic2`). Geschaltet über explizite Flaggen (`ops`/`vtrb`/`city_foto`/`city_text`/`ops2`), nicht über Leerstring-Vergleiche.
 

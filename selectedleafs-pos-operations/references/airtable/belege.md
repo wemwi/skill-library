@@ -18,7 +18,7 @@ Die **Drehscheibe für jedes eingehende PDF.** Jeder Beleg trägt seinen Typ, da
 |---|---|
 | Übergabeprotokoll | Lieferung (`delivery.booked`) |
 | Lieferschein | Lieferung (Eigenbestand, `delivery.note_booked`; erster Lieferschein eines Kommission-Stores stellt `Stores.Modell` um) · seit 05.11.2026 |
-| Gutschrift | Gutschrift (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026, ab 09.11. in [[gutschriften]]; legt `[Process] Lexware Voucher (Refund · Store)` bei neuer Gutschrift an, läuft nicht durch die Inbox |
+| Gutschrift | Gutschrift (`refund.created`), Nummernkreis `RK-` · seit 08.11.2026, ab 09.11. in [[gutschriften]]; legt `[Process] Lexware Voucher (Refund · Store)` an, sobald der Gutschrift ein Beleg fehlt (seit 12.11.2026 auch nach einem Abbruch, vorher nur bei neuer Gutschrift), läuft nicht durch die Inbox |
 | Rückholprotokoll | Lieferung (Rückholung, `delivery.returned`) **und** Bestandsprüfung (Rückhol-Prüfung) |
 | Bestandsprotokoll | Bestandsprüfung |
 | Ausgangsrechnung | Umsatz |
