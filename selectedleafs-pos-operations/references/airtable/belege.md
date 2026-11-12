@@ -85,7 +85,7 @@ Make schreibt **7** Felder und liest **9** (Nachtrag 2026-11-11: `Anhang`, `Hinw
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Anhang` (auch `[Sync] JTL to Airtable`, Upload-Endpunkt) · `Auszahlung` · `Gutschrift` (8450345 „Create document“, seit 09.11.2026) · `Hinweis`  
+**Make schreibt:** `Anhang` (auch `[Sync] JTL to Airtable`, Upload-Endpunkt; scheitert dieser Upload, löscht 8392806 „Delete document“ den eben angelegten leeren Datensatz wieder, seit 11.11.2026) · `Auszahlung` · `Gutschrift` (8450345 „Create document“, seit 09.11.2026) · `Hinweis`  
 **Make liest:** `ID` · `Anhang` · `Hinweis` (6872651 „Read document (by ID)“, Filter „PDF missing“ und „PDF attached“, seit 11.11.2026)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**

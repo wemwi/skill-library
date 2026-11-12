@@ -24,9 +24,9 @@ Welcher Text im Meldesatz **gesetzt** ist, entscheidet über den Empfänger:
 
 **Operations-Topics:** 📥 Vorgänge **586** · 👉 Aufgaben **585** · 🛑 Störungen **584** · ⚙️ System **583** · ⁉️ Unsortiert **1**.
 
-**Router (4 Wege, `builtin:BasicRouter`):** → Operations · → Vertriebler · → City·Foto (`SendPhoto`, wenn `foto` gesetzt) · → City·Text. Geschaltet über explizite Flaggen (`ops`/`vtrb`/`city_foto`/`city_text`), nicht über Leerstring-Vergleiche.
+**Router „Split by channel“ (4 Wege, `builtin:BasicRouter`):** „Send to Operations“ · „Send to salesperson“ · „Send photo to city channel“ (`SendPhoto`, wenn `foto` gesetzt) · „Send text to city channel“. Geschaltet über explizite Flaggen (`ops`/`vtrb`/`city_foto`/`city_text`), nicht über Leerstring-Vergleiche.
 
-## Die Ereignis-Landkarte (Modul 2 „Ereignis-Landkarte")
+## Die Ereignis-Landkarte (Modul 2 „Map event“)
 
 Reine **Daten**, kein Code: eine Zeile je `key` mit `topic · tabelle · vertrieblerFeld · storeFeld · foto · saldo · felder/vfelder/sfelder · text/vtext/ctext`. Navigation:
 
@@ -34,7 +34,7 @@ Reine **Daten**, kein Code: eine Zeile je `key` mit `topic · tabelle · vertrie
 - **`storeFeld`** = Link-Feld auf Stores · `'*'` = der Fachdatensatz **ist** der Store.
 - **`saldo`** = `created` | `settled` — Vergleichsart für `{Saldoabruf}`.
 
-## Der Renderer (Modul 6 „Text bauen")
+## Der Renderer (Modul 6 „Build text“)
 
 Ein generischer Renderer für alle drei Register. **Geldwerte werden nur formatiert, nie gerechnet.**
 
@@ -54,9 +54,8 @@ Deshalb: **Zahlen/Daten aus der JSON-Lesung, Links aus der Klartext-Lesung.** Un
 
 ## Fehlerbehandlung
 
-- **Operations / Vertriebler:** `builtin:Break` mit Retry **3× / 15 s** (Zustellung ist wichtig).
-- **City (beide Wege):** `builtin:Ignore` — der öffentliche Broadcast **darf ausfallen**, ohne den Lauf zu stoppen.
-- Alle Nachlese-Module haben `builtin:Resume` bei Lesefehler (übergehen statt abbrechen).
+- **Alle fünf Sendeschritte** (Operations, Vertriebler, Vertriebler-PDF, City-Foto, City-Text): `builtin:Break` „Retry + park“, **3 Versuche im Abstand von 15 Minuten**, danach liegt der Lauf als unvollständige Ausführung im Hub. Die City-Wege parken seit 11.11.2026 wie die anderen; vorher verwarf ein `builtin:Ignore` den gescheiterten Post still.
+- Alle Nachlese-Module haben `builtin:Resume` bei Lesefehler („Continue without …“: die Meldung geht mit Lücken hinaus statt gar nicht).
 
 ## City-Betriebs-Anker (fail-closed)
 

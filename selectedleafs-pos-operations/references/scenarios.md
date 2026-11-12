@@ -180,19 +180,19 @@ On-demand-Kinder (`Call a scenario` / `CallSubscenario`, synchron), je **eine** 
 ## `[Sync]` — Spiegel nach außen
 
 **`[Sync] Airtable to Shopify` · 6805674**
-Aktualisiert den **Store-Finder**: je Store die Liste der verfügbaren Sorten (`product_list`, Bestand > 0) und `active` am Metaobjekt `liftr_store` — **keine Mengen**. Gibt `ok`, `sync_version`, `first_delivery_lines`, `has_new_strains`, `has_restock` zurück; die City-Posts sendet der Delivery-Worker. Notify **`sync.inventory`** (R26, Erfolgs-Report); **`error.sync_aborted`**. Liest `Stores.Modell`: bei **Eigenbestand** fügt `restock` die Sorten des Belegs zur Shop-Liste hinzu, alle anderen Typen ändern nichts.
+Aktualisiert den **Store-Finder**: je Store die Liste der verfügbaren Sorten (`product_list`, Bestand > 0) und `active` am Metaobjekt `liftr_store` — **keine Mengen**. Gibt `ok`, `sync_version`, `first_delivery_lines`, `has_new_strains`, `has_restock` zurück; die City-Posts sendet der Delivery-Worker. Notify **`sync.inventory`** (R26, Erfolgs-Report); **`error.sync_aborted`**. Liest `Stores.Modell`: bei **Eigenbestand** fügt `restock` die Sorten des Belegs zur Shop-Liste hinzu, alle anderen Typen ändern nichts. **Trockenlauf:** `dry_run` unterdrückt nur das Schreiben, nicht die Störungsmeldung eines Abbruchs. Zur Probe nur `type: "inventory-check"`; `restock` ohne Beleg bricht an der Prüfung des Belegdatums ab und meldet echt (so am 11.11.2026).
 
 **`[Sync] Shopify to Airtable` · 6795533** · wöchentl. **So 04:00**
 Upsert **`Produkte` / `Produktvarianten` / `Preise`** (Match über SKU). Notify **`sync.products`**; **`error.sync_aborted`**.
 
 **`[Sync] Google Places to Shopify` · 6655783** · wöchentl. **So 05:00**
-Schreibt nur das Shopify-Metaobjekt `liftr_store` (Öffnungszeiten, Bewertung, Telefon, Website via Place API), nicht `Stores`. Notify **`sync.stores`**; **`error.sync_aborted`**.
+Schreibt nur das Shopify-Metaobjekt `liftr_store` (Öffnungszeiten, Bewertung, Telefon, Website via Place API), nicht `Stores`. Notify **`sync.stores`**; **`error.sync_aborted`**. Schreibfehler seit 11.11.2026: lehnt Shopify ein Schreiben ab (`userErrors`), zählt der Store nicht als aktualisiert und der Lauf meldet am Ende einmal `error.sync_aborted`; wirft „Write store fields“, meldet der Lauf und endet.
 
 **`[Sync] Mail to Lexware` · 6870495**
 Trigger: **Mailhook** `invoice@selectedleafs.com`. Eingangsrechnungen → Lexware als Belegdatei, Logik unverändert. „Pick document" nimmt nie ein PDF mit „lieferschein" oder „deliverynote" im Namen; ebenso nie `RK-<Ziffer>` (groß, am Wortanfang), „Gutschrift“ oder „InvoiceCorrection“. Ist es das einzige, endet der Lauf ohne Upload.
 
 **`[Sync] JTL to Airtable` · 8392806** · seit 05.11.2026
-Trigger: **Mailhook** (eigene Adresse; JTL schickt Lieferscheine und Mahnungen). Prüft nur: Absender `kontakt@selectedleafs.com` (fremde Post still verwerfen), genau ein PDF, Dateiname passt — sonst Make-Fehler. Legt **`Belege`** an (Belegtyp „Unbekannt", Duplikate über den Dateinamen übersprungen) und hängt das PDF über den Airtable-Upload-Endpunkt an `Anhang`. Lesen und Buchen macht `[Dispatch] Upload PDF`. Sequenziell: eine offene unvollständige Ausführung hält weitere Belege an, bis sie gelöst ist. Scheitert der Upload, bleibt ein Beleg ohne PDF zurück.
+Trigger: **Mailhook** (eigene Adresse; JTL schickt Lieferscheine und Mahnungen). Prüft nur: Absender `kontakt@selectedleafs.com` (fremde Post still verwerfen), genau ein PDF, Dateiname passt — sonst Make-Fehler. Legt **`Belege`** an (Belegtyp „Unbekannt", Duplikate über den Dateinamen übersprungen) und hängt das PDF über den Airtable-Upload-Endpunkt an `Anhang`. Lesen und Buchen macht `[Dispatch] Upload PDF`. Sequenziell: eine offene unvollständige Ausführung hält weitere Belege an, bis sie gelöst ist. Scheitert der Upload, löscht „Delete document“ den eben angelegten, leeren Beleg wieder (nur diesen Datensatz, nur in diesem Lauf), meldet **`error.sync_aborted`** und beendet den Lauf; die Mail erneut senden (seit 11.11.2026).
 
 **`[Sync] JTL to Lexware` · 8450420** · seit 08.11.2026
 Trigger: **Mailhook** (eigene Adresse für Rechnungen und Gutschriften aus JTL). Prüft Absender `kontakt@selectedleafs.com`, genau ein PDF und eine `RG-`- oder `RK-`-Nummer im Dateinamen und lädt das PDF als Belegdatei zu Lexware hoch (`uploadAnImageDocument`, Typ voucher). Nicht sequenziell, damit ein Fehler nicht alle folgenden Rechnungen anhält. Allgemeines Szenario: kein Zugriff auf die POS-Base, keine POS-Szenarien. Weiter: Belegerkennung → Entwurf → Joscha prüft und bucht → „Voucher Status Changed“ → `[Dispatch] Lexware Voucher`.
@@ -204,7 +204,7 @@ Trigger: **Mailhook** (eigene Adresse für Rechnungen und Gutschriften aus JTL).
 Trigger: **Airtable-Webhook** „Stores Inbox“ (View „Inbox (make.com)“ von `Stores`, nur `add`; registriert über `[Maintain] Airtable Webhooks`). Den Datensatz legt das Formular an (personalisierter Link, `Akquise durch` vorbelegt). Eingangs-Guard: „Check input“ nach „Read inbox record“. Legt `Stores` + Shopify-Metaobjekt + Lexware-Kontakt an. Notify **`store.created`**; **`task.jtl_missing`**; **`error.store_failed` / `.store_partial`**.
 
 **`[Create] Salesperson` · 6821121**
-Trigger: **Airtable-Webhook**. Legt den Lexware-Kreditor an und ergänzt `Vertriebler`. Notify **`salesperson.created` / `.onboarded`**; **`error.salesperson_failed`**.
+Trigger: **Airtable-Webhook** (View „Inbox (make.com)“ von `Vertriebler`: Lexware-ID und `Hinweis` leer). Legt den Lexware-Kreditor an und ergänzt `Vertriebler`. Notify **`salesperson.created` / `.onboarded`**; **`error.salesperson_failed`**. Scheitert die Eingangsprüfung, steht der Grund in `Hinweis`; Neuanstoß: Fehler im Datensatz beheben, `Hinweis` leeren.
 
 ## `[Maintain]`
 
@@ -215,7 +215,7 @@ Hält die Airtable-Webhook-Registry frisch (Ablauf-Erneuerung).
 Trigger: **Schedule**. Scannt aktive Stores (`Status` ∈ Aktiv/Probezeit · `Modell` = Kommission), bestimmt je Store die jüngste `Bestandsprüfung` und meldet Überfällige (heute − letzte Prüfung > 30 Tage). Liest `Stores` + `Bestandsprüfungen`; schreibt den Marker `Fällig gemeldet am`. Notify **`inventory.due`**. Idempotenz über den Marker (wöchentliches Re-Nag).
 
 **`[Maintain] Store New Flag` · 8475697** · seit 09.11.2026 · wöchentl. **So 05:00**
-Liest die `liftr_store`-Metaobjekte und setzt das Flag `new` 45 Tage nach dem Anlegen auf `false`. Fehler beim Lesen → **`error.sync_aborted`**.
+Liest die `liftr_store`-Metaobjekte und setzt das Flag `new` 45 Tage nach dem Anlegen auf `false`. Fehler beim Lesen → **`error.sync_aborted`**; lehnt Shopify das Schreiben ab (`userErrors`), je Store ebenfalls `error.sync_aborted` (seit 11.11.2026).
 
 ---
 
