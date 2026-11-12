@@ -1,16 +1,35 @@
 # Benachrichtigungen (Telegram)
 
-> Quelle: `[Notify] Telegram Channels` (Szenario **6862968**), live gelesen **Stand 2026-08-14**. Die **Meldetexte** stehen ausschließlich im `assets/catalog.md` (Text-SSoT) — hier steht die **Mechanik**, nicht die Wortlaute.
+> Quelle: `[Notify] Telegram Channels` (Szenario **6862968**), live gelesen **Stand 2026-08-14**; Eingänge, Router und Fehlerwege **Stand 2026-11-12**. Die **Meldetexte** stehen ausschließlich im `assets/catalog.md` (Text-SSoT) — hier steht die **Mechanik**, nicht die Wortlaute.
 
 ## Zweck & Form
 
-**Ein zentraler Hub**, alle Szenarien „klingeln" per **`StartSubscenario`** (on-demand child) mit drei Eingaben:
+**Ein zentraler Hub**, alle Szenarien „klingeln" per **`StartSubscenario`** (on-demand child). Fünf Eingaben, nur `key` ist Pflicht:
 
 - **`key`** — der Meldeschlüssel (z. B. `delivery.booked`). Pflicht.
-- **`id`** — Record-ID des Fachdatensatzes (optional; leer ⇒ reine ctx-Meldung).
-- **`ctx`** — JSON mit Zusatzwerten, die nicht in der Base stehen (optional).
+- **`id`** — Record-ID des Fachdatensatzes (optional; leer ⇒ Meldung nur aus `ctx` und `tokens`).
+- **`ctx`** — JSON-Text mit Zusatzwerten, die nicht in der Base stehen (optional).
+- **`tokens`** — dieselben Zusatzwerte als Liste aus `name` und `value`, ohne JSON (optional, seit 12.11.2026).
+- **`task_key`** — Schlüssel der Aufgabe, die zum Ereignis in `key` gehört: Ereignis und Aufgabe in einem Lauf (optional, seit 12.11.2026).
 
-Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel + ID + ctx. **Unbekannter `key`** wird nie verworfen, sondern roh nach **⁉️ Unsortiert** (Topic 1) gepostet.
+Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel, ID und Zusatzwerte. **Unbekannter `key`** wird nie verworfen, sondern roh nach **⁉️ Unsortiert** (Topic 1) gepostet. Aufrufe mit nur `key`, `id`, `ctx` laufen unverändert. *Stand 12.11.2026: Noch kein Aufrufer sendet `tokens` oder `task_key`.*
+
+### `tokens` — Platzhalter ohne JSON
+
+- Die Liste liegt **über** dem gelesenen `ctx`: Bei gleichem Namen gewinnt `tokens`. Ohne `tokens` bleibt `ctx`, wie er gelesen wurde.
+- Gedacht für Störungsmeldungen: Ein Fehlertext mit Anführungszeichen oder Zeilenumbruch braucht keinen Code-Schritt mehr, der JSON baut. Der Aufrufer trägt Name und Wert im Aufruf-Modul ein.
+- Werte kommen als **Text** an. Leer heißt nicht gesetzt (`{leer …}` / `{gesetzt …}`); ein Wahrheitswert gehört weiter in `ctx`.
+- Ein Eintrag ohne Namen zählt nicht, der Lauf bricht daran nicht ab (`name` ist deshalb kein Pflichtfeld).
+- Ein kaputter `ctx` bricht „Map event“ weiter ab (`JSON.parse` ohne Fang). Wer nur `tokens` schickt, ist davon frei.
+- Im Interface steht der Eingang als `type: array` mit `spec: [name, value]`. Diese Listenform führt Make selbst (wie `lines` an `[Resolve] Positions`); `validate_scenario_interface` der Make-Anbindung lehnt sie trotzdem ab. Das Interface deshalb nach einem Import am zurückgelesenen Stand prüfen (`scenarios_interface`), nicht an dieser Prüfung.
+
+### `task_key` — Ereignis und Aufgabe in einem Lauf
+
+- Der Hub liest den Datensatz **einmal** (über die Zeile des Ereignisses) und sendet die Aufgabe als **zweite Meldung**: nur Operations, im Thema der Aufgabe, Vorlage = `text` der Aufgabe, gerendert mit den Feldern und Lesungen des Ereignisses.
+- Gültig ist ein `task_key`, wenn er in der Landkarte steht, mit `task.` beginnt, `key` bekannt ist und beide zur **selben Tabelle** gehören. Sonst geht der Rohtext „⁉️ Aufgabe nicht gesendet“ mit Grund, `key` und `id` nach **⁉️ Unsortiert**, auch wenn der Fachdatensatz fehlt. Das Ereignis selbst bleibt davon unberührt.
+- Leer heißt: keine zweite Meldung. Der Aufrufer setzt `task_key` fest oder über seine Zusatzbedingung (z. B. nur beim Übergabeprotokoll).
+- Eine gültige Aufgabe ohne Fachdatensatz wird wie das Ereignis nicht gesendet.
+- **Neue Aufgabe für `task_key`:** Sie braucht dieselbe Feldzuordnung (`felder`, `vfelder`, `sfelder`) und dieselben Link-Felder wie ihr Ereignis; die `geld`-Liste des Ereignisses gilt auch für die Aufgabe. Für alle 45 Verbindungen aus Schlüssel und Aufgabe gleicher Tabelle ist am 12.11.2026 per Test belegt: Die zweite Meldung ist wortgleich mit der Aufgabe allein.
 
 ## Drei Register / Channels
 
@@ -24,7 +43,7 @@ Welcher Text im Meldesatz **gesetzt** ist, entscheidet über den Empfänger:
 
 **Operations-Topics:** 📥 Vorgänge **586** · 👉 Aufgaben **585** · 🛑 Störungen **584** · ⚙️ System **583** · ⁉️ Unsortiert **1**.
 
-**Router „Split by channel“ (4 Wege, `builtin:BasicRouter`):** „Send to Operations“ · „Send to salesperson“ · „Send photo to city channel“ (`SendPhoto`, wenn `foto` gesetzt) · „Send text to city channel“. Geschaltet über explizite Flaggen (`ops`/`vtrb`/`city_foto`/`city_text`), nicht über Leerstring-Vergleiche.
+**Router „Split by channel“ (5 Wege, `builtin:BasicRouter`):** „Send to Operations“ · „Send to salesperson“ · „Send photo to city channel“ (`SendPhoto`, wenn `foto` gesetzt) · „Send text to city channel“ · „Send second message“ (die Aufgabe zu `task_key`, Operations, Topic aus `topic2`). Geschaltet über explizite Flaggen (`ops`/`vtrb`/`city_foto`/`city_text`/`ops2`), nicht über Leerstring-Vergleiche.
 
 ## Die Ereignis-Landkarte (Modul 2 „Map event“)
 
@@ -54,7 +73,7 @@ Deshalb: **Zahlen/Daten aus der JSON-Lesung, Links aus der Klartext-Lesung.** Un
 
 ## Fehlerbehandlung
 
-- **Alle fünf Sendeschritte** (Operations, Vertriebler, Vertriebler-PDF, City-Foto, City-Text): `builtin:Break` „Retry + park“, **3 Versuche im Abstand von 15 Minuten**, danach liegt der Lauf als unvollständige Ausführung im Hub. Die City-Wege parken seit 11.11.2026 wie die anderen; vorher verwarf ein `builtin:Ignore` den gescheiterten Post still.
+- **Alle sechs Sendeschritte** (Operations, Vertriebler, Vertriebler-PDF, City-Foto, City-Text, zweite Meldung): `builtin:Break` „Retry + park“, **3 Versuche im Abstand von 15 Minuten**, danach liegt der Lauf als unvollständige Ausführung im Hub. Die City-Wege parken seit 11.11.2026 wie die anderen; vorher verwarf ein `builtin:Ignore` den gescheiterten Post still.
 - Alle Nachlese-Module haben `builtin:Resume` bei Lesefehler („Continue without …“: die Meldung geht mit Lücken hinaus statt gar nicht).
 
 ## City-Betriebs-Anker (fail-closed)

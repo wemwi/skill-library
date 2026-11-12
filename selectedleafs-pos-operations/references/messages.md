@@ -531,7 +531,7 @@ Shopify → Airtable
 *Runde 26: R24-Streichung zurückgenommen. Erfolgs-Klingel an 6655783 bleibt; ctx `{Stores}` / `{Öffnungszeiten}`.*
 ```
 ⚙️ Stores aktualisiert
-Google Places → Airtable
+Google Places → Shopify
 
 3 Stores · 1 Öffnungszeiten geändert
 ```

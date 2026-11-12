@@ -568,10 +568,11 @@ Danke für deine Arbeit! :)
 ```
 
 ### `sync.stores` · Runde 26: R24-Streichung zurückgenommen
+*12.11.2026: Richtung berichtigt, `[Sync] Google Places to Shopify` schreibt nach Shopify.*
 **Operations**
 ```
 ⚙️ Stores aktualisiert
-<i>Google Places → Airtable</i>
+<i>Google Places → Shopify</i>
 
 {Stores} Stores · {Öffnungszeiten} Öffnungszeiten geändert
 ```
@@ -693,4 +694,29 @@ Grund: {Grund}
 
 ---
 
-*Unbekannter `key` → roh nach ⁉️ Unsortiert (Topic 1), nichts verworfen. Nach der Hub-Angleichung neu ziehen: `scenarios_get(6862968)` → Modul 2.*
+## ⁉️ Unsortiert · Topic 1
+*Rohtexte des Hubs, keine Vorlagen der Landkarte: Sie stehen im Code von „Map event“. Nichts wird verworfen.*
+
+### Unbekannter `key`
+*Die Zeile `tokens:` erscheint nur, wenn der Aufruf `tokens` mitbringt.*
+```
+⁉️ Unbekannter Schlüssel
+{key}
+
+id: {id}
+ctx: {ctx als JSON}
+tokens: {tokens als JSON}
+```
+
+### `task_key` nicht zuordenbar · NEU 12.11.2026
+*`{Grund}`: unbekannter Schlüssel · keine Aufgabe (Schlüssel beginnt nicht mit task.) · Ereignis unbekannt · andere Tabelle als das Ereignis. Das Ereignis selbst wird gesendet wie ohne `task_key`.*
+```
+⁉️ Aufgabe nicht gesendet
+{task_key}
+
+Grund: {Grund}
+key: {key}
+id: {id}
+```
+
+*Nach der Hub-Angleichung neu ziehen: `scenarios_get(6862968)` → Modul 2.*
