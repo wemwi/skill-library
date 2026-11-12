@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.37.1](https://github.com/wemwi/skill-library/compare/v6.37.0...v6.37.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Störungsmeldungen senden tokens, Aufrufer und Form am Aufruf-Modul ([#318](https://github.com/wemwi/skill-library/issues/318)) ([cd9674a](https://github.com/wemwi/skill-library/commit/cd9674a1e80b477a08f6dd91ff3c36ff3550e563))
+
 ## [6.37.0](https://github.com/wemwi/skill-library/compare/v6.36.0...v6.37.0) (2026-11-12)
 
 
