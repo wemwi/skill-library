@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.5.0"
+  version: "2.6.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -43,6 +43,7 @@ Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken
 2. Dateien, Szenarien, Schema selbst holen (Repo-Checkout, MCP). Nur ohne Zugriff anfordern. Nie raten.
 3. Minimal-Prinzip: nur das Gefragte, keine ungefragten „Verbesserungen".
 4. Seiteneffekte prüfen: Wer nutzt das noch?
+5. Beim Entfernen (Task, Regel, Skill, Feld, Szenario): alle Verweise darauf suchen (Skills, Projekt-Docs, Projektanweisungen, geplante Tasks, Memory) und im selben Zug mit entfernen. Was nur Joscha entfernen kann, unter „Für Joscha" nennen.
 
 ## 4. Repo-Arbeit
 
@@ -117,7 +118,7 @@ Nicht geeignet: Live-Schreiben mit Geld- oder Datenwirkung (Make-Szenarien, Airt
 
 **Für Joscha:** Handgriffe, die nur er kann (`.skill` mounten, Branches löschen, Repo-Einstellungen, Freigaben nach Sicherheitsregeln), nicht einzeln erfragen, sondern in dieser Liste bündeln.
 
-**Abschlussbericht:** DoD Punkt für Punkt erfüllt / nicht erfüllt · Abweichungen und Blocker · Für Joscha · Links (PRs). Im Statusformat nach §11.
+**Abschlussbericht:** DoD Punkt für Punkt erfüllt / nicht erfüllt · Abweichungen und Blocker · Für Joscha · Links (PRs). Im Statusformat nach §11. Danach den umgesetzten Handover aus den Projekt-Docs löschen, sonst führt ihn ein späterer Chat erneut aus. Bleibt etwas offen, bleibt er stehen, gekürzt auf das Offene.
 
 **Geplante Tasks**
 - Das Werkzeug für geplante Tasks kann keine Konnektoren auswählen, neue Tasks erhalten alle. Bei automatischer Freigabe die nötigen Konnektoren unter „Für Joscha" nennen („in den Task-Einstellungen nur … behalten").
