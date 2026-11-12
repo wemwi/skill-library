@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.6.0"
+  version: "2.7.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -57,7 +57,7 @@ Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken
 1. Basis = `main` von skill-library (Klon, §4), nicht die gemountete Version unter `/mnt/skills/…` — der Mount kann hinterherhinken (August 2026 hätte das bei `selectedleafs-pos-operations` fast einen Rollback ausgelöst).
 2. Nur gezielte Edits — Datei nicht komplett neu tippen (Ausnahme: bewusster Neubau einer Hauptversion).
 3. Kontrolle per `grep` (Version, Abschnitte), kein erneutes Komplett-Lesen.
-4. `.skill` mit skill-creator `package_skill.py` bauen und ausliefern → Joscha mountet.
+4. `.skill` mit skill-creator `package_skill.py` bauen. Ist Joschas Chrome verbunden, selbst per Claude in Chrome mounten (Anpassungen → Skills → Skill hochladen, ersetzen); sonst ausliefern → Joscha mountet.
 5. Dieselbe Änderung ins Skill-Repo committen (§4). Nach dem Mounten Abgleich per `global-setup-audit/scripts/backup_check.py` — das Mounten formatiert den Frontmatter um, verglichen werden deshalb Version, Rumpf und übrige Dateien.
 
 ## 6. Modell & Delegation
@@ -116,7 +116,7 @@ Nicht geeignet: Live-Schreiben mit Geld- oder Datenwirkung (Make-Szenarien, Airt
 - Parallel nur unabhängige Stränge (§6). Hängt ein Strang am Ergebnis eines anderen, stößt der liefernde Strang den Folgeschritt am Ende selbst an (Abruf-Task); der wartende fragt nicht per Erinnerung nach.
 - „Zugestellt" ist kein Erfolg. Ein Lauf ist erst mit Abschlussbericht beendet, auch bei Abbruch wegen des Limits.
 
-**Für Joscha:** Handgriffe, die nur er kann (`.skill` mounten, Branches löschen, Repo-Einstellungen, Freigaben nach Sicherheitsregeln), nicht einzeln erfragen, sondern in dieser Liste bündeln.
+**Für Joscha:** Handgriffe, die nur er kann (`.skill` mounten, Branches löschen, Repo-Einstellungen, Freigaben nach Sicherheitsregeln), nicht einzeln erfragen, sondern in dieser Liste bündeln. Vorher prüfen, was per Claude in Chrome selbst geht, wenn Joschas Chrome verbunden ist: Skill mounten und Projektanweisungen ändern sind erprobt.
 
 **Abschlussbericht:** DoD Punkt für Punkt erfüllt / nicht erfüllt · Abweichungen und Blocker · Für Joscha · Links (PRs). Im Statusformat nach §11. Danach den umgesetzten Handover aus den Projekt-Docs löschen, sonst führt ihn ein späterer Chat erneut aus. Bleibt etwas offen, bleibt er stehen, gekürzt auf das Offene.
 
