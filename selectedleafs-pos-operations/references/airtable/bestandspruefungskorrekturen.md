@@ -21,7 +21,7 @@ Eine Zeile = eine **offene Kratom-Zählzeile** einer Bestandsprüfung, die noch 
 
 ## Ablauf
 
-1. Prüflauf (`[Process] Upload PDF (Inventory)`, grid-Zweig): jede offene Kratom-Zeile → Status Offen. Nur bei sauberem Verdikt, nie bei Beleg-Problem.
+1. Prüflauf (`[Process] Upload PDF (Inventory)`; die Zeilen rechnet seit 12.11.2026 `[Resolve] Upload PDF (Grid)`): jede offene Kratom-Zeile → Status Offen. Nur bei sauberem Verdikt, nie bei Beleg-Problem.
 2. Joscha ergänzt `IST` (oder `SOLL`), setzt `Verworfen` oder lässt die Zeile stehen, und setzt an der Prüfung `Korrekturen buchen`.
 3. `[Process] Manual Action (Inventory Correction)`: gebucht → Gebucht; sonst Abgelehnt mit Grund; IST leer → unverändert. **Mehrbestand** (IST > SOLL) wird gebucht, wenn der Store die Sorte im Bestand hat und der Überschuss ≤ `Bestände.Verkauft` − `Gutgeschrieben`; Differenz negativ, der Hinweis an der Prüfung nennt die Gutschrift: „Gutschrift in JTL über: <Sorte> <N> Stück, …“. Keine Zeile mehr Offen/Abgelehnt → Prüfung Abgeschlossen. Regeln im Vertrag → [[scenarios]].
 

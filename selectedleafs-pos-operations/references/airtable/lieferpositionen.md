@@ -59,13 +59,13 @@ Make **schreibt** hier 8 Felder und liest **3** (Nachtrag 2026-11-02, P3 Bestand
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld (gesetzt 2026-11-02)
 
 - **`Bestand`** · **`Menge nach Prüfung`** · **`Geprüft am`** — 🟣 `make.com (KEY · Name)`.  
-  Stehen im `filterByFormula` von „Load deliveries since last check“ in `[Process] Upload PDF (Inventory)` (grid-Zweig). Szenarien: 6729541.  
+  Stehen im `filterByFormula` von „Load deliveries since last check“ in `[Resolve] Upload PDF (Grid)` (seit 12.11.2026, vorher im Worker 6729541). Szenarien: 8329417.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Bestand` · `EK (netto)` · `Lieferung` · `Menge (Stück)` · `Menge (kg)` · `Position` · `Preis (VK)` · `Produkt`  
-**Make liest:** `Bestand` · `Geliefert am` · `Menge (Stück)` (6729541, „Load deliveries since last check“)  
+**Make liest:** `Bestand` · `Geliefert am` · `Menge (Stück)` (8329417, „Load deliveries since last check“)  
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 

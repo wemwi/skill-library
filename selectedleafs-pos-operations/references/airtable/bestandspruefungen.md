@@ -22,7 +22,7 @@ Eine Zeile = eine **Bestandsprüfung** (Soll/Ist-Abgleich) in einem Store, beleg
 - **`Nettoverkaufswert`** (Rollup, €) — Σ der **positiv** bewerteten Differenzen = **Schwundwert** (VK-Sicht).
 - **`Status`** (Select) — Abgeschlossen / In Bearbeitung / Teilgebucht / Ungültig (Make-String). Eine neue Zeile ohne Status steht von selbst auf In Bearbeitung (Vorgabewert des Felds, beobachtet 11.11.2026). Die Rechnung ordnet nur Abgeschlossen und Teilgebucht zu.
 - **`Unterschrieben`** / **`Inventar geprüft`** (Checkbox) — speisen die Warnzeilen der Meldung.
-- **`Poster im Schaufenster`** (Checkbox) — Zeile „Poster“ im freien Bestandsprotokoll (Zahl oder Haken = ja). Nur der grid-Zweig setzt es; kein Artikel, keine Position.
+- **`Poster im Schaufenster`** (Checkbox) — Zeile „Poster“ im freien Bestandsprotokoll (Zahl oder Haken = ja). Der Prüflauf setzt es aus der Lesung von `[Resolve] Upload PDF (Grid)`; kein Artikel, keine Position.
 - **`Bestandsprüfungskorrekturen`** (Link, Rückfeld) — offene Zählzeilen dieser Prüfung als Datensätze → [[bestandspruefungskorrekturen]]. Ersetzt seit 06.11.2026 das Textfeld `Nachtrag` (nach der Übernahme gelöscht).
 - **`Offene Korrekturen`** (Anzahl mit Filter Status Offen oder Abgelehnt) · **`Unklar`** (Formel: „4 Zeilen unklar“ / „1 Zeile unklar“ / leer) — speist die Zeile „⚠️ {Unklar}“ in `inventory.checked` und `inventory.corrected`.
 - **`Korrekturen buchen`** (Checkbox, bis 06.11.2026 `Nachtrag buchen`, gleiches Feld) — Joscha setzt sie, `[Process] Manual Action (Inventory Correction)` bucht und nimmt sie zurück. Erneut setzen = erneut versuchen (gebuchte Sorten werden abgelehnt, Gebucht/Verworfen nicht angefasst).

@@ -70,7 +70,7 @@ Der Vertriebler (in Lexware = **Kreditor**). Trägt den **laufenden Saldo** — 
 
 ## 🟣 Make-Zugriff (Stand 2026-08-21 · Live-Scan aller 17 Szenarien)
 
-Make schreibt **3** Felder und liest **12** (Nachtrag 2026-11-02: `Stores`, `Stores 2` über „Load salespeople“ in 6729541; `Name` liest dieselbe Stelle). 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
+Make schreibt **3** Felder und liest **12** (Nachtrag 2026-11-02: `Stores`, `Stores 2` über „Load salespeople“, seit 12.11.2026 in 8329417 (vorher 6729541); `Name` liest dieselbe Stelle). 2 davon matcht Make über den Klartext-Namen — sie tragen den 🟣-Marker in der Feldbeschreibung der Base und dürfen nicht umbenannt werden.
 
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
