@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.42.0](https://github.com/wemwi/skill-library/compare/v6.41.0...v6.42.0) (2026-11-12)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Verträge nach Paket 5 der Bestandsprüfung ([#328](https://github.com/wemwi/skill-library/issues/328)) ([23ea72d](https://github.com/wemwi/skill-library/commit/23ea72dea005d8299358441c64f2d6330d76c726))
+
 ## [6.41.0](https://github.com/wemwi/skill-library/compare/v6.40.0...v6.41.0) (2026-11-12)
 
 
