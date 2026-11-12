@@ -4,7 +4,7 @@
 
 ## Topologie in einem Satz
 
-Eingang (Mail/Webhook/Zeitplan) → **`[Sync]`** überträgt von A nach B, auch nach Airtable → **`[Dispatch]`** übernimmt ab B, prüft und startet → **`[Process]`** verarbeitet: ruft die **`[Resolve]`**-Kinder als native Subscenarios, schreibt Ereignis- und Positionszeilen, lässt **`[Archive]`** das PDF sichern → **jedes** Szenario „klingelt" bei **`[Notify] Telegram Channels`** (6862968) per Aufruf mit `key`, `id`, `ctx` (freiwillig dazu `tokens` und `task_key`, Vertrag: [[notify]]). `[Maintain]` wartet und erinnert, `[Create]` legt Stammsätze an.
+Eingang (Mail/Webhook/Zeitplan) → **`[Sync]`** überträgt von A nach B, auch nach Airtable → **`[Dispatch]`** übernimmt ab B, prüft und startet → **`[Process]`** verarbeitet: ruft die **`[Resolve]`**-Kinder als native Subscenarios, schreibt Ereignis- und Positionszeilen, lässt **`[Archive]`** das PDF sichern → **jedes** Szenario „klingelt" bei **`[Notify] Telegram Channels`** (6862968) per Aufruf mit `key`, `id`, `ctx` (freiwillig dazu `tokens` und `task_key`, Vertrag: [[notify]]; Störungsmeldungen `error.*` tragen ihre Werte seit 12.11.2026 in `tokens` statt in `ctx`, ohne Code-Schritt davor, außer in `[Sync] Shopify to Airtable` und `[Dispatch] Manual Action`). `[Maintain]` wartet und erinnert, `[Create]` legt Stammsätze an.
 
 | Beleg | `[Sync]` | Landet in | `[Dispatch]` | `[Process]` |
 |---|---|---|---|---|

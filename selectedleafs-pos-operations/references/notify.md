@@ -12,7 +12,7 @@
 - **`tokens`** — dieselben Zusatzwerte als Liste aus `name` und `value`, ohne JSON (optional, seit 12.11.2026).
 - **`task_key`** — Schlüssel der Aufgabe, die zum Ereignis in `key` gehört: Ereignis und Aufgabe in einem Lauf (optional, seit 12.11.2026).
 
-Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel, ID und Zusatzwerte. **Unbekannter `key`** wird nie verworfen, sondern roh nach **⁉️ Unsortiert** (Topic 1) gepostet. Aufrufe mit nur `key`, `id`, `ctx` laufen unverändert. *Stand 12.11.2026: Noch kein Aufrufer sendet `tokens` oder `task_key`.*
+Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel, ID und Zusatzwerte. **Unbekannter `key`** wird nie verworfen, sondern roh nach **⁉️ Unsortiert** (Topic 1) gepostet. Aufrufe mit nur `key`, `id`, `ctx` laufen unverändert. *Stand 12.11.2026: `tokens` senden die Störungsmeldungen von acht Szenarien (Liste im nächsten Abschnitt), `task_key` noch kein Aufrufer.*
 
 ### `tokens` — Platzhalter ohne JSON
 
@@ -21,6 +21,9 @@ Der Hub liest selbst nach und rendert — der Aufrufer liefert nur Schlüssel, I
 - Werte kommen als **Text** an. Leer heißt nicht gesetzt (`{leer …}` / `{gesetzt …}`); ein Wahrheitswert gehört weiter in `ctx`.
 - Ein Eintrag ohne Namen zählt nicht, der Lauf bricht daran nicht ab (`name` ist deshalb kein Pflichtfeld).
 - Ein kaputter `ctx` bricht „Map event“ weiter ab (`JSON.parse` ohne Fang). Wer nur `tokens` schickt, ist davon frei.
+- **Wer `tokens` sendet (seit 12.11.2026, 32 Aufrufe):** `[Maintain] Store New Flag` (2), `[Sync] Google Places to Shopify` (2; die dritte Störung hinter dem Filter „Write rejected“ liest weiter `ctx` aus „Build report“), `[Sync] JTL to Airtable` (1), `[Create] Salesperson` (2: `error.lexware_orphan` mit `id`, `error.salesperson_failed`), `[Create] Store` (10: `error.store_partial`, `error.store_failed`), `[Sync] Airtable to Shopify` (8), `[Dispatch] Upload PDF` (6), `[Dispatch] Lexware Voucher` (1). Der Code-Schritt „Build error context“ vor diesen Aufrufen ist entfallen, die Meldetexte sind gleich geblieben. Noch mit Code-Schritt und `ctx`: `[Sync] Shopify to Airtable` (7) und `[Dispatch] Manual Action` (1, derselbe Code baut dort auch die Zeile für `Bestandsprüfungen.Hinweis`).
+- **Werte am Aufruf-Modul:** fester Text, ein Ausdruck oder beides gemischt. Ersatzwert für einen leeren Fehlertext: `{{ifempty(<Modul>.error.message; "unbekannt")}}`. Text nur, wenn ein Wert da ist: `{{if(<Wert>; "<Text>"; "")}}` (so entsteht der Record-Link in `[Create] Store`). Beides am 12.11.2026 mit einer Prüfkopie gegen den Hub geprüft: leerer Wert, fehlender Wert, Anführungszeichen, Zeilenumbruch, Backslash.
+- **Form am Aufruf-Modul (Blueprint):** `mapper.data.tokens` ist eine Liste aus `{ "name": …, "value": … }`; in `metadata.expect` steht der Eingang als `type: array` mit `spec: [name, value]`. Der Editor nimmt die Form beim Import an und zeigt die Einträge als „Item 1 …“ (geprüft 12.11.2026).
 - Im Interface steht der Eingang als `type: array` mit `spec: [name, value]`. Diese Listenform führt Make selbst (wie `lines` an `[Resolve] Positions`); `validate_scenario_interface` der Make-Anbindung lehnt sie trotzdem ab. Das Interface deshalb nach einem Import am zurückgelesenen Stand prüfen (`scenarios_interface`), nicht an dieser Prüfung.
 
 ### `task_key` — Ereignis und Aufgabe in einem Lauf
