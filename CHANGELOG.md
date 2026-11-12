@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.36.0](https://github.com/wemwi/skill-library/compare/v6.35.0...v6.36.0) (2026-11-12)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Fehlerwege und Bezeichnungen nach dem Audit-Abschluss ([#314](https://github.com/wemwi/skill-library/issues/314)) ([2f34de6](https://github.com/wemwi/skill-library/commit/2f34de6cb3d97bb85e7efc4c00ab89886f34313a))
+
 ## [6.35.0](https://github.com/wemwi/skill-library/compare/v6.34.0...v6.35.0) (2026-11-11)
 
 
