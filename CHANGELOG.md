@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.37.0](https://github.com/wemwi/skill-library/compare/v6.36.0...v6.37.0) (2026-11-12)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Hub-Vertrag mit tokens und task_key, sync.stores nennt Shopify ([#316](https://github.com/wemwi/skill-library/issues/316)) ([d25678b](https://github.com/wemwi/skill-library/commit/d25678b5a1b3402f09143658a33d7b899339a830))
+
 ## [6.36.0](https://github.com/wemwi/skill-library/compare/v6.35.0...v6.36.0) (2026-11-12)
 
 
