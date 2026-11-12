@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.40.0](https://github.com/wemwi/skill-library/compare/v6.39.0...v6.40.0) (2026-11-12)
+
+
+### Features
+
+* **global-workflow:** Verweise beim Entfernen mitnehmen, erledigte Handover löschen ([#324](https://github.com/wemwi/skill-library/issues/324)) ([1d12632](https://github.com/wemwi/skill-library/commit/1d12632f43d1f904a8c96403e8c383514f5eb017))
+
 ## [6.39.0](https://github.com/wemwi/skill-library/compare/v6.38.0...v6.39.0) (2026-11-12)
 
 
