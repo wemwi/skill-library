@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.43.0](https://github.com/wemwi/skill-library/compare/v6.42.0...v6.43.0) (2026-11-13)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Produktabgleich mit drei Schreibketten und tokens ([#330](https://github.com/wemwi/skill-library/issues/330)) ([8ddaa7b](https://github.com/wemwi/skill-library/commit/8ddaa7b14fc683a8c713f3d639481397379dad6e))
+
 ## [6.42.0](https://github.com/wemwi/skill-library/compare/v6.41.0...v6.42.0) (2026-11-12)
 
 
