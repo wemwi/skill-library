@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.46.0](https://github.com/wemwi/skill-library/compare/v6.45.0...v6.46.0) (2026-11-14)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Wiederholung am Aufruf „Read voucher“ im Gutschrift-Worker ([#336](https://github.com/wemwi/skill-library/issues/336)) ([e5c8634](https://github.com/wemwi/skill-library/commit/e5c86349f72c77b2d130bb7a96229d0ea4551b2e))
+
 ## [6.45.0](https://github.com/wemwi/skill-library/compare/v6.44.0...v6.45.0) (2026-11-14)
 
 
