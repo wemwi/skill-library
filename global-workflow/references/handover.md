@@ -1,6 +1,7 @@
 # Handover — Session-Übergabe
 
-Vorlage für die Übergabe an eine **frische Session**, die diesen Chat nie gesehen hat. Drei Ziele, gleiches Skelett:
+Vorlage für die Übergabe an eine **frische Session**, die diesen Chat nie gesehen hat. Vier Ziele, gleiches Skelett:
+- **Agent** — vom entscheidenden Chat selbst gestartet, der Normalfall für Entschiedenes und Umkehrbares (global-workflow §7); das Skelett ist sein Auftrag, braucht `## Bei Blocker` und eine maschinell prüfbare DoD
 - **Claude Code** — ausgelöst durch einen 🧰-Werkzeugwechsel (global-workflow §4, §7)
 - **frischer Chat** — ausgelöst durch einen 🔄-Kontextwechsel (global-workflow §7, „ein Task, ein Chat")
 - **unbeaufsichtigter Lauf** — Umsetzung ohne Joscha (global-workflow §10); braucht zusätzlich `## Bei Blocker` und `## Für Joscha (manuell)`
@@ -23,7 +24,7 @@ Ein Handover ist das **Gegenteil einer Zusammenfassung.** Eine Zusammenfassung k
 Die Felder WAS/WO/REGELN/OUTPUT sind die Prompt-Vollständigkeit aus global-workflow §1. **Entschieden** und **Bereits erledigt** sind die zwei handover-spezifischen Felder, die den eigentlichen Wert ausmachen.
 
 ```
-# Handover → [Claude Code | frischer Chat | unbeaufsichtigt]
+# Handover → [Agent | Claude Code | frischer Chat | unbeaufsichtigt]
 
 ## Auftrag (WAS)
 [Ein Satz: was gebaut/geändert wird]
@@ -58,6 +59,6 @@ Betroffen: [exakte Pfade — keine „die Datei von vorhin"]
 - Steht unter **Entschieden** ein Outcome oder eine Abwägung? → auf das Outcome reduzieren.
 - Gibt es eine harte Stop-Grenze? Ohne sie schleift eine Code-Session weiter als gewollt.
 - Wird ein Skill-Inhalt zitiert statt nur genannt? → auf den Namen kürzen.
-- Hat ein unbeaufsichtigter Handover eine Blocker-Regel und eine maschinell prüfbare DoD? → sonst ergänzen.
+- Hat ein Agent-Auftrag oder ein unbeaufsichtigter Handover eine Blocker-Regel und eine maschinell prüfbare DoD? → sonst ergänzen.
 - Muss der Lauf auf etwas warten (CI, Release, andere Arbeit)? → Worauf, wie lange höchstens, was danach.
 - Führt das Thema eine Statusdatei (global-workflow §11)? → unter WO nennen und in der DoD fortschreiben lassen.

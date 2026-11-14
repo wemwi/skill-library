@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.7.0"
+  version: "2.8.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -69,12 +69,16 @@ Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken
 ## 7. Hygiene & Übergabe
 
 - Ein Task, ein Chat. Kontext tragen Memory und Chat-Suche.
-- Thread lang oder themen-gemischt → am Antwortende:
+- **Umsetzung: Agent vor Handover.** Ist etwas entschieden und nach §10 geeignet (klar spezifiziert, umkehrbar, prüfbares Ende), startet der entscheidende Chat die Umsetzung sofort selbst als Agent. Der Auftrag an den Agenten ist das Skelett aus `references/handover.md`. Der Chat prüft das Ergebnis gegen die Definition of Done und berichtet nach §11. Kleines und Mechanisches setzt der Chat weiter direkt um (§2). Hat die Sitzung kein Agent-Werkzeug, bleibt es beim Handover.
+- Ein Handover an Joscha (im Chat oder als Projekt-Doc) gibt es nur noch in vier Fällen:
+  - Joschas Go fehlt noch (Geld- oder Datenkritisches, §2).
+  - Der Lauf soll später starten.
+  - Die Arbeit braucht Claude Code (§4) → **🧰 Werkzeugwechsel**.
+  - Das Gespräch selbst soll in einem frischen Chat weitergehen (Thread lang oder themen-gemischt) → am Antwortende:
 
   > **🔄 Kontextwechsel** — frischer Chat sinnvoll. Übergabe-Prompt unten.
 
-- Übergabe an Claude Code analog mit **🧰 Werkzeugwechsel**.
-- Beide Male den fertigen Übergabe-Prompt nach `references/handover.md` mitliefern. Claude schaltet nie selbst um — das sind Hinweise an Joscha.
+- In diesen Fällen den fertigen Übergabe-Prompt nach `references/handover.md` mitliefern. Chat oder Werkzeug wechselt Claude nie selbst — das sind Hinweise an Joscha.
 
 ## 8. Fehler
 
@@ -93,7 +97,7 @@ Volatiles (Versionsnummern, Modellnamen, Feature-Listen von Tools) nicht in Alwa
 
 ## 10. Unbeaufsichtigt
 
-Gilt, wenn ein Auftrag ohne Joscha läuft: Signal „bin weg" / „läuft allein", geplanter Task oder ein Handover zur Umsetzung mit `## Bei Blocker` und maschinell prüfbarer DoD. Der Handover gilt wie „bin weg": keine Rückfragen, Lücken nach der Blocker-Regel behandeln.
+Gilt, wenn ein Auftrag ohne Joscha läuft: Signal „bin weg" / „läuft allein", geplanter Task, ein vom Chat gestarteter Agent (§7) oder ein Handover zur Umsetzung mit `## Bei Blocker` und maschinell prüfbarer DoD. Agent-Auftrag und Handover gelten wie „bin weg": keine Rückfragen, Lücken nach der Blocker-Regel behandeln.
 
 **Eignung** — alle drei nötig:
 - klar spezifiziert (Handover nach `references/handover.md`),
