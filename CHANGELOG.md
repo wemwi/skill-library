@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.45.0](https://github.com/wemwi/skill-library/compare/v6.44.0...v6.45.0) (2026-11-14)
+
+
+### Features
+
+* **global-workflow:** Umsetzung als Agent vor Handover ([#334](https://github.com/wemwi/skill-library/issues/334)) ([93faca6](https://github.com/wemwi/skill-library/commit/93faca6ad090a9f9a1e5ace92d310b6b6f51175d))
+
 ## [6.44.0](https://github.com/wemwi/skill-library/compare/v6.43.0...v6.44.0) (2026-11-14)
 
 
