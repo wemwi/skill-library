@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.8.0"
+  version: "2.9.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -70,9 +70,9 @@ Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken
 
 - Ein Task, ein Chat. Kontext tragen Memory und Chat-Suche.
 - **Umsetzung: Agent vor Handover.** Ist etwas entschieden und nach §10 geeignet (klar spezifiziert, umkehrbar, prüfbares Ende), startet der entscheidende Chat die Umsetzung sofort selbst als Agent. Der Auftrag an den Agenten ist das Skelett aus `references/handover.md`. Der Chat prüft das Ergebnis gegen die Definition of Done und berichtet nach §11. Kleines und Mechanisches setzt der Chat weiter direkt um (§2). Hat die Sitzung kein Agent-Werkzeug, bleibt es beim Handover.
-- Ein Handover an Joscha (im Chat oder als Projekt-Doc) gibt es nur noch in vier Fällen:
+- **Späterer Start: einmaliger geplanter Task.** Soll ein nach §10 geeigneter Lauf erst später starten, legt der Chat dafür selbst einen einmaligen geplanten Task an, statt Joscha einen Handover zu geben. Der Prompt des Tasks ist der vollständige Auftrag nach `references/handover.md`, ausgeschrieben und ohne Verweis auf diesen Chat. Für den Task gelten die Regeln unter „Geplante Tasks" in §10. Hat die Sitzung kein Werkzeug für geplante Tasks, bleibt es beim Handover.
+- Ein Handover an Joscha (im Chat oder als Projekt-Doc) gibt es nur noch in drei Fällen:
   - Joschas Go fehlt noch (Geld- oder Datenkritisches, §2).
-  - Der Lauf soll später starten.
   - Die Arbeit braucht Claude Code (§4) → **🧰 Werkzeugwechsel**.
   - Das Gespräch selbst soll in einem frischen Chat weitergehen (Thread lang oder themen-gemischt) → am Antwortende:
 

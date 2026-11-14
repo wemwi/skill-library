@@ -4,7 +4,7 @@ Vorlage für die Übergabe an eine **frische Session**, die diesen Chat nie gese
 - **Agent** — vom entscheidenden Chat selbst gestartet, der Normalfall für Entschiedenes und Umkehrbares (global-workflow §7); das Skelett ist sein Auftrag, braucht `## Bei Blocker` und eine maschinell prüfbare DoD
 - **Claude Code** — ausgelöst durch einen 🧰-Werkzeugwechsel (global-workflow §4, §7)
 - **frischer Chat** — ausgelöst durch einen 🔄-Kontextwechsel (global-workflow §7, „ein Task, ein Chat")
-- **unbeaufsichtigter Lauf** — Umsetzung ohne Joscha (global-workflow §10); braucht zusätzlich `## Bei Blocker` und `## Für Joscha (manuell)`
+- **unbeaufsichtigter Lauf** — Umsetzung ohne Joscha (global-workflow §10), auch als Prompt eines einmaligen geplanten Tasks bei späterem Start (global-workflow §7); braucht zusätzlich `## Bei Blocker` und `## Für Joscha (manuell)`
 
 ## Leitgedanke
 
