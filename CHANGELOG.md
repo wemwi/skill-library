@@ -1,5 +1,17 @@
 # Changelog
 
+## [6.48.0](https://github.com/wemwi/skill-library/compare/v6.47.0...v6.48.0) (2026-11-14)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Laufansichten nur über Auszugsskript lesen ([#340](https://github.com/wemwi/skill-library/issues/340)) ([8e69951](https://github.com/wemwi/skill-library/commit/8e69951304a07e8a4b097e24e0666e3293b85663))
+
+
+### Bug Fixes
+
+* **global-workflow:** Projekt-Zuordnung geplanter Tasks im Browser prüfen ([#341](https://github.com/wemwi/skill-library/issues/341)) ([0a9b9c6](https://github.com/wemwi/skill-library/commit/0a9b9c6001d9df0467c032fc3050af0725bf1841))
+
 ## [6.47.0](https://github.com/wemwi/skill-library/compare/v6.46.0...v6.47.0) (2026-11-14)
 
 
