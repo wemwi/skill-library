@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.47.0](https://github.com/wemwi/skill-library/compare/v6.46.0...v6.47.0) (2026-11-14)
+
+
+### Features
+
+* **global-workflow:** späterer Start als einmaliger geplanter Task ([#338](https://github.com/wemwi/skill-library/issues/338)) ([22ae17d](https://github.com/wemwi/skill-library/commit/22ae17d59128560388a22244476e2693d55e9c74))
+
 ## [6.46.0](https://github.com/wemwi/skill-library/compare/v6.45.0...v6.46.0) (2026-11-14)
 
 
