@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Gutschriften, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.44.0"
+  version: "1.45.0"
 ---
 
 # selectedleafs · POS Operations
@@ -106,6 +106,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 | ein Szenario baust/mappst/debuggst | `references/scenarios.md` (Vertrag) + Live-Szenario per Make-MCP (`scenarios_get(<id>)`) |
 | eine Telegram-Meldung baust/prüfst | `references/notify.md` (Grammatik) + `assets/catalog.md` (Texte) + `references/messages.md` (ausgefüllte Übersicht) |
 | an Airtable-/Make-MCP-Eigenheiten scheiterst | `references/tools.md` |
+| eine Laufansicht oder unvollständige Ausführung von Make im Browser liest | `references/tools.md` (Abschnitt „Laufansichten im Browser lesen“) + `scripts/make-run-view.js` |
 | Idempotenz, Fehlerpfad, Registry, Wächter brauchst | `references/operations.md` |
 | Aussagen über Papier-Inhalte machst (was auf einem Beleg steht) | `assets/examples/` (echte Belege, `README.md` mit Tabelle je Belegtyp) |
 
@@ -127,6 +128,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 - **Altstand-Base `appAFFDgesKLltBtd` nie anfassen** (eingefroren).
 - **Keine volatile `fld…`-ID/Formel als Fakt in Prosa** (Drift-Firewall).
 - **Keine Beschreibungen in der Base außer den Markern** (🟣 Make, 🟢 App): keine Tabellenbeschreibungen, keine Zusatztexte, auch nicht hinter einem Marker. Erklärendes gehört in `references/airtable/<tabelle>.md` (→ `references/model.md` §2).
+- **Laufansichten von Make nie als Seitentext oder Bild holen.** Fehlertexte tragen Zugangsdaten (Telegram: Adresse samt Bot-Token). Gelesen wird nur über `scripts/make-run-view.js` (→ `references/tools.md`, Abschnitt „Laufansichten im Browser lesen“).
 
 ---
 
@@ -135,5 +137,7 @@ Alle Make-Szenarien tragen ein **Rollen-Präfix** (nach der Aufgabe, nicht nach 
 **`references/`** — `model.md` (Datenmodell, Geld, Versionierung, Datum, Steuer) · `scenarios.md` (Szenario-Verträge + Topologie) · `notify.md` (Telegram-Grammatik, drei Channels, Renderer-Kontrakt, City-Anker) · `messages.md` (ausgefüllte Nachrichten-Übersicht — Ansicht; Text-SSoT bleibt `assets/catalog.md`) · `tools.md` (Airtable-/Make-MCP-Fallen; Generisches → `global-make-conventions`) · `operations.md` (Idempotenz, Fehlerkonvention, Registry, Wächter-Views) · **`airtable/<tabelle>.md`** (je Tabelle: Zweck · Beziehungen · tragende Felder + datierter Feld-Block).
 
 **`assets/`** — `catalog.md` (Nachrichtenkatalog) · `diagrams/` (`er.html`, `topology.html` — datierte Review-Artefakte) · `examples/` (echte Belege). Szenario-Innereien werden **live** per Make-MCP gelesen (`scenarios_get`) statt als Dump vorgehalten.
+
+**`scripts/`** — `make-run-view.js` (liest Laufansichten und unvollständige Ausführungen von Make im Browser, ersetzt Adressen und Tokens vor der Ausgabe).
 
 **Abgrenzung:** Shopify-Theme → `liftr-*` · City-Marketing/Brand → `selectedleafs-city-content`/`-brand` · generische Make-Mechanik → `global-make-conventions`.

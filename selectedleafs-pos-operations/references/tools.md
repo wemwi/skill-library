@@ -41,6 +41,16 @@ Projektspezifische Fallen von Airtable-MCP und Make in **dieser** Base/diesem Te
   - **Diagnose:** ein Kind mit `metadata.interface` am Trigger, aber leerem Szenario-Interface, ist **immer** defekt. Nicht „hat keins", sondern „hat seins verloren". Diese Lesart nicht wegargumentieren — genau das hat am 2026-08-22 zwei Tage Meldungsausfall gekostet.
 - **`resolver_version` als Pflichtausgabe.** Jeder Resolver (`[Resolve] Store` 7049889 · `[Resolve] Salesperson` 8473461 · `[Resolve] Condition` 8473477 · `[Resolve] Positions`) gibt `ok` und `resolver_version` zurück. Der **Aufrufer** filtert hart darauf: kommt `resolver_version` leer an, hat das Kind nicht geantwortet — das ist eine Verdrahtungs-, keine Datenlage. Ohne diese Prüfung liest sich der Ausfall als sauberes „nicht gefunden".
 
+## Laufansichten im Browser lesen
+
+Welche Module in einem Lauf liefen und was ein Fehler sagt, zeigt nur die Laufansicht im Browser (`https://eu1.make.com/2174024/scenarios/<Szenario>/logs/<Lauf>`), geparkte Läufe zeigt der Reiter „Incomplete executions“ (`…/scenarios/<Szenario>/dlq`).
+
+- **Fehlertexte tragen Zugangsdaten.** Scheitert ein Telegram-Modul an der Verbindung, schreibt Make die Adresse samt Bot-Token im Klartext in den Fehlertext (gesehen 14.11.2026 am Hub `[Notify] Telegram Channels`, „Send to Operations“). Telegram verlangt den Token in der Adresse, in Make lässt sich das nicht abstellen. Andere Module können ebenso Adressen mit Schlüsseln zeigen.
+- **Gelesen wird nur über `scripts/make-run-view.js`.** Das Skript ersetzt Adressen (Schema und Host bleiben) und alles, was wie ein Token oder Schlüssel aussieht, bevor etwas in den Chat kommt. Steht danach noch ein Rest, gibt es keinen Text aus. Auf diesen beiden Seiten nie: den ganzen Seitentext holen (`get_page_text`, `read_page`), ein Bildschirmfoto oder einen Ausschnitt mit geöffnetem Fehler, die Netzwerk-Anfragen der Seite.
+- **Gebrauch:** den Inhalt der Datei an das Skript-Werkzeug des Browsers geben, vorher nur die Einstellungen setzen. Protokoll eines Laufs: `KLICK = 'Show all'`, `AB = 'Advanced log'`. Liste der geparkten Läufe: `AB = 'Incomplete executions'`. Das Werkzeug kürzt Ausgaben bei rund 1000 Zeichen, die Antwort kommt deshalb in Stücken (`TEIL`, die Antwort nennt `teile`). Meldet sie „AB nicht gefunden“, ist die Seite noch nicht geladen: `WARTEN_MS` erhöhen (7000 reichte am 14.11.2026). Meldet sie „KLICK nicht gefunden“, `KLICK` leer lassen.
+- **Gilt für jeden, der liest:** Chat, Unterlauf, geplanter Task. Der Auftrag an einen Unterlauf oder Task nennt diese Regel ausdrücklich.
+- **Kommt doch ein Token in den Chat:** nicht wiederholen, nirgends ablegen, Joscha sofort nennen, welche Verbindung betroffen ist. Der Token wird neu ausgestellt (`global-credentials`). Am 14.11.2026 trugen den Token des Bots „Operations“ zwei Stellen, beide brauchen dann den neuen: die Make-Verbindung „Telegram Bot · Operations“ und der Worker `telegram-operations-mcp` (Konnektor „Telegram“, Secret `TELEGRAM_BOT_TOKEN`).
+
 ## Namen & Werte, an denen Make zeichengenau hängt
 
 `Stores.Name` (Restock-Match) · `Stores.ID`/`Produktvarianten.ID` (Bestands-/SKU-Schlüssel) · alle `Shopify GID` (voll inkl. Präfix) · die Dedup-Formeln `BLG-`/`BSP-`/`BST-` · die Select-Optionen, die Make als String schreibt (`Status`, `Belegtyp`). Ändern = stiller Bruch.
