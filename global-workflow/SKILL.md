@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.9.0"
+  version: "2.9.1"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -126,7 +126,7 @@ Nicht geeignet: Live-Schreiben mit Geld- oder Datenwirkung (Make-Szenarien, Airt
 
 **Geplante Tasks**
 - Das Werkzeug für geplante Tasks kann keine Konnektoren auswählen, neue Tasks erhalten alle. Bei automatischer Freigabe die nötigen Konnektoren unter „Für Joscha" nennen („in den Task-Einstellungen nur … behalten").
-- Nach dem Anlegen per list_triggers prüfen, ob der Task am Projekt hängt. Braucht er Projekt-Docs und hängt nicht daran: unter „Für Joscha" (Task dem Projekt zuordnen). Bis dahin setzt der Prompt die Docs nicht voraus.
+- Ob ein Task am Projekt hängt, zeigt nur die Aufgabenliste des Projekts im Browser (Projektseite, „Geplant"): `list_triggers` nennt kein Projekt, auch nicht mit `include_completed`. Ein aus einem Projekt-Chat angelegter Task stand dort, ohne dass ihn jemand zuordnen musste (14.11.2026). Nachsehen, wenn Joschas Chrome verbunden ist; sonst im Bericht „nicht geprüft" schreiben und keinen Handgriff daraus machen. Braucht der Task Projekt-Docs und fehlt er in der Liste: unter „Für Joscha" (Task dem Projekt zuordnen). Bis dahin setzt der Prompt die Docs nicht voraus.
 
 **Tokens:** §6; unabhängige Stränge parallel in eigenen Worktrees.
 
