@@ -123,16 +123,16 @@
 <script>
 const W=168;
 const N={
-  disp_pdf:[24,150,'dispatch','[Dispatch] Upload PDF','Gateway-Webhook','6836167'],
+  disp_pdf:[24,150,'dispatch','[Dispatch] Upload Voucher','Gateway-Webhook','6836167'],
   disp_vou:[24,360,'dispatch','[Dispatch] Lexware Voucher','watchEvents · A2-Guard','6872775'],
 
-  proc_del:[280,40,'process','[Process] Upload PDF (Delivery)','→ Lieferungen','6677862',{h:52}],
-  proc_inv:[280,132,'process','[Process] Upload PDF (Inventory)','→ Bestandsprüfungen','6729541',{h:52}],
+  proc_del:[280,40,'process','[Process] Upload Voucher (Delivery)','→ Lieferungen','6677862',{h:52}],
+  proc_inv:[280,132,'process','[Process] Upload Voucher (Inventory)','→ Bestandsprüfungen','6729541',{h:52}],
   proc_is:[280,224,'process','[Process] Invoice (Store)','→ Umsätze','6633991'],
   proc_ia:[280,304,'process','[Process] Invoice (Sales)','→ Auszahlungen','6872651'],
   proc_rem:[280,384,'process','[Process] Payment Reminder','Mailhook · Mahnstufe','6844567'],
 
-  sync_inv:[280,486,'sync','[Sync] Inventory to Shopify','City-Posts · Belegdatum-Gate','6805674',{h:52}],
+  sync_inv:[280,486,'sync','[Sync] Airtable to Shopify','City-Posts · Belegdatum-Gate','6805674',{h:52}],
   sync_prd:[280,578,'sync','[Sync] Shopify Products','So 04:00','6795533'],
   sync_sto:[280,658,'sync','[Sync] Shopify Stores','So 05:00 · Place API','6655783'],
   sync_pay:[280,738,'sync','[Sync] Lexware Payments','payment.changed','6955541'],

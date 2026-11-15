@@ -17,13 +17,13 @@ Drei Bausteine, situationsabhängig:
 
 - **`builtin:Resume`** — Lesefehler **übergehen** (leeres Ergebnis weiterreichen), wenn ein fehlender Nachschlag den Lauf nicht kippen soll (Notify-Nachlesen).
 - **`builtin:Break`** mit **Retry** — Zustellung wiederholen (alle Posts des Hubs, seit 11.11.2026 auch City: **3 Versuche im Abstand von 15 Minuten**), danach in die **DLQ** parken. Szenarien laufen mit `dlq:true`, `maxErrors:3`. Parken kann nur ein Szenario, das nicht mit Warten gerufen wird (`global-make-conventions` B8).
-- **`builtin:Ignore`** — bewusst **fallenlassen**, wo ein Ausfall folgenlos ist („Keep original“ in `[Archive] Document PDF`: scheitert die Komprimierung, bleibt das Original am Beleg).
+- **`builtin:Ignore`** — bewusst **fallenlassen**, wo ein Ausfall folgenlos ist („Keep original“ in `[Archive] Voucher`: scheitert die Komprimierung, bleibt das Original am Beleg).
 
 **Problem-Route:** harte Störungen enden als **`error.*`-Notify** im 🛑-Topic **584** (`error.sync_aborted`, `error.store_failed`, `error.lexware_orphan` …). Prinzip: **still abbrechen + melden**, nie halb schreiben und schweigen. Der **unbekannte Notify-Key** und ein nicht zuordenbares `task_key` gehen roh in dasselbe Topic (nichts verwerfen; seit 12.11.2026, vorher ein eigenes Thema, das Telegram ablehnte).
 
 ### Upload-Belegeingang: ein Neuanstoß-Weg, der Beleg (seit 10.11.2026)
 
-`[Dispatch] Upload PDF` ruft Kopf-Leser, `(Leftovers)` und die Worker mit Warten. Ein mit Warten gerufenes Szenario legt keine unvollständige Ausführung an, Make wiederholt dort nichts. Deshalb gibt es für diese Kette genau einen Neuanstoß:
+`[Dispatch] Upload Voucher` ruft Kopf-Leser, `(Leftovers)` und die Worker mit Warten. Ein mit Warten gerufenes Szenario legt keine unvollständige Ausführung an, Make wiederholt dort nichts. Deshalb gibt es für diese Kette genau einen Neuanstoß:
 
 | Fehlerort | Was passiert | Neuanstoß |
 |---|---|---|
@@ -35,7 +35,7 @@ Drei Bausteine, situationsabhängig:
 
 - **Zurücksetzen** heißt immer dasselbe: Hinweis leeren und Belegtyp auf Unbekannt. Die View „Inbox (make.com)“ verlangt beides.
 - **Nie „erneut hochladen“:** Ein zweiter Beleg desselben Dokuments bucht daneben oder endet als Duplikat.
-- **Reste räumt der Neulauf weg.** Ein Abbruch mitten im Schreiben lässt Zeilen mit Status In Bearbeitung stehen, deren Positionen sofort im Bestand zählen (Rollups ohne Statusfilter). `[Process] Upload PDF (Leftovers)` entfernt sie vor dem Worker. In Bearbeitung heißt damit: läuft gerade oder ist Rest. Eine solche Zeile ohne laufenden Lauf ist ein Befund.
+- **Reste räumt der Neulauf weg.** Ein Abbruch mitten im Schreiben lässt Zeilen mit Status In Bearbeitung stehen, deren Positionen sofort im Bestand zählen (Rollups ohne Statusfilter). `[Process] Upload Voucher (Leftovers)` entfernt sie vor dem Worker. In Bearbeitung heißt damit: läuft gerade oder ist Rest. Eine solche Zeile ohne laufenden Lauf ist ein Befund.
 - **Der Hinweis am Beleg** nennt Stufe, Fehler und den Neuanstoß-Satz, derselbe Satz steht in der Zeile „Folge“ von `error.sync_aborted`.
 - **Keine Direktstarts** der Worker und von `(Leftovers)` → [[scenarios]].
 
@@ -62,7 +62,7 @@ Die Registrierungs-Liste steht im Modul „Code: Soll-Ist-Abgleich“ (nirgends 
 
 Views sind **load-bearing**, nicht Kosmetik:
 
-- Die **Belege-View** treibt den Gateway-Trigger von `[Dispatch] Upload PDF`.
+- Die **Belege-Views** „Inbox (make.com)“ und „Inbox JTL (make.com)“ treiben die Gateway-Trigger von `[Dispatch] Upload Voucher` und `[Dispatch] JTL Voucher`.
 - Die View **„Wartet auf Kundennummer“** auf `Belege` (Filter: `Hinweis` = „Wartet auf Kundennummer“, nach Alter sortiert; seit 07.11.2026) ist der **Wächter** für geparkte Sales-App-Belege eines Stores ohne `Stores.ID`. Freigabe macht die Airtable-Automation **„Belege freigeben, wenn Kundennummer da“** (Stores, Auslöser `ID` nicht leer, Skript leert den Hinweis, ältester zuerst). Ein Beleg, der hier länger als 3 Tage steht, gehört in die Make-Überwachung (Meldung ab 3 Tagen): JTL-Kunde fehlt noch oder der Store wurde abgebrochen.
 - Die View **„Korrektur (make.com)“** auf `Bestandsprüfungen` (Filter: `Korrekturen buchen` ist an) treibt `[Process] Manual Action (Inventory Correction)`; dessen Modul „Load checks to correct“ liest sie zusätzlich per View-ID.
 - Die **gefilterte View** ist der Circuit-Breaker der Idempotenz (nur „offene"/„neue" Datensätze werden vom Lauf gesehen).
@@ -70,7 +70,7 @@ Views sind **load-bearing**, nicht Kosmetik:
 
 ## Freeze-Invarianten sind disziplin-getragen
 
-Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Definierte INSERT-only-Brüche: siehe `SKILL.md`, Invariante 2. Dort steht auch die einzige Lösch-Ausnahme: `[Process] Upload PDF (Leftovers)` löscht unfertige Zeilen eines Belegs vor dessen Neulauf. Von Hand werden Ereigniszeilen weiter nicht gelöscht. Wer nur die Zeile löscht, lässt Positionen ohne Eltern zurück, die weiter zählen.
+Die drei Invarianten (append-only Versionen · INSERT-only Ereignisse · Make-/Formel-Felder unantastbar) sind **nicht strukturell erzwungen** — sie halten durch die Wächter-Views und **einen Bearbeiter**. Definierte INSERT-only-Brüche: siehe `SKILL.md`, Invariante 2. Dort steht auch die einzige Lösch-Ausnahme: `[Process] Upload Voucher (Leftovers)` löscht unfertige Zeilen eines Belegs vor dessen Neulauf. Von Hand werden Ereigniszeilen weiter nicht gelöscht. Wer nur die Zeile löscht, lässt Positionen ohne Eltern zurück, die weiter zählen.
 
 ## Harte Regeln
 

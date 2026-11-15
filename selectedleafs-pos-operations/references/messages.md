@@ -53,7 +53,7 @@ Auslöser: Lieferschein AF-10163-1-001
 ℹ️ Keine Bestandsprüfungen mehr für diesen Store.
 ```
 **Vertriebler** — — · **City** — —
-*Emitter: `[Process] Upload PDF (Delivery)`, nur beim ersten Lieferschein eines Kommission-Stores; kommt zusammen mit `delivery.note_booked`.*
+*Emitter: `[Process] Upload Voucher (Delivery)`, nur beim ersten Lieferschein eines Kommission-Stores; kommt zusammen mit `delivery.note_booked`.*
 
 ### 🤝 `salesperson.created` — Neuer Vertriebler · `live`
 **Operations** — 📥 Vorgänge · 586
@@ -464,7 +464,7 @@ Kiosk Nordstern · 10132
 
 Geprüft am 12.08.2026
 ```
-*Emitter: `[Process] Upload PDF (Inventory)` und `[Process] Upload PDF (Return)`.*
+*Emitter: `[Process] Upload Voucher (Inventory)` und `[Process] Upload Voucher (Return)`.*
 
 ### 👉 `task.jtl_return` · `live` · NEU
 ```
@@ -629,7 +629,7 @@ Folge: Zahlungsstatus nicht gesetzt — der Umsatz bleibt offen
 ```
 
 ### 🛑 `error.return_failed` · `live` · NEU
-*Gate-Blockade in `[Process] Upload PDF (Return)` (nicht alle Positionen auflösbar, Resolver-Fehler oder negatives Verdikt) — keine Buchung, Hinweis steht im Beleg.*
+*Gate-Blockade in `[Process] Upload Voucher (Return)` (nicht alle Positionen auflösbar, Resolver-Fehler oder negatives Verdikt) — keine Buchung, Hinweis steht im Beleg.*
 ```
 🛑 Rückholung nicht gebucht
 BLG-00077 · Buchungsprüfung

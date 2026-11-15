@@ -78,7 +78,7 @@ Make schreibt **3** Felder und liest **12** (Nachtrag 2026-11-02: `Stores`, `Sto
   Kontakt → Vertriebler. Szenarien: 6872775.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Name`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldhDp2HHI6BxjlZq`  
-  LOWER(TRIM({Name})) Match. Szenarien: 6633991, 6729541.  
+  LOWER(TRIM({Name})) Match. Szenarien: 6633991, 8473461 (`[Resolve] Salesperson`; 6729541 liest `Vertriebler` seit 12.11.2026 nicht mehr selbst, geprüft 15.11.2026).  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher

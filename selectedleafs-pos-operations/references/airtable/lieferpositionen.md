@@ -59,7 +59,7 @@ Make **schreibt** hier 8 Felder und liest **3** (Nachtrag 2026-11-02, P3 Bestand
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld (gesetzt 2026-11-02)
 
 - **`Bestand`** · **`Menge nach Prüfung`** · **`Geprüft am`** — 🟣 `make.com (KEY · Name)`.  
-  Stehen im `filterByFormula` von „Load deliveries since last check“ in `[Resolve] Upload PDF (Grid)` (seit 12.11.2026, vorher im Worker 6729541). Szenarien: 8329417.  
+  Stehen im `filterByFormula` von „Load deliveries since last check“ in `[Resolve] Inventory Protocol` (seit 12.11.2026, vorher im Worker 6729541). Szenarien: 8329417.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher

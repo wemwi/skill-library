@@ -22,7 +22,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 - **`Shopify GID`** (Metaobjekt-GID, voll inkl. Präfix) · **`Google Place ID`** (baut den Maps-Link der City-Posts; leer ⇒ Namenssuche).
 - `Storemarge (Jahr/Gesamt)` (Formel, €) — `Nettoumsatzerlös − Nettoumsatz − Gutschriften Storemarge` (Handelsmarge des Stores; Basis Umsätze, nicht Lieferungen, sonst zählte unverkaufter Regalbestand als Verdienst mit).
 - `Gutschriften Storemarge (Jahr/Gesamt)` (Rollup ← `Gutschriften.Storemarge`, ohne Storniert, seit 09.11.2026; das Jahr über `Datum`). `Nettoumsatz (Jahr/Gesamt)` zählt nur Rechnungen.
-- **`Modell`** (Select: Kommission / Eigenbestand) — Abrechnungsmodell, siehe [[model]] §3. **Make schreibt es seit 05.11.2026:** der erste Lieferschein eines Kommission-Stores setzt `Eigenbestand` (`[Process] Upload PDF (Delivery)`, nur diese Richtung, meldet `store.model_changed`). Zurück auf Kommission nur von Hand. Bei Eigenbestand: keine Bestandsprüfungen und Erinnerungen, Rechnungen ohne Prüfzuordnung, der Shop behält die gelieferten Sorten, eine Rückholung ohne Rest setzt den Store nicht inaktiv.
+- **`Modell`** (Select: Kommission / Eigenbestand) — Abrechnungsmodell, siehe [[model]] §3. **Make schreibt es seit 05.11.2026:** der erste Lieferschein eines Kommission-Stores setzt `Eigenbestand` (`[Process] Upload Voucher (Delivery)`, nur diese Richtung, meldet `store.model_changed`). Zurück auf Kommission nur von Hand. Bei Eigenbestand: keine Bestandsprüfungen und Erinnerungen, Rechnungen ohne Prüfzuordnung, der Shop behält die gelieferten Sorten, eine Rückholung ohne Rest setzt den Store nicht inaktiv.
 - `Status` (Aktiv/Inaktiv/Probezeit) · `Stufe` (Bronze … Diamant) · `Telegram ID` (Lookup ← Stadt) · `Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
 - **`Fällig gemeldet am`** (Datum) — **B2-Idempotenz-Marker** von `[Maintain] Inventory Check Reminder` (→ `inventory.due`): der Emitter setzt ihn `= heute`, wenn er den Store als überfällig meldet, und meldet erst wieder, wenn der Marker älter als das wöchentliche Re-Nag-Fenster ist. Nur diese Klingel schreibt hier.
 
@@ -86,7 +86,7 @@ Make schreibt **8** Felder (seit 05.11.2026 auch `Modell`) und liest **25** (sei
   Re-Nag-Fenster. Szenarien: 7001118.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldL1YaDEswIZNnNP`  
-  JTL-Kundennummer Match. Szenarien: 6729541.  
+  JTL-Kundennummer Match. Szenarien: 7049889 (`[Resolve] Store`; 6729541 liest `Stores` seit 12.11.2026 nicht mehr selbst, geprüft 15.11.2026).  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Lexware ID`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fldk5PuObAVdGbWP4`  
   Kontakt → Store. Szenarien: 6633991, 6872775.  
@@ -95,7 +95,7 @@ Make schreibt **8** Felder (seit 05.11.2026 auch `Modell`) und liest **25** (sei
   Kommission als String. Szenarien: 7001118. Seit 05.11.2026 zusätzlich: **schreibt** 6677862 („Eigenbestand" als Optionsname, `typecast: false`); liest 6633991, 6677862, 6805674, 7062902.  
   ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
 - **`Name`** — 🟣 `make.com (KEY · Name)` · singleLineText · `fld7fbRS1BHvrqJrj`  
-  LOWER({Name}) Kommissionär-Match. Szenarien: 6729541.  
+  LOWER({Name}) Kommissionär-Match. Szenarien: 7049889 (`[Resolve] Store`; 6729541 liest `Stores` seit 12.11.2026 nicht mehr selbst, geprüft 15.11.2026).  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fld8fYS00U23noJST`  
   Aktiv/Probezeit als String. Szenarien: 7001118.  
