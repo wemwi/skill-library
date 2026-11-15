@@ -23,6 +23,7 @@ Verbindlicher Standard für Doku und Versionierung aller eigenen GitHub-Repos. D
 5. **READMEs auf Deutsch.**
 6. **Jede Repo-Änderung läuft als PR mit Conventional-Commit-Titel.** Der Titel wird beim Squash-Merge zur Commit-Message auf `main`. Nur wenn Claude keinen Schreibzugriff hat, kommt stattdessen ein fertiger Commit-Block zum Einfügen. Format: Abschnitt unten + `references/changelog.md`.
 7. **CI sparsam.** In privaten Repos kostet jede Minute; jeder Workflow folgt den Sparregeln in `references/ci.md` (Timeout, Abbruch veralteter Läufe, kein Doppellauf, Windows/macOS nur wo nötig). Gemergte Branches werden automatisch gelöscht (`references/settings.md`).
+8. **Erst prüfen, dann den PR normal öffnen — kein Draft als Zwischenstopp.** Tests, Build und bei größeren Änderungen eine unabhängige Prüfung laufen auf dem Branch, *bevor* der PR geöffnet wird; Befunde werden vorher behoben. Danach öffnet Claude den PR normal, das Automerge erledigt Merge, Release und Deploy. Als Draft nur, wenn der Auftrag ausdrücklich „nicht mergen“ sagt: Die Freigabe (Draft → Ready) macht dann Joscha, weil die Rechteprüfung der Sitzung sie als Produktions-Deploy einstuft und Claude sie nicht ausführen lässt.
 
 ## Repo-Typ am Suffix erkennen
 
