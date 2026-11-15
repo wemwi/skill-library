@@ -1,5 +1,14 @@
 # Changelog
 
+## [6.48.1](https://github.com/wemwi/skill-library/compare/v6.48.0...v6.48.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **global-git-conventions:** Grundprinzip 8 aus dem gemounteten Stand nachziehen ([#346](https://github.com/wemwi/skill-library/issues/346)) ([5a5f9dc](https://github.com/wemwi/skill-library/commit/5a5f9dcd0e37babc58062344ac9063da26df5ca8))
+* **global-make-conventions:** Import-Befunde zu Interface, Zeitplan und Kosten nachtragen ([#344](https://github.com/wemwi/skill-library/issues/344)) ([5898a0a](https://github.com/wemwi/skill-library/commit/5898a0aa1bc464ca0ec27db4d8e58d5bff11b80b))
+* **global-workflow:** Konnektoren geplanter Tasks sind nicht wählbar ([#345](https://github.com/wemwi/skill-library/issues/345)) ([7882347](https://github.com/wemwi/skill-library/commit/78823479562845f33fe607ac79fce5b3339f6894))
+
 ## [6.48.0](https://github.com/wemwi/skill-library/compare/v6.47.0...v6.48.0) (2026-11-14)
 
 
