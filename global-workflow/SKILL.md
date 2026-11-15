@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.9.2"
+  version: "2.9.3"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -57,8 +57,8 @@ Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken
 1. Basis = `main` von skill-library (Klon, §4), nicht die gemountete Version unter `/mnt/skills/…` — der Mount kann hinterherhinken (August 2026 hätte das bei `selectedleafs-pos-operations` fast einen Rollback ausgelöst).
 2. Nur gezielte Edits — Datei nicht komplett neu tippen (Ausnahme: bewusster Neubau einer Hauptversion).
 3. Kontrolle per `grep` (Version, Abschnitte), kein erneutes Komplett-Lesen.
-4. `.skill` mit skill-creator `package_skill.py` bauen. Ist Joschas Chrome verbunden, selbst per Claude in Chrome mounten (Anpassungen → Skills → Skill hochladen, ersetzen); sonst ausliefern → Joscha mountet.
-5. Dieselbe Änderung ins Skill-Repo committen (§4). Nach dem Mounten Abgleich per `global-setup-audit/scripts/backup_check.py` — das Mounten formatiert den Frontmatter um, verglichen werden deshalb Version, Rumpf und übrige Dateien.
+4. `.skill` mit skill-creator `package_skill.py` bauen. Ist Joschas Chrome verbunden, selbst per Claude in Chrome mounten (Anpassungen → Skills → Skill hochladen, ersetzen); sonst ausliefern → Joscha mountet. Der Upload nimmt mehrere Pakete auf einmal und fragt je Skill „Ersetzen“. Das Skript-Werkzeug des Browsers läuft auf claude.ai nicht, der Weg geht über Klicks.
+5. Dieselbe Änderung ins Skill-Repo committen (§4). Nach dem Mounten Abgleich per `global-setup-audit/scripts/backup_check.py` — das Mounten formatiert den Frontmatter um, verglichen werden deshalb Version, Rumpf und übrige Dateien. In der Sitzung, die gemountet hat, zeigt die Kopie der Skills noch den alten Stand (`backup_check.py` meldet „Mount veraltet“): Dort die Version im Browser auf der Inhaltsseite des Skills lesen, den Abgleich über die Dateien zeigt erst eine neue Sitzung.
 
 ## 6. Modell & Delegation
 
@@ -137,6 +137,6 @@ Gilt für jede Statusübersicht („was ist offen?“, „Stand?“) und für je
 - **Ein Punkt, eine Zeile**, mit Kennung und Namen (`B7 Webhook-Wartung`). Nie zu Gruppen zusammenfassen („B1 bis B6 zurückgestellt“).
 - **Legende:** ✅ erledigt · 🔶 teilweise · ⏳ wartet auf einen Lauf oder Joschas Go · ⏸ zurückgestellt · ➖ entfällt · ❓ Joschas Entscheidung. Die Legende steht unter der Liste.
 - **❓ zuerst**, je mit Vorschlag. Danach nach Herkunft gegliedert (Audit-Abschnitt, Spec, Bau-Runde).
-- **Statusdatei je Thema** im Projekt (`claude/status-<thema>.md`): die vollständige Liste, zurückgestellte Punkte nach Szenario oder Komponente geordnet, damit ein Import die offenen Punkte seines Szenarios mitnimmt. Jeder Abschlussbericht und jeder Handover schreibt sie fort.
+- **Statusdatei je Thema** im Projekt (`claude/status-<thema>.md`): die vollständige Liste, zurückgestellte Punkte nach Szenario oder Komponente geordnet, damit ein Import die offenen Punkte seines Szenarios mitnimmt. Jeder Abschlussbericht und jeder Handover schreibt sie fort. Unmittelbar vorher neu lesen: `project_info` nennt je Doc nur das Anlagedatum, eine fremde Änderung zeigt nur der Inhalt.
 - **Im Abschlussbericht** nur, was sich geändert hat, dazu alle ❓ und ⏳ und der Verweis auf die Statusdatei. Die ganze Liste, wenn Joscha nach dem Stand fragt.
 - **Jeder offene Punkt an seiner Quelle geprüft**, bevor er als ⏳ oder ❓ erscheint: Stand-Abschnitt der Spec, Live-Szenario, Laufliste. Nie aus einer älteren Liste oder einem „Offen“-Block übernehmen, der einen späteren Stand nicht kennt. Nicht prüfbar → so kennzeichnen.
