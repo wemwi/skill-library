@@ -53,7 +53,7 @@ Make schreibt **7** Felder und liest **5** (Nachtrag 2026-11-11: `Position`). Ei
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
 - **`Bestand`** — 🟣 `make.com (KEY · Name)` · link · `fldiGIBKsjmVOg2CR`  
-  Steht im `filterByFormula` von „Load credit notes since check day“ in `[Resolve] Upload PDF (Grid)` (seit 12.11.2026, vorher im Worker 6729541), zusammen mit `CREATED_TIME()`. Szenarien: 8329417.  
+  Steht im `filterByFormula` von „Load credit notes since check day“ in `[Resolve] Inventory Protocol` (seit 12.11.2026, vorher im Worker 6729541), zusammen mit `CREATED_TIME()`. Szenarien: 8329417.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher

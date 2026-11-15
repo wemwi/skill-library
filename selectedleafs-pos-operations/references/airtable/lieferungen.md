@@ -18,14 +18,14 @@ Eine Zeile = eine **Warenübergabe (Kommission)** an einen Store, belegt durch d
 
 ## Tragende Felder
 
-- **`ID`** (Text) — **Dedup-Schlüssel = Belegnummer aus dem PDF.** Ein zweiter Beleg mit gleicher Nummer wird abgewiesen. Make schreibt den Wert (kein Formelfeld). **Zeitpunkt (seit 10.11.2026):** `[Process] Upload PDF (Delivery)` schreibt die Nummer schon mit dem sauberen Verdikt, vor der ersten Position, und leert sie wieder, wenn die Zeile Fehlerhaft wird. Eine Zeile In Bearbeitung trägt also ihre Nummer, eine fehlerhafte nie. Rückhol-Lieferungen (`RETURN-…`) bekommen ihre Nummer weiter erst beim Abschluss. Die Sales App zeigt die `ID` als Titel, auch bei In Bearbeitung (entschieden 10.11.2026).
+- **`ID`** (Text) — **Dedup-Schlüssel = Belegnummer aus dem PDF.** Ein zweiter Beleg mit gleicher Nummer wird abgewiesen. Make schreibt den Wert (kein Formelfeld). **Zeitpunkt (seit 10.11.2026):** `[Process] Upload Voucher (Delivery)` schreibt die Nummer schon mit dem sauberen Verdikt, vor der ersten Position, und leert sie wieder, wenn die Zeile Fehlerhaft wird. Eine Zeile In Bearbeitung trägt also ihre Nummer, eine fehlerhafte nie. Rückhol-Lieferungen (`RETURN-…`) bekommen ihre Nummer weiter erst beim Abschluss. Die Sales App zeigt die `ID` als Titel, auch bei In Bearbeitung (entschieden 10.11.2026).
 - **`Kostenanteil`** (Formel, €) — **der Geldwert dieser Tabelle.** Live:
   `Kosten × Kostensatz × (1 + MwSt.)` → also **brutto**. Rollt zu `Vertriebler.Kostenanteil`. Entsteht **bei der Lieferung**.
 - **`Kosten`** (Rollup, €) — Σ `Lieferpositionen.Kosten` (EK × Menge, mit **eingefrorenem** EK).
 - **`Nettoverkaufswert`** (Rollup, €) — Σ `Lieferpositionen.Nettoverkaufswert` (VK-Sicht).
 - **`Kostensatz`** (Lookup %) / **`MwSt.`** (Lookup %) — aus der verknüpften `Konditionen`-Version; speisen die Kostenanteil-Formel.
 - **`Konditionen`** (Link) — die eff-dated gewählte Version.
-- **`Status`** (Select: Abgeschlossen / In Bearbeitung / Fehlerhaft) — von Make als **String** geschrieben; Option umbenennen bricht still. **In Bearbeitung** heißt: läuft gerade oder ist Rest eines Abbruchs. Nur solche Zeilen löscht `[Process] Upload PDF (Leftovers)` vor dem Neulauf des Belegs.
+- **`Status`** (Select: Abgeschlossen / In Bearbeitung / Fehlerhaft) — von Make als **String** geschrieben; Option umbenennen bricht still. **In Bearbeitung** heißt: läuft gerade oder ist Rest eines Abbruchs. Nur solche Zeilen löscht `[Process] Upload Voucher (Leftovers)` vor dem Neulauf des Belegs.
 - **`Datum`** (Lookup aus `Beleg.Datum`) — das **Leistungsdatum**, im **EU-Format D/M/YYYY** (Datum-Fallstrick, [[model]] §4).
 - Nebenfelder: `Unterschrieben` (Checkbox) · `Menge (kg)`/`Menge (Stück)` (Rollups) · `Positionen` (Count) · `Hinweis` (Freitext, Make).
 
@@ -70,7 +70,7 @@ Make schreibt **8** Felder und liest **10**. Zwei davon matcht Make über den Kl
   Belegnummer = Dedup. Szenarien: 6677862.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldCDruCnZNbtWoTp` (gesetzt 2026-11-10, steht über 🟢 `App (KEY · Options)`)  
-  8495399 vergleicht den Optionsnamen „In Bearbeitung“ im Code „Pick leftovers“. 6633991 vergleicht „Abgeschlossen“ im Code „Assign delivery note“ (seit 2026-11-11): Nur solche Lieferungen ordnet die Rechnung einem Lieferschein zu. 8511487 vergleicht „Abgeschlossen“ im Code „Pick invoices to retry“ (seit 2026-11-11): Nur nach solchen Lieferungen stößt `[Dispatch] Upload PDF` Rechnungen neu an. Geschrieben wird der Status weiter über die Options-ID.  
+  8495399 vergleicht den Optionsnamen „In Bearbeitung“ im Code „Pick leftovers“. 8540379 vergleicht „Abgeschlossen“ im Code „Assign delivery note“ (seit 2026-11-12 dort, davor in 6633991; geprüft 15.11.2026): Nur solche Lieferungen ordnet die Rechnung einem Lieferschein zu. 8511487 vergleicht „Abgeschlossen“ im Code „Pick invoices to retry“ (seit 2026-11-11): Nur nach solchen Lieferungen stößt `[Dispatch] Upload Voucher` Rechnungen neu an. Geschrieben wird der Status weiter über die Options-ID.  
   ⚠ Option umbenennen: Reste werden nicht mehr erkannt und nicht entfernt (still), und die Rechnung ordnet keinen Lieferschein mehr zu (sichtbar am Hinweis des Umsatzes).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
