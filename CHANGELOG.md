@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.50.0](https://github.com/wemwi/skill-library/compare/v6.49.2...v6.50.0) (2026-11-15)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Namen seit 14.11. durchziehen und JTL-Kette aufnehmen ([#353](https://github.com/wemwi/skill-library/issues/353)) ([f5b4dd7](https://github.com/wemwi/skill-library/commit/f5b4dd79ed47a1c6927f5cae1111650e87fd4248))
+
 ## [6.49.2](https://github.com/wemwi/skill-library/compare/v6.49.1...v6.49.2) (2026-11-15)
 
 
