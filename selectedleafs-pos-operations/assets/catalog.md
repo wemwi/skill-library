@@ -559,12 +559,14 @@ Danke für deine Arbeit! :)
 *Titel „X aktualisiert" · kursive Infozeile = Richtung (ein Fakt) · **kein Datum** (Telegram stempelt die Sendezeit). Zähler-Token ctx.*
 
 ### `sync.products` · feuert nur bei materieller Änderung
+*15.11.2026: an die Vorlage im Hub angeglichen, Anlegen und Ändern getrennt (`a` bis `f` aus „Build report“).*
 **Operations**
 ```
 ⚙️ Produkte aktualisiert
 <i>Shopify → Airtable</i>
 
-+{a} Produkte · +{c} Varianten · {e} Preise
+Neu: Produkte +{a} · Varianten +{c} · Preise +{f}
+Geändert: Produkte {b} · Varianten {d} · Preise {e}
 ```
 
 ### `sync.stores` · Runde 26: R24-Streichung zurückgenommen
