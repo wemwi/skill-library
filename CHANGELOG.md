@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.49.2](https://github.com/wemwi/skill-library/compare/v6.49.1...v6.49.2) (2026-11-15)
+
+
+### Bug Fixes
+
+* **global-workflow:** Mounten prüfen und Statusdatei vor dem Schreiben neu lesen ([#351](https://github.com/wemwi/skill-library/issues/351)) ([4e57b7a](https://github.com/wemwi/skill-library/commit/4e57b7a4879b814736b2db61ce536f7b663de485))
+
 ## [6.49.1](https://github.com/wemwi/skill-library/compare/v6.49.0...v6.49.1) (2026-11-15)
 
 
