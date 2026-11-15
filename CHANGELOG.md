@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.49.0](https://github.com/wemwi/skill-library/compare/v6.48.1...v6.49.0) (2026-11-15)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Verträge der Runde 5 und Werkzeug-Lehren nachziehen ([#343](https://github.com/wemwi/skill-library/issues/343)) ([0d77896](https://github.com/wemwi/skill-library/commit/0d77896094c95caccc1313aa614571e079413ba1))
+
 ## [6.48.1](https://github.com/wemwi/skill-library/compare/v6.48.0...v6.48.1) (2026-11-15)
 
 
