@@ -518,12 +518,13 @@ Beleg vom 12.08.2026
 *Runde 26: Titel „X aktualisiert", Infozeile = Richtung, kein Datum. Templates final — der **Hub-Reimport 6862968 steht aus**, bis dahin postet der Live-Hub noch die R25-Form.*
 
 ### ⚙️ `sync.products` — Produkt-Sync · `live` (R26-Layout mit Hub-Reimport)
-*Postet nur bei materieller Änderung; No-Op-Lauf bleibt still.*
+*Postet nur bei materieller Änderung; No-Op-Lauf bleibt still. 15.11.2026: an die Vorlage im Hub angeglichen, Anlegen und Ändern getrennt.*
 ```
 ⚙️ Produkte aktualisiert
 Shopify → Airtable
 
-+2 Produkte · +5 Varianten · 3 Preise
+Neu: Produkte +2 · Varianten +5 · Preise +5
+Geändert: Produkte 1 · Varianten 0 · Preise 3
 ```
 **Begleitend** → 🛑 `error.sync_aborted`
 
