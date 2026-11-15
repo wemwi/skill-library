@@ -32,6 +32,11 @@ Automerge-Workflow, der nach jedem anderen Workflow und zusätzlich stündlich s
   (`automation.md`, Hinweis „Kein Allow auto-merge").
 - Repo ohne PR-Prüfung: den `check`-Job der Vorlage weglassen, `needs:` streichen — der PR
   mergt dann direkt.
+- **Mehrere PRs zur selben Zeit:** Werden im selben Repo mehrere PRs gleichzeitig geöffnet,
+  kann ein Merge mit „Base branch was modified. Review and try the merge again.“ scheitern,
+  weil im selben Moment ein anderer PR gemergt wurde (15.11.2026, `skill-library`). PRs
+  deshalb nacheinander öffnen. Ist es passiert: den gescheiterten Job neu starten
+  (`rerun-failed-jobs`), er mergt dann.
 
 ## CI-Sparregeln
 
