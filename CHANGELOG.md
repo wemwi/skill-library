@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.49.1](https://github.com/wemwi/skill-library/compare/v6.49.0...v6.49.1) (2026-11-15)
+
+
+### Bug Fixes
+
+* **global-git-conventions:** mehrere PRs nacheinander öffnen ([#349](https://github.com/wemwi/skill-library/issues/349)) ([9a6c87c](https://github.com/wemwi/skill-library/commit/9a6c87c7c919b1f26417c26479968b79ce66d8b8))
+
 ## [6.49.0](https://github.com/wemwi/skill-library/compare/v6.48.1...v6.49.0) (2026-11-15)
 
 
