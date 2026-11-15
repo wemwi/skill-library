@@ -29,6 +29,10 @@ ohne Laufzeit-Metadaten (z.B. ohne den `scheduling`-Key, ohne
 Designer-Sample-Daten), die ein API-Fetch mitliefert und die beim
 Zurückschreiben unnötige Diffs erzeugen.
 
+Umgekehrt trägt die Kopie des Blueprints aus dem Editor in `metadata`
+zusätzlich `zone` und `notes`, der Stand aus `scenarios_get` nicht (gelesen
+14.11.2026). Wer beide Stände vergleicht, nimmt diese zwei Schlüssel aus.
+
 ## Aggregatoren: ganz oder gar nicht
 
 Aggregator-Module (`util:TextAggregator`, `builtin:BasicAggregator` etc.)
@@ -78,6 +82,18 @@ Ein Feld-Objekt vom Typ `text` hat die Form
 `{name, type, label, required, multiline}` — `multiline` ist bei `text`
 **Pflicht**, sonst schlägt das Setzen fehl.
 
+**Weitere Interface-Befunde (gelesen 12. und 14.11.2026).**
+- `validate_scenario_interface` lehnt die Listenform eines Eingangs ab
+  (`type: array` mit `spec: [Felder]`), die Make selbst führt und versteht. Ein
+  solches Interface lässt sich über diese Prüfung nicht wiederherstellen; dann
+  zählt allein der `io`-Block im Import-JSON.
+- Ein Eingang oder eine Rückgabe vom Typ Sammlung ohne den Schlüssel `spec`
+  reicht alles durch. Mit leerer Spezifikation (`spec: []`) kommt ein Eingang
+  leer an.
+- Ob der Blueprint aus `scenarios_get` das Interface trägt, schwankt (am
+  12.11.2026 nicht, am 14.11.2026 ja). Gelesen wird es deshalb immer über
+  `scenarios_interface`.
+
 **Symptom, wenn es durchrutscht** (Realfall 14.08.): ein Notification-Hub-
 Szenario wurde mit leerem Interface importiert. Alle Referenzen auf die
 Trigger-Bundle-Felder (`{{1.key}}`, `{{1.id}}`, `{{1.ctx}}`) liefen damit ins
@@ -115,6 +131,14 @@ Speichern die Anzeige oben rechts lesen und in den „Schedule settings" auf
 „Immediately" stellen (Runs je Minute wie vorher), danach wie oben per
 `scenarios_get` prüfen.
 
+**Was der Editor dabei zeigt (gelesen 14.11.2026):** Die Anzeige springt schon
+beim Import auf „Every 15 minutes“, sichtbar vor dem Speichern. Wer vor dem
+Speichern zurückstellt, speichert den falschen Zeitplan nie. Das Feld „Maximum
+runs to start per minute“ zeigt nach dem Zurückstellen 100; wird es geleert,
+speichert der Editor `maximum_runs_per_minute: null`. Dann den Wert von vorher
+eintragen oder nach dem Speichern den Zeitplan allein richtigstellen und
+zurücklesen.
+
 **Praktisch: die Nachkontrolle ist eine Liste, kein Einzelcheck.** `scenarios_list`
 gibt `hookId` und `scheduling` in derselben Antwort zurück. Ein Abgleich über den
 ganzen Team-Bestand („jedes Szenario mit `hookId` ≠ null hat
@@ -137,7 +161,14 @@ that hasn't been closed with a Merge module, so the scenario can't run“.
 If-else and Merge). Die Bedingung steht am Zweig, nicht als Filter am ersten
 Modul des Zweigs. Ein leerer Sonst-Zweig trägt einen Platzhalter
 (`placeholder:Placeholder`), damit das Bündel den Merge erreicht. If-else und
-Merge kosten laut Make Operationen, aber keine Credits.
+Merge kosten laut Make Operationen, aber keine Credits. Der Editor ergänzt am
+Else-Zweig eines neuen If-else `disabled: false`; beim Gegenlesen ist das keine
+Abweichung (gelesen 12.11.2026).
+
+**Gemessen in der Laufansicht (zwei Läufe, 13.11.2026):** Merge zählt als
+Operation mit 0 Credits; If-else, Platzhalter und Start zählen nicht. Ein
+Code-Schritt kostet 2 Credits. „Call a scenario“ zählt nicht in der Summe der
+Operationen des Laufs und kostet 0 Credits.
 
 **Prüfung vor der Lieferung**, im Bauskript oder Test: den Fluss rekursiv
 durchgehen; unter `branches[].flow` eines `builtin:BasicIfElse` darf kein

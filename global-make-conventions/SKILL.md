@@ -7,7 +7,7 @@ description: >-
   wenn ein Make-Szenario entworfen, gebaut, geprüft oder auditiert wird. Ergänzt
   make-scenario-building (das WIE) um das WELCHE.
 metadata:
-  version: "1.10.0"
+  version: "1.10.1"
 ---
 
 # global-make-conventions
