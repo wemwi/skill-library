@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.51.1](https://github.com/wemwi/skill-library/compare/v6.51.0...v6.51.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Nachtrag Runde 6, Weg zu „Dry run plan“ und Aufrufer des Kopf-Lesers ([#357](https://github.com/wemwi/skill-library/issues/357)) ([8016ed4](https://github.com/wemwi/skill-library/commit/8016ed4d6d6f65eee51e990cf2a22f04a4832752))
+
 ## [6.51.0](https://github.com/wemwi/skill-library/compare/v6.50.0...v6.51.0) (2026-11-17)
 
 
