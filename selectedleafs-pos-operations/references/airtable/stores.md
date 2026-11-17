@@ -23,7 +23,9 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 - `Storemarge (Jahr/Gesamt)` (Formel, €) — `Nettoumsatzerlös − Nettoumsatz − Gutschriften Storemarge` (Handelsmarge des Stores; Basis Umsätze, nicht Lieferungen, sonst zählte unverkaufter Regalbestand als Verdienst mit).
 - `Gutschriften Storemarge (Jahr/Gesamt)` (Rollup ← `Gutschriften.Storemarge`, ohne Storniert, seit 09.11.2026; das Jahr über `Datum`). `Nettoumsatz (Jahr/Gesamt)` zählt nur Rechnungen.
 - **`Modell`** (Select: Kommission / Eigenbestand) — Abrechnungsmodell, siehe [[model]] §3. **Make schreibt es seit 05.11.2026:** der erste Lieferschein eines Kommission-Stores setzt `Eigenbestand` (`[Process] Upload Voucher (Delivery)`, nur diese Richtung, meldet `store.model_changed`). Zurück auf Kommission nur von Hand. Bei Eigenbestand: keine Bestandsprüfungen und Erinnerungen, Rechnungen ohne Prüfzuordnung, der Shop behält die gelieferten Sorten, eine Rückholung ohne Rest setzt den Store nicht inaktiv.
-- `Status` (Aktiv/Inaktiv/Probezeit) · `Stufe` (Bronze … Diamant) · `Telegram ID` (Lookup ← Stadt) · `Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
+- **`Stufe`** (Nicht registriert · Bronze … Diamant) — laufende Partnerstufe, Spiegel des JTL-Kunden-Labels. **Make schreibt sie seit 17.11.2026** (`[Maintain] Partner Tier Check`): die höhere von Vorjahres- und laufender Stufe aus [[jahresboni]]; bei einer Änderung `task.partner_tier`, das Label in JTL setzt Joscha. Die Sales App schreibt bei der Store-Anlage „Nicht registriert“. Der Bonus kommt nie aus diesem Feld, nur aus `Jahresboni`.
+- **`Bonusguthaben`** (Rollup Σ `Jahresboni.Guthaben`, brutto, seit 17.11.2026) — liest `[Process] JTL Voucher (Delivery)` für `task.bonus_redeem`. `Jahresboni` (Link) ist das Rückfeld von `Jahresboni.Store`.
+- `Status` (Aktiv/Inaktiv/Probezeit) · `Telegram ID` (Lookup ← Stadt) · `Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
 - **`Fällig gemeldet am`** (Datum) — **B2-Idempotenz-Marker** von `[Maintain] Inventory Check Reminder` (→ `inventory.due`): der Emitter setzt ihn `= heute`, wenn er den Store als überfällig meldet, und meldet erst wieder, wenn der Marker älter als das wöchentliche Re-Nag-Fenster ist. Nur diese Klingel schreibt hier.
 
 ## Fallstricke
@@ -41,7 +43,7 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 | Bild | attachments | `fldhtzwUV5qXTs8BY` |
 | Status | singleSelect | `fld8fYS00U23noJST` |
 | Modell | singleSelect | `fld8C3tgNKcDqBgdP` |
-| Stufe | singleSelect | `fldogYE4AvaPvYEcb` |
+| Stufe | singleSelect (Nicht registriert `selRRb3q13BdkHh8z` · Bronze `selon7hvwWI63Paok` · Silber `selPpZ5pxipye20u7` · Gold `selJ76DYbUEF5eoq5` · Platin `selHc4mmOoJkShbsE` · Diamant `selXUYZqaQMzC8fcO`; Nachtrag 2026-11-17) | `fldogYE4AvaPvYEcb` |
 | Stadt | link → Städte | `fldTYy4JUNZuGVOlE` |
 | Stadtteil | link → Stadtteile | `fldjVrpQh4LqaxqOk` |
 | Sortiment | multipleSelects | `fldA81gIXLtI9ZT3C` |
@@ -73,6 +75,8 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 | Gutschriften | link → Gutschriften (Nachtrag 2026-11-09) | `fldMmuahibd8mDfj4` |
 | Gutschriften Storemarge (Jahr) | rollup € (Nachtrag 2026-11-09) | `fldKB4y4WjCNEsqnC` |
 | Gutschriften Storemarge (Gesamt) | rollup € (Nachtrag 2026-11-09) | `fldHUUgOZvTDrJXtk` |
+| Jahresboni | link → Jahresboni (Nachtrag 2026-11-17) | `fld4JPOdHuu08XDJg` |
+| Bonusguthaben | rollup Σ Jahresboni.Guthaben (Nachtrag 2026-11-17) | `fldqVMheQjFwPhPTr` |
 
 *Neu ziehen: `list_tables_for_base` → Stores; Formeln via `get_table_schema`.*
 

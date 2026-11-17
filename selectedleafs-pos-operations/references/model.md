@@ -23,7 +23,7 @@ Daneben **`Bestandsprüfungskorrekturen`** (Kind von `Bestandsprüfungen`, seit 
 `Konditionen` (Provision % + Kostenanteil %) · `Preise` (VK je Produkt) · `Steuersätze`.
 Die Wahl fällt am **Leistungsdatum** (§4).
 
-**Stammdaten & Silos.** `Stores` · `Vertriebler` · `Produkte` · `Produktvarianten` · `Städte` · `Stadtteile` · `Bestände` (abgeleiteter Silo, make-getrieben) · `Belege` (Dokument-Drehscheibe mit fünf Fach-Links: Umsatz/Gutschrift/Lieferung/Bestandsprüfung/Auszahlung).
+**Stammdaten & Silos.** `Stores` · `Vertriebler` · `Produkte` · `Produktvarianten` · `Städte` · `Stadtteile` · `Bestände` (abgeleiteter Silo, make-getrieben) · `Belege` (Dokument-Drehscheibe mit fünf Fach-Links: Umsatz/Gutschrift/Lieferung/Bestandsprüfung/Auszahlung). · `Jahresboni` (eine Zeile je Store und Jahr, seit 17.11.2026: Make setzt nur die Stufe, Airtable rechnet Bonus, Einlösung und Guthaben → [[jahresboni]]).
 
 ---
 
