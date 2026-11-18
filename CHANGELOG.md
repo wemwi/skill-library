@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.54.0](https://github.com/wemwi/skill-library/compare/v6.53.1...v6.54.0) (2026-11-18)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Aufgaben Lager sperren und Bestand korrigieren ([#365](https://github.com/wemwi/skill-library/issues/365)) ([892ea24](https://github.com/wemwi/skill-library/commit/892ea24c0b979769484ea60b85e6dfa600754adf))
+
 ## [6.53.1](https://github.com/wemwi/skill-library/compare/v6.53.0...v6.53.1) (2026-11-18)
 
 
