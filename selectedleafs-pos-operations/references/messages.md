@@ -84,7 +84,8 @@ Auslöser: Lieferschein AF-10163-1-001
 ℹ️ Keine Bestandsprüfungen mehr für diesen Store.
 ```
 **Vertriebler** — — · **City** — —
-*Emitter: `[Process] Upload Voucher (Delivery)`, nur beim ersten Lieferschein eines Kommission-Stores; kommt zusammen mit `delivery.note_booked`.*
+**Begleitend** → 👉 `task.jtl_lock_stock` (zweite Meldung, seit 18.11.2026)
+*Emitter: `[Process] JTL Voucher (Delivery)`, nur beim ersten Lieferschein eines Kommission-Stores; kommt zusammen mit `delivery.note_booked`.*
 
 ### 🤝 `salesperson.created` — Neuer Vertriebler · `live`
 **Operations** — 📥 Vorgänge · 586
@@ -457,6 +458,34 @@ Neuer Saldo: 134,20 €
 Danke für deine Arbeit! :)
 ```
 
+### ↩️ `refund.created` — Gutschrift erstellt · `live` · NEU
+**Operations** — 📥 Vorgänge · 586
+```
+↩️ Gutschrift erstellt
+Kiosk Nordstern · RK-10003-1
+
+Gutschrift netto: 12,40 €
+Provision: −1,48 €
+
+👉 Mit der nächsten Rechnung verrechnen
+```
+**Vertriebler**: „↩️ Gutschrift erfasst“, Gutschrift netto, Provision bei Verrechnung fett.
+**Begleitend** → 👉 `task.jtl_inventory_count` (zweite Meldung, nur bei Kommission, seit 18.11.2026)
+*Emitter: `[Process] Lexware Voucher (Refund · Store)`.*
+
+### ✅ `refund.settled` — Gutschrift verrechnet · `live` · NEU
+**Operations** — 📥 Vorgänge · 586
+```
+✅ Gutschrift verrechnet
+Kiosk Nordstern · RK-10003-1
+
+Gutschrift netto: 12,40 €
+Saldo Max (offen): 134,20 €
+```
+**Vertriebler**: Deine Provision −…, Dein Saldo (offen) fett.
+**Begleitend** → 👉 `task.jtl_refund` (zweite Meldung)
+*Emitter: `[Process] Lexware Voucher (Refund · Store)`.*
+
 *`invoice.overdue` gestrichen (16.08.2026) — der Überfällig-Hinweis läuft über `reminder_filed`.*
 
 ---
@@ -518,6 +547,36 @@ Kiosk Nordstern · RG-10128-1
 
 Bezahlt am 12.08.2026
 ```
+
+### 👉 `task.jtl_refund` · `live`
+```
+👉 Gutschrift verrechnen (JTL)
+Kiosk Nordstern · RK-10003-1
+
+• Zahlung „Verrechnung Gutschrift“ an der Rechnung eintragen (Anmerkung RK-10003-1)
+• In der Gutschrift Status „verrechnet mit RG-…“ setzen
+```
+*Zweite Meldung zu `refund.settled`.*
+
+### 👉 `task.jtl_lock_stock` · `live 18.11.2026` · NEU
+```
+👉 Lager sperren (JTL)
+Kiosk Nordstern · Eigenbestand
+
+• Lager des Stores öffnen
+• Für die Auslieferung sperren
+```
+*Zweite Meldung zu `store.model_changed` (Wechsel auf Eigenbestand).*
+
+### 👉 `task.jtl_inventory_count` · `live 18.11.2026` · NEU
+```
+👉 Bestand korrigieren (JTL)
+Kiosk Nordstern · RK-10003-1
+
+• Inventur im Lager des Stores buchen
+• Mengen laut Gutschrift RK-10003-1 nachbuchen
+```
+*Zweite Meldung zu `refund.created`, nur bei `Stores.Modell` = Kommission.*
 
 ### 👉 `task.partner_tier` · `live 18.11.2026` · NEU
 ```

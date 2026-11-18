@@ -85,6 +85,7 @@ Auslöser: Lieferschein {Lieferschein}
 
 ℹ️ Keine Bestandsprüfungen mehr für diesen Store.
 ```
+*Begleitend (seit 18.11.2026): `task.jtl_lock_stock` als zweite Meldung (`task_key`).*
 
 ### `salesperson.created`
 **Operations**
@@ -326,6 +327,7 @@ Provision: −{Provision}
 
 👉 Mit der nächsten Rechnung verrechnen
 ```
+*Begleitend (seit 18.11.2026): `task.jtl_inventory_count` als zweite Meldung (`task_key`), nur bei `Stores.Modell` = Kommission.*
 **Vertriebler**
 ```
 ↩️ Gutschrift erfasst
@@ -565,6 +567,28 @@ Danke für deine Arbeit! :)
 
 • Zahlung „Verrechnung Gutschrift“ an der Rechnung eintragen (Anmerkung {ID})
 • In der Gutschrift Status „verrechnet mit RG-…“ setzen
+```
+
+### `task.jtl_lock_stock` · NEU 18.11.2026
+*Zweite Meldung zu `store.model_changed` (`task_key`), hängt am Store.*
+**Operations**
+```
+👉 Lager sperren (JTL)
+<i>{Store} · Eigenbestand</i>
+
+• Lager des Stores öffnen
+• Für die Auslieferung sperren
+```
+
+### `task.jtl_inventory_count` · NEU 18.11.2026
+*Zweite Meldung zu `refund.created` (`task_key`), hängt an `Gutschriften`. Nur bei `Stores.Modell` = Kommission; das entscheidet der Worker.*
+**Operations**
+```
+👉 Bestand korrigieren (JTL)
+<i>{Store} · {ID}</i>
+
+• Inventur im Lager des Stores buchen
+• Mengen laut Gutschrift {ID} nachbuchen
 ```
 
 ### `task.partner_tier` · NEU 17.11.2026 · Wortlaut 18.11.2026
