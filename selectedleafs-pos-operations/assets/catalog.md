@@ -55,7 +55,7 @@ Akquiriert von {Vertriebler}
 ```
 
 ### `store.tier_adjusted` · NEU 18.11.2026
-*Wie `store.tier_reached`, Stores.Stufe gesunken (01.01. oder Storno). Bonus leer bei „Nicht registriert“, dann entfällt die Zeile. „angepasst“ statt „gesunken“: neutral, auch für den Vertriebler.*
+*Wie `store.tier_reached`, Stores.Stufe gesunken (01.01. oder Storno). Bonus leer bei „Keine Stufe“, dann entfällt die Zeile. „angepasst“ statt „gesunken“: neutral, auch für den Vertriebler.*
 **Operations**
 ```
 🏅 Partnerstufe angepasst
