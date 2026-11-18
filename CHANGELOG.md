@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.53.0](https://github.com/wemwi/skill-library/compare/v6.52.0...v6.53.0) (2026-11-18)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Meldungen zum Wechsel der Partnerstufe ([#361](https://github.com/wemwi/skill-library/issues/361)) ([79ff012](https://github.com/wemwi/skill-library/commit/79ff0122985dd003411a89dc28f73d4011c9ba32))
+
 ## [6.52.0](https://github.com/wemwi/skill-library/compare/v6.51.1...v6.52.0) (2026-11-18)
 
 
