@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.55.0](https://github.com/wemwi/skill-library/compare/v6.54.0...v6.55.0) (2026-11-18)
+
+
+### Features
+
+* **global-workflow:** Prinzip „Schlank bauen“ als globale Leiter vor jedem neuen Element ([#367](https://github.com/wemwi/skill-library/issues/367)) ([7b380f9](https://github.com/wemwi/skill-library/commit/7b380f976da2a30cf7304495fad3b0d7ebf5aca3))
+
 ## [6.54.0](https://github.com/wemwi/skill-library/compare/v6.53.1...v6.54.0) (2026-11-18)
 
 
