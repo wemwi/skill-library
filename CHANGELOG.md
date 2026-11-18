@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.53.1](https://github.com/wemwi/skill-library/compare/v6.53.0...v6.53.1) (2026-11-18)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Stores.Stufe-Option „Keine Stufe“ statt „Nicht registriert“ ([#363](https://github.com/wemwi/skill-library/issues/363)) ([3d45ad0](https://github.com/wemwi/skill-library/commit/3d45ad0d8718d15546bfafd0a23047e5a7a09a98))
+
 ## [6.53.0](https://github.com/wemwi/skill-library/compare/v6.52.0...v6.53.0) (2026-11-18)
 
 
