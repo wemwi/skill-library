@@ -20,6 +20,7 @@ Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positi
 - **`Nettoumsatzerlös`** (Formel, €) — `Menge (Stück) × VK (netto)` — Wert zum **Endkunden-VK**, liegt systematisch **über** `Nettoumsatz`. Die Lücke ist die **Storemarge**, kein Fehler; fließt in **keine** Provisions-/Saldoformel. `Menge (kg)` fließt bewusst nicht ein (VK ist stückbezogen).
 - **`VK (netto)`** (Lookup ← [[preise]]).
 - `Menge (Stück)` / `Menge (kg)` (Zahl) · Lookups `Datum`, `Status`, `Typ`.
+- **Bonuszeile** (seit 17.11.2026, Spec Jahresbonus Stufe A): Position ohne Produkt, Preis, Bestand und Menge, nur auf Eigenbestand-Rechnungen. `Nettoumsatz` negativ (mindert `Umsätze.Nettoumsatz` und damit die Provision), **`Bonus brutto`** (€, negativ, wie gedruckt) und **`Jahresbonus`** (Link → [[jahresboni]], die Zeile `<Kundennummer>-<Vorjahr>`). Make schreibt beide nur auf Bonuszeilen („Create bonus line“ in `[Process] Lexware Voucher (Invoice · Store)`); `Jahresboni.Eingelöst` rollt `Bonus brutto`.
 
 ## Fallstricke
 
@@ -44,6 +45,8 @@ Eine Zeile = **eine Sorte in einem Umsatz**. Trägt den **abgerechneten** Positi
 | Datum | lookup | `fldpH9mzVV7abfwqB` |
 | Status | lookup | `fldgkUqpUgDjoAQJY` |
 | Typ | lookup | `fldV7NTjnV1ELyuO5` |
+| Bonus brutto | currency (Nachtrag 2026-11-17) | `fldwzPtuGovGUv6l4` |
+| Jahresbonus | link → Jahresboni (Nachtrag 2026-11-17) | `fldFUlemViAVeiMVH` |
 
 *Neu ziehen: `list_tables_for_base` → Umsatzpositionen; Formeln via `get_table_schema`.*
 
@@ -59,7 +62,7 @@ Make **schreibt** hier 8 Felder und liest **5** (Nachtrag 2026-11-06, SOLL-Abgle
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
-**Make schreibt:** `Bestand` · `Menge (Stück)` · `Menge (kg)` · `Nettoumsatz` · `Position` · `Preis` · `Produkt` · `Umsatz`  
+**Make schreibt:** `Bestand` · `Menge (Stück)` · `Menge (kg)` · `Nettoumsatz` · `Position` · `Preis` · `Produkt` · `Umsatz` · seit 17.11.2026 auf Bonuszeilen `Bonus brutto` und `Jahresbonus` (beide 🟣 `make.com (KEY · Name)` in der Base)  
 **Make liest:** `Bestand` · `Menge (Stück)` · `Datum` · `Status` (8329417, „Load invoices since check day“; `Status` = Storniert zählt nicht) · `Position` (6633991 „Read invoice lines (by ID)“ für „Pick missing lines“, seit 11.11.2026)  
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**

@@ -531,6 +531,31 @@ Danke für deine Arbeit! :)
 • In der Gutschrift Status „verrechnet mit RG-…“ setzen
 ```
 
+### `task.partner_tier` · NEU 17.11.2026
+*`[Maintain] Partner Tier Check`, id = Store, `tokens`: Ist, Soll, Umsatz (geld), Jahr. Stores.Stufe ist beim Senden schon gesetzt.*
+**Operations**
+```
+👉 Partnerstufe setzen (JTL)
+<i>{Store} · {Soll}</i>
+
+• Label beim Kunden von {Ist} auf {Soll} ändern
+• Grund: {Umsatz} netto aus Eigenbestand {Jahr}
+```
+
+### `task.bonus_redeem` · NEU 17.11.2026
+*`[Process] JTL Voucher (Delivery)`, id = Lieferung, `tokens`: Guthaben (geld, brutto, Stores.Bonusguthaben).*
+**Operations**
+```
+👉 Jahresbonus einlösen (JTL)
+<i>{Store} · {ID}</i>
+
+• Restguthaben {Guthaben} brutto als Bonuszeile auf die Rechnung
+• Nur wenn alle Vorjahresrechnungen bezahlt sind
+• Höchstens das Restguthaben und weniger als der Warenwert
+
+<i>Geliefert am {Datum}</i>
+```
+
 ### `task.terms_missing`
 **Operations**
 ```

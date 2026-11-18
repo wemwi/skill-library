@@ -488,6 +488,27 @@ Kiosk Nordstern · RG-10128-1
 Bezahlt am 12.08.2026
 ```
 
+### 👉 `task.partner_tier` · `gebaut 17.11.2026 · Import ausstehend` · NEU
+```
+👉 Partnerstufe setzen (JTL)
+Alero Kiosk · Nicht registriert
+
+• Label beim Kunden von Bronze auf Nicht registriert ändern
+• Grund: 763,35 € netto aus Eigenbestand 2026
+```
+
+### 👉 `task.bonus_redeem` · `gebaut 17.11.2026 · Import ausstehend` · NEU
+```
+👉 Jahresbonus einlösen (JTL)
+Alero Kiosk · AF-10180-1-001
+
+• Restguthaben 250,00 € brutto als Bonuszeile auf die Rechnung
+• Nur wenn alle Vorjahresrechnungen bezahlt sind
+• Höchstens das Restguthaben und weniger als der Warenwert
+
+Geliefert am 03.02.2027
+```
+
 ### 👉 `task.terms_missing` · `offen`
 ```
 👉 Konditionen prüfen
