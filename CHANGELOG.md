@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.52.0](https://github.com/wemwi/skill-library/compare/v6.51.1...v6.52.0) (2026-11-18)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Jahresbonus Stufe A (Jahresboni, Partner Tier Check, Bonuszeile) ([#359](https://github.com/wemwi/skill-library/issues/359)) ([70167d3](https://github.com/wemwi/skill-library/commit/70167d3d751fbae7ca61a9f2db71886b7ef149d6))
+
 ## [6.51.1](https://github.com/wemwi/skill-library/compare/v6.51.0...v6.51.1) (2026-11-17)
 
 
