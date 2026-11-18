@@ -41,6 +41,37 @@ Google Maps öffnen → https://maps.google.com/…
 ```
 **Begleitend** → 👉 `task.jtl_missing` · 🛑 `error.store_failed` · 🛑 `error.store_partial`
 
+### 🏅 `store.tier_reached` — Partnerstufe erreicht · `live 18.11.2026` · NEU
+**Operations** — 📥 Vorgänge · 586
+```
+🏅 Partnerstufe erreicht
+Kiosk Nordstern · Silber
+
+Jahresbonus: 400,00 €
+```
+**Vertriebler** (Stores.Betreut von)
+```
+🏅 Partnerstufe erreicht
+Kiosk Nordstern · Silber
+
+Jahresbonus: **400,00 €**
+```
+**Begleitend** → 👉 `task.partner_tier` (zweite Meldung)
+*Emitter: `[Maintain] Partner Tier Check`.*
+
+### 🏅 `store.tier_adjusted` — Partnerstufe angepasst · `live 18.11.2026` · NEU
+**Operations** — 📥 Vorgänge · 586
+```
+🏅 Partnerstufe angepasst
+Kiosk Nordstern · Bronze
+
+Vorher: Gold
+Jahresbonus: 150,00 €
+```
+**Vertriebler** (Stores.Betreut von): wie Operations, Jahresbonus fett. Bei „Nicht registriert“ ohne Bonuszeile.
+**Begleitend** → 👉 `task.partner_tier` (zweite Meldung)
+*Emitter: `[Maintain] Partner Tier Check`, am 01.01. oder nach einem Storno.*
+
 ### 🔁 `store.model_changed` — Modell umgestellt · `live` · NEU
 **Operations** — 📥 Vorgänge · 586
 ```
@@ -488,16 +519,16 @@ Kiosk Nordstern · RG-10128-1
 Bezahlt am 12.08.2026
 ```
 
-### 👉 `task.partner_tier` · `gebaut 17.11.2026 · Import ausstehend` · NEU
+### 👉 `task.partner_tier` · `live 18.11.2026` · NEU
 ```
 👉 Partnerstufe setzen (JTL)
-Alero Kiosk · Nicht registriert
+Kiosk Nordstern · Silber
 
-• Label beim Kunden von Bronze auf Nicht registriert ändern
-• Grund: 763,35 € netto aus Eigenbestand 2026
+• Kunde öffnen
+• Label setzen
 ```
 
-### 👉 `task.bonus_redeem` · `gebaut 17.11.2026 · Import ausstehend` · NEU
+### 👉 `task.bonus_redeem` · `live 18.11.2026` · NEU
 ```
 👉 Jahresbonus einlösen (JTL)
 Alero Kiosk · AF-10180-1-001

@@ -37,6 +37,42 @@ Akquiriert von {Vertriebler}
 <a href="{Maps-URL}">Google Maps öffnen</a>
 ```
 
+### `store.tier_reached` · NEU 18.11.2026
+*`[Maintain] Partner Tier Check`, Stores.Stufe gestiegen und schon gesetzt. id = Store, Vertriebler aus `Stores.Betreut von`, `tokens`: Stufe, Vorher, Bonus (geld, brutto: Bonus der neuen Stufe, keine Differenz). Aufgabe: `task.partner_tier`.*
+**Operations**
+```
+🏅 Partnerstufe erreicht
+<i>{Store} · {Stufe}</i>
+
+{gesetzt Bonus}Jahresbonus: {Bonus}
+```
+**Vertriebler**
+```
+🏅 Partnerstufe erreicht
+<i>{Store} · {Stufe}</i>
+
+{gesetzt Bonus}Jahresbonus: <b>{Bonus}</b>
+```
+
+### `store.tier_adjusted` · NEU 18.11.2026
+*Wie `store.tier_reached`, Stores.Stufe gesunken (01.01. oder Storno). Bonus leer bei „Nicht registriert“, dann entfällt die Zeile. „angepasst“ statt „gesunken“: neutral, auch für den Vertriebler.*
+**Operations**
+```
+🏅 Partnerstufe angepasst
+<i>{Store} · {Stufe}</i>
+
+Vorher: {Vorher}
+{gesetzt Bonus}Jahresbonus: {Bonus}
+```
+**Vertriebler**
+```
+🏅 Partnerstufe angepasst
+<i>{Store} · {Stufe}</i>
+
+Vorher: {Vorher}
+{gesetzt Bonus}Jahresbonus: <b>{Bonus}</b>
+```
+
 ### `store.model_changed` · NEU 05.11.2026
 *Hängt am Store (`id` = Store); `{Modell}`, `{Vorher}`, `{Lieferschein}` kommen als ctx von `[Process] JTL Voucher (Delivery)` (erster Lieferschein eines Kommission-Stores; bis zum Ausbau des Lieferschein-Teils trägt auch `[Process] Upload Voucher (Delivery)` den Aufruf).*
 **Operations**
@@ -531,15 +567,15 @@ Danke für deine Arbeit! :)
 • In der Gutschrift Status „verrechnet mit RG-…“ setzen
 ```
 
-### `task.partner_tier` · NEU 17.11.2026
-*`[Maintain] Partner Tier Check`, id = Store, `tokens`: Ist, Soll, Umsatz (geld), Jahr. Stores.Stufe ist beim Senden schon gesetzt.*
+### `task.partner_tier` · NEU 17.11.2026 · Wortlaut 18.11.2026
+*Zweite Meldung zu `store.tier_reached` / `store.tier_adjusted` (`task_key`), gleiche Felder und Token.*
 **Operations**
 ```
 👉 Partnerstufe setzen (JTL)
-<i>{Store} · {Soll}</i>
+<i>{Store} · {Stufe}</i>
 
-• Label beim Kunden von {Ist} auf {Soll} ändern
-• Grund: {Umsatz} netto aus Eigenbestand {Jahr}
+• Kunde öffnen
+• Label setzen
 ```
 
 ### `task.bonus_redeem` · NEU 17.11.2026
