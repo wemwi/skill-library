@@ -68,7 +68,7 @@ Kiosk Nordstern · Bronze
 Vorher: Gold
 Jahresbonus: 150,00 €
 ```
-**Vertriebler** (Stores.Betreut von): wie Operations, Jahresbonus fett. Bei „Nicht registriert“ ohne Bonuszeile.
+**Vertriebler** (Stores.Betreut von): wie Operations, Jahresbonus fett. Bei „Keine Stufe“ ohne Bonuszeile.
 **Begleitend** → 👉 `task.partner_tier` (zweite Meldung)
 *Emitter: `[Maintain] Partner Tier Check`, am 01.01. oder nach einem Storno.*
 
