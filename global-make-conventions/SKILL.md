@@ -7,7 +7,7 @@ description: >-
   wenn ein Make-Szenario entworfen, gebaut, geprüft oder auditiert wird. Ergänzt
   make-scenario-building (das WIE) um das WELCHE.
 metadata:
-  version: "1.10.1"
+  version: "1.11.0"
 ---
 
 # global-make-conventions
@@ -52,6 +52,7 @@ eine korrekt gebaute, aber falsch strukturierte Kette ist trotzdem ein Befund.
 | A1.3 | **Single Responsibility pro Szenario** | Ein Szenario hat eine Aufgabe. Wächst die Verantwortung, wird gesplittet — nicht ein Szenario mit Routern überladen, bis niemand mehr die Verzweigung überblickt. |
 | A1.4 | **Kontrakt vor Bau** | Trigger-Payload, erwartete Felder und Fehlerfälle werden spezifiziert, bevor Module verdrahtet werden — nicht am gebauten Szenario abgelesen. |
 | A1.5 | **Observability by Design** | Jede Kette ist nachvollziehbar: sprechende Namen, Statuslogging, sichtbare Fehlermeldung — nicht erst beim Debuggen nachgerüstet. |
+| A1.6 | **Schlank bauen** | Vor neuem Szenario, Modul, Feld, Data Store oder Variable die Leiter aus `global-workflow` „Schlank bauen": wiederverwenden → ableiten → erweitern → erst dann neu, begründet. |
 
 Rationale, Bruchmuster aus der Praxis und Beispiele: `references/architecture.md`.
 

@@ -7,7 +7,7 @@ description: >-
   auch bei reinen Fragen. Trigger: Umsätze, Lieferungen, Bestandsprüfungen, Vertriebler,
   Provision, Gutschriften, Leistungsdatum, Belegeingang, Lexware-Sync.
 metadata:
-  version: "1.51.0"
+  version: "1.52.0"
 ---
 
 # selectedleafs · POS Operations
@@ -18,6 +18,7 @@ Das Betriebssystem hinter der **Kommissionsware an Kiosk-Partner-Stores**: Vertr
 > 1. **Drift-Firewall.** Diese Datei und die references tragen **Muster + „wo live nachsehen"**, nie eine `fld…`-ID oder Formel **als Fakt**. Volatile Fakten leben in datierten, generierten Blöcken (`airtable/…`-Feld-Block) mit „verify-live"-Kopf; Szenario-Innereien tragen **kein** gespeichertes Zuhause — sie werden bei Bedarf **live** aus dem Szenario gelesen (Make-MCP `scenarios_get`). **Im Zweifel gewinnt die Base / das Live-Szenario.**
 > 2. **Ein Fakt, ein Zuhause.** Rechenformel nur in der Tabellen-Datei, hier nur das Muster · Szenario-Innereien nur im Live-Szenario (per Make-MCP gelesen) · Meldetexte nur im Nachrichtenkatalog.
 > 3. **Vertrag statt Innereien.** Szenarien über Aufgabe/Trigger/r-w-Felder/Notify-Keys, nicht Modul-für-Modul.
+> 4. **Schlank bauen.** Vor neuem Feld, neuer Tabelle oder neuem Szenario die Leiter aus `global-workflow` „Schlank bauen": bestehendes Feld nutzen → per Formel/Lookup/Rollup ableiten → bestehendes erweitern → erst dann neu, im Plan begründet.
 
 ---
 

@@ -2,7 +2,7 @@
 name: "global-workflow"
 description: Arbeitsprotokoll fuer Joschas Projekte - wann erst planen, wann direkt umsetzen, Repo- und Skill-Aenderungen, Fehler-Postmortem, Uebergabe an frischen Chat oder Claude Code, unbeaufsichtigte Laeufe. Laden bei Umsetzungsarbeit ueber mehrere Dateien, Architekturfragen, Skill-Updates, Handover, autonomen Laeufen (unbeaufsichtigt, bin weg) und jeder Statusuebersicht (was ist offen, Stand, Abschlussbericht). Nicht noetig bei reinen Fragen oder Lookups.
 metadata:
-  version: "2.9.3"
+  version: "2.10.0"
 ---
 
 # Workflow — Arbeitsprotokoll
@@ -41,9 +41,24 @@ Plan-Format, knapp: **Analyse · Geltende Skills · Plan (nummeriert) · Risiken
 
 1. Relevante Skills öffnen — nicht aus Erinnerung arbeiten.
 2. Dateien, Szenarien, Schema selbst holen (Repo-Checkout, MCP). Nur ohne Zugriff anfordern. Nie raten.
-3. Minimal-Prinzip: nur das Gefragte, keine ungefragten „Verbesserungen".
+3. Minimal-Prinzip: nur das Gefragte, keine ungefragten „Verbesserungen". Neues nur nach „Schlank bauen" unten.
 4. Seiteneffekte prüfen: Wer nutzt das noch?
 5. Beim Entfernen (Task, Regel, Skill, Feld, Szenario): alle Verweise darauf suchen (Skills, Projekt-Docs, Projektanweisungen, geplante Tasks, Memory) und im selben Zug mit entfernen. Was nur Joscha entfernen kann, unter „Für Joscha" nennen.
+
+### Schlank bauen (gilt für jedes System)
+
+Neue Struktur kostet dauerhaft: Pflege, Lesen, Drift, Fehlerfläche. Anlegen ist für Claude billig, die Folgekosten trägt Joscha. Deshalb vor jedem neuen Element (Feld, Tabelle, Szenario, Modul, Datei, Funktion, Skill oder Abschnitt, Memory-Datei, Variable, Task, Repo) diese Leiter, die erste passende Stufe gewinnt:
+
+1. **Wiederverwenden:** Gibt es das schon? Vorher das Bestehende vollständig lesen.
+2. **Ableiten:** Lässt es sich berechnen statt speichern (Formel, Lookup, Rollup, Funktion, Verweis)? Eine Wahrheit, keine Kopie.
+3. **Erweitern:** Reicht eine Option, ein Parameter, ein Satz im bestehenden Element?
+4. **Neu anlegen:** nur, wenn 1–3 nicht tragen. Im Plan ein Satz, warum.
+
+Prinzipien dahinter: YAGNI (nicht für vermuteten Bedarf bauen), KISS, Single Source of Truth (ableiten statt duplizieren), Rule of Three (erst beim dritten Vorkommen abstrahieren), Gall's Law (einfach starten, wachsen lassen).
+
+Gegenrichtung: Schlank heißt nicht verdichten um jeden Preis. Bekommt ein bestehendes Element dadurch zwei Bedeutungen, ist ein neues das kleinere Übel.
+
+Beim Aufräumen: Nachweislich Ungenutztes zum Entfernen vorschlagen, vorher klären, wozu es da war (Chesterton's Fence).
 
 ## 4. Repo-Arbeit
 

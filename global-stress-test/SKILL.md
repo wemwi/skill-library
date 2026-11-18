@@ -7,7 +7,7 @@ description: >-
   irreversiblen Festlegungen und bei Fragen wie: hält das, wo bricht es, skaliert das, was
   übersehe ich, stress-test. Nicht bei Routine-Ausführung.
 metadata:
-  version: "1.0.1"
+  version: "1.0.2"
 ---
 
 # Stress-Test — Konzept-Härtung unter Last
@@ -40,7 +40,7 @@ Jedes System hat **genau einen Engpass**; jede Optimierung anderswo ist verschwe
 | **Breite** | Von 1 Stadt auf 20, 1 Store auf 100 — bricht eine Annahme, die bei klein noch hielt? |
 | **Ränder** | Edge Cases, Gleichzeitigkeit, Ausfall einer Abhängigkeit — was passiert am Limit? |
 
-**Gegengewicht (Pflicht):** Auch die andere Richtung prüfen — wird hier für Skalierung gebaut, die nie kommt? Über-Engineering ist genauso ein Robustheits-Risiko wie Unter-Engineering (YAGNI). Den Constraint härten, nicht überall prophylaktisch Gold auftragen.
+**Gegengewicht (Pflicht):** Auch die andere Richtung prüfen — wird hier für Skalierung gebaut, die nie kommt? Über-Engineering ist genauso ein Robustheits-Risiko wie Unter-Engineering (YAGNI). Den Constraint härten, nicht überall prophylaktisch Gold auftragen. Prüfschema für jedes neue Element: `global-workflow` „Schlank bauen".
 
 ### 4. Non-Goals & Alternatives — Winkel und Scope-Disziplin
 Zwei Fragen, beide explizit beantworten:
