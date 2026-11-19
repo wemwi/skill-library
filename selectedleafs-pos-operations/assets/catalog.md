@@ -73,6 +73,25 @@ Vorher: {Vorher}
 {gesetzt Bonus}Jahresbonus: <b>{Bonus}</b>
 ```
 
+### `store.probation_passed` · NEU 19.11.2026
+*`[Maintain] Store Probation Check`, Stores.Status von Probezeit auf Aktiv gesetzt (2. Warenlieferung). id = Store, Vertriebler aus `Stores.Betreut von`, Felder `Warenlieferungen` und `Erste Warenlieferung` aus Stores.*
+**Operations**
+```
+✅ Probezeit bestanden
+<i>{Store} · {Stadtteil}</i>
+
+Warenlieferungen: {Warenlieferungen}
+
+<i>Erste Lieferung am {Erste Warenlieferung}</i>
+```
+**Vertriebler**
+```
+✅ Probezeit bestanden
+<i>{Store} · {Stadtteil}</i>
+
+Der Store ist jetzt <b>aktiver Partner</b>.
+```
+
 ### `store.model_changed` · NEU 05.11.2026
 *Hängt am Store (`id` = Store); `{Modell}`, `{Vorher}`, `{Lieferschein}` kommen als ctx von `[Process] JTL Voucher (Delivery)` (erster Lieferschein eines Kommission-Stores; bis zum Ausbau des Lieferschein-Teils trägt auch `[Process] Upload Voucher (Delivery)` den Aufruf).*
 **Operations**
@@ -600,6 +619,28 @@ Danke für deine Arbeit! :)
 
 • Kunde öffnen
 • Label setzen
+```
+
+### `task.probation_review` · NEU 19.11.2026
+*`[Maintain] Store Probation Check`, nur eine Warenlieferung und 90 Tage oder mehr seit der ersten, danach alle 7 Tage. Eigene Meldung (key), nicht `task_key`. id = Store, Vertriebler aus `Stores.Betreut von`, `tokens`: Tage.*
+**Operations**
+```
+👉 Probezeit entscheiden
+<i>{Store} · seit {Tage} Tagen</i>
+
+• Noch keine zweite Lieferung
+• Status auf Aktiv setzen oder Rückholung planen
+
+<i>Erste Lieferung am {Erste Warenlieferung}</i>
+```
+**Vertriebler**
+```
+👉 Probezeit läuft ab
+<i>{Store} · seit {Tage} Tagen</i>
+
+Noch keine zweite Lieferung. Bitte stimm mit Joscha ab, wie es weitergeht.
+
+<i>Erste Lieferung am {Erste Warenlieferung}</i>
 ```
 
 ### `task.bonus_redeem` · NEU 17.11.2026
