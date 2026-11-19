@@ -77,6 +77,29 @@ normal. Eine Annahme aus dem Blueprint („der Worker behält eine
 unvollständige Ausführung") hatte ein Audit vorher als Fakt geführt. Solche
 Aussagen gehören an einem Lauf geprüft, nicht am Blueprint abgelesen.
 
+## Sequenziell und parken: die Warteschlange steht
+
+Läuft ein Szenario sequenziell und speichert unvollständige Ausführungen,
+stellt Make jeden neuen Lauf zurück, solange eine unvollständige Ausführung
+offen ist, auch während ihrer geplanten Wiederholungen (`iswaiting`,
+`dlqCount`). Ein `Retry + park` (3 × 15 Minuten) hält damit alle Ereignisse
+mindestens 45 Minuten an; scheitern alle Versuche, bleibt die Schlange stehen,
+bis jemand die Ausführung löscht oder fortsetzt.
+
+- **Worker nicht sequenziell.** Die Reihenfolge sichert der Dispatcher.
+  Doppelte Writes bei gleichzeitigen Läufen verhindert ein Idempotenz-Gate
+  (Sperre, Version, Search-then-Create), nicht die Warteschlange.
+- **Sequenzieller Dispatcher:** Fehler melden und den Lauf beenden (`Stop`),
+  nicht parken, es sei denn, das Anhalten ist gewollt (Reihenfolge vor
+  Durchsatz) und steht in der Beschreibung.
+- **Keine Probeläufe** mit ungültiger Eingabe an sequenziellen Szenarien:
+  der geparkte Probelauf hält den nächsten echten Aufruf an.
+
+**Beleg (19.11.2026):** Ein sequenzieller Dispatcher mit `Retry + park` am
+Lese-Aufruf parkte um 10:01 einen Lauf; alle Ereignisse bis 10:55 warteten,
+ein Beleg wurde nicht gebucht. Am selben Tag hielt ein Probelauf auf einen
+gelöschten Entwurf (404, geparkt) den sequenziellen Worker an.
+
 ## DLQ heilt nicht von selbst
 
 Ein Eintrag in Incomplete Executions bleibt liegen, bis er aktiv per
