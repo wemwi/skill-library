@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.59.1](https://github.com/wemwi/skill-library/compare/v6.59.0...v6.59.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** Leser liefert nur noch Fakten (Import 3, 1.56.1) ([#383](https://github.com/wemwi/skill-library/issues/383)) ([d79b601](https://github.com/wemwi/skill-library/commit/d79b6010b6f66853a36e75d82f6c16437bd3cfc3))
+
 ## [6.59.0](https://github.com/wemwi/skill-library/compare/v6.58.1...v6.59.0) (2026-11-19)
 
 
