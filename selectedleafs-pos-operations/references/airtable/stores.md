@@ -25,8 +25,8 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 - **`Modell`** (Select: Kommission / Eigenbestand) — Abrechnungsmodell, siehe [[model]] §3. **Make schreibt es seit 05.11.2026:** der erste Lieferschein eines Kommission-Stores setzt `Eigenbestand` (`[Process] Upload Voucher (Delivery)`, nur diese Richtung, meldet `store.model_changed`). Zurück auf Kommission nur von Hand. Bei Eigenbestand: keine Bestandsprüfungen und Erinnerungen, Rechnungen ohne Prüfzuordnung, der Shop behält die gelieferten Sorten, eine Rückholung ohne Rest setzt den Store nicht inaktiv.
 - **`Stufe`** (Keine Stufe · Bronze … Diamant; bis 18.11.2026 hieß die erste Option „Nicht registriert“, gleiche ID) — laufende Partnerstufe, Spiegel des JTL-Kunden-Labels. **Make schreibt sie seit 17.11.2026** (`[Maintain] Partner Tier Check`): die höhere von Vorjahres- und laufender Stufe aus [[jahresboni]]; bei einer Änderung `store.tier_reached` bzw. `store.tier_adjusted` mit `task.partner_tier`, das Label in JTL setzt Joscha. Gehaltene Stufe: Sie fällt nur am 01.01. oder nach einem Storno. Die Sales App schreibt bei der Store-Anlage „Keine Stufe“ über die Options-ID (seit 0.1.28). Der Bonus kommt nie aus diesem Feld, nur aus `Jahresboni`.
 - **`Bonusguthaben`** (Rollup Σ `Jahresboni.Guthaben`, brutto, seit 17.11.2026) — liest `[Process] JTL Voucher (Delivery)` für `task.bonus_redeem`. `Jahresboni` (Link) ist das Rückfeld von `Jahresboni.Store`.
-- **`Status`** (Aktiv / Inaktiv / Probezeit) — Probezeit gilt bis zur 2. Warenlieferung. **Make schreibt Aktiv seit 19.11.2026** (`[Maintain] Store Probation Check`, nur Probezeit → Aktiv, ab `Warenlieferungen` ≥ 2, meldet `store.probation_passed`); bei nur einer Warenlieferung und 90 Tagen seit der ersten wöchentlich `task.probation_review`, der Status bleibt. Inaktiv setzt `[Process] Upload Voucher (Return)` bei einer Rückholung ohne Rest. Den Startwert setzt nicht `[Create] Store`.
-- `Warenlieferungen` (Anzahl) und `Erste Warenlieferung` (Rollup MIN ← `Lieferungen.Datum`), beide nur über Lieferungen mit `Status` = Abgeschlossen und `Menge (kg)` > 0 (seit 19.11.2026): zählt keine reine Ausstattung (`Menge (kg)` ohne Ausstattung), keine Rückholung (negativ), keine Korrektur (0). Liest `[Maintain] Store Probation Check` und der Hub über die fld-ID.
+- **`Status`** (Aktiv / Inaktiv / Probezeit) — Probezeit gilt bis zur 2. bezahlten Rechnung. **Make schreibt Aktiv seit 19.11.2026** (`[Maintain] Store Probation Check`, nur Probezeit → Aktiv, ab `Bezahlte Rechnungen` ≥ 2, meldet `store.probation_passed`); bei weniger als 2 bezahlten Rechnungen und 90 Tagen seit der ersten Warenlieferung wöchentlich `task.probation_review`, der Status bleibt. Inaktiv setzt `[Process] Upload Voucher (Return)` bei einer Rückholung ohne Rest. Den Startwert setzt nicht `[Create] Store`.
+- `Bezahlte Rechnungen` (Anzahl ← `Umsätze` mit `Status` = Bezahlt) und `Erste Warenlieferung` (Rollup MIN ← `Lieferungen.Datum`, nur Lieferungen mit `Status` = Abgeschlossen und `Menge (kg)` > 0: keine reine Ausstattung, keine Rückholung, keine Korrektur), beide seit 19.11.2026. Liest `[Maintain] Store Probation Check` und der Hub über die fld-ID.
 - `Telegram ID` (Lookup ← Stadt) · `Lexware ID` · `Sortiment`/`Paketdienste` (Mehrfachauswahl) · Adress-/Social-Felder.
 - **`Fällig gemeldet am`** (Datum) — **B2-Idempotenz-Marker** von `[Maintain] Inventory Check Reminder` (→ `inventory.due`): der Emitter setzt ihn `= heute`, wenn er den Store als überfällig meldet, und meldet erst wieder, wenn der Marker älter als das wöchentliche Re-Nag-Fenster ist. Nur diese Klingel schreibt hier.
 
@@ -79,8 +79,8 @@ Der Partner-Kiosk (POS). Trägt Identität, Standort, Steuer-/Shopify-Anker und 
 | Gutschriften Storemarge (Gesamt) | rollup € (Nachtrag 2026-11-09) | `fldHUUgOZvTDrJXtk` |
 | Jahresboni | link → Jahresboni (Nachtrag 2026-11-17) | `fld4JPOdHuu08XDJg` |
 | Bonusguthaben | rollup Σ Jahresboni.Guthaben (Nachtrag 2026-11-17) | `fldqVMheQjFwPhPTr` |
-| Warenlieferungen | count ← Lieferungen (Abgeschlossen, Menge (kg) > 0; Nachtrag 2026-11-19) | `fldAaYWKJ3BUeUTRO` |
-| Erste Warenlieferung | rollup MIN ← Lieferungen.Datum (gleicher Filter; Nachtrag 2026-11-19) | `fld4hjSPX9PBPAKFb` |
+| Bezahlte Rechnungen | count ← Umsätze (Status Bezahlt; Nachtrag 2026-11-19) | `fldGU3FMnAfnVaIOn` |
+| Erste Warenlieferung | rollup MIN ← Lieferungen.Datum (Abgeschlossen, Menge (kg) > 0; Nachtrag 2026-11-19) | `fld4hjSPX9PBPAKFb` |
 
 *Neu ziehen: `list_tables_for_base` → Stores; Formeln via `get_table_schema`.*
 
@@ -115,7 +115,7 @@ Make schreibt **8** Felder (seit 05.11.2026 auch `Modell`) und liest **25** (sei
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Google Place ID` · `Hinweis` · `Shopify GID` · `Stadt` · `Stadtteil`  
-**Make liest:** `Erste Warenlieferung` · `Warenlieferungen` (seit 19.11.2026) · `Akquise durch` · `Bild` · `Umsätze` (8413130 „Load store“, seit 2026-11-06) · `Facebook` · `Instagram` · `Paketdienste` · `Postleitzahl` · `Sortiment` · `Straße / Nr.` · `Telefon` · `Telegram ID` · `TikTok` · `Webseite` · `WhatsApp`
+**Make liest:** `Bezahlte Rechnungen` · `Erste Warenlieferung` (seit 19.11.2026) · `Akquise durch` · `Bild` · `Umsätze` (8413130 „Load store“, seit 2026-11-06) · `Facebook` · `Instagram` · `Paketdienste` · `Postleitzahl` · `Sortiment` · `Straße / Nr.` · `Telefon` · `Telegram ID` · `TikTok` · `Webseite` · `WhatsApp`
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 
