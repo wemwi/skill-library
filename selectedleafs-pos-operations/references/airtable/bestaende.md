@@ -22,7 +22,7 @@ Ein **abgeleiteter Silo** je **Store × Produktvariante**: rekonstruiert den lau
 - **`Letzte Lieferung`** (Rollup **MAX** ← `Lieferpositionen.Geliefert am`) — **der Owner-Sync postet nur die Sorten, deren letzte Lieferung exakt aufs Belegdatum fällt.** Rollup-Konfiguration (Link, Zielfeld, MAX) **nicht ändern** — sonst fallen City-Posts still aus.
 - **`Erstlieferung am`** (Datum) — Datum des 🌿-Neuheits-Posts. **Einmal gesetzt, nie zurückgesetzt** (auch nicht bei Rückholung). Löschen ⇒ erneuter Neuheits-Post.
 - **`Ø EK (netto)`** (Formel) — `Warenkosten / Geliefert` (Durchschnitts-EK).
-- **`Gutgeschrieben`** (Rollup, seit 09.11.2026) — Σ `Gutschriftspositionen.Menge (Stück)`, ohne Storniert. `Verkauft` bleibt die Stückzahl auf Rechnungen.
+- **`Gutgeschrieben`** (Rollup, seit 09.11.2026) — Σ `Gutschriftspositionen.Menge (Stück)`, ohne Storniert. `Verkauft` bleibt die Stückzahl auf Rechnungen, ohne Storniert (Filter über `Umsatzpositionen.Status`, gelesen 19.11.2026): Ein Storno hebt `SOLL` wieder, `Differenz` zeigt die Menge offen, bis die neue Rechnung kommt.
 - Rollups: `Geliefert` · `Verkauft` · `Prüfstand` · `Geliefert seit Prüfung` · `Warenkosten` · `Letzte Prüfung (Sorte)` (MAX `Geprüft am` der Positionen, nur Abgeschlossen/Teilgebucht; bis 07.11. „Letzte Prüfung“). Lookup `Letzte Prüfung (Store)` ← `Stores.Zuletzt geprüft` (seit 07.11.2026, nur für `Differenz`).
 
 ## Fallstricke
