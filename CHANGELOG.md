@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.57.1](https://github.com/wemwi/skill-library/compare/v6.57.0...v6.57.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** stores year rollups exclude voided ([#375](https://github.com/wemwi/skill-library/issues/375)) ([ffbc1b9](https://github.com/wemwi/skill-library/commit/ffbc1b98cb17d7c5dc2ddc1b4032cd1b159a6ad7))
+
 ## [6.57.0](https://github.com/wemwi/skill-library/compare/v6.56.0...v6.57.0) (2026-11-19)
 
 
