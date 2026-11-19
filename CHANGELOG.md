@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.57.0](https://github.com/wemwi/skill-library/compare/v6.56.0...v6.57.0) (2026-11-19)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** storno releases protocol documents ([#373](https://github.com/wemwi/skill-library/issues/373)) ([a1cb9b8](https://github.com/wemwi/skill-library/commit/a1cb9b8b676433f01bf05c785f47d6a984cccd35))
+
 ## [6.56.0](https://github.com/wemwi/skill-library/compare/v6.55.1...v6.56.0) (2026-11-19)
 
 
