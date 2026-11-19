@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.59.0](https://github.com/wemwi/skill-library/compare/v6.58.1...v6.59.0) (2026-11-19)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Verdikt des Bestandsprotokolls im Prüflauf, Rechnung fehlt buchen (1.56.0) ([#381](https://github.com/wemwi/skill-library/issues/381)) ([e0b0c2d](https://github.com/wemwi/skill-library/commit/e0b0c2d0ae9dbed67bad0297490e6a30c8cf2d0b))
+
 ## [6.58.1](https://github.com/wemwi/skill-library/compare/v6.58.0...v6.58.1) (2026-11-19)
 
 
