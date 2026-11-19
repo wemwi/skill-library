@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.58.0](https://github.com/wemwi/skill-library/compare/v6.57.1...v6.58.0) (2026-11-19)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Store Probation Check sets Probezeit to Aktiv ([#377](https://github.com/wemwi/skill-library/issues/377)) ([54dd997](https://github.com/wemwi/skill-library/commit/54dd997499c51ccf8bd4e36bf01c032b35aad156))
+
 ## [6.57.1](https://github.com/wemwi/skill-library/compare/v6.57.0...v6.57.1) (2026-11-19)
 
 
