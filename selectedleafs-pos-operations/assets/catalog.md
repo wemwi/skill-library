@@ -74,13 +74,13 @@ Vorher: {Vorher}
 ```
 
 ### `store.probation_passed` · NEU 19.11.2026
-*`[Maintain] Store Probation Check`, Stores.Status von Probezeit auf Aktiv gesetzt (2. Warenlieferung). id = Store, Vertriebler aus `Stores.Betreut von`, Felder `Warenlieferungen` und `Erste Warenlieferung` aus Stores.*
+*`[Maintain] Store Probation Check`, Stores.Status von Probezeit auf Aktiv gesetzt (2. bezahlte Rechnung). id = Store, Vertriebler aus `Stores.Betreut von`, Felder `Bezahlte Rechnungen` und `Erste Warenlieferung` aus Stores.*
 **Operations**
 ```
 ✅ Probezeit bestanden
 <i>{Store} · {Stadtteil}</i>
 
-Warenlieferungen: {Warenlieferungen}
+Bezahlte Rechnungen: {Bezahlte Rechnungen}
 
 <i>Erste Lieferung am {Erste Warenlieferung}</i>
 ```
@@ -622,13 +622,13 @@ Danke für deine Arbeit! :)
 ```
 
 ### `task.probation_review` · NEU 19.11.2026
-*`[Maintain] Store Probation Check`, nur eine Warenlieferung und 90 Tage oder mehr seit der ersten, danach alle 7 Tage. Eigene Meldung (key), nicht `task_key`. id = Store, Vertriebler aus `Stores.Betreut von`, `tokens`: Tage.*
+*`[Maintain] Store Probation Check`, weniger als 2 bezahlte Rechnungen und 90 Tage oder mehr seit der ersten Warenlieferung, danach alle 7 Tage. Eigene Meldung (key), nicht `task_key`. id = Store, Vertriebler aus `Stores.Betreut von`, `tokens`: Tage.*
 **Operations**
 ```
 👉 Probezeit entscheiden
 <i>{Store} · seit {Tage} Tagen</i>
 
-• Noch keine zweite Lieferung
+• Bezahlte Rechnungen: {Bezahlte Rechnungen} von 2
 • Status auf Aktiv setzen oder Rückholung planen
 
 <i>Erste Lieferung am {Erste Warenlieferung}</i>
@@ -638,7 +638,7 @@ Danke für deine Arbeit! :)
 👉 Probezeit läuft ab
 <i>{Store} · seit {Tage} Tagen</i>
 
-Noch keine zweite Lieferung. Bitte stimm mit Joscha ab, wie es weitergeht.
+Erst {Bezahlte Rechnungen} von 2 Rechnungen bezahlt. Bitte stimm mit Joscha ab, wie es weitergeht.
 
 <i>Erste Lieferung am {Erste Warenlieferung}</i>
 ```
