@@ -78,7 +78,7 @@ Jahresbonus: 150,00 €
 ✅ Probezeit bestanden
 Kiosk Nordstern · Linden-Nord
 
-Warenlieferungen: 2
+Bezahlte Rechnungen: 2
 
 Erste Lieferung am 17.09.2026
 ```
@@ -611,7 +611,7 @@ Kiosk Nordstern · Silber
 👉 Probezeit entscheiden
 Kiosk die Ecke · seit 188 Tagen
 
-• Noch keine zweite Lieferung
+• Bezahlte Rechnungen: 0 von 2
 • Status auf Aktiv setzen oder Rückholung planen
 
 Erste Lieferung am 20.05.2026
