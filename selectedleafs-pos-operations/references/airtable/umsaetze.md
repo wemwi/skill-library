@@ -33,6 +33,7 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 
 - **`Nettoumsatz` ist die Geldwahrheit, nicht `Nettoumsatzerlös`** (Endkunden-VK, liegt höher = Storemarge). Nur `Nettoumsatz` speist Provision/Saldo.
 - **Status wird von Make als String geschrieben** — Optionen nicht umbenennen (still).
+- **Storno gibt Belege frei (seit 19.11.2026):** Beim Wechsel auf Storniert schreibt `[Process] Lexware Voucher (Invoice · Store)` `Belege` neu, ohne Bestandsprotokoll, Rückholprotokoll und Lieferschein; Rechnungs- und Mahnbelege bleiben (`Zahlungsverlauf`). Die alte Zuordnung steht weiter im `Hinweis`. `Belege` nie von Hand ändern.
 - **Bezahlt / Storniert / Ausgebucht setzt nur `[Process] Lexware Voucher (Invoice · Store)`** (`[Process] Lexware Payment (Invoice · Store)` schreibt nur Teilgezahlt/Offen). Darauf beruht das Gate der Abschlussmeldung (vorher ≠ nachher). Ein zweiter Schreiber dieser Werte würde die Meldung verschlucken.
 - Provision ist nominal auf `Nettoumsatz`; die *ausgezahlt-relevante* Größe bei Teilzahlung ist `Realprovision`.
 
