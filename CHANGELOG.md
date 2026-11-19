@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.56.0](https://github.com/wemwi/skill-library/compare/v6.55.1...v6.56.0) (2026-11-19)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Lexware draft chain, list lag, sequential exception ([#371](https://github.com/wemwi/skill-library/issues/371)) ([d736809](https://github.com/wemwi/skill-library/commit/d736809b7982ac527ed6bbc5913505664fda7d8c))
+
 ## [6.55.1](https://github.com/wemwi/skill-library/compare/v6.55.0...v6.55.1) (2026-11-19)
 
 
