@@ -72,6 +72,25 @@ Jahresbonus: 150,00 €
 **Begleitend** → 👉 `task.partner_tier` (zweite Meldung)
 *Emitter: `[Maintain] Partner Tier Check`, am 01.01. oder nach einem Storno.*
 
+### ✅ `store.probation_passed` — Probezeit bestanden · `live 19.11.2026` · NEU
+**Operations** — 📥 Vorgänge · 586
+```
+✅ Probezeit bestanden
+Kiosk Nordstern · Linden-Nord
+
+Warenlieferungen: 2
+
+Erste Lieferung am 17.09.2026
+```
+**Vertriebler** (Stores.Betreut von)
+```
+✅ Probezeit bestanden
+Kiosk Nordstern · Linden-Nord
+
+Der Store ist jetzt **aktiver Partner**.
+```
+*Emitter: `[Maintain] Store Probation Check`.*
+
 ### 🔁 `store.model_changed` — Modell umgestellt · `live` · NEU
 **Operations** — 📥 Vorgänge · 586
 ```
@@ -586,6 +605,18 @@ Kiosk Nordstern · Silber
 • Kunde öffnen
 • Label setzen
 ```
+
+### 👉 `task.probation_review` · `live 19.11.2026` · NEU
+```
+👉 Probezeit entscheiden
+Kiosk die Ecke · seit 188 Tagen
+
+• Noch keine zweite Lieferung
+• Status auf Aktiv setzen oder Rückholung planen
+
+Erste Lieferung am 20.05.2026
+```
+*Vertriebler: „👉 Probezeit läuft ab“, gleiche Infozeile, Hinweis zur Abstimmung mit Joscha. Wöchentlich bis zur Entscheidung; Emitter: `[Maintain] Store Probation Check`.*
 
 ### 👉 `task.bonus_redeem` · `live 18.11.2026` · NEU
 ```
