@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.55.1](https://github.com/wemwi/skill-library/compare/v6.55.0...v6.55.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **global-make-conventions:** no Retry + park in sequential scenarios ([#369](https://github.com/wemwi/skill-library/issues/369)) ([6b54c36](https://github.com/wemwi/skill-library/commit/6b54c36b5be6cba05954039029657aa78441068e))
+
 ## [6.55.0](https://github.com/wemwi/skill-library/compare/v6.54.0...v6.55.0) (2026-11-18)
 
 
