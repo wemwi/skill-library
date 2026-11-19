@@ -36,7 +36,9 @@ Projektspezifische Fallen von Airtable-MCP und Make in **dieser** Base/diesem Te
 - **Textfeld leeren (getestet 10.11.2026):** `{{emptystring}}` im Mapping von „Update a record“ leert ein Textfeld (an `Lieferungen.ID` in „Mark faulty“ von `[Process] Upload Voucher (Delivery)`).
 - **`validate_module_configuration` kennt bei Auswahlfeldern nur Optionsnamen** und lehnt die Options-ID als Text ab („not found in options“). Live ist die Options-ID der getestete Weg, der Befund des Validators ist an dieser Stelle kein Fehler.
 - **`metadata.parameters` eines Aufruf-Moduls** nennt nur, was in `parameters` steht. `shouldWaitForExecutionEnd` als Pflicht in `metadata.parameters`, der Wert aber im Mapper: Make deaktiviert das Szenario beim ersten Lauf (09.11.2026).
-- **Keine Probeläufe mit leerer Eingabe an sequenziellen Workern mit „Store incomplete“.** Die unvollständige Ausführung hält den nächsten echten Aufruf an (`iswaiting`, `dlqCount`).
+- **Keine Probeläufe mit leerer oder veralteter Eingabe an sequenziellen Szenarien mit „Store incomplete“** (leere Eingabe, gelöschter Beleg). Die unvollständige Ausführung hält den nächsten echten Aufruf an (`iswaiting`, `dlqCount`); so am 19.11.2026 an `[Process] Lexware Draft` (Entwurf vorher gelöscht, 404, geparkt). Vorher prüfen, dass der Beleg existiert.
+- **Neues Feld im Lexware-Leser** (`[Resolve] Lexware Voucher`) erst mit Test gegen die Eingänge aller Szenarien, die es bekommen: Ein unbekannter Parameter bricht den Empfänger ab („Unexpected parameter 'isBonus' found“ an `[Resolve] Invoice Inventory Check` und `[Resolve] Invoice Delivery Note`, 18.11.2026).
+- **Dialog „Scenario inputs and outputs“ im Editor** zeigt eine Positionsliste als Array vom Typ Text ohne Felder. Über diesen Dialog nie speichern, er überschriebe die Feldliste (18.11.2026).
 - **Modulnamen verifizieren** (`app-modules_list` / `app-module_get`) — nie erfinden; ein `scenarios_create` mit unbekanntem Modul schlägt fehl.
 - **Native Subszenarien.** Der Aufruf zwischen Szenarien läuft über **`scenario-service:StartSubscenario` / `CallSubscenario`** (nicht mehr über http-„Klingeln"). Der Notify-Hub ist ein `StartSubscenario`-Child (on-demand).
 - **`__IMTCONN__` = feste Connection-IDs** je Baustein (Airtable 9136634 · Telegram Operations 9134912 · Sales 9664308 · Broadcast 9307335) — beim Reimport erhalten.
@@ -47,6 +49,12 @@ Projektspezifische Fallen von Airtable-MCP und Make in **dieser** Base/diesem Te
   - **Abbruchbedingung jedes Import-Skripts:** fehlender oder veränderter `io`-Block.
   - **Diagnose:** ein Kind mit `metadata.interface` am Trigger, aber leerem Szenario-Interface, ist **immer** defekt. Nicht „hat keins", sondern „hat seins verloren". Diese Lesart nicht wegargumentieren — genau das hat am 2026-08-22 zwei Tage Meldungsausfall gekostet.
 - **`resolver_version` als Pflichtausgabe.** Jeder Resolver (`[Resolve] Store` 7049889 · `[Resolve] Salesperson` 8473461 · `[Resolve] Condition` 8473477 · `[Resolve] Product Variants`) gibt `ok` und `resolver_version` zurück. Der **Aufrufer** filtert hart darauf: kommt `resolver_version` leer an, hat das Kind nicht geantwortet — das ist eine Verdrahtungs-, keine Datenlage. Ohne diese Prüfung liest sich der Ausfall als sauberes „nicht gefunden".
+
+## Lexware
+
+- **Belege lassen sich über die API nicht löschen.** Der Vouchers-Endpunkt kennt Anlegen, Lesen, Ändern, Filtern und Datei-Upload, kein DELETE. Doppelte Entwürfe löscht nur Joscha in Lexware; vorbeugen an der Quelle (`[Sync] JTL to Lexware`).
+- **Die Belegliste (`/v1/voucherlist`) läuft nach.** Ein neuer Entwurf erscheint dort nach schwankender Zeit (19.11.2026: 20 s, 36 s noch nicht, 38 s), `GET /v1/vouchers/{id}` ist sofort aktuell. `voucherType` und `voucherStatus` any umfassen Gutschriften und `unchecked`.
+- **Schlüssel-Rechte:** Wer die Belegliste abfragt, braucht im Lexware-Schlüssel „Belegliste filtern und abrufen“ (sonst 403, 18.11.2026).
 
 ## Laufansichten im Browser lesen
 
