@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.58.1](https://github.com/wemwi/skill-library/compare/v6.58.0...v6.58.1) (2026-11-19)
+
+
+### Bug Fixes
+
+* **selectedleafs-pos-operations:** probation ends with the 2nd paid invoice ([#379](https://github.com/wemwi/skill-library/issues/379)) ([c0c53fc](https://github.com/wemwi/skill-library/commit/c0c53fcb3a077a454e437e428908b89230d64ee5))
+
 ## [6.58.0](https://github.com/wemwi/skill-library/compare/v6.57.1...v6.58.0) (2026-11-19)
 
 
