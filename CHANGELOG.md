@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.60.0](https://github.com/wemwi/skill-library/compare/v6.59.1...v6.60.0) (2026-11-20)
+
+
+### Features
+
+* **selectedleafs-pos-operations:** Skonto in Zahlung, Partnerstufe und Zahlungsmeldung (1.57.0) ([#385](https://github.com/wemwi/skill-library/issues/385)) ([34599cc](https://github.com/wemwi/skill-library/commit/34599ccfb838f6f176b8a49311b7ab0a8ef5807d))
+
 ## [6.59.1](https://github.com/wemwi/skill-library/compare/v6.59.0...v6.59.1) (2026-11-19)
 
 
