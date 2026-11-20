@@ -65,7 +65,7 @@ Reine **Daten**, kein Code: eine Zeile je `key` mit `topic · tabelle · vertrie
 Ein generischer Renderer für alle drei Register. **Geldwerte werden nur formatiert, nie gerechnet.**
 
 - **Token-Auflösung in Reihenfolge:** `felder` (Fachdatensatz) → `vfelder` (Vertriebler) → `sfelder` (Store) → `ctx`.
-- **Spezial-Token:** `{abs X}` (Betrag ohne Vorzeichen — Rückholungen buchen negativ) · `{Vorname}` (erstes Wort aus Vertriebler) · `{Maps-URL}` (aus Store-Name + `Google Place ID`) · `{Saldoabruf}` (Vergleich Betrag ggü. Offen: `created` → Betrag ≥ Offen; `settled` → Betrag ≥ Offen + Betrag → »Voller Saldo« / »Teilbetrag«).
+- **Spezial-Token:** `{abs X}` (Betrag ohne Vorzeichen — Rückholungen buchen negativ) · `{Vorname}` (erstes Wort aus Vertriebler) · `{Maps-URL}` (aus Store-Name + `Google Place ID`) · `{Saldoabruf}` (Vergleich Betrag ggü. Offen: `created` → Betrag ≥ Offen; `settled` → Betrag ≥ Offen + Betrag → »Voller Saldo« / »Teilbetrag«) · `{Skonto}` (seit 20.11.2026: `Umsätze.Status` Bezahlt und `Gezahlt brutto` unter `Bruttobetrag` → gesetzt; nur für `{gesetzt Skonto}`, kein Feld, kein Geldwert).
 - **Zeilen-Modifier** (am Zeilenanfang): `{leer FELD}…` (Zeile nur wenn leer — Vorbehaltszeilen) · `{gesetzt FELD}…` (Zeile nur wenn gefüllt). Zeilen, deren Token alle leer bleiben, fallen weg; leere ` · `-Segmente lösen sich auf.
 - **Formatierung:** Euro `1.234,56 €` · ISO-Datum → `TT.MM.JJJJ` · HTML-Escaping · **Betreffzeile (Zeile 1) generell fett** — kein Template trägt `<b>` in Zeile 1.
 

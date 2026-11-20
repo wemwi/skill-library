@@ -343,17 +343,19 @@ Kiosk Nordstern · RG-10128-1
 
 Saldo Max (offen): 134,20 €
 
-⚠️ Zahlung nach Mahnung.
+ℹ️ Mit Skonto bezahlt.
 ```
 **Vertriebler**
 ```
 ✅ Zahlungseingang
 Kiosk Nordstern · RG-10128-1
 
-Deine Provision: +46,86 €
+Deine Provision: +44,52 €
 Dein Saldo (offen): 134,20 €
+
+ℹ️ Mit Skonto bezahlt.
 ```
-*Ops-⚠️ nur konditional (`{gesetzt Gemahnt}`): fällt weg, wenn pünktlich gezahlt.*
+*Ops-⚠️ „Zahlung nach Mahnung.“ nur konditional (`{gesetzt Gemahnt}`): fällt weg, wenn pünktlich gezahlt (wie hier). ℹ️ nur bei Skonto (`{gesetzt Skonto}`, seit 20.11.2026). Provision = `Umsätze.Realprovision`, bei Skonto also weniger als bei `invoice.created`.*
 **Begleitend** → 👉 `task.jtl_payment`
 
 ### ⏰ `invoice.reminder_filed` — Zahlungserinnerung · `live`
