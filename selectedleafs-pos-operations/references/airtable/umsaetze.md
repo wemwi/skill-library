@@ -20,8 +20,9 @@ Eine Zeile = ein **abgerechneter Store-Umsatz** (Rechnung an den Store). Trägt 
 
 - **`Provision`** (Formel, €) — **der Geldwert dieser Tabelle:** `(Nettoumsatz × Provisionssatz) × (1 + MwSt.)`, brutto. Rollt zu `Vertriebler.Provision`. Wirksam **bei Zahlung**.
 - **`Nettoumsatz`** (Rollup, €) — Σ `Umsatzpositionen.Nettoumsatz`. **Die Geldwahrheit.**
-- **`Offen`** (Formel, €) — `Nettoumsatz − Bezahlt`. `Bezahlt` ist seit 09.11.2026 eine Formel: `IF({Bruttobetrag}>0, IF({Gezahlt brutto}>={Bruttobetrag}, {Nettoumsatz}, ROUND({Nettoumsatz}*{Gezahlt brutto}/{Bruttobetrag},2)), 0)`. Die Rohwerte schreibt Make: `Bruttobetrag` der Rechnungs-Worker, `Gezahlt brutto` nur `[Process] Lexware Payment (Invoice · Store)`.
-- **`Realprovision`** (Formel, €) — `(Bezahlt × Provisionssatz) × (1 + MwSt.)` — Provision auf den **tatsächlich gezahlten** Betrag (bei Teilzahlung < Provision). Rollt zu `Vertriebler.Realprovision`.
+- **`Offen`** (Formel, €) — bei `Status` Bezahlt 0, sonst `Nettoumsatz − Bezahlt` (seit 19.11.2026, sonst bliebe ein Skonto als Rest offen). `Bezahlt` ist seit 09.11.2026 eine Formel: `IF({Bruttobetrag}>0, IF({Gezahlt brutto}>={Bruttobetrag}, {Nettoumsatz}, ROUND({Nettoumsatz}*{Gezahlt brutto}/{Bruttobetrag},2)), 0)`. Die Rohwerte schreibt Make: `Bruttobetrag` der Rechnungs-Worker, `Gezahlt brutto` nur `[Process] Lexware Payment (Invoice · Store)`.
+- **`Realprovision`** (Formel, €) — `(Bezahlt × Provisionssatz) × (1 + MwSt.)` — Provision auf den **tatsächlich gezahlten** Betrag (bei Teilzahlung oder Skonto < Provision). Rollt zu `Vertriebler.Realprovision`. Die Meldung `invoice.paid` zeigt sie dem Vertriebler (seit 20.11.2026).
+- **Skonto (seit 19.11.2026):** 5 % bei Zahlung innerhalb von 7 Tagen, Zahlungsbedingung in JTL. Lexware führt den Abzug als Zahlungsposten `cashDiscount`; `[Process] Lexware Payment (Invoice · Store)` zählt ihn nicht als Zahlung. Bei Skonto bleibt `Gezahlt brutto` unter `Bruttobetrag`, `Bezahlt` und `Realprovision` sinken anteilig, `Offen` ist 0. Mahngebühren (`dunningCosts`) zählen weiter als Zahlung. Abgenommen an RG-10149-1: Gezahlt brutto 517,78 von 545,03, Bezahlt 435,11, Realprovision 217,56 statt 229,01. Die Partnerstufe zählt `Bezahlt` ([[jahresboni]]).
 - **`Deckungsbeitrag`** (Formel, €) — `Nettoumsatz − Provision`.
 - **`Zahlungsverlauf`** (Rollup ← `Belege.Belegtyp`) — »pünktlich« / »nach Zahlungserinnerung« / »nach Mahnung«; speist `{Zahlungsverlauf}` in der invoice.paid-Meldung.
 - **`Status`** (Select) — Offen / Bezahlt / **Teilgezahlt** / Überfällig / Angemahnt / Storniert / Ausgebucht. Teilzahlung ist ein definierter Zustand (Lexware-Payments-Sync).
@@ -79,13 +80,13 @@ Make schreibt **9** Felder und liest **14** (seit 2026-11-06 mit `Lexware ID`). 
   Rechnungsnummer = Dedup. Szenarien: `[Process] Lexware Voucher (Invoice · Store)`, `[Process] Lexware Payment (Invoice · Store)` („Find invoice row (by ID)“), `[Process] Invoice (Store) · REMINDER` (Altlast, abgeschaltet).  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Status`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldBavq4sjk2A1swZ` (gesetzt 2026-11-11)  
-  `[Process] Lexware Payment (Invoice · Store)` vergleicht Offen, Überfällig, Angemahnt und Teilgezahlt im Code „Decide (store)“, `[Process] Lexware Voucher (Invoice · Store)` Teilgezahlt, Angemahnt und Überfällig in „Update status“ und den Filter „Not terminal“, „Load store sales“ in `[Process] Manual Action (Inventory Correction)` und `[Resolve] Open Invoices` Storniert und Ausgebucht. Geschrieben wird der Status über die Options-ID.  
+  `[Process] Lexware Payment (Invoice · Store)` vergleicht Offen, Überfällig, Angemahnt und Teilgezahlt im Code „Decide (store)“, `[Process] Lexware Voucher (Invoice · Store)` Teilgezahlt, Angemahnt und Überfällig in „Update status“ und den Filter „Not terminal“, „Load store sales“ in `[Process] Manual Action (Inventory Correction)` und `[Resolve] Open Invoices` Storniert und Ausgebucht, „Plan tiers“ in `[Maintain] Partner Tier Check` Storniert und Ausgebucht (seit 19.11.2026), „Build text“ in `[Notify] Telegram Channels` Bezahlt (`{Skonto}`, seit 20.11.2026). Geschrieben wird der Status über die Options-ID.  
   ⚠ Option umbenennen: Diese Vergleiche greifen nicht mehr (still).
 
 ### fld-ID-fest — ohne Marker, umbenennungssicher
 
 **Make schreibt:** `Bruttobetrag` · `Gezahlt brutto` · `Fällig am` · `Hinweis` · `Konditionen` · `Lexware ID` (6633991 „Umsatz anlegen“; „Status updaten“ füllt sie, wenn leer; gelesen von 8413130 „Load store sales“ zusammen mit `ID`, `Status`, `Hinweis`, ebenso von 8511487 „Load store sales“, dazu `Datum`; beide vergleichen im Code die Optionsnamen Storniert und Ausgebucht und die Marke am Anfang einer Hinweiszeile) · `Status` · `Store` · `Vertriebler`  
-**Make liest:** `Belege` · `Datum` · `Deckungsbeitrag` · `Nettoumsatz` · `Provision` · `Umsatzpositionen` · `Zahlungsverlauf`
+**Make liest:** `Belege` · `Datum` · `Deckungsbeitrag` · `Nettoumsatz` · `Provision` · `Umsatzpositionen` · `Zahlungsverlauf` · `Bezahlt` (8651392 „Find invoices“ mit `Datum`, `Store`, `ID`, `Status`, seit 19.11.2026) · `Realprovision`, `Bruttobetrag`, `Gezahlt brutto`, `Status` (6862968 „Map event“, Meldung `invoice.paid`, über die Feld-ID, seit 20.11.2026)
 
 Diese Felder tragen bewusst **keinen** Feld-Marker: Make adressiert sie über die Feld-ID, Umbenennen ist folgenlos. **Löschen oder Umtypisieren bricht Make dagegen sehr wohl.**
 

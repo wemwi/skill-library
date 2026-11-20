@@ -316,6 +316,7 @@ Deine Provision: <b>{Provision}</b>
 ```
 
 ### `invoice.paid`
+*Seit 20.11.2026: Provision aus `Umsätze.Realprovision` (auf den gezahlten Betrag), Zeile „Mit Skonto bezahlt“ über `{Skonto}` ([[notify]]). `{Gemahnt}` kommt vom Emitter (z. B. „nach Mahnung“).*
 **Operations**
 ```
 ✅ Zahlungseingang
@@ -323,15 +324,18 @@ Deine Provision: <b>{Provision}</b>
 
 Saldo {Vorname} (offen): {Offen}
 
-{gesetzt Gemahnt}⚠️ Zahlung nach Mahnung.
+{gesetzt Gemahnt}⚠️ Zahlung {Gemahnt}.
+{gesetzt Skonto}ℹ️ Mit Skonto bezahlt.
 ```
 **Vertriebler**
 ```
 ✅ Zahlungseingang
 <i>{Store} · {ID}</i>
 
-Deine Provision: +{Provision}
+Deine Provision: +{Realprovision}
 Dein Saldo (offen): <b>{Offen}</b>
+
+{gesetzt Skonto}ℹ️ Mit Skonto bezahlt.
 ```
 
 ### `refund.created` · NEU 08.11.2026

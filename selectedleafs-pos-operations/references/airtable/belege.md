@@ -71,13 +71,13 @@ Make schreibt **7** Felder und liest **9** (Nachtrag 2026-11-11: `Anhang`, `Hinw
 ### Namens-gekoppelt — trägt den 🟣-Marker am Feld
 
 - **`Belegtyp`** — 🟣 `make.com (KEY · Options)` · singleSelect · `fldKSqryQHeRzUCMd`  
-  Option als String. Szenarien: 6633991, 6844567, 8392806 (schreibt „Unbekannt", seit 05.11.2026).  
+  Option als String. Szenarien: 6633991, 6844567, 8392806 (schreibt „Unbekannt", seit 05.11.2026), 8651392 („Find delivery notes (with invoice)“: `{Belegtyp}="Lieferschein"`, seit 19.11.2026).  
   ⚠ Feldname **und** Optionsnamen sind eingefroren — beides bricht den Match still.
 - **`Datum`** — 🟣 `make.com (KEY · Name)` · date · `fldPoeEx87w0wF8w9`  
   Dubletten-Match + Vergabeliste-sort. Szenarien: 6633991, 6844567.  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Umsatz`** — 🟣 `make.com (KEY · Name)` · link · `fldI5lU4NQ7ymG4d0`  
-  Dubletten-Match. Szenarien: 6844567.  
+  Dubletten-Match. Szenarien: 6844567, 8651392 („Find delivery notes (with invoice)“: `{Umsatz}!=""`, liest die verknüpften Umsätze; nur diese gelten als Eigenbestand-Rechnung, seit 19.11.2026).  
   ⚠ Umbenennen bricht den Match still (kein Fehler, kein Log).
 - **`Bestandsprüfung`** — 🟣 `make.com (KEY · Name)` · link · `fldbzOIOSaNcwdNAL` (gesetzt 2026-11-06)  
   Vergabeliste je Store: `FIND("BSP-<Kundennr>-", {Bestandsprüfung}) = 1`, zusammen mit `Belegtyp` (Bestands- oder Rückholprotokoll). Szenarien: 6633991.  
